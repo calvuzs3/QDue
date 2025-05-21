@@ -2,7 +2,9 @@
 An e-calendar for continous cycle worker, scheme 4-2
 
 ## What's new
+Utilizzo dell' AI per un porting del codice a moderne librerie, quali java-datetime che oggi è robusta e può sostituire joda-time
 
+## Work with AI
 Analisi generale delle classi
 
 Day: rappresenta un giorno con i suoi turni
@@ -15,10 +17,9 @@ QuattroDueListAdapter: adapter per visualizzare la lista dei giorni
 
 Suggerimenti di miglioramento
 1. Utilizzo delle moderne API Java
-
-- Miglioramenti al codice Java
-
 2. Miglioramenti specifici per classe
+
+
 Classe Day.java:
 
 Migrazione da Joda-Time a java.time: Le API di tempo in Java 8+ sono ora robuste quanto Joda-Time ma con il vantaggio di essere parte della JDK standard.
