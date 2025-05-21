@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!--    QD app color scheme-->
+    <color name="colorPrimary">#ff4CAF50</color>
+    <color name="colorPrimaryLight">#ff8CfF80</color>
+    <color name="colorPrimaryDark">#444caf50</color>
+    <color name="colorAccent">#ff2E7D32</color>
+    <color name="colorTextBlack">#ff000000</color>
+    <color name="colorTextWhite">#ffffffff</color>
+    <color name="colorTextRed">#ffFF0000</color>
+    <color name="colorTextBlue">#ff0000FF</color>
+    <color name="colorBackgroundBlue">#ff0000ff</color>
+    <color name="colorBackgroundLightBlue">#ff8888ff</color>
+    <color name="colorBackgroundYellow">#88ffff55</color>
+    <color name="colorBackgroundRed">#66ff0000</color>
+</resources>
