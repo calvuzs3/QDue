@@ -1,12 +1,10 @@
-package net.calvuz.qdue.ui.home;
+package net.calvuz.qdue.ui.dayslist;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -20,7 +18,6 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.Month;
 import net.calvuz.qdue.utils.Log;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +25,9 @@ import java.util.List;
  * Fragment che mostra la visualizzazione calendario dei turni.
  * Versione aggiornata senza header con pulsanti, poiché sono stati spostati nella bottom bar.
  */
-public class QDueHomeFragment extends Fragment {
+public class DayslistViewFragment extends Fragment {
 
-    private static final String TAG = "QDueHomeFragment";
+    private static final String TAG = "DayslistViewFragment";
     private static final boolean LOG_ENABLED = true;
 
     private OnQuattroDueHomeFragmentInteractionListener mListener = null;
@@ -45,7 +42,7 @@ public class QDueHomeFragment extends Fragment {
     /**
      * Costruttore vuoto obbligatorio per il fragment manager.
      */
-    public QDueHomeFragment() {
+    public DayslistViewFragment() {
         // Costruttore vuoto richiesto
     }
 
@@ -58,11 +55,11 @@ public class QDueHomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mRoot = inflater.inflate(R.layout.fragment_qdue_home, container, false);
+        mRoot = inflater.inflate(R.layout.fragment_dayslist_view, container, false);
         if (LOG_ENABLED) Log.d(TAG, "onCreateView");
 
         // Inizializza le viste
-        mRecyclerView = mRoot.findViewById(R.id.dayslist_recyclerview);
+        mRecyclerView = mRoot.findViewById(R.id.rv_dayslist);
 
         // Configura RecyclerView
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

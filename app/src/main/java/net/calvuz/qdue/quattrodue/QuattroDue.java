@@ -5,7 +5,6 @@ import android.content.res.Resources;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -655,5 +654,44 @@ public class QuattroDue {
      */
     public void setShowStops(boolean showStops) {
         this.showStops = showStops;
+    }
+
+
+    /**
+     * Genera la lista di giorni per un mese specifico.
+     * Metodo pubblico per supportare il calendario con scrolling infinito.
+     *
+     * @param monthDate Data del mese richiesto
+     * @return Lista dei giorni configurati per il mese
+     */
+    public List<Day> getShiftsForMonth(LocalDate monthDate) {
+        if (monthDate == null) {
+            return new ArrayList<>();
+        }
+
+        return getShifts(monthDate);
+    }
+
+    /**
+     * Verifica se una data è il giorno corrente.
+     * Metodo di utilità per il calendario.
+     *
+     * @param date Data da verificare
+     * @return true se è oggi, false altrimenti
+     */
+    public boolean isToday(LocalDate date) {
+        return date != null && date.equals(LocalDate.now());
+    }
+
+    /**
+     * Imposta il flag "oggi" per un giorno specifico.
+     * Aggiorna automaticamente i giorni nella cache.
+     *
+     * @param day Giorno da aggiornare
+     */
+    private void updateTodayFlag(Day day) {
+        if (day != null && day.getDate() != null) {
+            day.setIsToday(isToday(day.getDate()));
+        }
     }
 }

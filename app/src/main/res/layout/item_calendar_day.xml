@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="1dp"
+    android:minHeight="48dp"
+    android:background="@drawable/calendar_day_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="4dp"
+        android:gravity="center">
+
+        <!-- Numero del giorno -->
+        <TextView
+            android:id="@+id/tv_day_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorTextBlack"
+            android:gravity="center" />
+
+        <!-- Nome del giorno (opzionale, solo per alcune celle) -->
+        <TextView
+            android:id="@+id/tv_day_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="n"
+            android:textSize="10sp"
+            android:textColor="@color/colorTextBlue"
+            android:gravity="center"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Indicatore per il turno dell'utente -->
+    <View
+        android:id="@+id/v_shift_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        android:background="@color/colorBackgroundLightBlue" />
+
+</FrameLayout>

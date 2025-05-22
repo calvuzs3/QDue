@@ -1,6 +1,7 @@
 package net.calvuz.qdue.quattrodue.adapters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
@@ -25,7 +27,7 @@ import net.calvuz.qdue.utils.Log;
 
 /**
  * Adapter per la visualizzazione dei giorni in una RecyclerView.
- * Aggiornato per supportare colori personalizzati per i turni.
+ * Modificato per evidenziare solo i turni dell'utente in base alle preferenze.
  */
 public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAdapter.ViewHolder> {
 
@@ -36,6 +38,9 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
     private ArrayList<Day> mDaysList;
     private final LayoutInflater mInflater;
     private int mNumShifts = 3; // Numero predefinito di turni
+
+    // Preferenze dell'utente
+    private boolean mShowStops = true;
 
     // Costante per il giorno della settimana domenica
     private static final int SUNDAY_VALUE = DayOfWeek.SUNDAY.getValue();
@@ -50,6 +55,9 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
         mContext = context;
         mDaysList = daysList != null ? daysList : new ArrayList<>();
         mInflater = LayoutInflater.from(context);
+
+        // Carica le preferenze dell'utente
+        loadUserPreferences();
     }
 
     /**
@@ -59,6 +67,24 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
         mContext = null;
         mDaysList = new ArrayList<>();
         mInflater = null;
+    }
+
+    /**
+     * Carica le preferenze dell'utente dalle SharedPreferences
+     */
+    private void loadUserPreferences() {
+        if (mContext != null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            mShowStops = prefs.getBoolean("preference_show_stops", true);
+        }
+    }
+
+    /**
+     * Aggiorna le preferenze dell'utente
+     */
+    public void updateUserPreferences() {
+        loadUserPreferences();
+        notifyDataSetChanged();
     }
 
     /**
@@ -93,7 +119,6 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
             shiftTexts = new TextView[numShifts];
 
             // Assegna le TextView in base al loro ID
-            // Nota: questo presuppone che i tuoi TextView per i turni abbiano ID tt1, tt2, tt3, ecc.
             for (int i = 0; i < numShifts && i < 5; i++) { // Massimo 5 turni supportati
                 int resId = view.getResources().getIdentifier("tt" + (i+1), "id", view.getContext().getPackageName());
                 if (resId != 0) {
@@ -126,7 +151,7 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
         holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
 
         // Resetta tutti i colori dei turni
-        resetShiftColors(holder);
+        resetShiftViews(holder);
 
         // Imposta i testi per i turni
         List<Shift> shifts = day.getShifts();
@@ -171,21 +196,28 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
             userPosition = day.getInWichTeamIsHalfTeam(userHalfTeam);
         }
 
-        // Evidenzia il turno dell'utente
+        // Evidenzia SOLO il turno dell'utente
         if (userPosition >= 0 && userPosition < numShifts && holder.shiftTexts[userPosition] != null) {
             holder.shiftTexts[userPosition].setBackgroundColor(r.getColor(R.color.colorBackgroundLightBlue));
             holder.shiftTexts[userPosition].setTextColor(r.getColor(R.color.colorTextWhite));
         }
 
-        // Gestisce le fermate degli impianti
-        for (int i = 0; i < numShifts; i++) {
-            if (i < shifts.size() && shifts.get(i).isStop() && holder.shiftTexts[i] != null) {
-                holder.shiftTexts[i].setBackgroundColor(r.getColor(R.color.colorBackgroundRed));
+        // Gestisce le fermate degli impianti solo se l'opzione è abilitata
+        if (mShowStops) {
+            for (int i = 0; i < numShifts; i++) {
+                if (i < shifts.size() && shifts.get(i).isStop() && holder.shiftTexts[i] != null) {
+                    // Se è anche il turno dell'utente, aggiungiamo solo un bordo rosso invece di cambiare lo sfondo
+                    if (i == userPosition) {
+                        // Indica che è una fermata anche se è il turno dell'utente
+                        // Possiamo usare un bordo o un altro indicatore visivo
+                        holder.shiftTexts[i].setBackgroundColor(r.getColor(R.color.colorBackgroundRed));
+                        holder.shiftTexts[i].setTextColor(r.getColor(R.color.colorTextWhite));
+                    } else {
+                        holder.shiftTexts[i].setBackgroundColor(r.getColor(R.color.colorBackgroundRed));
+                    }
+                }
             }
         }
-
-        // Applica i colori personalizzati dei turni
-        applyShiftColors(holder, shifts);
 
         // Evidenzia il giorno corrente
         if (day.getIsToday()) {
@@ -196,33 +228,11 @@ public class QuattroDueListAdapter extends RecyclerView.Adapter<QuattroDueListAd
     }
 
     /**
-     * Applica i colori personalizzati dei turni.
-     *
-     * @param holder ViewHolder contenente le viste
-     * @param shifts Lista dei turni
-     */
-    private void applyShiftColors(ViewHolder holder, List<Shift> shifts) {
-        // Applica i colori personalizzati solo se non è già stato evidenziato per l'utente
-        // o per le fermate
-        for (int i = 0; i < Math.min(shifts.size(), mNumShifts); i++) {
-            // Ottiene il colore del tipo di turno
-            ShiftType shiftType = shifts.get(i).getShiftType();
-            if (shiftType != null && holder.shiftTexts[i] != null) {
-                int color = shiftType.getColor();
-                if (color != 0 &&
-                        holder.shiftTexts[i].getBackgroundTintList() == null) {
-                    holder.shiftTexts[i].setBackgroundColor(color);
-                }
-            }
-        }
-    }
-
-    /**
-     * Reimposta i colori dei turni ai valori predefiniti.
+     * Reimposta i colori e i testi dei turni ai valori predefiniti.
      *
      * @param holder ViewHolder contenente le viste
      */
-    private void resetShiftColors(ViewHolder holder) {
+    private void resetShiftViews(ViewHolder holder) {
         if (holder.shiftTexts != null) {
             for (TextView tv : holder.shiftTexts) {
                 if (tv != null) {

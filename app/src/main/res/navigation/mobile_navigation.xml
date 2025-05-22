@@ -8,12 +8,14 @@
     <fragment
         android:id="@+id/nav_home"
         android:label="@string/menu_home"
-        android:name="net.calvuz.qdue.ui.home.QDueHomeFragment"
-        tools:layout="@layout/fragment_qdue_home" >
-        <action
-            android:id="@+id/action_nav_home_to_nav_settings"
-            app:destination="@id/nav_settings" />
-    </fragment>
+        android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragment"
+        tools:layout="@layout/fragment_dayslist_view" />
+
+    <fragment
+        android:id="@+id/nav_calendar"
+        android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragment"
+        android:label="@string/menu_calendar"
+        tools:layout="@layout/fragment_calendar_view" />
 
     <fragment
         android:id="@+id/nav_gallery"
@@ -25,9 +27,5 @@
         android:id="@+id/nav_settings"
         android:label="@string/menu_title_settings"
         android:name="net.calvuz.qdue.ui.settings.SettingsFragment"
-        tools:layout="@layout/fragment_slideshow" >
-        <action
-            android:id="@+id/action_nav_settings_to_nav_home2"
-            app:destination="@id/nav_home" />
-    </fragment>
+        tools:layout="@layout/fragment_slideshow" />
 </navigation>

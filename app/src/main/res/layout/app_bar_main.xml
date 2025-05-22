@@ -23,7 +23,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_qdue_main" />
+    <include layout="@layout/content_main" />
 
     <!-- Bottom AppBar con i pulsanti di navigazione mese -->
     <com.google.android.material.bottomappbar.BottomAppBar

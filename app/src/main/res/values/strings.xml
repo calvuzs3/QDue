@@ -2,9 +2,9 @@
     <string name="app_name">QDue</string>
     <string name="app_id" translatable="false">net.calvuz.qdue</string>
     <string name="app_version" translatable="false">v 2.0.0</string>
-    <string name="app_about">WorkerS EShifts</string>
-    <string name="app_libraries">Librerie utilizzate:</string>
-    <string name="app_libraries_used" translatable="false">joda-time 2.14.0</string>
+    <string name="app_about">WorkerS e-Shifts</string>
+    <string name="app_libraries">Calendario Turni</string>
+    <string name="app_libraries_used">Per i lavoratori nel ciclo continuo con lo schema quattro due.\nPuoi navigare nei mesi senza una fine, lo schema si ripete all\'infinio.</string>
     <string name="app_author_str">Author</string>
     <string name="app_author_str_name" translatable="false">calvuzs3</string>
 
@@ -18,6 +18,7 @@
     <string name="title_activity_settings">SettingsActivity</string>
 
     <string name="menu_home">Home</string>
+    <string name="menu_calendar">Calendario</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_title_about">About</string>
@@ -138,6 +139,7 @@
     <string name="cancel">Annulla</string>
     <string name="error_shift_name_empty">Il nome del turno non può essere vuoto</string>
     <string name="msg_shift_saved">Turno salvato</string>
+    <string name="go_to_today">Vai a oggi</string>
 
     <!-- Intestazioni dei turni personalizzati -->
     <string name="header_custom1">Turno 4</string>

@@ -21,4 +21,21 @@
     <color name="colorBackgroundLightBlue">#ff8888ff</color>
     <color name="colorBackgroundYellow">#88ffff55</color>
     <color name="colorBackgroundRed">#66ff0000</color>
+
+    <!-- Colori per la visualizzazione Calendario -->
+
+    <!-- Nuovi colori per il calendario -->
+    <color name="colorTextGray">#666666</color>
+    <color name="colorBorderLight">#E0E0E0</color>
+    <color name="colorBackgroundLight">#F5F5F5</color>
+
+    <!-- Colori per i turni (configurabili) -->
+    <color name="colorShiftMorning">#FFA500</color>    <!-- Arancione per mattino -->
+    <color name="colorShiftAfternoon">#32CD32</color>  <!-- Verde per pomeriggio -->
+    <color name="colorShiftNight">#4169E1</color>      <!-- Blu per notte -->
+
+    <!-- Colori aggiuntivi per gli indicatori -->
+    <color name="colorAccentYellow">#FFC107</color>    <!-- Giallo accento -->
+    <color name="colorAccentBlue">#2196F3</color>      <!-- Blu accento -->
+    <!-- Fine Calendario-->
 </resources>

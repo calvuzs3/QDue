@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.ui.home.QDueHomeFragment;
+import net.calvuz.qdue.ui.dayslist.DayslistViewFragment;
 import net.calvuz.qdue.ui.other.DialogAbout;
 import net.calvuz.qdue.ui.settings.SettingsActivity;
 import net.calvuz.qdue.utils.Log;
@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
  * Aggiornata per includere pulsanti di navigazione nella toolbar.
  */
 public class QDueMainActivity extends AppCompatActivity
-        implements QDueHomeFragment.OnQuattroDueHomeFragmentInteractionListener {
+        implements DayslistViewFragment.OnQuattroDueHomeFragmentInteractionListener {
 
     private static final String TAG = "QDueMainActivity";
     private static final boolean LOG_ENABLED = true;
@@ -177,11 +177,11 @@ public class QDueMainActivity extends AppCompatActivity
             // Se è un NavHostFragment, cerca il fragment figlio attivo
             Fragment childFragment = ((androidx.navigation.fragment.NavHostFragment) fragment).getChildFragmentManager().getPrimaryNavigationFragment();
 
-            if (childFragment instanceof QDueHomeFragment) {
-                ((QDueHomeFragment) childFragment).notifyUpdates();
-                if (LOG_ENABLED) Log.d(TAG, "QDueHomeFragment.notifyUpdates chiamato");
+            if (childFragment instanceof DayslistViewFragment) {
+                ((DayslistViewFragment) childFragment).notifyUpdates();
+                if (LOG_ENABLED) Log.d(TAG, "DayslistViewFragment.notifyUpdates chiamato");
             } else {
-                if (LOG_ENABLED) Log.d(TAG, "Fragment attivo non è QDueHomeFragment: " +
+                if (LOG_ENABLED) Log.d(TAG, "Fragment attivo non è DayslistViewFragment: " +
                         (childFragment != null ? childFragment.getClass().getSimpleName() : "null"));
             }
         } else {

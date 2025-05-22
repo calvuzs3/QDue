@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:background="@color/teal_200">
+
+    <!-- Header fisso con i nomi dei giorni della settimana -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:elevation="2dp"
+        >
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="DOM"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextRed"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="LUN"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MAR"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="MER"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="GIO"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="VEN"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="SAB"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:textColor="@color/colorTextBlack"
+            android:padding="4dp" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorPrimaryDark" />
+
+</LinearLayout>

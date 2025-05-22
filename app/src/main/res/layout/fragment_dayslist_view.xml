@@ -6,11 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="false"
-    tools:context=".ui.home.QDueHomeFragment">
+    tools:context=".ui.dayslist.DayslistViewFragment">
 
     <!-- Header con le intestazioni delle colonne -->
     <include
-        android:id="@+id/column_header"
+        android:id="@+id/qdue_dayslist_column_header"
         layout="@layout/qdue_dayslist_column_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,10 +18,10 @@
 
     <!-- Lista dei giorni -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/dayslist_recyclerview"
+        android:id="@+id/rv_dayslist"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/column_header"
+        app:layout_constraintTop_toBottomOf="@id/qdue_dayslist_column_header"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/qdue_dayslist_row"
