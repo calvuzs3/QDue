@@ -83,6 +83,9 @@
         <item>8</item>
     </string-array>
 
+    <!-- Nuove stringhe per FAB -->
+    <string name="fab_go_to_today_description">Vai alla data odierna</string>
+
     <!-- Scheme: format numbers and strings -->
     <string name="str_scheme" translatable="false">%1$s</string>
     <string name="str_scheme_num" translatable="false">%1$2d</string>
@@ -110,6 +113,7 @@
     <string name="header_afternoon">Pom</string>
     <string name="header_night">Not</string>
     <string name="header_off">Rip</string>
+
     <!-- Categorie di preferenze -->
     <string name="settings_advanced_header">Impostazioni Avanzate</string>
 

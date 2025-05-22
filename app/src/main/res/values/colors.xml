@@ -22,6 +22,15 @@
     <color name="colorBackgroundYellow">#88ffff55</color>
     <color name="colorBackgroundRed">#66ff0000</color>
 
+    <!-- Nuovi colori per header e FAB -->
+    <color name="colorBackgroundHeader">#F5F5F5</color>
+    <color name="colorTextPrimary">#212121</color>
+    <color name="colorDivider">#E0E0E0</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+
+
+
+
     <!-- Colori per la visualizzazione Calendario -->
 
     <!-- Nuovi colori per il calendario -->

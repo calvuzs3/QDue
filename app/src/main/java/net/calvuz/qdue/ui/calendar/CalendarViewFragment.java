@@ -568,7 +568,7 @@ public class CalendarViewFragment extends Fragment {
         static class MonthViewHolder extends RecyclerView.ViewHolder {
             private TextView tvMonthTitle;
             private RecyclerView rvCalendarGrid;
-            private CalendarAdapter calendarAdapter;
+            private CalendarViewAdapter calendarViewAdapter;
 
             public MonthViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -586,8 +586,8 @@ public class CalendarViewFragment extends Fragment {
                 tvMonthTitle.setText(monthData.getMonthDate().format(formatter));
 
                 // Configura l'adapter della griglia
-                calendarAdapter = new CalendarAdapter(monthData.getCalendarDays(), userHalfTeam);
-                rvCalendarGrid.setAdapter(calendarAdapter);
+                calendarViewAdapter = new CalendarViewAdapter(monthData.getCalendarDays(), userHalfTeam);
+                rvCalendarGrid.setAdapter(calendarViewAdapter);
             }
         }
     }
@@ -595,12 +595,12 @@ public class CalendarViewFragment extends Fragment {
     /**
      * Adapter per la griglia del calendario (riutilizzato dal codice precedente).
      */
-    private static class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder> {
+    private static class CalendarViewAdapter extends RecyclerView.Adapter<CalendarViewAdapter.CalendarViewHolder> {
 
         private List<CalendarDay> calendarDays;
         private HalfTeam userHalfTeam;
 
-        public CalendarAdapter(List<CalendarDay> calendarDays, HalfTeam userHalfTeam) {
+        public CalendarViewAdapter(List<CalendarDay> calendarDays, HalfTeam userHalfTeam) {
             this.calendarDays = calendarDays;
             this.userHalfTeam = userHalfTeam;
         }

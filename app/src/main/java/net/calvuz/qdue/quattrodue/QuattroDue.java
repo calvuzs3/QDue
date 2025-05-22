@@ -694,4 +694,56 @@ public class QuattroDue {
             day.setIsToday(isToday(day.getDate()));
         }
     }
+
+    /**
+     * Genera un singolo giorno per una data specifica, applicando lo schema di rotazione.
+     *
+     * @param requestedDate Data richiesta
+     * @return Giorno configurato secondo lo schema
+     */
+    public Day getDayForDate(LocalDate requestedDate) {
+        final String fTAG = TAG + ":getDayForDate";
+
+        if (requestedDate == null) {
+            if (LOG_ENABLED) Log.d(fTAG, "Data richiesta null");
+            return null;
+        }
+
+        // Verifica che lo schema sia stato inizializzato
+        if (schemeDaysList == null || schemeDaysList.isEmpty()) {
+            if (LOG_ENABLED) Log.d(fTAG, "schemeDaysList vuota o null");
+            return null;
+        }
+
+        try {
+            // Calcola i giorni tra la data di inizio schema e la data richiesta
+            long difference = ChronoUnit.DAYS.between(schemeDate, requestedDate);
+            if (LOG_ENABLED) Log.v(fTAG, "difference=" + difference + " per data " + requestedDate);
+
+            // Calcola il punto nello schema
+            int schemaOffset = (int) (difference % NUMERO_RIPETIZIONE);
+            // Gestisce i valori negativi correttamente
+            if (schemaOffset < 0) {
+                schemaOffset = NUMERO_RIPETIZIONE + schemaOffset;
+            }
+
+            // Clona un giorno dallo schema
+            Day templateDay = schemeDaysList.get(schemaOffset);
+            Day day = templateDay.clone();
+
+            // Imposta la data corretta
+            day.setLocalDate(requestedDate);
+
+            // Imposta se è oggi
+            day.setIsToday(requestedDate.equals(LocalDate.now()));
+
+            if (LOG_ENABLED) Log.v(fTAG, "Generato giorno per " + requestedDate +
+                    " usando schema offset " + schemaOffset);
+
+            return day;
+        } catch (Exception e) {
+            Log.e(fTAG, "Errore durante la generazione del giorno per " + requestedDate + ": " + e.getMessage(), e);
+            return null;
+        }
+    }
 }
