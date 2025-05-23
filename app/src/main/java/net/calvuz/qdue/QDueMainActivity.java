@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageButton;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -25,24 +24,20 @@ import net.calvuz.qdue.ui.other.DialogAbout;
 import net.calvuz.qdue.ui.settings.SettingsActivity;
 import net.calvuz.qdue.utils.Log;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 /**
  * Activity principale dell'applicazione.
- * Aggiornata per supportare lo scroll infinito con pulsanti di navigazione opzionali.
+ * Aggiornata per rimuovere i pulsanti di navigazione mese non più necessari
+ * con lo scrolling infinito.
  */
 public class QDueMainActivity extends AppCompatActivity
-        implements DayslistViewFragment.OnQuattroDueDayslistFragmentInteractionListener {
+        implements DayslistViewFragment.OnQuattroDueHomeFragmentInteractionListener {
 
     private static final String TAG = "QDueMainActivity";
     private static final boolean LOG_ENABLED = true;
-    private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy");
 
     // UI related
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityQdueMainBinding mBinding;
-    private ImageButton mBtnPrevMonth, mBtnNextMonth;
 
     // App Engine reference
     private QuattroDue mQD;
@@ -71,7 +66,7 @@ public class QDueMainActivity extends AppCompatActivity
 
         // Configurazione del Navigation Controller con il drawer
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_calendar, R.id.nav_settings)
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_settings)
                 .setOpenableLayout(drawer)
                 .build();
 
@@ -102,10 +97,7 @@ public class QDueMainActivity extends AppCompatActivity
             return true;
         });
 
-        // Configura i pulsanti di navigazione nella bottom bar (opzionali)
-        setupNavigationButtons();
-
-        // Aggiorna il titolo della toolbar con il mese corrente
+        // Aggiorna il titolo della toolbar con il nome dell'app
         updateToolbarTitle();
 
         // Tieni traccia del fragment corrente
@@ -117,79 +109,16 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     /**
-     * Configura i pulsanti di navigazione nella bottom bar.
-     * Ora questi pulsanti controllano lo scroll invece di cambiare i dati.
-     */
-    private void setupNavigationButtons() {
-        if (LOG_ENABLED) Log.d(TAG, "setupNavigationButtons");
-
-        // Trova i pulsanti di navigazione nella bottom bar
-        mBtnPrevMonth = mBinding.appBarMain.bottomNavBar.findViewById(R.id.btn_prev_month);
-        mBtnNextMonth = mBinding.appBarMain.bottomNavBar.findViewById(R.id.btn_next_month);
-
-        if (mBtnPrevMonth != null && mBtnNextMonth != null) {
-            // Imposta i listener per i pulsanti
-            mBtnPrevMonth.setOnClickListener(v -> {
-                if (LOG_ENABLED) Log.d(TAG, "Pulsante mese precedente cliccato");
-                moveToMonth(-1);
-            });
-
-            mBtnNextMonth.setOnClickListener(v -> {
-                if (LOG_ENABLED) Log.d(TAG, "Pulsante mese successivo cliccato");
-                moveToMonth(1);
-            });
-        } else {
-            if (LOG_ENABLED) Log.d(TAG, "Pulsanti di navigazione non trovati - scroll infinito puro");
-        }
-    }
-
-    /**
-     * Sposta la visualizzazione di un certo numero di mesi.
-     *
-     * @param monthOffset Numero di mesi da spostare (positivo = avanti, negativo = indietro)
-     */
-    private void moveToMonth(int monthOffset) {
-        // Cerca il fragment attivo
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-        if (fragment != null) {
-            // Se è un NavHostFragment, cerca il fragment figlio attivo
-            Fragment childFragment = ((androidx.navigation.fragment.NavHostFragment) fragment).getChildFragmentManager().getPrimaryNavigationFragment();
-
-            if (childFragment instanceof DayslistViewFragment) {
-                if (monthOffset > 0) {
-                    ((DayslistViewFragment) childFragment).moveToNextMonth();
-                } else {
-                    ((DayslistViewFragment) childFragment).moveToPreviousMonth();
-                }
-                if (LOG_ENABLED) Log.d(TAG, "Comando di spostamento mese inviato al fragment");
-            } else {
-                if (LOG_ENABLED) Log.d(TAG, "Fragment attivo non è DayslistViewFragment");
-            }
-        }
-    }
-
-    /**
-     * Aggiorna il titolo della toolbar con il mese corrente.
+     * Aggiorna il titolo della toolbar.
+     * Con lo scrolling infinito, mostriamo il nome dell'app invece del mese corrente.
      */
     private void updateToolbarTitle() {
-        updateToolbarTitle(LocalDate.now());
-    }
-
-    /**
-     * Aggiorna il titolo della toolbar con una data specifica.
-     *
-     * @param date Data da visualizzare
-     */
-    private void updateToolbarTitle(LocalDate date) {
-        if (LOG_ENABLED) Log.d(TAG, "updateToolbarTitle: " + date);
+        if (LOG_ENABLED) Log.d(TAG, "updateToolbarTitle");
 
         if (getSupportActionBar() != null) {
-            // Formatta il mese
-            String monthTitle = date.format(MONTH_FORMATTER);
-
-            // Imposta il titolo della toolbar
-            getSupportActionBar().setTitle(monthTitle);
-            if (LOG_ENABLED) Log.d(TAG, "Titolo toolbar aggiornato: " + monthTitle);
+            // Imposta il titolo dell'app
+            getSupportActionBar().setTitle(R.string.app_name);
+            if (LOG_ENABLED) Log.d(TAG, "Titolo toolbar aggiornato con nome app");
         } else {
             if (LOG_ENABLED) Log.e(TAG, "supportActionBar è null");
         }
@@ -259,6 +188,7 @@ public class QDueMainActivity extends AppCompatActivity
         if (LOG_ENABLED) Log.d(TAG, "onResume");
 
         // Aggiorna l'interfaccia quando l'activity torna in primo piano
+        updateToolbarTitle();
         notifyUpdates();
     }
 
@@ -266,12 +196,5 @@ public class QDueMainActivity extends AppCompatActivity
     public void onQuattroDueHomeFragmentInteractionListener(long id) {
         // Implementazione dell'interfaccia
         if (LOG_ENABLED) Log.d(TAG, "onQuattroDueHomeFragmentInteractionListener: " + id);
-    }
-
-    @Override
-    public void onMonthChanged(LocalDate newMonth) {
-        // Chiamato quando il mese visibile cambia durante lo scroll
-        if (LOG_ENABLED) Log.d(TAG, "onMonthChanged: " + newMonth);
-        updateToolbarTitle(newMonth);
     }
 }

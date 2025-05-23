@@ -1,36 +1,17 @@
 <resources>
-    <string name="app_name">QDue</string>
+
+
+    <!-- App info -->
     <string name="app_id" translatable="false">net.calvuz.qdue</string>
-    <string name="app_version" translatable="false">v 2.0.0</string>
-    <string name="app_about">WorkerS e-Shifts</string>
-    <string name="app_libraries">Calendario Turni</string>
-    <string name="app_libraries_used">Per i lavoratori nel ciclo continuo con lo schema quattro due.\nPuoi navigare nei mesi senza una fine, lo schema si ripete all\'infinio.</string>
-    <string name="app_author_str">Author</string>
-    <string name="app_author_str_name" translatable="false">calvuzs3</string>
+    <string name="app_name" translatable="false">Q-Due</string>
+    <string name="app_version" translatable="false">Ver. 2.0</string>
+    <string name="app_desc">Worker e-Shifts</string>
+    <string name="app_about">Applicazione per la gestione dei turni di lavoro 4-2</string>
+    <string name="app_libraries">Librerie utilizzate</string>
+    <string name="app_libraries_used">• Android Support Library\n• Material Design Components\n• Navigation Component</string>
+    <string name="app_author_str">Autore</string>
+    <string name="app_author_str_name" translatable="false">calvuzs3 - latest 2025</string>
 
-    <string name="navigation_drawer_open">Apri il cassetto menu</string>
-    <string name="navigation_drawer_close">Chiudi il cassetto menu</string>
-    <string name="nav_header_title">QDue</string>
-    <string name="nav_header_subtitle">net.calvuz.qdue</string>
-    <string name="nav_header_desc">Menu QDue</string>
-
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_settings">SettingsActivity</string>
-
-    <string name="menu_home">Home</string>
-    <string name="menu_calendar">Calendario</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
-    <string name="menu_title_about">About</string>
-    <string name="menu_title_settings">Settaggi</string>
-    <string name="nav_header_settings">Settaggi</string>
-    <string name="nav_header_advanced_settings">Settaggi Sistema</string>
-    <string name="nav_header_other">Other</string>
-    <string name="nav_header_calendars">Calendars</string>
-
-    <!-- Buttons -->
-    <string name="button_right">destra</string>
-    <string name="button_left">sinistra</string>
 
     <!-- Preferences -->
     <string name="pref_titlegroup_halfteam">Teams</string>
@@ -83,12 +64,6 @@
         <item>8</item>
     </string-array>
 
-    <!-- Nuove stringhe per FAB -->
-    <string name="fab_go_to_today_description">Vai alla data odierna</string>
-
-    <!-- Scheme: format numbers and strings -->
-    <string name="str_scheme" translatable="false">%1$s</string>
-    <string name="str_scheme_num" translatable="false">%1$2d</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
@@ -104,48 +79,80 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="ok">OK</string>
-
-    <!-- Stringhe da aggiungere al file strings.xml -->
-    <string name="header_day">G</string>
-    <string name="header_weekday">Giorno</string>
-    <string name="header_morning">Mat</string>
-    <string name="header_afternoon">Pom</string>
-    <string name="header_night">Not</string>
-    <string name="header_off">Rip</string>
 
     <!-- Categorie di preferenze -->
     <string name="settings_advanced_header">Impostazioni Avanzate</string>
 
     <!-- Preferenze di impostazioni turni -->
-    <string name="shift_settings_title">Configurazione Turni</string>
     <string name="shift_settings_summary">Configura numero di turni, orari e colori</string>
 
-    <!-- ShiftSettingsActivity -->
-    <string name="shift_count_title">Numero di turni</string>
-    <string name="shift_count_summary">Seleziona il numero di turni da visualizzare (da 1 a 5)</string>
-    <string name="shift_types_title">Configurazione turni</string>
-    <string name="reset_to_defaults">Ripristina impostazioni predefinite</string>
-    <string name="save">Salva</string>
-    <string name="msg_shifts_saved">Configurazione turni salvata</string>
-    <string name="msg_shifts_reset">Turni ripristinati ai valori predefiniti</string>
-
-    <!-- ShiftType Item -->
-    <string name="shift_name_hint">Nome turno (es. Mattino)</string>
-    <string name="shift_description_hint"><![CDATA[Descrizione (es. Turno del mattino 6–14)]]></string>
-    <string name="shift_start_time">Orario di inizio</string>
-    <string name="shift_duration">Durata</string>
-    <string name="shift_color">Colore</string>
-    <string name="choose_color">Scegli colore</string>
-    <string name="save_shift">Salva turno</string>
-    <string name="dialog_pick_color">Seleziona un colore</string>
-    <string name="confirm">Conferma</string>
-    <string name="cancel">Annulla</string>
-    <string name="error_shift_name_empty">Il nome del turno non può essere vuoto</string>
-    <string name="msg_shift_saved">Turno salvato</string>
-    <string name="go_to_today">Vai a oggi</string>
 
     <!-- Intestazioni dei turni personalizzati -->
     <string name="header_custom1">Turno 4</string>
     <string name="header_custom2">Turno 5</string>
+
+
+    <!-- Stringhe per navigazione -->
+    <string name="menu_home">Home</string>
+    <string name="menu_calendar">Calendario</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_title_about">About</string>
+    <string name="menu_title_settings">Settaggi</string>
+    <string name="nav_header_settings">Settaggi</string>
+    <string name="nav_header_advanced_settings">Settaggi Sistema</string>
+    <string name="nav_header_other">Altro</string>
+    <string name="nav_header_calendars">Calendari</string>
+    <string name="nav_header_desc">Menu QDue</string>
+    <string name="navigation_drawer_open">Apri il cassetto menu</string>
+    <string name="navigation_drawer_close">Chiudi il cassetto menu</string>
+    <string name="go_to_today">Vai a oggi</string>
+    <string name="button_left">Precedente</string>
+    <string name="button_right">Successivo</string>
+    <!--Actions -->
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <!-- Nuove stringhe per FAB -->
+    <string name="fab_go_to_today_description">Vai alla data odierna</string>
+
+
+    <!-- Stringhe per header -->
+    <string name="header_day">Nr</string>
+    <string name="header_weekday">Giorno</string>
+    <string name="header_morning">M</string>
+    <string name="header_afternoon">P</string>
+    <string name="header_night">N</string>
+    <string name="header_off">-</string>
+
+    <!-- Stringhe per i turni -->
+    <string name="shift_settings_title">Impostazioni Turni</string>
+    <string name="shift_count_title">Numero di turni</string>
+    <string name="shift_count_summary">Seleziona il numero di turni per giorno</string>
+    <string name="shift_types_title">Configurazione turni</string>
+    <string name="shift_name_hint">Nome turno</string>
+    <string name="shift_description_hint">Descrizione turno</string>
+    <string name="shift_start_time">Ora di inizio</string>
+    <string name="shift_duration">Durata</string>
+    <string name="shift_color">Colore</string>
+    <string name="save_shift">Salva turno</string>
+    <string name="reset_to_defaults">Ripristina predefiniti</string>
+    <string name="save">Salva</string>
+    <string name="choose_color">Scegli colore</string>
+
+    <!-- Messaggi -->
+    <string name="msg_shifts_reset">Turni ripristinati ai valori predefiniti</string>
+    <string name="msg_shifts_saved">Configurazione turni salvata</string>
+    <string name="msg_shift_saved">Turno salvato</string>
+    <string name="error_shift_name_empty">Il nome del turno non può essere vuoto</string>
+
+    <!-- Dialog -->
+    <string name="dialog_pick_color">Scegli un colore</string>
+    <string name="confirm">Conferma</string>
+    <string name="cancel">Annulla</string>
+    <string name="ok">OK</string>
+
+    <!-- Stringhe per formattazione -->
+    <string name="str_scheme">%1$s</string>
+    <string name="str_scheme_num">%1$d</string>
+
+
 </resources>
