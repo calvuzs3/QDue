@@ -17,7 +17,8 @@ import android.graphics.Color;
  */
 public class ShiftTypeFactory {
 
-    private static final String TAG = "ShiftTypeFactory";
+    // TAG
+    private static final String TAG = ShiftTypeFactory.class.getSimpleName();
 
     // Chiavi per le preferenze
     private static final String PREFS_NAME = "shift_types_prefs";

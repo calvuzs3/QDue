@@ -1,5 +1,8 @@
 package net.calvuz.qdue.ui.calendar;
 
+import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
+import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_SIZE;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,11 +37,6 @@ public class CalendarViewFragment extends Fragment {
 
     private static final String TAG = "CalendarViewFragment";
     private static final boolean LOG_ENABLED = true;
-
-    // Numero di mesi da mantenere in cache (prima e dopo il mese corrente)
-    private static final int MONTHS_CACHE_SIZE = 6;
-    // Numero massimo di mesi in memoria per evitare memory leak
-    private static final int MAX_CACHE_SIZE = 24;
 
     private QuattroDue mQD;
     private RecyclerView mMonthsRecyclerView;
@@ -103,7 +101,7 @@ public class CalendarViewFragment extends Fragment {
             mMonthsCache = new ArrayList<>();
 
             // Genera i mesi nella cache (MONTHS_CACHE_SIZE prima e dopo)
-            for (int i = -MONTHS_CACHE_SIZE; i <= MONTHS_CACHE_SIZE; i++) {
+            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
                 LocalDate monthDate = mCurrentDate.plusMonths(i);
                 MonthData monthData = generateMonthData(monthDate);
                 mMonthsCache.add(monthData);
@@ -115,7 +113,7 @@ public class CalendarViewFragment extends Fragment {
             }
 
             // Posizione centrale nella cache
-            mCurrentCenterPosition = MONTHS_CACHE_SIZE;
+            mCurrentCenterPosition = QD_MONTHS_CACHE_SIZE;
 
             // Crea e imposta l'adapter
             mAdapter = new MonthsAdapter(mMonthsCache, mQD.getUserHalfTeam());
@@ -260,7 +258,7 @@ public class CalendarViewFragment extends Fragment {
 
             // Quando lo scroll si ferma, esegui la pulizia della cache
             if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                if (mMonthsCache.size() > MAX_CACHE_SIZE) {
+                if (mMonthsCache.size() > QD_MAX_CACHE_SIZE) {
                     scheduleCleanupCache();
                 }
             }
@@ -371,14 +369,14 @@ public class CalendarViewFragment extends Fragment {
      * Pulisce la cache rimuovendo i mesi più lontani per gestire la memoria.
      */
     private void cleanupCache() {
-        if (mMonthsCache.size() <= MAX_CACHE_SIZE || mIsUpdatingCache) return;
+        if (mMonthsCache.size() <= QD_MAX_CACHE_SIZE || mIsUpdatingCache) return;
 
         mIsUpdatingCache = true;
         try {
             int currentVisiblePosition = mLayoutManager.findFirstCompletelyVisibleItemPosition();
 
             // Rimuovi i mesi troppo lontani dall'inizio
-            while (mMonthsCache.size() > MAX_CACHE_SIZE && currentVisiblePosition > MONTHS_CACHE_SIZE) {
+            while (mMonthsCache.size() > QD_MAX_CACHE_SIZE && currentVisiblePosition > QD_MONTHS_CACHE_SIZE) {
                 mMonthsCache.remove(0);
                 mAdapter.notifyItemRemoved(0);
                 currentVisiblePosition--;
@@ -386,8 +384,8 @@ public class CalendarViewFragment extends Fragment {
             }
 
             // Rimuovi i mesi troppo lontani dalla fine
-            while (mMonthsCache.size() > MAX_CACHE_SIZE &&
-                    currentVisiblePosition < mMonthsCache.size() - MONTHS_CACHE_SIZE) {
+            while (mMonthsCache.size() > QD_MAX_CACHE_SIZE &&
+                    currentVisiblePosition < mMonthsCache.size() - QD_MONTHS_CACHE_SIZE) {
                 int lastIndex = mMonthsCache.size() - 1;
                 mMonthsCache.remove(lastIndex);
                 mAdapter.notifyItemRemoved(lastIndex);
@@ -463,21 +461,6 @@ public class CalendarViewFragment extends Fragment {
         mLayoutManager = null;
     }
 
-    public void notifyUpdates() {
-        if (LOG_ENABLED) Log.d(TAG, "notifyUpdates chiamato");
-
-        // Aggiorna i dati del mese corrente
-        LocalDate newCurrentDate = mQD.getCursorDate();
-        if (!newCurrentDate.equals(mCurrentDate)) {
-            mCurrentDate = newCurrentDate;
-            // Ricarica il calendario per il nuovo mese
-            setupInfiniteCalendar();
-        } else if (mAdapter != null) {
-            // Aggiorna solo i dati esistenti
-            mAdapter.updateUserHalfTeam(mQD.getUserHalfTeam());
-            mAdapter.notifyDataSetChanged();
-        }
-    }
 
     /**
      * Classe per rappresentare i dati di un mese.

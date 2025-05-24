@@ -15,9 +15,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.quattrodue.adapters.QuattroDueListAdapter;
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.Month;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -640,7 +638,7 @@ public class DayslistViewFragment extends Fragment {
                 View view = mInflater.inflate(R.layout.item_month_header, parent, false);
                 return new MonthHeaderViewHolder(view);
             } else {
-                View view = mInflater.inflate(R.layout.qdue_dayslist_row, parent, false);
+                View view = mInflater.inflate(R.layout.item_dayslist_row, parent, false);
                 return new DayViewHolder(view, mNumShifts);
             }
         }
@@ -681,10 +679,9 @@ public class DayslistViewFragment extends Fragment {
         }
 
         /**
-         * Lega i dati del giorno al ViewHolder (stesso codice del QuattroDueListAdapter).
+         * Lega i dati del giorno al ViewHolder
          */
         private void bindDayToViewHolder(DayViewHolder holder, Day day, Context context) {
-            // Implementazione identica a QuattroDueListAdapter.onBindViewHolder
 
             android.content.res.Resources r = context.getResources();
 

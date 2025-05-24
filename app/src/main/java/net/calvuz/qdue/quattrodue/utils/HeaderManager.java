@@ -5,7 +5,7 @@ import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.quattrodue.Costants;
 
 /**
  * Utility class per gestire gli header mensili nell'adapter infinito.
@@ -13,8 +13,11 @@ import net.calvuz.qdue.utils.Log;
  */
 public class HeaderManager {
 
+    // TAG
     private static final String TAG = "HeaderManager";
-    private static final boolean LOG_ENABLED = true;
+
+    // Configurazione del logging
+    private static final boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
 
     // Cache per le posizioni degli header calcolate
     private static final Map<String, Integer> headerPositionCache = new HashMap<>();

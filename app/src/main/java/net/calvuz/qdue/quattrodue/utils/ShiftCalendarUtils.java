@@ -2,7 +2,6 @@ package net.calvuz.qdue.quattrodue.utils;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -12,16 +11,14 @@ import java.util.List;
 import java.util.Locale;
 
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Month;
-import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.quattrodue.models.ShiftType;
 
 /**
  * Classe di utilità per lavorare con date, turni e squadre.
  */
 public final class ShiftCalendarUtils {
 
+    // TAG
     private static final String TAG = "ShiftCalendarUtils";
 
     // Non permettere istanziazione

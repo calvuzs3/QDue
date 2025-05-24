@@ -2,7 +2,8 @@ package net.calvuz.qdue.quattrodue.models;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.quattrodue.Costants;
+import net.calvuz.qdue.quattrodue.utils.Log;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -20,13 +21,13 @@ import java.util.stream.Collectors;
  */
 public class Shift implements Cloneable {
 
-    /* TAG */
+    // TAG
     private static final String TAG = Shift.class.getSimpleName();
 
-    /* Logging */
-    private static final boolean LOG_ENABLED = true;
+    // Configurazione del logging
+    private final static boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
 
-    /* Proprietà del turno */
+    // Proprietà del turno
     private final ShiftType shiftType;
     private boolean stop; // true se il turno è in fermata
     private final Set<HalfTeam> halfTeams;
@@ -108,19 +109,7 @@ public class Shift implements Cloneable {
         if (halfTeam == null) return false;
 
         return halfTeams.stream()
-                .anyMatch(ht -> ht.isSameTeam(halfTeam));
-    }
-
-    /**
-     * Rimuove una squadra dal turno.
-     *
-     * @param halfTeam Squadra da rimuovere
-     * @return true se la squadra è stata rimossa, false altrimenti
-     */
-    public boolean removeTeam(HalfTeam halfTeam) {
-        if (halfTeam == null) return false;
-
-        return halfTeams.removeIf(ht -> ht.isSameTeam(halfTeam));
+                .anyMatch(ht -> ht.isSameTeamAs(halfTeam));
     }
 
     /**
@@ -209,7 +198,7 @@ public class Shift implements Cloneable {
         }
 
         if (!halfTeams.isEmpty()) {
-            sb.append(" Squadre: ").append(getTeamsAsString());
+            sb.append(" HalfTeams: ").append(getTeamsAsString());
         }
 
         sb.append("}");

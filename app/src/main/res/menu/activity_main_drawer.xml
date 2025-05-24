@@ -10,17 +10,13 @@
             android:title="@string/nav_header_calendars">
             <menu>
                 <item
-                    android:id="@+id/nav_home"
+                    android:id="@+id/nav_dayslist"
                     android:icon="@drawable/ic_calendar_month"
-                    android:title="@string/menu_home" />
+                    android:title="@string/menu_dayslist" />
                 <item
                     android:id="@+id/nav_calendar"
                     android:icon="@drawable/ic_menu_calendar"
                     android:title="@string/menu_calendar" />
-                <item
-                    android:id="@+id/nav_gallery"
-                    android:icon="@drawable/ic_menu_gallery"
-                    android:title="@string/menu_gallery" />
             </menu>
         </item>
 

@@ -1,15 +1,19 @@
 package net.calvuz.qdue.quattrodue.utils;
 
 import androidx.recyclerview.widget.RecyclerView;
-import net.calvuz.qdue.utils.Log;
+
+import net.calvuz.qdue.quattrodue.Costants;
 
 /**
  * Helper class per ottimizzare le prestazioni dello scroll infinito.
  */
 public class ScrollPerformanceHelper {
 
+    // TAG
     private static final String TAG = "ScrollPerformanceHelper";
-    private static final boolean LOG_ENABLED = true;
+
+    // Configurazione del logging
+    private static final boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
 
     /**
      * Configura le ottimizzazioni per un RecyclerView con scroll infinito.

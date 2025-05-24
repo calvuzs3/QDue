@@ -5,6 +5,9 @@
     <string name="app_id" translatable="false">net.calvuz.qdue</string>
     <string name="app_name" translatable="false">Q-Due</string>
     <string name="app_version" translatable="false">Ver. 2.0</string>
+
+    <!-- Dialog -->
+    <string name="ok">OK</string>
     <string name="app_desc">Worker e-Shifts</string>
     <string name="app_about">Applicazione per la gestione dei turni di lavoro 4-2</string>
     <string name="app_libraries">Librerie utilizzate</string>
@@ -12,90 +15,41 @@
     <string name="app_author_str">Autore</string>
     <string name="app_author_str_name" translatable="false">calvuzs3 - latest 2025</string>
 
-
     <!-- Preferences -->
-    <string name="pref_titlegroup_halfteam">Teams</string>
-    <string name="pref_titlegroup_show">Shows</string>
-    <string name="pref_titlegroup_advanced">Advanced</string>
     <string name="settings_header">Impostazioni QDue</string>
 
-    <string name="pref_title_show_calendars">Show calendars</string>
-    <string name="calendar_setting_title">Mostra i propri calendari</string>
-    <string name="pref_summary_show_calendars">Choose if you want to see the mill stops (maybe implemented later)</string>
-    <string name="calendar_setting_on">Visualizza i calendari</string>
-    <string name="calendar_setting_off">Nessun calendario</string>
-    <bool name="pref_default_show_calendars">false</bool>
+    <!-- User Team Preferences -->
+    <string name="settings_team_header">Team</string>
+    <string name="settings_team_title">Team</string>
+    <string name="settings_team_summary">Scegli il tuo team</string>
+    <string name="pref_default_user_team" translatable="false">0</string>
 
-    <string name="pref_title_show_stops">Show mill stops</string>
-    <string name="stops_setting_title">Show mill stops</string>
-    <string name="stops_setting_on">Mostra le fermate di stabilimento</string>
-    <string name="stops_setting_off">Non mostrare fermate</string>
-    <string name="pref_summary_show_stops">Choose if you want to see the mill stops</string>
+    <!-- Show Preferences-->
+    <string name="settings_show_header">Mostra</string>
+    <string name="settings_show">Mostra</string>
+
+    <string name="settings_show_stops_title">Mostra fermate</string>
+    <string name="settings_show_stops_sumon">Mostra le fermate di stabilimento</string>
+    <string name="settings_show_stops_sumoff">Non mostrare fermate</string>
     <bool name="pref_default_show_stops">true</bool>
 
-    <string name="pref_title_user_halfteam">Team</string>
-    <string name="pref_summary_user_halfteam">Choose the team</string>
-    <string name="pref_default_user_halfteam" translatable="false">0</string>
-
-    <string name="pref_title_date_scheme">Scheme begin date</string>
-    <string name="pref_summary_date_scheme">Choose the date the scheme will start with</string>
-
-    <string-array name="pref_entries_user_halfteam">
-        <item>A</item>
-        <item>B</item>
-        <item>C</item>
-        <item>D</item>
-        <item>E</item>
-        <item>F</item>
-        <item>G</item>
-        <item>H</item>
-        <item>I</item>
-    </string-array>
-
-    <string-array name="pref_values_user_halfteam">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
-    </string-array>
-
-
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="settings_advanced_header">Avanzate</string>
+    <string name="settings_scheme_date_title">[sys] Data inizio schema</string>
+    <string name="settings_scheme_date_summary">Scegli la data in cui lo schema comincia</string>
 
     <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <string name="settings_messages_header">Messaggi</string>
+    <string name="settings_messages_signature_title">La tua firma</string>
 
     <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-
-    <!-- Categorie di preferenze -->
-    <string name="settings_advanced_header">Impostazioni Avanzate</string>
-
-    <!-- Preferenze di impostazioni turni -->
-    <string name="shift_settings_summary">Configura numero di turni, orari e colori</string>
+    <string name="settings_sync_header">Sincronizza</string>
+    <string name="settings_sync_title">Sincronizza periodicamente</string>
+    <!-- END -->>
 
 
-    <!-- Intestazioni dei turni personalizzati -->
-    <string name="header_custom1">Turno 4</string>
-    <string name="header_custom2">Turno 5</string>
-
-
-    <!-- Stringhe per navigazione -->
-    <string name="menu_home">Home</string>
-    <string name="menu_calendar">Calendario</string>
-    <string name="menu_gallery">Gallery</string>
+    <!-- Navigation -->
+    <string name="menu_dayslist">Tutti Turni</string>
+    <string name="menu_calendar">Turno</string>
     <string name="menu_title_about">About</string>
     <string name="menu_title_settings">Settaggi</string>
     <string name="nav_header_settings">Settaggi</string>
@@ -108,9 +62,11 @@
     <string name="go_to_today">Vai a oggi</string>
     <string name="button_left">Precedente</string>
     <string name="button_right">Successivo</string>
+
     <!--Actions -->
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Impostazioni</string>
     <string name="title_activity_settings">SettingsActivity</string>
+
     <!-- Nuove stringhe per FAB -->
     <string name="fab_go_to_today_description">Vai alla data odierna</string>
 
@@ -138,21 +94,18 @@
     <string name="save">Salva</string>
     <string name="choose_color">Scegli colore</string>
 
-    <!-- Messaggi -->
-    <string name="msg_shifts_reset">Turni ripristinati ai valori predefiniti</string>
-    <string name="msg_shifts_saved">Configurazione turni salvata</string>
-    <string name="msg_shift_saved">Turno salvato</string>
-    <string name="error_shift_name_empty">Il nome del turno non può essere vuoto</string>
-
-    <!-- Dialog -->
-    <string name="dialog_pick_color">Scegli un colore</string>
-    <string name="confirm">Conferma</string>
-    <string name="cancel">Annulla</string>
-    <string name="ok">OK</string>
 
     <!-- Stringhe per formattazione -->
     <string name="str_scheme">%1$s</string>
     <string name="str_scheme_num">%1$d</string>
+    <string name="qd_preference_user_team">preference_user_team</string>
+    <string name="qd_preference_show_stops">preference_show_stops</string>
+    <string name="qd_preference_scheme_start_date">preference_scheme_start_date</string>
+    <string name="qd_preference_signature">preference_signature</string>
+    <string name="qd_preference_sync">preference_sync</string>
+    <string name="qd_preference_scheme_start_day">7</string>
+    <string name="qd_preference_scheme_start_month">11</string>
+    <string name="qd_preference_scheme_start_year">2018</string>
 
 
 </resources>

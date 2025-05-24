@@ -24,7 +24,7 @@ public class DialogAbout extends DialogFragment {
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         builder
-                .setView(inflater.inflate(R.layout.dialog_about,null))
+                .setView(inflater.inflate(R.layout.fragment_dialog_about, null))
                 .setTitle(R.string.app_name)
                 .setIcon(R.mipmap.ic_launcher)
                 // Add button

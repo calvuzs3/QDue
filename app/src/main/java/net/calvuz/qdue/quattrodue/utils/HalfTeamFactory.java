@@ -26,7 +26,7 @@ public final class HalfTeamFactory {
         // Inizializza le squadre di base da A a I
         for (char c = 'A'; c <= 'I'; c++) {
             String name = String.valueOf(c);
-            teamCache.put(name, new HalfTeam(name, "Squadra " + name));
+            teamCache.put(name, new HalfTeam(name));
         }
     }
 
@@ -50,7 +50,7 @@ public final class HalfTeamFactory {
 
         // Se non trovato, crea una nuova istanza e aggiungila alla cache
         if (team == null) {
-            team = new HalfTeam(upperName, "Squadra " + upperName);
+            team = new HalfTeam(upperName);
             teamCache.put(upperName, team);
         }
 
@@ -80,7 +80,7 @@ public final class HalfTeamFactory {
             return null;
         }
 
-        return new HalfTeam(name, description);
+        return new HalfTeam(name);
     }
 
     /**

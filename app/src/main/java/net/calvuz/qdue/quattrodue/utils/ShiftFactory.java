@@ -6,12 +6,15 @@ import net.calvuz.qdue.quattrodue.models.ShiftType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List; /**
+import java.util.List;
+
+/**
  * Factory per creare turni (Shift)
  */
 public final class ShiftFactory {
 
-    private static final String TAG = "ShiftFactory";
+    // TAG
+    private static final String TAG = ShiftFactory.class.getSimpleName();
 
     // Non permettere istanziazione
     private ShiftFactory() {}

@@ -2,8 +2,8 @@ package net.calvuz.qdue.quattrodue;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.utils.Library;
 
@@ -16,24 +16,20 @@ import net.calvuz.qdue.utils.Library;
 public class Preferences {
 
     // Shared Preferences Keys
-    public static final String KEY_SCHEME_START_DAY = "preference_scheme_start_day";
-    public static final String KEY_SCHEME_START_MONTH = "preference_scheme_start_month";
-    public static final String KEY_SCHEME_START_YEAR = "preference_scheme_start_year";
+//    public static final String KEY_SCHEME_START_DAY = "preference_scheme_start_day";
+    public static final String KEY_SCHEME_START_DAY = QDue.getContext().getString(R.string.qd_preference_scheme_start_day);
+    public static final String KEY_SCHEME_START_MONTH = QDue.getContext().getString(R.string.qd_preference_scheme_start_month);
+    public static final String KEY_SCHEME_START_YEAR = QDue.getContext().getString(R.string.qd_preference_scheme_start_year);
 
-    public static final String KEY_USER_HALFTEAM = "preference_user_halfteam";
-    public static final String KEY_SHOW_CALENDARS = "preference_show_calendars";
-    public static final String KEY_SHOW_STOPS = "preference_show_stops";
+    public static final String KEY_USER_TEAM = QDue.getContext().getString(R.string.qd_preference_user_team);
+    public static final String KEY_SHOW_CALENDARS = QDue.getContext().getString(R.string.qd_preference_show_stops);
+    public static final String KEY_SHOW_STOPS = QDue.getContext().getString(R.string.qd_preference_show_stops);
 
-    public static final String KEY_VERSION_CODENAME = "preference_version_codename";
-
-    // Shared Preferences Values
+    // Shared Preferences
     public static final boolean VALUE_SHOW_CALENDARS = true;
     public static final boolean VALUE_SHOW_STOPS = true;
 
-    public static void setDefaultValues(Context context) {
-        PreferenceManager.setDefaultValues(context, R.xml.root_preferences, false);
-    }
-
+    // Metodi
     public static boolean getSharedPreference(Context context, String key, boolean value) {
         SharedPreferences sp = Library.getSharedPreferences(context);
         return sp.getBoolean(key, value);

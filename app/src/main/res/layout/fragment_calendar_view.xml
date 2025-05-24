@@ -8,24 +8,15 @@
     android:fitsSystemWindows="false"
     tools:context=".ui.calendar.CalendarViewFragment">
 
-    <!-- Header fisso con i nomi dei giorni della settimana -->
+    <!-- Header con le intestazioni delle colonne -->
     <include
         android:id="@+id/column_header"
-        layout="@layout/qdue_calendar_column_header"
+        layout="@layout/item_calendar_column_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- RecyclerView per lo scrolling infinito dei mesi -->
-
-    <!-- Floating Action Button per tornare a oggi -->
-    <!--
-            app:backgroundTint="@color/colorAccentBlue"
-            app:rippleColor="@android:color/white"
-    -->
-
-    <!-- Legenda fissa in basso, sopra la bottom app bar -->
-
+    <!-- Lista dei mesi con scrolling infinito -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_calendar"
         android:layout_width="0dp"
@@ -52,21 +43,23 @@
         android:src="@drawable/ic_today"
         android:visibility="gone"
         app:elevation="6dp"
-        app:layout_constraintBottom_toTopOf="@+id/ll_calendar_legenda"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ll_calendar_info"
         app:pressedTranslationZ="12dp"
-        app:tint="@android:color/white" />
+        app:tint="@android:color/white"
+        app:rippleColor="@android:color/white" />
 
+    <!-- Barra informazioni in basso (opzionale) -->
     <LinearLayout
-        android:id="@+id/ll_calendar_legenda"
+        android:id="@+id/ll_calendar_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorBackgroundLight"
         android:elevation="4dp"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"
+        android:padding="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -76,7 +69,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 

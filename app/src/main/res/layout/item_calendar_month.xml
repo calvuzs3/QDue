@@ -11,14 +11,14 @@
         android:id="@+id/tv_month_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agosto 2025"
+        android:text="Gennaio"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textAlignment="center"
-        android:layout_marginBottom="12dp"
-        android:textColor="@color/colorTextBlack"
         android:background="@drawable/month_title_background"
-        android:paddingVertical="8dp" />
+        android:layout_marginBottom="12dp"
+        android:paddingVertical="8dp"
+        android:elevation="2dp" />
 
     <!-- Griglia del calendario del mese -->
     <androidx.recyclerview.widget.RecyclerView

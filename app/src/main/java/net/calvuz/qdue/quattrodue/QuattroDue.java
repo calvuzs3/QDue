@@ -1,5 +1,15 @@
 package net.calvuz.qdue.quattrodue;
 
+import static net.calvuz.qdue.quattrodue.Costants.QD_SHIFTS_PER_DAY;
+import static net.calvuz.qdue.quattrodue.Costants.QD_TEAMS;
+import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_SIZE;
+import static net.calvuz.qdue.quattrodue.Costants.QD_SCHEME;
+import static net.calvuz.qdue.quattrodue.Costants.QD_SCHEME_START_DAY;
+import static net.calvuz.qdue.quattrodue.Costants.QD_SCHEME_START_MONTH;
+import static net.calvuz.qdue.quattrodue.Costants.QD_SCHEME_START_YEAR;
+import static net.calvuz.qdue.quattrodue.Preferences.VALUE_SHOW_CALENDARS;
+import static net.calvuz.qdue.quattrodue.Preferences.VALUE_SHOW_STOPS;
+
 import android.content.Context;
 import android.content.res.Resources;
 
@@ -16,7 +26,7 @@ import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.quattrodue.models.ShiftType;
 import net.calvuz.qdue.quattrodue.utils.HalfTeamFactory;
 import net.calvuz.qdue.quattrodue.utils.ShiftTypeFactory;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.quattrodue.utils.Log;
 
 /**
  * Classe principale dell'applicazione QuattroDue.
@@ -25,54 +35,21 @@ import net.calvuz.qdue.utils.Log;
  */
 public class QuattroDue {
 
-    private static final String TAG = "QuattroDue";
-    private static final boolean LOG_ENABLED = true;
+    // TAG
+    private static final String TAG = QuattroDue.class.getSimpleName();
 
-    // Costanti
-    private static final int CAL_NR_MONTHS = 3;
+    // Configurazione del logging
+    private static final boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
 
-    // Schema di rotazione dei turni (fisso)
-    private static final char[][][] SCHEME = new char[][][]{
-            {{'A', 'B'}, {'C', 'D'}, {'E', 'F'}, {'G', 'H', 'I'}},
-            {{'A', 'B'}, {'C', 'D'}, {'E', 'F'}, {'G', 'H', 'I'}},
-            {{'A', 'H'}, {'D', 'I'}, {'G', 'F'}, {'E', 'C', 'B'}},
-            {{'A', 'H'}, {'D', 'I'}, {'G', 'F'}, {'E', 'C', 'B'}},
-            {{'C', 'H'}, {'E', 'I'}, {'G', 'B'}, {'A', 'D', 'F'}},
-            {{'C', 'H'}, {'E', 'I'}, {'G', 'B'}, {'A', 'D', 'F'}},
-            {{'C', 'D'}, {'E', 'F'}, {'A', 'B'}, {'G', 'H', 'I'}},
-            {{'C', 'D'}, {'E', 'F'}, {'A', 'B'}, {'G', 'H', 'I'}},
-            {{'D', 'I'}, {'G', 'F'}, {'A', 'H'}, {'E', 'C', 'B'}},
-            {{'D', 'I'}, {'G', 'F'}, {'A', 'H'}, {'E', 'C', 'B'}},
-            {{'E', 'I'}, {'G', 'B'}, {'C', 'H'}, {'A', 'D', 'F'}},
-            {{'E', 'I'}, {'G', 'B'}, {'C', 'H'}, {'A', 'D', 'F'}},
-            {{'E', 'F'}, {'A', 'B'}, {'C', 'D'}, {'G', 'H', 'I'}},
-            {{'E', 'F'}, {'A', 'B'}, {'C', 'D'}, {'G', 'H', 'I'}},
-            {{'G', 'F'}, {'A', 'H'}, {'D', 'I'}, {'E', 'C', 'B'}},
-            {{'G', 'F'}, {'A', 'H'}, {'D', 'I'}, {'E', 'C', 'B'}},
-            {{'G', 'B'}, {'C', 'H'}, {'E', 'I'}, {'A', 'D', 'F'}},
-            {{'G', 'B'}, {'C', 'H'}, {'E', 'I'}, {'A', 'D', 'F'}}
-    };
-
-    // Numero di giorni nella ripetizione del ciclo
-    private static final int NUMERO_RIPETIZIONE = SCHEME.length;
-
-    // Numero di turni per giorno e parametri delle squadre
-    private static final int NUMERO_TURNI_AL_GIORNO = 3;
-    private static final int NUMERO_SEMISQUADRE = 9;
-
-    // Data di inizio dello schema
-    private static final int SCHEME_START_DAY = 7;
-    private static final int SCHEME_START_MONTH = 11;
-    private static final int SCHEME_START_YEAR = 2018;
+    // Data dell'ultimo aggiornamento per rilevare cambiamenti di sistema
+    private LocalDate lastKnownDate;
+    private long lastUpdateTime;
 
     // Lista di tutte le squadre disponibili
     public static final List<HalfTeam> HALFTEAM_ALL = initializeAllTeams();
 
     // Istanza singleton
     private static QuattroDue instance;
-
-    // Contesto dell'applicazione
-    private final Context context;
 
     // Dati di stato
     private List<Day> schemeDaysList;
@@ -93,16 +70,16 @@ public class QuattroDue {
      * @return Lista delle squadre
      */
     private static List<HalfTeam> initializeAllTeams() {
-        List<HalfTeam> teams = new ArrayList<>(NUMERO_SEMISQUADRE);
-        teams.add(new HalfTeam("A", "Squadra A"));
-        teams.add(new HalfTeam("B", "Squadra B"));
-        teams.add(new HalfTeam("C", "Squadra C"));
-        teams.add(new HalfTeam("D", "Squadra D"));
-        teams.add(new HalfTeam("E", "Squadra E"));
-        teams.add(new HalfTeam("F", "Squadra F"));
-        teams.add(new HalfTeam("G", "Squadra G"));
-        teams.add(new HalfTeam("H", "Squadra H"));
-        teams.add(new HalfTeam("I", "Squadra I"));
+        List<HalfTeam> teams = new ArrayList<>(QD_TEAMS);
+        teams.add(new HalfTeam("A"));
+        teams.add(new HalfTeam("B"));
+        teams.add(new HalfTeam("C"));
+        teams.add(new HalfTeam("D"));
+        teams.add(new HalfTeam("E"));
+        teams.add(new HalfTeam("F"));
+        teams.add(new HalfTeam("G"));
+        teams.add(new HalfTeam("H"));
+        teams.add(new HalfTeam("I"));
         return teams;
     }
 
@@ -112,7 +89,6 @@ public class QuattroDue {
      * @param context Contesto dell'applicazione
      */
     private QuattroDue(Context context) {
-        this.context = context.getApplicationContext();
         init(context);
     }
 
@@ -136,13 +112,6 @@ public class QuattroDue {
      */
     public boolean isRefresh() {
         return refresh;
-    }
-
-    /**
-     * Imposta il flag di refresh a true.
-     */
-    public void setRefresh() {
-        setRefresh(true);
     }
 
     /**
@@ -174,13 +143,12 @@ public class QuattroDue {
 
         // Imposta la data di inizio schema dalle preferenze o dai valori predefiniti
         if (context == null) {
-            schemeDate = LocalDate.of(SCHEME_START_YEAR, SCHEME_START_MONTH, SCHEME_START_DAY);
-        } else {
-            schemeDate = LocalDate.of(
-                    Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_YEAR, SCHEME_START_YEAR),
-                    Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_MONTH, SCHEME_START_MONTH),
-                    Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_DAY, SCHEME_START_DAY));
+            schemeDate = LocalDate.of(QD_SCHEME_START_YEAR, QD_SCHEME_START_MONTH, QD_SCHEME_START_DAY);
         }
+        schemeDate = LocalDate.of(
+                Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_YEAR, QD_SCHEME_START_YEAR),
+                Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_MONTH, QD_SCHEME_START_MONTH),
+                Preferences.getSharedPreference(context, Preferences.KEY_SCHEME_START_DAY, QD_SCHEME_START_DAY));
         if (LOG_ENABLED) Log.d(fTAG, "SchemeDate " + schemeDate);
 
         // Imposta la squadra dell'utente (default: A)
@@ -211,16 +179,16 @@ public class QuattroDue {
 
         // Carica le preferenze per le funzionalità
         showCalendars = Preferences.getSharedPreference(context,
-                Preferences.KEY_SHOW_CALENDARS, Preferences.VALUE_SHOW_CALENDARS);
+                Preferences.KEY_SHOW_CALENDARS, VALUE_SHOW_CALENDARS);
         showStops = Preferences.getSharedPreference(context,
-                Preferences.KEY_SHOW_STOPS, Preferences.VALUE_SHOW_STOPS);
+                Preferences.KEY_SHOW_STOPS, VALUE_SHOW_STOPS );
 
         // Carica la preferenza del team utente
-        String userTeamPref = Preferences.getSharedPreference(context, Preferences.KEY_USER_HALFTEAM, "0");
+        String userTeamPref = Preferences.getSharedPreference(context, Preferences.KEY_USER_TEAM, "0");
         try {
             int teamIndex = Integer.parseInt(userTeamPref);
             Resources res = context.getResources();
-            String[] halfTeamValues = res.getStringArray(R.array.pref_entries_user_halfteam);
+            String[] halfTeamValues = res.getStringArray(R.array.pref_entries_user_team);
             if (teamIndex >= 0 && teamIndex < halfTeamValues.length) {
                 userHalfTeam = new HalfTeam(halfTeamValues[teamIndex]);
             }
@@ -239,7 +207,7 @@ public class QuattroDue {
 
         try {
             // Genera 3 mesi: precedente-corrente-successivo
-            for (int i = 0; i < CAL_NR_MONTHS; i++) {
+            for (int i = 0; i < QD_MONTHS_CACHE_SIZE; i++) {
                 // Parte dalla data cursore (oggi durante l'inizializzazione)
                 LocalDate monthDate = cursorDate.plusMonths(i - 1);
                 if (LOG_ENABLED) {
@@ -287,19 +255,19 @@ public class QuattroDue {
 
         try {
             // Genera i giorni dello schema
-            for (int i = 0; i < NUMERO_RIPETIZIONE; i++) {
+            for (int i = 0; i < QD_SCHEME.length; i++) {
                 // Crea un nuovo giorno
                 LocalDate dayDate = schemeDate.plusDays(i);
                 Day day = new Day(dayDate);
 
                 // Configura i turni del giorno secondo lo schema
-                for (int shiftIndex = 0; shiftIndex < NUMERO_TURNI_AL_GIORNO; shiftIndex++) {
+                for (int shiftIndex = 0; shiftIndex < QD_SHIFTS_PER_DAY; shiftIndex++) {
                     // Crea un nuovo turno
                     Shift shift = new Shift(shiftTypes.get(shiftIndex));
 
                     // Aggiunge le squadre al turno secondo lo schema
-                    for (int teamIndex = 0; teamIndex < SCHEME[i][shiftIndex].length; teamIndex++) {
-                        char teamName = SCHEME[i][shiftIndex][teamIndex];
+                    for (int teamIndex = 0; teamIndex < QD_SCHEME[i][shiftIndex].length; teamIndex++) {
+                        char teamName = QD_SCHEME[i][shiftIndex][teamIndex];
                         HalfTeam halfTeam = HalfTeamFactory.getByName(String.valueOf(teamName));
                         shift.addTeam(halfTeam);
                     }
@@ -368,10 +336,10 @@ public class QuattroDue {
             if (LOG_ENABLED) Log.d(fTAG, "difference=" + difference);
 
             // Calcola il punto di partenza nello schema
-            int startoffset = (int) (difference % NUMERO_RIPETIZIONE);
+            int startoffset = (int) (difference % QD_SCHEME.length);
             // Gestisce i valori negativi correttamente
             if (startoffset < 0) {
-                startoffset = NUMERO_RIPETIZIONE + startoffset;
+                startoffset = QD_SCHEME.length + startoffset;
             }
             if (LOG_ENABLED) Log.d(fTAG, "startoffset=" + startoffset);
 
@@ -395,7 +363,7 @@ public class QuattroDue {
 
                 // Passa al giorno e schema successivi
                 currentDate = currentDate.plusDays(1);
-                startoffset = (startoffset + 1) % NUMERO_RIPETIZIONE;
+                startoffset = (startoffset + 1) % QD_SCHEME.length;
             }
 
             if (LOG_ENABLED) Log.d(fTAG, "Generati " + result.size() + " giorni per il mese");
@@ -471,15 +439,6 @@ public class QuattroDue {
     }
 
     /**
-     * Restituisce il mese corrente.
-     *
-     * @return Mese corrente
-     */
-    public Month getMonth() {
-        return getMonth(1);
-    }
-
-    /**
      * Restituisce un mese specifico dalla lista.
      *
      * @param position Posizione nella lista (0=precedente, 1=corrente, 2=successivo)
@@ -521,7 +480,8 @@ public class QuattroDue {
     private void setUserHalfTeam(HalfTeam halfTeam) {
         // Verifica la validità e la necessità di aggiornamento
         if (halfTeam == null) return;
-        if (userHalfTeam != null && userHalfTeam.isSameTeam(halfTeam)) return;
+//        if (userHalfTeam != null && userHalfTeam.isSameTeamAs(halfTeam)) return;
+        if (userHalfTeam != null && userHalfTeam.equals(halfTeam)) return;
 
         // Imposta la nuova squadra
         userHalfTeam = halfTeam;
@@ -538,9 +498,9 @@ public class QuattroDue {
         try {
             // Carica le preferenze
             boolean newShowCalendars = Preferences.getSharedPreference(context,
-                    Preferences.KEY_SHOW_CALENDARS, Preferences.VALUE_SHOW_CALENDARS);
+                    Preferences.KEY_SHOW_CALENDARS, VALUE_SHOW_CALENDARS);
             boolean newShowStops = Preferences.getSharedPreference(context,
-                    Preferences.KEY_SHOW_STOPS, Preferences.VALUE_SHOW_STOPS);
+                    Preferences.KEY_SHOW_STOPS, VALUE_SHOW_STOPS);
 
             // Verifica se sono cambiate
             if (showCalendars != newShowCalendars) {
@@ -554,15 +514,15 @@ public class QuattroDue {
             }
 
             // Aggiorna la squadra dell'utente
-            String[] halfTeamEntries = context.getResources().getStringArray(R.array.pref_entries_user_halfteam);
+            String[] halfTeamEntries = context.getResources().getStringArray(R.array.pref_entries_user_team);
 
             if (halfTeamEntries.length > 0) {
-                String userTeamPref = Preferences.getSharedPreference(context, Preferences.KEY_USER_HALFTEAM, "0");
+                String userTeamPref = Preferences.getSharedPreference(context, Preferences.KEY_USER_TEAM, "0");
                 try {
                     int teamIndex = Integer.parseInt(userTeamPref);
                     if (teamIndex >= 0 && teamIndex < halfTeamEntries.length) {
                         HalfTeam newUserHalfTeam = new HalfTeam(halfTeamEntries[teamIndex]);
-                        if (userHalfTeam == null || !userHalfTeam.isSameTeam(newUserHalfTeam)) {
+                        if (userHalfTeam == null || !userHalfTeam.isSameTeamAs(newUserHalfTeam)) {
                             userHalfTeam = newUserHalfTeam;
                             setRefresh(true);
                         }
@@ -598,6 +558,9 @@ public class QuattroDue {
 
             // Reinizializza
             init(context);
+
+            // Aggiorna il time tracking
+            updateTimeTracking();
         } catch (Exception e) {
             Log.e(TAG, "Errore durante il refresh: " + e.getMessage());
         }
@@ -721,10 +684,10 @@ public class QuattroDue {
             if (LOG_ENABLED) Log.v(fTAG, "difference=" + difference + " per data " + requestedDate);
 
             // Calcola il punto nello schema
-            int schemaOffset = (int) (difference % NUMERO_RIPETIZIONE);
+            int schemaOffset = (int) (difference % QD_SCHEME.length);
             // Gestisce i valori negativi correttamente
             if (schemaOffset < 0) {
-                schemaOffset = NUMERO_RIPETIZIONE + schemaOffset;
+                schemaOffset = QD_SCHEME.length + schemaOffset;
             }
 
             // Clona un giorno dallo schema
@@ -746,4 +709,121 @@ public class QuattroDue {
             return null;
         }
     }
+
+
+
+    /* SYSTEM TIME */
+
+    /**
+     * Verifica se è necessario un aggiornamento a causa di cambiamenti di tempo.
+     *
+     * @return true se è necessario un aggiornamento, false altrimenti
+     */
+    public boolean needsTimeUpdate() {
+        LocalDate currentDate = LocalDate.now();
+        long currentTime = System.currentTimeMillis();
+
+        // Verifica se la data è cambiata
+        if (lastKnownDate == null || !lastKnownDate.equals(currentDate)) {
+            if (LOG_ENABLED) {
+                Log.d(TAG, "Data cambiata da " + lastKnownDate + " a " + currentDate);
+            }
+            return true;
+        }
+
+        // Verifica se è passato molto tempo dall'ultimo aggiornamento
+        // (potrebbe indicare un cambio di ora significativo)
+        if (lastUpdateTime > 0) {
+            long timeDifference = Math.abs(currentTime - lastUpdateTime);
+            // Se la differenza è maggiore di 2 ore, potrebbe essere un cambio manuale
+            if (timeDifference > 2 * 60 * 60 * 1000) { // 2 ore in millisecondi
+                if (LOG_ENABLED) {
+                    Log.d(TAG, "Rilevato possibile cambio di ora: differenza di " +
+                            (timeDifference / 1000 / 60) + " minuti");
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Aggiorna i timestamp interni dopo un refresh.
+     */
+    private void updateTimeTracking() {
+        lastKnownDate = LocalDate.now();
+        lastUpdateTime = System.currentTimeMillis();
+
+        if (LOG_ENABLED) {
+            Log.d(TAG, "Time tracking aggiornato: " + lastKnownDate);
+        }
+    }
+
+    /**
+     * Refresh ottimizzato che controlla se è necessario un aggiornamento.
+     *
+     * @param context Contesto dell'applicazione
+     * @param forceRefresh Se true, forza il refresh anche se non sembra necessario
+     */
+    public void refreshIfNeeded(Context context, boolean forceRefresh) {
+        if (forceRefresh || needsTimeUpdate()) {
+            if (LOG_ENABLED) {
+                Log.d(TAG, "Eseguendo refresh a causa di cambio tempo");
+            }
+            refresh(context);
+            updateTimeTracking();
+        } else {
+            if (LOG_ENABLED) {
+                Log.d(TAG, "Refresh non necessario");
+            }
+        }
+    }
+
+    /**
+     * Aggiorna solo i flag "oggi" senza rifare tutto il calcolo.
+     * Metodo più leggero per aggiornamenti frequenti.
+     */
+    public void updateTodayFlags() {
+        if (months == null || months.isEmpty()) {
+            return;
+        }
+
+        LocalDate today = LocalDate.now();
+        boolean foundToday = false;
+
+        try {
+            for (Month month : months) {
+                if (month.getDaysList() != null) {
+                    for (Day day : month.getDaysList()) {
+                        boolean isToday = day.getDate().equals(today);
+
+                        // Aggiorna solo se necessario per evitare notifiche inutili
+                        if (day.getIsToday() != isToday) {
+                            day.setIsToday(isToday);
+                            if (isToday) {
+                                foundToday = true;
+                                if (LOG_ENABLED) {
+                                    Log.d(TAG, "Aggiornato flag oggi per: " + day.getDate());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Se non abbiamo trovato oggi nei mesi caricati, potrebbe essere necessario
+            // ricaricare i dati (es. se l'app è stata in background per molto tempo)
+            if (!foundToday) {
+                if (LOG_ENABLED) {
+                    Log.w(TAG, "Oggi non trovato nei mesi caricati - potrebbe essere necessario un refresh");
+                }
+                setRefresh(true);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Errore durante l'aggiornamento dei flag oggi: " + e.getMessage());
+        }
+    }
+
 }

@@ -1,52 +1,42 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Categoria originale QDue -->
     <PreferenceCategory app:title="@string/settings_header">
 
+        <!--Squadra di appartenenza dello user        -->
         <ListPreference
-            app:defaultValue="@string/pref_default_user_halfteam"
-            app:entries="@array/pref_entries_user_halfteam"
-            app:entryValues="@array/pref_values_user_halfteam"
-            app:key="preference_user_halfteam"
-            app:title="@string/pref_title_user_halfteam"
+            app:defaultValue="@string/pref_default_user_team"
+            app:entries="@array/pref_entries_user_team"
+            app:entryValues="@array/pref_values_user_team"
+            app:key="@string/qd_preference_user_team"
+            app:title="@string/settings_team_title"
             app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 
-        <SwitchPreferenceCompat
-            app:defaultValue="@bool/pref_default_show_calendars"
-            app:key="preference_show_calendars"
-            app:summaryOff="@string/calendar_setting_off"
-            app:summaryOn="@string/calendar_setting_on"
-            app:title="@string/calendar_setting_title" />
+    <!-- Scegli cosa mostrare -->
+    <PreferenceCategory app:title="@string/settings_show">
 
+        <!-- TODO: implementare le fermate di stabilimento? privacy? sensible-data? -->
+        <!-- Fermate di stabilimento -->
         <SwitchPreferenceCompat
             app:defaultValue="@bool/pref_default_show_stops"
-            app:key="preference_show_stops"
-            app:summaryOff="@string/stops_setting_off"
-            app:summaryOn="@string/stops_setting_on"
-            app:title="@string/stops_setting_title" />
+            app:key="@string/qd_preference_show_stops"
+            app:summaryOff="@string/settings_show_stops_sumoff"
+            app:summaryOn="@string/settings_show_stops_sumon"
+            app:title="@string/settings_show_stops_title" />
     </PreferenceCategory>
 
     <!-- Nuova categoria per le impostazioni avanzate -->
     <PreferenceCategory app:title="@string/settings_advanced_header">
 
-        <!-- Preferenza che apre la schermata di impostazioni dei turni -->
-        <Preference
-            app:key="shift_settings"
-            app:title="@string/shift_settings_title"
-            app:summary="@string/shift_settings_summary">
-            <intent
-                android:targetPackage="net.calvuz.qdue"
-                android:targetClass="net.calvuz.qdue.quattrodue.ui.ShiftSettingsActivity" />
-        </Preference>
-
-        <!-- Preferenza della data inizio schema -->
+        <!-- [system option] Preferenza della data inizio schema -->
         <Preference
             app:icon="@android:drawable/ic_menu_my_calendar"
-            app:key="preference_scheme_start_date"
+            app:key="@string/qd_preference_scheme_start_date"
             app:singleLine="true"
-            app:summary="@string/pref_summary_date_scheme"
-            app:title="@string/pref_title_date_scheme">
+            app:summary="@string/settings_scheme_date_summary"
+            app:title="@string/settings_scheme_date_title">
             <!--
                 app:selectAllOnFocus="true"
                 <intent
@@ -57,36 +47,20 @@
         </Preference>
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/messages_header">
+    <PreferenceCategory app:title="@string/settings_messages_header">
 
         <EditTextPreference
             app:icon="@android:drawable/ic_menu_edit"
-            app:key="signature"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
-
-        <ListPreference
-            app:defaultValue="reply"
-            app:entries="@array/reply_entries"
-            app:entryValues="@array/reply_values"
-            app:icon="@android:drawable/ic_menu_edit"
-            app:key="reply"
-            app:title="@string/reply_title"
+            app:key="@string/qd_preference_signature"
+            app:title="@string/settings_messages_signature_title"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/sync_header">
+    <PreferenceCategory app:title="@string/settings_sync_header">
 
         <SwitchPreferenceCompat
             app:icon="@android:drawable/ic_menu_info_details"
-            app:key="sync"
-            app:title="@string/sync_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
+            app:key="@string/qd_preference_sync"
+            app:title="@string/settings_sync_title" />
     </PreferenceCategory>
 </PreferenceScreen>

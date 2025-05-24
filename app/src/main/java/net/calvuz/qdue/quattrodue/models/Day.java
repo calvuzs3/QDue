@@ -11,27 +11,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.quattrodue.Costants;
+import net.calvuz.qdue.quattrodue.utils.Log;
 
 /**
  * Rappresenta un giorno del calendario con i suoi turni di lavoro.
  */
 public class Day implements Cloneable {
 
-    // TAG per il logging
+    // TAG
     public final static String TAG = Day.class.getSimpleName();
 
     // Configurazione del logging
-    private final static boolean LOG_ENABLED = true;
-    private final static boolean LOG_SHIFTS = true;
-    private final static boolean LOG_STOPS = true;
+    private final static boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
+    private final static boolean LOG_SHIFTS = LOG_ENABLED;
+    private final static boolean LOG_STOPS = LOG_ENABLED;
 
     // Formattatore per i giorni della settimana
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("EEEE");
 
     // Dati principali
     private LocalDate localDate;  // NON final per permettere la modifica
-    private boolean isToday = false;
+    private boolean isToday;
     private List<Shift> shifts;
     private List<HalfTeam> offWorkHalfTeams;
 
@@ -73,7 +74,7 @@ public class Day implements Cloneable {
 
         for (int i = 0; i < shifts.size(); i++) {
             for (HalfTeam ht : shifts.get(i).getHalfTeams()) {
-                if (ht.isSameTeam(halfTeam)) {
+                if (ht.isSameTeamAs(halfTeam)) {
                     return i;
                 }
             }
@@ -129,7 +130,7 @@ public class Day implements Cloneable {
                 HalfTeam offWorkTeam = itr.next();
 
                 for (HalfTeam shiftTeam : shift.getHalfTeams()) {
-                    if (shiftTeam.isSameTeam(offWorkTeam)) {
+                    if (shiftTeam.isSameTeamAs(offWorkTeam)) {
                         itr.remove();
                         break;
                     }
@@ -313,9 +314,7 @@ public class Day implements Cloneable {
         cloned.setIsToday(false);
 
         // Clona la data
-        cloned.localDate = LocalDate.of(this.localDate.getYear(),
-                this.localDate.getMonth(),
-                this.localDate.getDayOfMonth());
+        cloned.localDate = localDate;
 
         // Clona le squadre a riposo
         if (this.offWorkHalfTeams != null) {

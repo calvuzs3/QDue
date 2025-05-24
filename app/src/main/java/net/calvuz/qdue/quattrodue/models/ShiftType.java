@@ -15,8 +15,8 @@ import java.util.Objects;
  */
 public class ShiftType {
 
-    private static final String TAG = ShiftType.class.getSimpleName();
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    // TAG
+    public static final String TAG = HalfTeam.class.getSimpleName();
 
     // Proprietà principali
     private final String name;             // Nome del turno (es. "Mattino")
@@ -24,6 +24,8 @@ public class ShiftType {
     private final LocalTime startTime;     // Orario di inizio
     private final Duration duration;       // Durata del turno
     private final @ColorInt int color;     // Colore associato al turno
+
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
      * Costruttore completo con tutti i parametri.
@@ -43,21 +45,6 @@ public class ShiftType {
         this.startTime = LocalTime.of(startHour, startMinute);
         this.duration = Duration.ofHours(durationHours).plusMinutes(durationMinutes);
         this.color = color;
-    }
-
-    /**
-     * Costruttore compatibile con la versione precedente.
-     *
-     * @param name Nome del turno
-     * @param description Descrizione del turno
-     * @param startHour Ora di inizio (0-23)
-     * @param startMinute Minuto di inizio (0-59)
-     * @param durationHours Durata in ore
-     * @param durationMinutes Durata in minuti aggiuntivi
-     */
-    public ShiftType(String name, String description, int startHour, int startMinute,
-                     int durationHours, int durationMinutes) {
-        this(name, description, startHour, startMinute, durationHours, durationMinutes, 0); // Colore predefinito
     }
 
     /**
@@ -199,6 +186,6 @@ public class ShiftType {
     @NonNull
     @Override
     public String toString() {
-        return "ShiftType{" + name + " " + getFormattedStartTime() + "-" + getFormattedEndTime() + "}";
+        return  TAG +"{" + name + " " + getFormattedStartTime() + "-" + getFormattedEndTime() + "}";
     }
 }

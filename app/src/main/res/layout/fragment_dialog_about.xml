@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
     <LinearLayout
@@ -33,6 +35,14 @@
             android:text="@string/app_version"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:typeface="monospace" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autoLink="all"
+            android:paddingTop="@dimen/fab_margin"
+            android:text="@string/app_desc"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
         <TextView
             android:layout_width="match_parent"
@@ -72,6 +82,26 @@
             android:text="@string/app_author_str_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:typeface="monospace" />
+
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:paddingTop="@dimen/fab_margin"-->
+<!--            android:text=""-->
+<!--            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
+
+<!--        <ImageButton-->
+<!--            android:id="@+id/btn_dismiss_dialog"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:layout_gravity="bottom|end"-->
+<!--            android:layout_weight="1"-->
+<!--            android:contentDescription="Togli dialogo About"-->
+<!--            android:minWidth="48dp"-->
+<!--            android:minHeight="48dp"-->
+<!--            android:visibility="visible"-->
+<!--            app:srcCompat="@drawable/btn_close"-->
+<!--            tools:visibility="visible" />-->
 
         <!--
 

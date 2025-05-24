@@ -9,7 +9,6 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.quattrodue.models.ShiftType;
-import net.calvuz.qdue.utils.Log;
 
 /**
  * Classe di utilità per la gestione dello schema dei turni.
@@ -17,6 +16,7 @@ import net.calvuz.qdue.utils.Log;
  */
 public final class SchemeManager {
 
+    // TAG
     private static final String TAG = "SchemeManager";
 
     // Costanti per lo schema

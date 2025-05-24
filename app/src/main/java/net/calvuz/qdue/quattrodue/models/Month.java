@@ -1,8 +1,7 @@
 package net.calvuz.qdue.quattrodue.models;
 
-import androidx.annotation.NonNull;
-
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.quattrodue.Costants;
+import net.calvuz.qdue.quattrodue.utils.Log;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -24,8 +23,7 @@ public class Month {
     private static final String TAG = Month.class.getSimpleName();
 
     /* Logging configuration */
-    private static final boolean LOG_ENABLED = true;
-    private static final boolean LOG_EVENTS = true;
+    private static final boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
     private static final boolean LOG_STOPS = true;
 
     /* Proprietà del mese */
