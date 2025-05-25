@@ -1,0 +1,30 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Main Q circle with gradient -->
+    <defs>
+        <linearGradient id="qGradient1" x1="10%" y1="10%" x2="60%" y2="60%">
+            <stop offset="0%" style="stop-color:#5AA7EA;stop-opacity:0.8" />
+            <stop offset="100%" style="stop-color:#6850ea;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- Clock sign -->
+    <line x1="124" y1="68" x2="133" y2="59" stroke="#6850ea" stroke-width="10"
+        stroke-linecap="square" opacity="1" />
+    <line x1="124" y1="124" x2="133" y2="133" stroke="#667eea" stroke-width="10" opacity="1"
+        stroke-linecap="square" />
+
+    <!-- Q outer ring - stile Google G, più spessa -->
+    <circle cx="96" cy="96" r="70" fill="none" stroke="url(#qGradient1)" stroke-width="26" />
+
+    <!-- Q tail - più lunga -->
+    <line x1="145" y1="145" x2="163" y2="163" stroke="#6850ea" stroke-width="26" opacity="0.8"
+        stroke-linecap="round" />
+
+    <!-- Q inner hole -->
+    <circle cx="96" cy="96" r="46" fill="transparent" />
+
+    <!-- Center dot -->
+    <circle cx="96" cy="96" r="9" fill="#667eea" />
+
+</svg>

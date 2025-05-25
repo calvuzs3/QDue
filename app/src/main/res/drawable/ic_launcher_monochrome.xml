@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="192"
+    android:viewportHeight="192">
+    <group android:scaleX="0.59"
+        android:scaleY="0.59"
+        android:translateX="39.36"
+        android:translateY="39.36">
+
+        <!-- Q ring - monochrome -->
+        <path
+            android:pathData="M96,96m-70,0a70,70 0,1 1,140 0a70,70 0,1 1,-140 0"
+            android:strokeWidth="26"
+            android:strokeColor="@android:color/black"
+            android:fillColor="@android:color/transparent"/>
+
+        <!-- Q tail - monochrome -->
+        <path
+            android:pathData="M145,145L163,163"
+            android:strokeWidth="26"
+            android:strokeColor="@android:color/black"
+            android:strokeLineCap="round"/>
+
+        <!-- Inner hole -->
+        <path
+            android:pathData="M96,96m-46,0a46,46 0,1 1,92 0a46,46 0,1 1,-92 0"
+            android:fillColor="@android:color/transparent"/>
+
+        <!-- Center dot - monochrome -->
+        <path
+            android:pathData="M96,96m-9,0a9,9 0,1 1,18 0a9,9 0,1 1,-18 0"
+            android:fillColor="@android:color/black"/>
+
+        <!-- Indicators - monochrome -->
+        <path
+            android:pathData="M124,68L133,59"
+            android:strokeWidth="10"
+            android:strokeColor="@android:color/black"
+            android:strokeLineCap="square"/>
+
+        <path
+            android:pathData="M124,124L133,133"
+            android:strokeWidth="10"
+            android:strokeColor="@android:color/black"
+            android:strokeLineCap="square"/>
+    </group>
+</vector>
