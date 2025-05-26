@@ -79,15 +79,14 @@ public class Shift implements Cloneable {
      * Aggiunge una squadra al turno.
      *
      * @param halfTeam Squadra da aggiungere
-     * @return true se la squadra è stata aggiunta, false altrimenti
      */
-    public boolean addTeam(HalfTeam halfTeam) {
+    public void addTeam(HalfTeam halfTeam) {
         if (halfTeam == null) {
             if (LOG_ENABLED) Log.w(TAG, "Tentativo di aggiungere una squadra null");
-            return false;
+            return;
         }
 
-        return halfTeams.add(halfTeam);
+        halfTeams.add(halfTeam);
     }
 
     /**

@@ -27,7 +27,6 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
-joda-time = { group = "joda-time", name = "joda-time", version.ref = "jodaTime" }
 preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 colorpickerview = { group = "com.github.skydoves", name = "colorpickerview", version.ref = "colorpickerview" }

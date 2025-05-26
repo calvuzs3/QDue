@@ -111,14 +111,12 @@ L'implementazione dello scrolling infinito per `DayslistViewFragment` segue il p
 
 Creare i seguenti file nella cartella `res/drawable/`:
 
-```xml
-<!-- current_day_indicator.xml -->
-<!-- ic_today.xml -->
-<!-- calendar_day_background.xml -->
-<!-- month_title_background.xml -->
-<!-- card_background.xml -->
-<!-- ic_left.xml -->
-<!-- ic_right.xml -->
+```
+ current_day_indicator.xml 
+ ic_today.xml 
+ calendar_day_background.xml 
+ month_title_background.xml 
+ card_background.xml 
 ```
 
 Utilizzare il contenuto degli artifact `drawables_infinite_scroll` e `navigation_icons`.

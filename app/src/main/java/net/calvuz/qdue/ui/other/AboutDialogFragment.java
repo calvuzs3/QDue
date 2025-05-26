@@ -61,12 +61,7 @@ public class AboutDialogFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Configura il contenuto del dialog
-        // (copia la logica dal tuo DialogAbout esistente)
         setupDialogContent(view);
-
-        // Gestisci il pulsante di chiusura se presente
-//        View closeButton = binding.btnDismissDialog;
-//        closeButton.setOnClickListener(v -> dismiss());
     }
 
     @Override

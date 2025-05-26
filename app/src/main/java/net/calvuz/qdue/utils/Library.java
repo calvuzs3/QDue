@@ -32,7 +32,7 @@ public final class Library {
      * @return True if an Intent with the specified action can be sent and
      * responded to, false otherwise.
      */
-    public static final boolean isIntentAvailable(Context context, Intent intent) {
+    public static boolean isIntentAvailable(Context context, Intent intent) {
         final PackageManager packageManager = context.getPackageManager();
         if (packageManager != null) {
             List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -49,7 +49,7 @@ public final class Library {
      * @param context context
      * @return the version code name
      */
-    public static final String getVersionCode(Context context) {
+    public static String getVersionCode(Context context) {
         if (sVersionCode == null) {
             try {
                 sVersionCode = context.getPackageManager().getPackageInfo(
@@ -68,7 +68,7 @@ public final class Library {
      * @param context context
      * @return sharedpreferences
      */
-    public static final SharedPreferences getSharedPreferences(Context context) {
+    public static SharedPreferences getSharedPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context);
     }
 }

@@ -88,6 +88,8 @@ public class QDueMainActivity extends AppCompatActivity
                 .build();
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        navController.setGraph(R.navigation.mobile_navigation);
+
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
