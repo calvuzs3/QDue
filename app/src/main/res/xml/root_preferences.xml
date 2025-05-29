@@ -14,53 +14,75 @@
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
-    <!-- Scegli cosa mostrare -->
-    <PreferenceCategory app:title="@string/settings_show">
+    <!-- Categoria Aspetto e Tema -->
+    <PreferenceCategory app:title="@string/settings_appearance_header">
 
-        <!-- TODO: implementare le fermate di stabilimento? privacy? sensible-data? -->
-        <!-- Fermate di stabilimento -->
+        <!-- Modalità tema -->
+        <ListPreference
+            app:key="theme_mode"
+            app:title="@string/settings_theme_title"
+            app:summary="@string/settings_theme_summary"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:defaultValue="0"
+            app:useSimpleSummaryProvider="true" />
+
+        <!-- Colori dinamici (solo per Android 12+) -->
         <SwitchPreferenceCompat
-            app:defaultValue="@bool/pref_default_show_stops"
-            app:key="@string/qd_preference_show_stops"
-            app:summaryOff="@string/settings_show_stops_sumoff"
-            app:summaryOn="@string/settings_show_stops_sumon"
-            app:title="@string/settings_show_stops_title" />
+            app:key="dynamic_colors"
+            app:title="@string/settings_dynamic_colors_title"
+            app:summary="@string/settings_dynamic_colors_summary"
+            app:defaultValue="true" />
+
     </PreferenceCategory>
+
+    <!-- Scegli cosa mostrare -->
+<!--    <PreferenceCategory app:title="@string/settings_show">-->
+
+<!--        &lt;!&ndash; TODO: implementare le fermate di stabilimento? privacy? sensible-data? &ndash;&gt;-->
+<!--        &lt;!&ndash; Fermate di stabilimento &ndash;&gt;-->
+<!--        <SwitchPreferenceCompat-->
+<!--            app:defaultValue="@bool/pref_default_show_stops"-->
+<!--            app:key="@string/qd_preference_show_stops"-->
+<!--            app:summaryOff="@string/settings_show_stops_sumoff"-->
+<!--            app:summaryOn="@string/settings_show_stops_sumon"-->
+<!--            app:title="@string/settings_show_stops_title" />-->
+<!--    </PreferenceCategory>-->
 
     <!-- Nuova categoria per le impostazioni avanzate -->
-    <PreferenceCategory app:title="@string/settings_advanced_header">
+<!--    <PreferenceCategory app:title="@string/settings_advanced_header">-->
 
-        <!-- [system option] Preferenza della data inizio schema -->
-        <Preference
-            app:icon="@android:drawable/ic_menu_my_calendar"
-            app:key="@string/qd_preference_scheme_start_date"
-            app:singleLine="true"
-            app:summary="@string/settings_scheme_date_summary"
-            app:title="@string/settings_scheme_date_title">
-            <!--
-                app:selectAllOnFocus="true"
-                <intent
-                    app:action="net.calvuz.qdue.action.DATESCHEME"
-                    app:targetPackage="@string/app_id">
-                </intent>
-            -->
-        </Preference>
-    </PreferenceCategory>
+<!--        &lt;!&ndash; [system option] Preferenza della data inizio schema &ndash;&gt;-->
+<!--        <Preference-->
+<!--            app:icon="@android:drawable/ic_menu_my_calendar"-->
+<!--            app:key="@string/qd_preference_scheme_start_date"-->
+<!--            app:singleLine="true"-->
+<!--            app:summary="@string/settings_scheme_date_summary"-->
+<!--            app:title="@string/settings_scheme_date_title">-->
+<!--            &lt;!&ndash;-->
+<!--                app:selectAllOnFocus="true"-->
+<!--                <intent-->
+<!--                    app:action="net.calvuz.qdue.action.DATESCHEME"-->
+<!--                    app:targetPackage="@string/app_id">-->
+<!--                </intent>-->
+<!--            &ndash;&gt;-->
+<!--        </Preference>-->
+<!--    </PreferenceCategory>-->
 
-    <PreferenceCategory app:title="@string/settings_messages_header">
+<!--    <PreferenceCategory app:title="@string/settings_messages_header">-->
 
-        <EditTextPreference
-            app:icon="@android:drawable/ic_menu_edit"
-            app:key="@string/qd_preference_signature"
-            app:title="@string/settings_messages_signature_title"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
+<!--        <EditTextPreference-->
+<!--            app:icon="@android:drawable/ic_menu_edit"-->
+<!--            app:key="@string/qd_preference_signature"-->
+<!--            app:title="@string/settings_messages_signature_title"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
+<!--    </PreferenceCategory>-->
 
-    <PreferenceCategory app:title="@string/settings_sync_header">
+<!--    <PreferenceCategory app:title="@string/settings_sync_header">-->
 
-        <SwitchPreferenceCompat
-            app:icon="@android:drawable/ic_menu_info_details"
-            app:key="@string/qd_preference_sync"
-            app:title="@string/settings_sync_title" />
-    </PreferenceCategory>
+<!--        <SwitchPreferenceCompat-->
+<!--            app:icon="@android:drawable/ic_menu_info_details"-->
+<!--            app:key="@string/qd_preference_sync"-->
+<!--            app:title="@string/settings_sync_title" />-->
+<!--    </PreferenceCategory>-->
 </PreferenceScreen>

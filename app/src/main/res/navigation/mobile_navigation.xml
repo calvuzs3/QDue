@@ -9,22 +9,30 @@
         android:id="@+id/nav_dayslist"
         android:label="@string/menu_dayslist"
         android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragment"
-        tools:layout="@layout/fragment_dayslist_view" />
+        tools:layout="@layout/fragment_dayslist_view" >
+        <action
+            android:id="@+id/action_nav_dayslist_to_nav_settings"
+            app:destination="@id/nav_settings" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_calendar"
         android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragment"
         android:label="@string/menu_calendar"
-        tools:layout="@layout/fragment_calendar_view" />
-
-    <fragment
-        android:id="@+id/nav_settings"
-        android:label="@string/menu_title_settings"
-        android:name="net.calvuz.qdue.ui.settings.SettingsFragment" />
+        tools:layout="@layout/fragment_calendar_view" >
+        <action
+            android:id="@+id/action_nav_calendar_to_nav_settings"
+            app:destination="@id/nav_settings" />
+    </fragment>
 
     <dialog
         android:id="@+id/nav_about"
-        android:label="@string/menu_title_about"
         android:name="net.calvuz.qdue.ui.other.AboutDialogFragment"
-        tools:layout="@layout/fragment_dialog_about"/>
+        android:label="@string/menu_title_about"
+        tools:layout="@layout/fragment_dialog_about" />
+
+    <activity
+        android:id="@+id/nav_settings"
+        android:name="net.calvuz.qdue.QDueSettingsActivity"
+        android:label="Settings" />
 </navigation>

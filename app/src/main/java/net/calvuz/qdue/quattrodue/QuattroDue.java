@@ -152,7 +152,7 @@ public class QuattroDue {
         if (LOG_ENABLED) Log.d(fTAG, "SchemeDate " + schemeDate);
 
         // Imposta la squadra dell'utente (default: A)
-        setUserHalfTeam(new HalfTeam("A"));
+//        setUserHalfTeam(new HalfTeam("A")); // settled in loadPreference()
 
         // Carica le preferenze
         loadPreferences(context);
@@ -183,16 +183,21 @@ public class QuattroDue {
         showStops = Preferences.getSharedPreference(context,
                 Preferences.KEY_SHOW_STOPS, VALUE_SHOW_STOPS );
 
-        // Carica la preferenza del team utente
+        // Carica il team utente
         String userTeamPref = Preferences.getSharedPreference(context, Preferences.KEY_USER_TEAM, "0");
+
         try {
             int teamIndex = Integer.parseInt(userTeamPref);
             Resources res = context.getResources();
             String[] halfTeamValues = res.getStringArray(R.array.pref_entries_user_team);
             if (teamIndex >= 0 && teamIndex < halfTeamValues.length) {
-                userHalfTeam = new HalfTeam(halfTeamValues[teamIndex]);
+                // preference
+                setUserHalfTeam(new HalfTeam(halfTeamValues[teamIndex]));
+                Log.d(TAG, "User Team: " + userHalfTeam.getName());
             }
         } catch (NumberFormatException e) {
+            // default
+            setUserHalfTeam(new HalfTeam("A"));
             Log.e(TAG, "Errore nel parsing dell'indice del team: " + e.getMessage());
         }
     }

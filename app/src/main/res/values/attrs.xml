@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?><!-- ===== attrs.xml (res/values/attrs.xml) ===== -->
+<resources>
+    <!-- Q-Due Custom Attributes -->
+    <declare-styleable name="QDueTheme">
+        <attr name="colorBackground" format="color" />
+
+        <attr name="colorTodayBackground" format="color|reference" />
+        <attr name="colorUserShift" format="color|reference" />
+        <attr name="colorUserShiftBackground" format="color|reference" />
+        <attr name="colorSundayBackground" format="color|reference" />
+        <attr name="colorOnSundayBackground" format="color|reference" />
+
+        <attr name="colorHeaderBackground" format="color|reference" />
+        <attr name="colorFirstShift" format="color" />
+        <attr name="colorSecondShift" format="color" />
+        <attr name="colorThirdShift" format="color" />
+        <attr name="colorFourthShift" format="color" />
+        <attr name="colorFifthShift" format="color" />
+
+        <attr name="colorShiftMorning" format="color|reference" />
+        <attr name="colorShiftAfternoon" format="color|reference" />
+        <attr name="colorShiftNight" format="color|reference" />
+
+        <attr name="colorCalendarToday" format="color|reference" />
+        <attr name="colorCalendarWeekend" format="color|reference" />
+        <attr name="colorCalendarHeader" format="color|reference" />
+
+        <attr name="colorError" format="color" />
+
+        <!-- Colori per il caricamento -->
+        <attr name="colorLoadingBackground" format="color" />
+        <attr name="colorLoadingText" format="color" />
+        <attr name="colorLoadingProgress" format="color" />
+
+        <!-- Colori per i bordi e separatori -->
+        <attr name="colorSeparator" format="color" />
+        <attr name="colorCardBackground" format="color" />
+        <attr name="colorCardBorder" format="color" />
+    </declare-styleable>
+
+</resources>

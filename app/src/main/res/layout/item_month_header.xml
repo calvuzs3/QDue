@@ -3,28 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="4dp"
-    android:layout_marginVertical="4dp">
+    android:paddingHorizontal="@dimen/column_header_padding"
+    android:layout_marginVertical="@dimen/activity_vertical_margin">
+    <!-- 4 dp -->
 
     <!-- Titolo del mese -->
     <TextView
+        style="@style/Theme.QDue.MonthTitle"
         android:id="@+id/tv_month_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Gennaio"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        android:background="@drawable/month_title_background"
-        android:layout_marginBottom="12dp"
-        android:paddingVertical="8dp"
-        android:elevation="2dp" />
+        android:text="@string/placeholder_calendar_month"
+        android:paddingVertical="8dp" />
 
-    <!-- Separatore sottile -->
+    <!-- Separatore tra i mesi -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/colorBorderLight"
-        android:layout_marginTop="8dp" />
+        android:layout_height="@dimen/divider_height"
+        android:background="?attr/colorOutline"
+        android:layout_marginTop="@dimen/fab_margin" />
 
 </LinearLayout>

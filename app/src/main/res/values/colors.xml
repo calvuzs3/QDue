@@ -1,51 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
 
-    <!--    QD app color scheme-->
-    <color name="colorPrimary">#ff4CAF50</color>
-    <color name="colorPrimaryLight">#ff8CfF80</color>
-    <color name="colorPrimaryDark">#444caf50</color>
-    <color name="colorAccent">#ff2E7D32</color>
-    <color name="colorAccentYellow">#FFC107</color>
-    <color name="colorAccentBlue">#2196F3</color>
 
-    <!--Colori per il testo    -->
-    <color name="colorTextPrimary">#212121</color>
-    <color name="colorTextBlack">#ff000000</color>
-    <color name="colorTextWhite">#ffffffff</color>
-    <color name="colorTextRed">#ffFF0000</color>
-    <color name="colorTextBlue">#ff0000FF</color>
+        <!-- Colori Android Standard -->
+        <color name="purple_200">#FFBB86FC</color>
+        <color name="purple_500">#FF6200EE</color>
+        <color name="purple_700">#FF3700B3</color>
+        <color name="teal_200">#FF03DAC5</color>
+        <color name="teal_700">#FF018786</color>
+        <color name="black">#FF000000</color>
+        <color name="white">#FFFFFFFF</color>
 
-    <!-- Colori per il background -->
-    <color name="colorBackgroundLight">#F5F5F5</color>
-    <color name="colorBackgroundRed">#FFCDD2</color>
-    <color name="colorBackgroundBlue">#ff0000ff</color>
-    <color name="colorBackgroundYellow">#FFF9C4</color>
-    <color name="colorBackgroundLightGray">#E0E0E0</color>
-    <color name="colorBackgroundLightBlue">#E3F2FD</color>
+        <!-- ============================================ -->
+        <!-- MATERIAL DESIGN PALETTE (Nuova - Basata su Icona) -->
+        <!-- ============================================ -->
 
-    <!-- Nuovi colori per header e FAB -->
-    <color name="colorBackgroundHeader">#F5F5F5</color>
-    <color name="colorDivider">#E0E0E0</color>
-    <color name="colorOnPrimary">#FFFFFF</color>
+        <!-- Primary Colors (Viola-Blu dall'icona) -->
+        <color name="primary">#667eea</color>
+        <color name="primary_variant">#764ba2</color>
+        <color name="primary_light">#8a9ff5</color>
+        <color name="primary_dark">#4c5bc7</color>
+        <color name="on_primary">#ffffff</color>
+        <color name="primary_container">#e8eaff</color>
+        <color name="on_primary_container">#1a1c38</color>
 
-    <!-- Nuovi colori per il calendario e listagiorni -->
-    <color name="colorTextGray">#666666</color>
-    <color name="colorBorderLight">#E0E0E0</color>
-    <color name="colorBorderDark">#BDBDBD</color>
+        <!-- Secondary Colors (Verde Turchese dall'icona) -->
+        <color name="secondary">#43e97b</color>
+        <color name="secondary_variant">#38f9d7</color>
+        <color name="secondary_light">#5fffa7</color>
+        <color name="secondary_dark">#2bc653</color>
+        <color name="on_secondary">#ffffff</color>
+        <color name="secondary_container">#e6fff0</color>
+        <color name="on_secondary_container">#0a2e1a</color>
 
-    <!-- Colori per i turni (configurabili) -->
-    <color name="colorShiftMorning">#FFA500</color>    <!-- Arancione per mattino -->
-    <color name="colorShiftAfternoon">#32CD32</color>  <!-- Verde per pomeriggio -->
-    <color name="colorShiftNight">#4169E1</color>      <!-- Blu per notte -->
+        <!-- Tertiary Colors (Azzurro Chiaro dall'icona) -->
+        <color name="tertiary">#87ceeb</color>
+        <color name="tertiary_variant">#4682b4</color>
+        <color name="tertiary_light">#a8d8f0</color>
+        <color name="tertiary_dark">#5ba0c7</color>
+        <color name="on_tertiary">#ffffff</color>
+        <color name="tertiary_container">#f0f8ff</color>
+        <color name="on_tertiary_container">#1a2832</color>
 
-    <!-- Colori aggiuntivi per gli indicatori -->
-    <!-- Fine Calendario-->
+        <!-- System Colors -->
+        <color name="background">#fefefe</color>
+        <color name="on_background">#1c1c1e</color>
+        <color name="surface">#E0F7FA</color>
+        <color name="surface_variant">#f5f5f7</color>
+        <color name="on_surface">#0097A7</color>
+        <color name="on_surface_variant">#6c6c70</color>
+        <color name="surface_tint">#667eea</color>
+        <color name="inverse_surface">#2c2c2e</color>
+        <color name="inverse_on_surface">#f2f2f7</color>
+
+        <!-- Functional Colors -->
+        <color name="error">#ff6b6b</color>
+        <color name="on_error">#ffffff</color>
+        <color name="error_container">#ffe6e6</color>
+        <color name="on_error_container">#3d0a0a</color>
+        <color name="success">#43e97b</color>
+        <color name="on_success">#ffffff</color>
+        <color name="success_container">#e6fff0</color>
+        <color name="on_success_container">#0a2e1a</color>
+        <color name="warning">#ffa726</color>
+        <color name="on_warning">#ffffff</color>
+        <color name="warning_container">#fff3e0</color>
+        <color name="on_warning_container">#332200</color>
+
+        <!-- Outline e Bordi -->
+        <color name="outline">#d1d5db</color>
+        <color name="outline_variant">#e5e7eb</color>
+        <color name="scrim">#000000</color>
+        <color name="shadow">#1f2937</color>
+
+        <!-- ============================================ -->
+        <!-- DARK THEME VARIANTS -->
+        <!-- ============================================ -->
+
+        <color name="primary_dark_theme">#8a9ff5</color>
+        <color name="on_primary_dark">#ffffff</color>
+
+        <color name="secondary_dark_theme">#5fffa7</color>
+        <color name="on_secondary_dark">#ffffff</color>
+
+        <color name="tertiary_dark_theme">#a8d8f0</color>
+        <color name="on_tertiary_dark">#ffffff</color>
+
+        <color name="background_dark">#121212</color>
+        <color name="on_background_dark">#f1f1f1</color>
+
+        <color name="surface_dark">#1e1e1e</color>
+        <color name="surface_variant_dark">#2c2c2c</color>
+        <color name="on_surface_dark">#e0e0e0</color>
+
+
+        <!-- ============================================ -->
+        <!-- CATPPUCCIN MACCHIATO PALETTE -->
+        <!-- ============================================ -->
+
+        <!-- Base Colors -->
+        <color name="base">#24273a</color>
+        <color name="mantle">#1e2030</color>
+        <color name="crust">#181926</color>
+        <color name="surface0">#363a4f</color>
+        <color name="surface1">#494d64</color>
+        <color name="surface2">#5b6078</color>
+
+        <!-- Text Colors -->
+        <color name="text">#cad3f5</color>
+        <color name="subtext1">#b8c0e0</color>
+        <color name="subtext0">#a5adcb</color>
+        <color name="overlay2">#939ab7</color>
+        <color name="overlay1">#8087a2</color>
+        <color name="overlay0">#6e738d</color>
+
+        <!-- Accent Colors Catppuccin -->
+        <color name="primary_macc">#b7bdf8</color>
+        <color name="primary_variant_macc">#8b93d1</color>
+        <color name="primary_container_macc">#494d64</color>
+        <color name="secondary_macc">#a6da95</color>
+        <color name="secondary_variant_macc">#8bd78b</color>
+        <color name="secondary_container_macc">#3a4635</color>
+        <color name="tertiary_macc">#8aadf4</color>
+        <color name="tertiary_variant_macc">#7dc4e4</color>
+        <color name="tertiary_container_macc">#384454</color>
+
+        <!-- Functional Colors Catppuccin -->
+        <color name="error_macc">#ed8796</color>
+        <color name="error_container_macc">#4a2c32</color>
+        <color name="warning_macc">#f5a97f</color>
+        <color name="warning_container_macc">#4a3429</color>
+        <color name="success_macc">#a6da95</color>
+        <color name="success_container_macc">#3a4635</color>
+        <color name="info_macc">#8aadf4</color>
+        <color name="info_container_macc">#384454</color>
+
+        <!-- UI Elements Catppuccin -->
+        <color name="outline_macc">#5b6078</color>
+        <color name="outline_variant_macc">#494d64</color>
+        <color name="today_bg_macc">#f5a97f</color>
+        <color name="today_container_macc">#4a3429</color>
+        <color name="today_text_macc">#181926</color>
+        <color name="fab_macc">#b7bdf8</color>
+        <color name="fab_container_macc">#494d64</color>
+        <color name="shadow_macc">#181926</color>
+        <color name="scrim_macc">#000000</color>
+
+        <!-- ============================================ -->
+        <!-- QDUE SPECIFIC COLORS (Turni di Lavoro) -->
+        <!-- ============================================ -->
+
+        <!-- Material Design Theme -->
+        <color name="shift_morning">#FFA500</color>
+        <color name="shift_morning_light">#C8E6C9</color>C8E6C9
+        <color name="shift_afternoon">#32CD32</color>
+        <color name="shift_afternoon_light">#FFE0B2</color>
+        <color name="shift_night">#4169E1</color>
+        <color name="shift_night_light">#B3E5FC</color>
+        <color name="shift_rest">#f5f5f7</color>
+        <color name="shift_rest_text">#6c6c70</color>
+
+        <!-- Colori per il caricamento -->
+        <color name="loading_background">#FAFAFA</color>
+        <color name="loading_text">#757575</color>
+        <color name="loading_progress">#2196F3</color>
+
+        <!-- Colori per i bordi e separatori -->
+        <color name="separator">#E0E0E0</color>
+        <color name="card_bcakground">#FFFFFF</color>
+        <color name="card_border">#EEEEEE</color>
+
+        <!-- Catppuccin Theme -->
+        <color name="shift_morning_macc">#a6da95</color>
+        <color name="shift_morning_bg_macc">#3a4635</color>
+        <color name="shift_morning_text_macc">#181926</color>
+        <color name="shift_afternoon_macc">#b7bdf8</color>
+        <color name="shift_afternoon_bg_macc">#494d64</color>
+        <color name="shift_afternoon_text_macc">#181926</color>
+        <color name="shift_night_macc">#8aadf4</color>
+        <color name="shift_night_bg_macc">#384454</color>
+        <color name="shift_night_text_macc">#181926</color>
+        <color name="shift_rest_macc">#6e738d</color>
+        <color name="shift_rest_bg_macc">#363a4f</color>
+        <color name="shift_rest_text_macc">#a5adcb</color>
+
+        <!-- Borders -->
+        <color name="border_light">#E0E0E0</color>
+        <color name="border_dark">#b0b0b0</color>
+
+        <!-- Dividers -->
+        <color name="divider">#E0E0E0</color>
+        <color name="divider_light">#F0F0F0</color>
+
+        <!-- Highlighting -->
+        <color name="today_background">#FFF9C4</color>
+        <color name="on_today_background">@android:color/black</color>
+        <color name="today_border">#ffc107</color>
+        <color name="background_user_shift">#CC80DEEA</color>
+        <color name="on_background_user_shift">#651FFF</color>
+        <color name="background_dark_user_shift">#CC80DEEA</color>
+        <color name="on_background_dark_user_shift">#651FFF</color>
+        <color name="background_sunday">#FFEBEE</color>
+        <color name="background_dark_sunday">#99C2185B</color>
+        <color name="on_background_sunday">#C2185B</color>
+        <color name="on_background_dark_sunday">#FFEBEE</color>
+
 </resources>

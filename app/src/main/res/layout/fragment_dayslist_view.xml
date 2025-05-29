@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -16,7 +15,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Lista dei giorni con scrolling infinito -->
+    <!-- Floating Action Button per tornare a oggi -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_dayslist"
         android:layout_width="0dp"
@@ -27,90 +26,25 @@
         android:paddingHorizontal="8dp"
         android:paddingBottom="?attr/actionBarSize"
         android:scrollbars="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/qdue_dayslist_column_header"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/qdue_dayslist_column_header"
         tools:listitem="@layout/item_dayslist_row" />
 
-    <!-- Floating Action Button per tornare a oggi -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_go_to_today"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/go_to_today"
         android:src="@drawable/ic_today"
+        android:theme="@style/Theme.QDue.FloatingActionButton"
         android:visibility="gone"
-        app:elevation="6dp"
+        app:layout_constraintBottom_toBottomOf="@+id/rv_dayslist"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ll_dayslist_info"
-        app:pressedTranslationZ="12dp"
-        app:tint="@android:color/white"
-        app:rippleColor="@android:color/white" />
-
-    <!-- Barra informazioni in basso (opzionale) -->
-    <LinearLayout
-        android:id="@+id/ll_dayslist_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorBackgroundLight"
-        android:elevation="4dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <!-- Indicatore giorno corrente -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <View
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/current_day_indicator" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Oggi"
-                android:textColor="@color/colorTextBlack"
-                android:textSize="10sp" />
-
-        </LinearLayout>
-
-        <!-- Indicatore turno utente -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <View
-                android:layout_width="12dp"
-                android:layout_height="3dp"
-                android:layout_marginEnd="4dp"
-                android:background="@color/colorBackgroundLightBlue" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tuo turno"
-                android:textColor="@color/colorTextBlack"
-                android:textSize="10sp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
+        app:rippleColor="?attr/colorOnSecondary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,43 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/colorSurface"
     android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
-    android:background="@color/colorBackgroundLight">
+    android:paddingTop="@dimen/header_padding_top"
+    android:paddingBottom="@dimen/header_padding_bottom"
+    android:paddingHorizontal="@dimen/dayslist_row_item_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
         android:orientation="horizontal"
-        android:padding="2dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:background="@color/colorPrimary">
+        android:layout_marginStart="6dp"
+        android:layout_marginLeft="@dimen/column_header_padding"
+        android:layout_marginRight="@dimen/column_header_padding"
+        android:layout_marginEnd="@dimen/column_header_padding"
+        android:padding="@dimen/column_header_padding"
+        android:paddingStart="@dimen/column_header_padding"
+        android:paddingEnd="@dimen/column_header_padding">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center_vertical|left"
-            android:minWidth="20dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:gravity="center_vertical|start"
+            android:minWidth="@dimen/column_min_width_nr"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_day"
-            android:textStyle="bold"
-            tools:ignore="RtlHardcoded" />
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="6"
             android:gravity="center_vertical"
-            android:minWidth="75dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:minWidth="@dimen/column_min_width_day"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_weekday"
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
         <TextView
@@ -45,10 +52,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical|center_horizontal"
-            android:minWidth="40dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:minWidth="@dimen/column_min_width"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_morning"
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
         <TextView
@@ -56,10 +65,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical|center_horizontal"
-            android:minWidth="40dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:minWidth="@dimen/column_min_width"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_afternoon"
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
         <TextView
@@ -67,10 +78,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical|center_horizontal"
-            android:minWidth="40dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:minWidth="@dimen/column_min_width"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_night"
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
         <TextView
@@ -78,22 +91,20 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical|center_horizontal"
-            android:minWidth="40dp"
-            android:paddingStart="3dp"
-            android:paddingEnd="3dp"
+            android:minWidth="@dimen/column_min_width"
+            android:paddingStart="@dimen/column_header_padding"
+            android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_off"
+            android:textColor="@color/on_primary"
+            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
 
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="@color/colorPrimaryDark" />
+        android:layout_height="@dimen/divider_height"
+        android:background="?attr/colorOutline"
+        android:visibility="visible" />
 
 </LinearLayout>

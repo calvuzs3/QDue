@@ -1,10 +1,19 @@
 package net.calvuz.qdue.ui.dayslist;
 
+import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
+import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_SIZE;
+
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -16,52 +25,68 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.utils.ThemeUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Fragment che mostra la visualizzazione lista dei turni con scrolling infinito.
- * Aggiornato per supportare la navigazione fluida tra i mesi senza limiti.
+ * Fragment per la visualizzazione lista dei turni con scrolling infinito ottimizzato.
+ * Utilizza la stessa logica migliorata del CalendarViewFragment.
  */
 public class DayslistViewFragment extends Fragment {
 
     private static final String TAG = "DayslistViewFragment";
     private static final boolean LOG_ENABLED = true;
 
-    // Numero di mesi da mantenere in cache (prima e dopo il mese corrente)
-    private static final int MONTHS_CACHE_SIZE = 6;
-    // Numero massimo di mesi in memoria per evitare memory leak
-    private static final int MAX_CACHE_SIZE = 24;
-
-    private OnQuattroDueHomeFragmentInteractionListener mListener = null;
+    // Identificatori per i diversi tipi di view nell'adapter
+    private static final int VIEW_TYPE_MONTH_HEADER = 0;
+    private static final int VIEW_TYPE_DAY = 1;
+    private static final int VIEW_TYPE_LOADING = 2;
 
     private QuattroDue mQD;
-    private RecyclerView mRecyclerView;
-    private InfiniteDaysListAdapter mAdapter;
+    private RecyclerView mDaysRecyclerView;
+    private MonthsAdapter mAdapter;
     private LinearLayoutManager mLayoutManager;
     private FloatingActionButton mFabGoToToday;
 
-    // Cache dei giorni per lo scrolling infinito
-    private List<DayData> mDaysCache;
+    // Cache dei mesi per lo scrolling infinito
+    private List<Object> mItemsCache; // Contiene MonthData, DayData e LoadingItem
     private int mCurrentCenterPosition;
     private LocalDate mCurrentDate;
 
-    // Flag per evitare chiamate ricorsive durante lo scroll
-    private boolean mIsUpdatingCache = false;
+    // Sistema di controllo per evitare operazioni multiple simultanee
+    private final AtomicBoolean mIsUpdatingCache = new AtomicBoolean(false);
+    private final AtomicBoolean mIsPendingTopLoad = new AtomicBoolean(false);
+    private final AtomicBoolean mIsPendingBottomLoad = new AtomicBoolean(false);
 
-    // Posizione del giorno di oggi
-    private int mTodayPosition = -1;
+    // Handler per gestire operazioni asincrone
+    private Handler mMainHandler;
+    private Handler mBackgroundHandler;
 
-    private View mRoot;
+    // Posizione del giorno contenente oggi
+    private int mTodayDayPosition = -1;
 
-    /**
-     * Costruttore vuoto obbligatorio per il fragment manager.
-     */
+    // Flag per indicare se stiamo mostrando indicatori di caricamento
+    private boolean mShowingTopLoader = false;
+    private boolean mShowingBottomLoader = false;
+
+    // Controllo dello scroll per evitare aggiornamenti durante scroll veloce
+    private long mLastScrollTime = 0;
+    private int mLastScrollDirection = 0; // -1 = su, 1 = giù, 0 = fermo
+    private int mScrollVelocity = 0;
+    private static final int MAX_SCROLL_VELOCITY = 20;
+    private static final long SCROLL_SETTLE_DELAY = 150; // ms
+
+    // Listener per comunicazione con l'activity
+    private OnQuattroDueHomeFragmentInteractionListener mListener = null;
+
     public DayslistViewFragment() {
         // Costruttore vuoto richiesto
     }
@@ -69,22 +94,26 @@ public class DayslistViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (LOG_ENABLED) Log.d(TAG, "onCreate");
+
+        // Inizializza i gestori
+        mMainHandler = new Handler(Looper.getMainLooper());
+        mBackgroundHandler = new Handler(Looper.getMainLooper());
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        mRoot = inflater.inflate(R.layout.fragment_dayslist_view, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_dayslist_view, container, false);
+
         if (LOG_ENABLED) Log.d(TAG, "onCreateView");
 
         // Inizializza le viste
-        mRecyclerView = mRoot.findViewById(R.id.rv_dayslist);
-        mFabGoToToday = mRoot.findViewById(R.id.fab_go_to_today);
+        mDaysRecyclerView = root.findViewById(R.id.rv_dayslist);
+        mFabGoToToday = root.findViewById(R.id.fab_go_to_today);
 
         // Configura il RecyclerView per lo scroll verticale
         mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        mDaysRecyclerView.setLayoutManager(mLayoutManager);
 
         // Configura il FAB
         if (mFabGoToToday != null) {
@@ -94,113 +123,133 @@ public class DayslistViewFragment extends Fragment {
         // Inizializza QuattroDue
         if (getActivity() != null) {
             mQD = QuattroDue.getInstance(getActivity().getApplicationContext());
-            setupInfiniteScrolling();
+            setupInfiniteDaysList();
         }
 
-        return mRoot;
+        return root;
     }
 
     /**
-     * Configura lo scrolling infinito per i giorni.
+     * Configura la lista giorni con scrolling infinito.
      */
-    private void setupInfiniteScrolling() {
+    private void setupInfiniteDaysList() {
         if (mQD == null) {
-            if (LOG_ENABLED) Log.e(TAG, "setupInfiniteScrolling: mQD è null");
+            if (LOG_ENABLED) Log.e(TAG, "setupInfiniteDaysList: mQD è null");
             return;
         }
 
         try {
-            // Inizializza la cache dei giorni
-            mCurrentDate = mQD.getCursorDate();
-            mDaysCache = new ArrayList<>();
+            // Reset dei flag di controllo
+            mIsUpdatingCache.set(false);
+            mIsPendingTopLoad.set(false);
+            mIsPendingBottomLoad.set(false);
+            mShowingTopLoader = false;
+            mShowingBottomLoader = false;
 
-            // Genera i giorni nella cache (MONTHS_CACHE_SIZE mesi prima e dopo)
-            for (int i = -MONTHS_CACHE_SIZE; i <= MONTHS_CACHE_SIZE; i++) {
+            // Inizializza la cache degli elementi
+            mCurrentDate = mQD.getCursorDate();
+            mItemsCache = new ArrayList<>();
+
+            // Genera i mesi nella cache
+            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
                 LocalDate monthDate = mCurrentDate.plusMonths(i);
-                List<DayData> monthDays = generateMonthDays(monthDate);
-                mDaysCache.addAll(monthDays);
+                List<Object> monthItems = generateMonthItems(monthDate);
+                mItemsCache.addAll(monthItems);
+
+                // Trova la posizione del giorno contenente oggi
+                findTodayPosition(monthItems, mItemsCache.size() - monthItems.size());
             }
 
-            // Trova la posizione di oggi
-            findTodayPosition();
-
             // Posizione centrale nella cache (approssimativamente)
-            mCurrentCenterPosition = mDaysCache.size() / 2;
+            mCurrentCenterPosition = mItemsCache.size() / 2;
 
             // Crea e imposta l'adapter
-            mAdapter = new InfiniteDaysListAdapter(getContext(), mDaysCache);
-            mRecyclerView.setAdapter(mAdapter);
+            mAdapter = new MonthsAdapter(mItemsCache, mQD.getUserHalfTeam());
+            mDaysRecyclerView.setAdapter(mAdapter);
 
-            // Posiziona il RecyclerView al mese corrente
-            scrollToCurrentMonth();
+            // Posiziona il RecyclerView al giorno corrente se trovato
+            if (mTodayDayPosition >= 0) {
+                mLayoutManager.scrollToPosition(mTodayDayPosition);
+            } else {
+                mLayoutManager.scrollToPosition(mCurrentCenterPosition);
+            }
 
             // Aggiunge il listener per lo scrolling infinito
-            mRecyclerView.addOnScrollListener(new InfiniteScrollListener());
+            mDaysRecyclerView.addOnScrollListener(new ImprovedInfiniteScrollListener());
 
             if (LOG_ENABLED)
-                Log.d(TAG, "Scrolling infinito configurato con " + mDaysCache.size() + " giorni");
+                Log.d(TAG, "Lista giorni infinita configurata con " + mItemsCache.size() + " elementi");
         } catch (Exception e) {
             if (LOG_ENABLED)
-                Log.e(TAG, "Errore nella configurazione dello scrolling infinito: " + e.getMessage());
+                Log.e(TAG, "Errore nella configurazione della lista giorni: " + e.getMessage());
         }
     }
 
     /**
-     * Genera i dati per i giorni di un mese specifico.
+     * Genera gli elementi per un mese specifico (header + giorni).
      */
-    private List<DayData> generateMonthDays(LocalDate monthDate) {
-        List<DayData> monthDays = new ArrayList<>();
+    private List<Object> generateMonthItems(LocalDate monthDate) {
+        List<Object> monthItems = new ArrayList<>();
 
         try {
-            // Utilizza il metodo pubblico di QuattroDue per generare i giorni
-            List<Day> days = mQD.getShiftsForMonth(monthDate);
-
-            if (LOG_ENABLED) Log.d(TAG, "generateMonthDays per " + monthDate +
-                    ": trovati " + days.size() + " giorni");
+            // Ottiene i giorni del mese
+            List<Day> days = getMonthDays(monthDate);
 
             if (!days.isEmpty()) {
-                // Crea il titolo del mese
+                // Aggiunge l'header del mese
                 String monthTitle = formatMonthTitle(monthDate);
+                monthItems.add(new MonthHeaderData(monthTitle, monthDate));
 
-                // Aggiunge l'header del mese come primo elemento
-                monthDays.add(new DayData(monthTitle, monthDate));
-                if (LOG_ENABLED) Log.d(TAG, "Aggiunto header: " + monthTitle);
-
-                // Aggiorna i flag "oggi" per tutti i giorni
-                LocalDate today = LocalDate.now();
+                // Aggiunge tutti i giorni del mese
                 for (Day day : days) {
-                    if (day.getDate() != null) {
-                        day.setIsToday(day.getDate().equals(today));
-                    }
-                    monthDays.add(new DayData(day, monthDate));
+                    monthItems.add(new DayData(day, monthDate));
                 }
 
-                if (LOG_ENABLED) Log.d(TAG, "Totale elementi aggiunti per " + monthDate +
-                        ": " + monthDays.size() + " (1 header + " + days.size() + " giorni)");
+                if (LOG_ENABLED) Log.d(TAG, "Generati " + monthItems.size() +
+                        " elementi per " + monthDate + " (1 header + " + days.size() + " giorni)");
             }
 
         } catch (Exception e) {
             if (LOG_ENABLED)
-                Log.e(TAG, "Errore nell'ottenere i giorni per il mese " + monthDate + ": " + e.getMessage());
+                Log.e(TAG, "Errore nella generazione elementi per " + monthDate + ": " + e.getMessage());
         }
 
-        return monthDays;
+        return monthItems;
+    }
+
+    /**
+     * Ottiene i giorni per un mese specifico.
+     */
+    private List<Day> getMonthDays(LocalDate monthDate) {
+        try {
+            List<Day> days = mQD.getShiftsForMonth(monthDate);
+
+            // Aggiorna i flag "oggi"
+            LocalDate today = LocalDate.now();
+            for (Day day : days) {
+                if (day.getDate() != null) {
+                    day.setIsToday(day.getDate().equals(today));
+                }
+            }
+
+            return days;
+        } catch (Exception e) {
+            if (LOG_ENABLED)
+                Log.e(TAG, "Errore nell'ottenere i giorni per " + monthDate + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
      * Formatta il titolo del mese.
-     * Mostra solo il nome del mese se è dello stesso anno corrente,
-     * altrimenti include anche l'anno.
      */
     private String formatMonthTitle(LocalDate monthDate) {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter;
 
         if (monthDate.getYear() == today.getYear()) {
-            // Stesso anno: mostra solo il mese
             formatter = DateTimeFormatter.ofPattern("MMMM", Locale.ITALIAN);
         } else {
-            // Anno diverso: mostra mese e anno
             formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ITALIAN);
         }
 
@@ -208,74 +257,70 @@ public class DayslistViewFragment extends Fragment {
     }
 
     /**
-     * Trova la posizione di oggi nella cache.
+     * Trova la posizione di oggi negli elementi del mese.
      */
-    private void findTodayPosition() {
+    private void findTodayPosition(List<Object> monthItems, int startIndex) {
+        if (mTodayDayPosition >= 0) return; // Già trovato
+
         LocalDate today = LocalDate.now();
-        mTodayPosition = -1;
 
-        for (int i = 0; i < mDaysCache.size(); i++) {
-            DayData dayData = mDaysCache.get(i);
-            // Salta gli header dei mesi
-            if (dayData.isMonthHeader()) continue;
-
-            if (dayData.getDay().getDate() != null && dayData.getDay().getDate().equals(today)) {
-                mTodayPosition = i;
-                break;
+        for (int i = 0; i < monthItems.size(); i++) {
+            Object item = monthItems.get(i);
+            if (item instanceof DayData) {
+                DayData dayData = (DayData) item;
+                if (dayData.getDay().getDate() != null &&
+                        dayData.getDay().getDate().equals(today)) {
+                    mTodayDayPosition = startIndex + i;
+                    if (LOG_ENABLED)
+                        Log.d(TAG, "Trovato oggi alla posizione: " + mTodayDayPosition);
+                    break;
+                }
             }
         }
-
-        if (LOG_ENABLED) Log.d(TAG, "Posizione di oggi: " + mTodayPosition);
     }
 
     /**
-     * Scrolla al mese corrente.
+     * Listener migliorato per lo scrolling infinito.
      */
-    private void scrollToCurrentMonth() {
-        if (mTodayPosition >= 0) {
-            // Scrolla a oggi se trovato
-            mLayoutManager.scrollToPosition(mTodayPosition);
-        } else {
-            // Altrimenti scrolla al centro della cache
-            mLayoutManager.scrollToPosition(mCurrentCenterPosition);
-        }
-    }
-
-    /**
-     * Listener per lo scrolling infinito.
-     */
-    private class InfiniteScrollListener extends RecyclerView.OnScrollListener {
-        private static final int SCROLL_THRESHOLD = 10; // Velocità massima gestibile
-        private long lastScrollTime = 0;
+    private class ImprovedInfiniteScrollListener extends RecyclerView.OnScrollListener {
 
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
 
-            // Evita aggiornamenti durante scroll veloce o cache update
-            if (mIsUpdatingCache || Math.abs(dy) > SCROLL_THRESHOLD) return;
-
-            // Throttling: evita aggiornamenti troppo frequenti
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastScrollTime < 100) return; // 100ms di throttling
-            lastScrollTime = currentTime;
 
+            // Calcola la velocità di scroll
+            long timeDiff = currentTime - mLastScrollTime;
+            if (timeDiff > 0) {
+                mScrollVelocity = (int) (Math.abs(dy) / timeDiff * 16);
+            }
+
+            // Determina la direzione dello scroll
+            int currentDirection = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+
+            // Se lo scroll è troppo veloce, ignora gli aggiornamenti
+            if (mScrollVelocity > MAX_SCROLL_VELOCITY) {
+                mLastScrollTime = currentTime;
+                mLastScrollDirection = currentDirection;
+                return;
+            }
+
+            // Throttling
+            if (timeDiff < 50) return;
+
+            mLastScrollTime = currentTime;
+            mLastScrollDirection = currentDirection;
+
+            // Ottieni le posizioni visibili
             int firstVisiblePosition = mLayoutManager.findFirstVisibleItemPosition();
             int lastVisiblePosition = mLayoutManager.findLastVisibleItemPosition();
 
-            // Validazione posizioni
             if (firstVisiblePosition == RecyclerView.NO_POSITION ||
                     lastVisiblePosition == RecyclerView.NO_POSITION) return;
 
-            // Controlla se siamo vicini all'inizio (primi 30 giorni)
-            if (firstVisiblePosition <= 30 && firstVisiblePosition >= 0) {
-                scheduleAddPreviousDays();
-            }
-
-            // Controlla se siamo vicini alla fine (ultimi 30 giorni)
-            if (lastVisiblePosition >= mDaysCache.size() - 30) {
-                scheduleAddNextDays();
-            }
+            // Logica per il caricamento
+            handleScrollBasedLoading(firstVisiblePosition, lastVisiblePosition, currentDirection);
 
             // Aggiorna la visibilità del FAB
             updateFabVisibility(firstVisiblePosition, lastVisiblePosition);
@@ -285,175 +330,401 @@ public class DayslistViewFragment extends Fragment {
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
             super.onScrollStateChanged(recyclerView, newState);
 
-            // Quando lo scroll si ferma, esegui la pulizia della cache
+            if (LOG_ENABLED) {
+                String stateStr = newState == RecyclerView.SCROLL_STATE_IDLE ? "IDLE" :
+                        newState == RecyclerView.SCROLL_STATE_DRAGGING ? "DRAGGING" : "SETTLING";
+                Log.v(TAG, "Scroll state: " + stateStr + ", velocity: " + mScrollVelocity);
+            }
+
             if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                if (mDaysCache.size() > MAX_CACHE_SIZE * 31) { // ~31 giorni per mese
-                    scheduleCleanupCache();
+                mScrollVelocity = 0;
+
+                mMainHandler.postDelayed(() -> {
+                    if (mScrollVelocity == 0) {
+                        processPendingOperations();
+                        scheduleCleanupIfNeeded();
+                    }
+                }, SCROLL_SETTLE_DELAY);
+            }
+        }
+    }
+
+    /**
+     * Gestisce il caricamento basato sulla posizione dello scroll.
+     */
+    private void handleScrollBasedLoading(int firstVisible, int lastVisible, int direction) {
+        // Controlla se siamo vicini all'inizio
+        if (firstVisible <= 10 && direction <= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
+
+            if (LOG_ENABLED) Log.d(TAG, "Triggering top load at position: " + firstVisible);
+            mIsPendingTopLoad.set(true);
+            showTopLoader();
+
+            mBackgroundHandler.postDelayed(this::executeTopLoad, 100);
+        }
+
+        // Controlla se siamo vicini alla fine
+        if (lastVisible >= mItemsCache.size() - 10 && direction >= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
+
+            if (LOG_ENABLED) Log.d(TAG, "Triggering bottom load at position: " + lastVisible);
+            mIsPendingBottomLoad.set(true);
+            showBottomLoader();
+
+            mBackgroundHandler.postDelayed(this::executeBottomLoad, 100);
+        }
+    }
+
+    /**
+     * Processa le operazioni pendenti.
+     */
+    private void processPendingOperations() {
+        if (mIsPendingTopLoad.get() && !mIsUpdatingCache.get()) {
+            executeTopLoad();
+        }
+
+        if (mIsPendingBottomLoad.get() && !mIsUpdatingCache.get()) {
+            executeBottomLoad();
+        }
+    }
+
+    /**
+     * Esegue il caricamento dei mesi precedenti.
+     */
+    private void executeTopLoad() {
+        if (!mIsPendingTopLoad.compareAndSet(true, false)) {
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            if (LOG_ENABLED) Log.w(TAG, "executeTopLoad: Cache già in aggiornamento");
+            return;
+        }
+
+        try {
+            addPreviousMonth();
+        } finally {
+            mIsUpdatingCache.set(false);
+        }
+    }
+
+    /**
+     * Esegue il caricamento dei mesi successivi.
+     */
+    private void executeBottomLoad() {
+        if (!mIsPendingBottomLoad.compareAndSet(true, false)) {
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            if (LOG_ENABLED) Log.w(TAG, "executeBottomLoad: Cache già in aggiornamento");
+            return;
+        }
+
+        try {
+            addNextMonth();
+        } finally {
+            mIsUpdatingCache.set(false);
+        }
+    }
+
+    /**
+     * Programma la pulizia della cache se necessario.
+     */
+    private void scheduleCleanupIfNeeded() {
+        if (mItemsCache.size() > QD_MAX_CACHE_SIZE * 35) { // ~35 elementi per mese
+            mBackgroundHandler.postDelayed(() -> {
+                if (!mIsUpdatingCache.get() && mScrollVelocity == 0) {
+                    cleanupCache();
+                }
+            }, 1000);
+        }
+    }
+
+    /**
+     * Mostra l'indicatore di caricamento superiore.
+     */
+    private void showTopLoader() {
+        if (mShowingTopLoader) return;
+
+        mMainHandler.post(() -> {
+            mShowingTopLoader = true;
+            mItemsCache.add(0, new LoadingItem(LoadingItem.Type.TOP));
+
+            if (mTodayDayPosition >= 0) {
+                mTodayDayPosition++;
+            }
+            mCurrentCenterPosition++;
+
+            if (mAdapter != null) {
+                mAdapter.notifyItemInserted(0);
+            }
+
+            if (LOG_ENABLED) Log.d(TAG, "Mostrato loader superiore");
+        });
+    }
+
+    /**
+     * Mostra l'indicatore di caricamento inferiore.
+     */
+    private void showBottomLoader() {
+        if (mShowingBottomLoader) return;
+
+        mMainHandler.post(() -> {
+            mShowingBottomLoader = true;
+            mItemsCache.add(new LoadingItem(LoadingItem.Type.BOTTOM));
+
+            if (mAdapter != null) {
+                mAdapter.notifyItemInserted(mItemsCache.size() - 1);
+            }
+
+            if (LOG_ENABLED) Log.d(TAG, "Mostrato loader inferiore");
+        });
+    }
+
+    /**
+     * Rimuove l'indicatore di caricamento superiore.
+     */
+    private void hideTopLoader() {
+        if (!mShowingTopLoader) return;
+
+        mMainHandler.post(() -> {
+            for (int i = 0; i < mItemsCache.size(); i++) {
+                Object item = mItemsCache.get(i);
+                if (item instanceof LoadingItem && ((LoadingItem) item).getType() == LoadingItem.Type.TOP) {
+                    mItemsCache.remove(i);
+
+                    if (mTodayDayPosition > i) {
+                        mTodayDayPosition--;
+                    }
+                    if (mCurrentCenterPosition > i) {
+                        mCurrentCenterPosition--;
+                    }
+
+                    if (mAdapter != null) {
+                        mAdapter.notifyItemRemoved(i);
+                    }
+                    break;
                 }
             }
-        }
+
+            mShowingTopLoader = false;
+            if (LOG_ENABLED) Log.d(TAG, "Nascosto loader superiore");
+        });
     }
 
     /**
-     * Programma l'aggiunta di giorni precedenti in modo sicuro.
+     * Rimuove l'indicatore di caricamento inferiore.
      */
-    private void scheduleAddPreviousDays() {
-        if (mRecyclerView != null) {
-            mRecyclerView.post(this::addPreviousDays);
-        }
+    private void hideBottomLoader() {
+        if (!mShowingBottomLoader) return;
+
+        mMainHandler.post(() -> {
+            for (int i = mItemsCache.size() - 1; i >= 0; i--) {
+                Object item = mItemsCache.get(i);
+                if (item instanceof LoadingItem && ((LoadingItem) item).getType() == LoadingItem.Type.BOTTOM) {
+                    mItemsCache.remove(i);
+
+                    if (mAdapter != null) {
+                        mAdapter.notifyItemRemoved(i);
+                    }
+                    break;
+                }
+            }
+
+            mShowingBottomLoader = false;
+            if (LOG_ENABLED) Log.d(TAG, "Nascosto loader inferiore");
+        });
     }
 
     /**
-     * Programma l'aggiunta di giorni successivi in modo sicuro.
+     * Aggiunge mese precedente alla cache.
      */
-    private void scheduleAddNextDays() {
-        if (mRecyclerView != null) {
-            mRecyclerView.post(this::addNextDays);
-        }
-    }
+    private void addPreviousMonth() {
+        if (mItemsCache.isEmpty()) return;
 
-    /**
-     * Programma la pulizia della cache in modo sicuro.
-     */
-    private void scheduleCleanupCache() {
-        if (mRecyclerView != null) {
-            mRecyclerView.post(this::cleanupCache);
-        }
-    }
-
-    /**
-     * Aggiunge giorni precedenti alla cache.
-     */
-    private void addPreviousDays() {
-        if (mDaysCache.isEmpty() || mIsUpdatingCache) return;
-
-        mIsUpdatingCache = true;
         try {
-            // Trova il primo mese nella cache
-            DayData firstDay = mDaysCache.get(0);
-            LocalDate firstMonth = firstDay.getMonthDate();
+            // Trova il primo mese reale
+            LocalDate firstMonth = null;
+            for (Object item : mItemsCache) {
+                if (item instanceof MonthHeaderData) {
+                    firstMonth = ((MonthHeaderData) item).getMonthDate();
+                    break;
+                } else if (item instanceof DayData) {
+                    firstMonth = ((DayData) item).getMonthDate();
+                    break;
+                }
+            }
+
+            if (firstMonth == null) return;
+
+            // Genera il mese precedente
             LocalDate previousMonth = firstMonth.minusMonths(1);
+            List<Object> newMonthItems = generateMonthItems(previousMonth);
 
-            // Genera i giorni del mese precedente
-            List<DayData> newDays = generateMonthDays(previousMonth);
+            mMainHandler.post(() -> {
+                // Inserisci dopo il loader superiore se presente
+                int insertPosition = mShowingTopLoader ? 1 : 0;
+                mItemsCache.addAll(insertPosition, newMonthItems);
 
-            // Aggiunge all'inizio della cache
-            mDaysCache.addAll(0, newDays);
+                // Aggiorna le posizioni
+                if (mTodayDayPosition >= insertPosition) {
+                    mTodayDayPosition += newMonthItems.size();
+                } else {
+                    // Controlla se oggi è nel nuovo mese
+                    findTodayPosition(newMonthItems, insertPosition);
+                }
 
-            // Aggiorna la posizione di oggi
-            if (mTodayPosition >= 0) {
-                mTodayPosition += newDays.size();
-            }
+                if (mCurrentCenterPosition >= insertPosition) {
+                    mCurrentCenterPosition += newMonthItems.size();
+                }
 
-            // Aggiorna la posizione corrente
-            mCurrentCenterPosition += newDays.size();
+                // Notifica l'adapter
+                if (mAdapter != null) {
+                    mAdapter.notifyItemRangeInserted(insertPosition, newMonthItems.size());
 
-            // Notifica l'adapter in modo sicuro
-            if (mAdapter != null) {
-                mAdapter.notifyItemRangeInserted(0, newDays.size());
-                // Mantieni la posizione dello scroll
-                mLayoutManager.scrollToPositionWithOffset(newDays.size(), 0);
-            }
+                    // Mantieni la posizione dello scroll
+                    int currentFirst = mLayoutManager.findFirstVisibleItemPosition();
+                    if (currentFirst >= 0) {
+                        mLayoutManager.scrollToPositionWithOffset(currentFirst + newMonthItems.size(), 0);
+                    }
+                }
 
-            if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese precedente: " + previousMonth +
-                    " (" + newDays.size() + " giorni)");
+                // Rimuovi il loader
+                hideTopLoader();
+
+                if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese precedente: " + previousMonth +
+                        " (" + newMonthItems.size() + " elementi)");
+            });
+
         } catch (Exception e) {
             if (LOG_ENABLED)
-                Log.e(TAG, "Errore nell'aggiungere giorni precedenti: " + e.getMessage());
-        } finally {
-            mIsUpdatingCache = false;
+                Log.e(TAG, "Errore nell'aggiungere mese precedente: " + e.getMessage());
+            hideTopLoader();
         }
     }
 
     /**
-     * Aggiunge giorni successivi alla cache.
+     * Aggiunge mese successivo alla cache.
      */
-    private void addNextDays() {
-        if (mDaysCache.isEmpty() || mIsUpdatingCache) return;
+    private void addNextMonth() {
+        if (mItemsCache.isEmpty()) return;
 
-        mIsUpdatingCache = true;
         try {
-            // Trova l'ultimo mese nella cache
-            DayData lastDay = mDaysCache.get(mDaysCache.size() - 1);
-            LocalDate lastMonth = lastDay.getMonthDate();
-            LocalDate nextMonth = lastMonth.plusMonths(1);
-
-            // Genera i giorni del mese successivo
-            List<DayData> newDays = generateMonthDays(nextMonth);
-
-            // Posizione di inserimento
-            int insertPosition = mDaysCache.size();
-
-            // Aggiunge alla fine della cache
-            mDaysCache.addAll(newDays);
-
-
-            // Notifica l'adapter in modo sicuro
-            if (mAdapter != null) {
-                mAdapter.notifyItemRangeInserted(insertPosition, newDays.size());
+            // Trova l'ultimo mese reale
+            LocalDate lastMonth = null;
+            for (int i = mItemsCache.size() - 1; i >= 0; i--) {
+                Object item = mItemsCache.get(i);
+                if (item instanceof MonthHeaderData) {
+                    lastMonth = ((MonthHeaderData) item).getMonthDate();
+                    break;
+                } else if (item instanceof DayData) {
+                    lastMonth = ((DayData) item).getMonthDate();
+                    break;
+                }
             }
 
-            if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese successivo: " + nextMonth +
-                    " (" + newDays.size() + " giorni)");
+            if (lastMonth == null) return;
+
+            // Genera il mese successivo
+            LocalDate nextMonth = lastMonth.plusMonths(1);
+            List<Object> newMonthItems = generateMonthItems(nextMonth);
+
+            mMainHandler.post(() -> {
+                // Inserisci prima del loader inferiore se presente
+                int insertPosition = mShowingBottomLoader ? mItemsCache.size() - 1 : mItemsCache.size();
+                mItemsCache.addAll(insertPosition, newMonthItems);
+
+                // Controlla se oggi è nel nuovo mese
+                if (mTodayDayPosition < 0) {
+                    findTodayPosition(newMonthItems, insertPosition);
+                }
+
+                // Notifica l'adapter
+                if (mAdapter != null) {
+                    mAdapter.notifyItemRangeInserted(insertPosition, newMonthItems.size());
+                }
+
+                // Rimuovi il loader
+                hideBottomLoader();
+
+                if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese successivo: " + nextMonth +
+                        " (" + newMonthItems.size() + " elementi)");
+            });
+
         } catch (Exception e) {
             if (LOG_ENABLED)
-                Log.e(TAG, "Errore nell'aggiungere giorni successivi: " + e.getMessage());
-        } finally {
-            mIsUpdatingCache = false;
+                Log.e(TAG, "Errore nell'aggiungere mese successivo: " + e.getMessage());
+            hideBottomLoader();
         }
     }
 
     /**
-     * Pulisce la cache rimuovendo i giorni più lontani.
+     * Pulisce la cache rimuovendo elementi lontani.
      */
     private void cleanupCache() {
-        if (mDaysCache.size() <= MAX_CACHE_SIZE * 31 || mIsUpdatingCache) return;
+        if (mItemsCache.size() <= QD_MAX_CACHE_SIZE * 35) return;
 
-        mIsUpdatingCache = true;
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            return;
+        }
+
         try {
-            int currentVisiblePosition = mLayoutManager.findFirstCompletelyVisibleItemPosition();
-            int targetCacheSize = MONTHS_CACHE_SIZE * 31; // Circa 6 mesi * 31 giorni
+            mMainHandler.post(() -> {
+                try {
+                    int currentVisiblePosition = mLayoutManager.findFirstCompletelyVisibleItemPosition();
+                    int targetCacheSize = QD_MONTHS_CACHE_SIZE * 35; // ~35 elementi per mese
 
-            // Rimuovi i giorni troppo lontani dall'inizio
-            while (mDaysCache.size() > targetCacheSize &&
-                    currentVisiblePosition > targetCacheSize / 2) {
-                mDaysCache.remove(0);
-                mAdapter.notifyItemRemoved(0);
-                currentVisiblePosition--;
-                mCurrentCenterPosition--;
-                if (mTodayPosition > 0) mTodayPosition--;
-            }
+                    // Rimuovi dall'inizio se necessario
+                    while (mItemsCache.size() > targetCacheSize &&
+                            currentVisiblePosition > QD_MONTHS_CACHE_SIZE * 15) {
+                        mItemsCache.remove(0);
+                        currentVisiblePosition--;
 
-            // Rimuovi i giorni troppo lontani dalla fine
-            while (mDaysCache.size() > targetCacheSize &&
-                    currentVisiblePosition < mDaysCache.size() - targetCacheSize / 2) {
-                int lastIndex = mDaysCache.size() - 1;
-                mDaysCache.remove(lastIndex);
-                mAdapter.notifyItemRemoved(lastIndex);
-            }
+                        if (mTodayDayPosition > 0) mTodayDayPosition--;
+                        if (mCurrentCenterPosition > 0) mCurrentCenterPosition--;
 
-            if (LOG_ENABLED) Log.d(TAG, "Cache pulita, dimensione attuale: " + mDaysCache.size());
+                        if (mAdapter != null) {
+                            mAdapter.notifyItemRemoved(0);
+                        }
+                    }
+
+                    // Rimuovi dalla fine se necessario
+                    while (mItemsCache.size() > targetCacheSize &&
+                            currentVisiblePosition < mItemsCache.size() - QD_MONTHS_CACHE_SIZE * 15) {
+                        int lastIndex = mItemsCache.size() - 1;
+                        mItemsCache.remove(lastIndex);
+
+                        if (mAdapter != null) {
+                            mAdapter.notifyItemRemoved(lastIndex);
+                        }
+                    }
+
+                    if (LOG_ENABLED)
+                        Log.d(TAG, "Cache pulita, dimensione attuale: " + mItemsCache.size());
+                } finally {
+                    mIsUpdatingCache.set(false);
+                }
+            });
         } catch (Exception e) {
             if (LOG_ENABLED) Log.e(TAG, "Errore nella pulizia della cache: " + e.getMessage());
-        } finally {
-            mIsUpdatingCache = false;
+            mIsUpdatingCache.set(false);
         }
     }
 
     /**
-     * Aggiorna la visibilità del FAB in base alla posizione dello scroll.
+     * Aggiorna la visibilità del FAB.
      */
     private void updateFabVisibility(int firstVisible, int lastVisible) {
         if (mFabGoToToday == null) return;
 
         boolean showFab = true;
 
-        // Nascondi il FAB se oggi è visibile
-        if (mTodayPosition >= 0) {
-            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
+        if (mTodayDayPosition >= 0) {
+            showFab = !(firstVisible <= mTodayDayPosition && lastVisible >= mTodayDayPosition);
         }
 
-        // Anima la visibilità del FAB
         if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
             mFabGoToToday.show();
         } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
@@ -465,17 +736,15 @@ public class DayslistViewFragment extends Fragment {
      * Scrolla al giorno di oggi.
      */
     private void scrollToToday() {
-        if (mTodayPosition >= 0 && mTodayPosition < mDaysCache.size()) {
-            // Scroll fluido a oggi
-            mRecyclerView.smoothScrollToPosition(mTodayPosition);
+        if (mTodayDayPosition >= 0 && mTodayDayPosition < mItemsCache.size()) {
+            mDaysRecyclerView.smoothScrollToPosition(mTodayDayPosition);
             if (LOG_ENABLED)
-                Log.d(TAG, "Scrolling a oggi, posizione: " + mTodayPosition);
+                Log.d(TAG, "Scrolling a oggi, posizione: " + mTodayDayPosition);
         } else {
-            // Se non troviamo oggi nella cache, ricostruisci la cache centrata su oggi
-            if (LOG_ENABLED) Log.d(TAG, "Oggi non in cache, ricostruzione cache");
+            if (LOG_ENABLED) Log.d(TAG, "Oggi non in cache, ricostruzione lista");
             LocalDate today = LocalDate.now();
             mCurrentDate = LocalDate.of(today.getYear(), today.getMonth(), 1);
-            setupInfiniteScrolling();
+            setupInfiniteDaysList();
         }
     }
 
@@ -484,13 +753,11 @@ public class DayslistViewFragment extends Fragment {
         super.onStart();
         if (LOG_ENABLED) Log.d(TAG, "onStart");
 
-        // Legge le preferenze
         if (mQD != null) {
             mQD.updatePreferences(getActivity());
             if (mQD.isRefresh()) {
                 mQD.setRefresh(false);
-                // Ricostruisci la cache se necessario
-                setupInfiniteScrolling();
+                setupInfiniteDaysList();
             }
         }
     }
@@ -501,7 +768,6 @@ public class DayslistViewFragment extends Fragment {
         if (LOG_ENABLED) Log.d(TAG, "onResume");
 
         // Aggiorna la posizione di oggi
-        findTodayPosition();
         if (mAdapter != null) {
             mAdapter.notifyDataSetChanged();
         }
@@ -529,12 +795,21 @@ public class DayslistViewFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Pulisci le risorse per evitare memory leak
-        if (mDaysCache != null) {
-            mDaysCache.clear();
+
+        // Cancella tutte le operazioni pendenti
+        if (mMainHandler != null) {
+            mMainHandler.removeCallbacksAndMessages(null);
         }
-        if (mRecyclerView != null) {
-            mRecyclerView.clearOnScrollListeners();
+        if (mBackgroundHandler != null) {
+            mBackgroundHandler.removeCallbacksAndMessages(null);
+        }
+
+        // Pulisci le risorse
+        if (mItemsCache != null) {
+            mItemsCache.clear();
+        }
+        if (mDaysRecyclerView != null) {
+            mDaysRecyclerView.clearOnScrollListeners();
         }
 
         mAdapter = null;
@@ -547,47 +822,77 @@ public class DayslistViewFragment extends Fragment {
     public void notifyUpdates() {
         if (LOG_ENABLED) Log.d(TAG, "notifyUpdates chiamato");
 
-        // Aggiorna i dati se il mese corrente è cambiato
-        LocalDate newCurrentDate = mQD.getCursorDate();
-        if (!newCurrentDate.equals(mCurrentDate)) {
-            mCurrentDate = newCurrentDate;
-            // Ricarica la cache per il nuovo mese
-            setupInfiniteScrolling();
-        } else if (mAdapter != null) {
-            // Aggiorna solo i dati esistenti
-            mAdapter.notifyDataSetChanged();
+        // Ricarica la cache se necessario
+        if (mQD != null) {
+            LocalDate newCurrentDate = mQD.getCursorDate();
+            if (!newCurrentDate.equals(mCurrentDate)) {
+                mCurrentDate = newCurrentDate;
+                setupInfiniteDaysList();
+            } else if (mAdapter != null) {
+                mAdapter.notifyDataSetChanged();
+            }
         }
     }
 
     /**
-     * Interfaccia per la comunicazione con l'activity.
+     * Interfaccia per comunicazione con l'activity.
      */
     public interface OnQuattroDueHomeFragmentInteractionListener {
         void onQuattroDueHomeFragmentInteractionListener(long id);
     }
 
+    // ==================== CLASSI DATI ====================
+
     /**
-     * Classe per rappresentare i dati di un giorno con informazioni sul mese.
+     * Classe per rappresentare un elemento di caricamento.
+     */
+    public static class LoadingItem {
+        public enum Type {
+            TOP, BOTTOM
+        }
+
+        private Type type;
+
+        public LoadingItem(Type type) {
+            this.type = type;
+        }
+
+        public Type getType() {
+            return type;
+        }
+    }
+
+    /**
+     * Classe per rappresentare un header di mese.
+     */
+    public static class MonthHeaderData {
+        private String monthTitle;
+        private LocalDate monthDate;
+
+        public MonthHeaderData(String monthTitle, LocalDate monthDate) {
+            this.monthTitle = monthTitle;
+            this.monthDate = monthDate;
+        }
+
+        public String getMonthTitle() {
+            return monthTitle;
+        }
+
+        public LocalDate getMonthDate() {
+            return monthDate;
+        }
+    }
+
+    /**
+     * Classe per rappresentare i dati di un giorno.
      */
     public static class DayData {
         private Day day;
         private LocalDate monthDate;
-        private boolean isMonthHeader;
-        private String monthTitle;
 
         public DayData(Day day, LocalDate monthDate) {
             this.day = day;
             this.monthDate = monthDate;
-            this.isMonthHeader = false;
-            this.monthTitle = null;
-        }
-
-        // Costruttore per header del mese
-        public DayData(String monthTitle, LocalDate monthDate) {
-            this.day = null;
-            this.monthDate = monthDate;
-            this.isMonthHeader = true;
-            this.monthTitle = monthTitle;
         }
 
         public Day getDay() {
@@ -597,202 +902,273 @@ public class DayslistViewFragment extends Fragment {
         public LocalDate getMonthDate() {
             return monthDate;
         }
-
-        public boolean isMonthHeader() {
-            return isMonthHeader;
-        }
-
-        public String getMonthTitle() {
-            return monthTitle;
-        }
     }
 
+    // ==================== ADAPTER ====================
+
     /**
-     * Adapter per la lista infinita dei giorni.
+     * Adapter per la lista dei giorni con scrolling infinito e indicatori di caricamento.
      */
-    private static class InfiniteDaysListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private class MonthsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-        private static final int VIEW_TYPE_MONTH_HEADER = 0;
-        private static final int VIEW_TYPE_DAY = 1;
-
-        private final Context mContext;
-        private List<DayData> mDaysData;
-        private final LayoutInflater mInflater;
+        private List<Object> itemsData;
+        private HalfTeam userHalfTeam;
         private int mNumShifts = 3; // Numero predefinito di turni
 
-        public InfiniteDaysListAdapter(Context context, List<DayData> daysData) {
-            mContext = context;
-            mDaysData = daysData != null ? daysData : new ArrayList<>();
-            mInflater = LayoutInflater.from(context);
+        public MonthsAdapter(List<Object> itemsData, HalfTeam userHalfTeam) {
+            this.itemsData = itemsData;
+            this.userHalfTeam = userHalfTeam;
+        }
+
+        public void updateUserHalfTeam(HalfTeam userHalfTeam) {
+            this.userHalfTeam = userHalfTeam;
         }
 
         @Override
         public int getItemViewType(int position) {
-            return mDaysData.get(position).isMonthHeader() ? VIEW_TYPE_MONTH_HEADER : VIEW_TYPE_DAY;
+            Object item = itemsData.get(position);
+            if (item instanceof LoadingItem) {
+                return VIEW_TYPE_LOADING;
+            } else if (item instanceof MonthHeaderData) {
+                return VIEW_TYPE_MONTH_HEADER;
+            } else {
+                return VIEW_TYPE_DAY;
+            }
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            if (viewType == VIEW_TYPE_MONTH_HEADER) {
-                View view = mInflater.inflate(R.layout.item_month_header, parent, false);
-                return new MonthHeaderViewHolder(view);
-            } else {
-                View view = mInflater.inflate(R.layout.item_dayslist_row, parent, false);
-                return new DayViewHolder(view, mNumShifts);
+            switch (viewType) {
+                case VIEW_TYPE_LOADING:
+                    View loadingView = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_loading_calendar, parent, false);
+                    return new LoadingViewHolder(loadingView);
+
+                case VIEW_TYPE_MONTH_HEADER:
+                    View headerView = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_month_header, parent, false);
+                    return new MonthHeaderViewHolder(headerView);
+
+                default: // VIEW_TYPE_DAY
+                    View dayView = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_dayslist_row, parent, false);
+                    return new DayViewHolder(dayView, mNumShifts);
             }
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            DayData dayData = mDaysData.get(position);
+            Object item = itemsData.get(position);
 
-            if (holder instanceof MonthHeaderViewHolder) {
-                ((MonthHeaderViewHolder) holder).bind(dayData.getMonthTitle());
+            if (holder instanceof LoadingViewHolder) {
+                ((LoadingViewHolder) holder).bind((LoadingItem) item);
+            } else if (holder instanceof MonthHeaderViewHolder) {
+                ((MonthHeaderViewHolder) holder).bind((MonthHeaderData) item);
             } else if (holder instanceof DayViewHolder) {
-                Day day = dayData.getDay();
-                if (day != null) {
-                    bindDayToViewHolder((DayViewHolder) holder, day, mContext);
-                }
+                ((DayViewHolder) holder).bind((DayData) item, userHalfTeam, getContext());
             }
         }
 
         @Override
         public int getItemCount() {
-            return mDaysData.size();
+            return itemsData.size();
         }
 
         /**
-         * ViewHolder per l'header del mese.
+         * ViewHolder per gli indicatori di caricamento.
          */
-        public static class MonthHeaderViewHolder extends RecyclerView.ViewHolder {
-            private android.widget.TextView tvMonthTitle;
+        class LoadingViewHolder extends RecyclerView.ViewHolder {
+            private ProgressBar progressBar;
+            private TextView loadingText;
 
-            public MonthHeaderViewHolder(View view) {
-                super(view);
-                tvMonthTitle = view.findViewById(R.id.tv_month_title);
+            public LoadingViewHolder(@NonNull View itemView) {
+                super(itemView);
+                progressBar = itemView.findViewById(R.id.progress_bar);
+                loadingText = itemView.findViewById(R.id.tv_loading);
             }
 
-            public void bind(String monthTitle) {
-                tvMonthTitle.setText(monthTitle);
-            }
-        }
-
-        /**
-         * Lega i dati del giorno al ViewHolder
-         */
-        private void bindDayToViewHolder(DayViewHolder holder, Day day, Context context) {
-
-            android.content.res.Resources r = context.getResources();
-
-            // Imposta il numero del giorno
-            holder.tday.setText(r.getString(R.string.str_scheme_num, day.getDayOfMonth()));
-
-            // Imposta il nome del giorno della settimana
-            holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
-
-            // Resetta tutti i colori dei turni
-            resetShiftViews(holder);
-
-            // Imposta i testi per i turni
-            List<net.calvuz.qdue.quattrodue.models.Shift> shifts = day.getShifts();
-            int numShifts = Math.min(shifts.size(), mNumShifts);
-
-            for (int i = 0; i < numShifts; i++) {
-                if (holder.shiftTexts[i] != null) {
-                    try {
-                        String teamText = shifts.get(i).getTeamsAsString();
-                        holder.shiftTexts[i].setText(teamText != null && !teamText.isEmpty() ?
-                                r.getString(R.string.str_scheme, teamText) : "");
-                    } catch (Exception e) {
-                        holder.shiftTexts[i].setText("");
-                    }
+            public void bind(LoadingItem loadingItem) {
+                if (loadingItem.getType() == LoadingItem.Type.TOP) {
+                    loadingText.setText("Caricamento giorni precedenti...");
+                } else {
+                    loadingText.setText("Caricamento giorni successivi...");
                 }
-            }
 
-            // Imposta il testo per le squadre a riposo
-            String tR = day.getOffWorkHalfTeamsAsString();
-            holder.ttR.setText(tR != null && !tR.isEmpty() ? r.getString(R.string.str_scheme, tR) : "");
-
-            // Imposta il testo per gli eventi
-            String tE = day.hasEvents() ? "*" : "  ";
-            holder.ttE.setText(tE);
-
-            // Colore rosso per la domenica
-            if (day.getDayOfWeek() == java.time.DayOfWeek.SUNDAY.getValue()) {
-                holder.tday.setTextColor(r.getColor(R.color.colorTextRed));
-                holder.twday.setTextColor(r.getColor(R.color.colorTextRed));
-            } else {
-                holder.tday.setTextColor(r.getColor(R.color.colorTextBlack));
-                holder.twday.setTextColor(r.getColor(R.color.colorTextBlack));
-            }
-
-            // Ottiene la squadra dell'utente
-            QuattroDue qd = QuattroDue.getInstance(context);
-            net.calvuz.qdue.quattrodue.models.HalfTeam userHalfTeam = qd.getUserHalfTeam();
-
-            // Trova la posizione della squadra dell'utente
-            int userPosition = -1;
-            if (userHalfTeam != null) {
-                userPosition = day.getInWichTeamIsHalfTeam(userHalfTeam);
-            }
-
-            // Evidenzia SOLO il turno dell'utente
-            if (userPosition >= 0 && userPosition < numShifts && holder.shiftTexts[userPosition] != null) {
-                holder.shiftTexts[userPosition].setBackgroundColor(r.getColor(R.color.colorBackgroundLightBlue));
-                holder.shiftTexts[userPosition].setTextColor(r.getColor(R.color.colorTextWhite));
-            }
-
-            // Evidenzia il giorno corrente
-            if (day.getIsToday()) {
-                holder.mView.setBackgroundColor(r.getColor(R.color.colorBackgroundYellow));
-            } else {
-                holder.mView.setBackgroundColor(0); // Trasparente
+                progressBar.setVisibility(View.VISIBLE);
             }
         }
 
         /**
-         * Reimposta i colori e i testi dei turni ai valori predefiniti.
+         * ViewHolder per gli header dei mesi.
          */
-        private void resetShiftViews(DayViewHolder holder) {
-            if (holder.shiftTexts != null) {
-                for (android.widget.TextView tv : holder.shiftTexts) {
-                    if (tv != null) {
-                        tv.setBackgroundColor(0); // Trasparente
-                        tv.setTextColor(mContext.getResources().getColor(R.color.colorTextBlack));
-                    }
-                }
+        class MonthHeaderViewHolder extends RecyclerView.ViewHolder {
+            private TextView tvMonthTitle;
+
+            public MonthHeaderViewHolder(@NonNull View itemView) {
+                super(itemView);
+                tvMonthTitle = itemView.findViewById(R.id.tv_month_title);
+            }
+
+            public void bind(MonthHeaderData monthHeaderData) {
+                tvMonthTitle.setText(monthHeaderData.getMonthTitle());
             }
         }
 
         /**
-         * ViewHolder per i giorni.
+         * ViewHolder per i giorni con ottimizazioni prestazioni.
          */
-        public static class DayViewHolder extends RecyclerView.ViewHolder {
-            public android.widget.TextView tday, twday;  // giorno del mese, giorno della settimana
-            public android.widget.TextView[] shiftTexts; // array di textview per i turni
-            public android.widget.TextView ttE, ttR;     // testo per eventi e riposi
-            public View mView;            // root view
+        class DayViewHolder extends RecyclerView.ViewHolder {
+            private TextView tday, twday;  // giorno del mese, giorno della settimana
+            private TextView[] shiftTexts; // array di textview per i turni
+            private TextView ttE, ttR;     // testo per eventi e riposi
+            private View mView;            // root view
 
-            public DayViewHolder(View view, int numShifts) {
-                super(view);
-                mView = view;
-                tday = view.findViewById(R.id.tday);
-                twday = view.findViewById(R.id.twday);
+            // Cache per i colori per evitare chiamate ripetute
+            private int sCachedNormalTextColor = 0;
+            private int sCachedSundayTextColor = 0;
+            private int sCachedTodayBackgroundColor = 0;
+            private int sCachedNormalBackgroundColor = 0;
+            private int sCachedSundayBackgroundColor = 0;
+            private int sCachedUserShiftBackgroundColor = 0;
+            private int sCachedUserShiftTextColor = 0;
+
+            public DayViewHolder(@NonNull View itemView, int numShifts) {
+                super(itemView);
+                mView = itemView;
+                tday = itemView.findViewById(R.id.tday);
+                twday = itemView.findViewById(R.id.twday);
 
                 // Inizializza array per le TextView dei turni
-                shiftTexts = new android.widget.TextView[numShifts];
+                shiftTexts = new TextView[numShifts];
 
                 // Assegna le TextView in base al loro ID
                 for (int i = 0; i < numShifts && i < 5; i++) { // Massimo 5 turni supportati
-                    int resId = view.getResources().getIdentifier("tt" + (i+1), "id", view.getContext().getPackageName());
+                    int resId = itemView.getResources().getIdentifier("tt" + (i + 1), "id",
+                            itemView.getContext().getPackageName());
                     if (resId != 0) {
-                        shiftTexts[i] = view.findViewById(resId);
+                        shiftTexts[i] = itemView.findViewById(resId);
                     }
                 }
 
-                ttR = view.findViewById(R.id.ttR);
-                ttE = view.findViewById(R.id.ttE);
+                ttR = itemView.findViewById(R.id.ttR);
+//                ttE = itemView.findViewById(R.id.ttE);
+//
+                // Inizializza la cache dei colori
+                initializeColorCache(itemView.getContext());
+            }
+
+            private void initializeColorCache(Context context) {
+                if (sCachedNormalTextColor == 0) {
+                    sCachedNormalTextColor = ThemeUtils.getOnNormalBackgroundColor(context);
+                    sCachedSundayTextColor = ThemeUtils.getSundayTextColor(context);
+                    sCachedTodayBackgroundColor = ThemeUtils.getTodayBackgroundColor(context);
+                    sCachedNormalBackgroundColor = ThemeUtils.getNormalBackgroundColor(context);
+                    sCachedSundayBackgroundColor = ThemeUtils.getSundayBackgroundColor(context);
+                    sCachedUserShiftBackgroundColor = ThemeUtils.getMaterialPrimaryContainerColor(context);
+                    sCachedUserShiftTextColor = ThemeUtils.getMaterialOnPrimaryContainerColor(context);
+                }
+            }
+
+            public void bind(DayData dayData, HalfTeam userHalfTeam, Context context) {
+                Day day = dayData.getDay();
+                if (day == null) return;
+
+                android.content.res.Resources r = context.getResources();
+                boolean isSunday = day.getDayOfWeek() == java.time.DayOfWeek.SUNDAY.getValue();
+
+                // Imposta il numero del giorno
+                tday.setText(r.getString(R.string.str_scheme_num, day.getDayOfMonth()));
+
+                // Imposta il nome del giorno della settimana
+                twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
+
+                // Resetta tutti i colori dei turni
+                resetShiftViews();
+                mView.setBackgroundColor(sCachedNormalBackgroundColor);
+
+                // Imposta i testi per i turni
+                List<net.calvuz.qdue.quattrodue.models.Shift> shifts = day.getShifts();
+                int numShifts = Math.min(shifts.size(), mNumShifts);
+
+                for (int i = 0; i < numShifts; i++) {
+                    if (shiftTexts[i] != null) {
+                        try {
+                            String teamText = shifts.get(i).getTeamsAsString();
+                            shiftTexts[i].setText(teamText != null && !teamText.isEmpty() ?
+                                    r.getString(R.string.str_scheme, teamText) : "");
+                        } catch (Exception e) {
+                            shiftTexts[i].setText("");
+                        }
+                    }
+                }
+
+                // Imposta il testo per le squadre a riposo
+                String tR = day.getOffWorkHalfTeamsAsString();
+                ttR.setText(tR != null && !tR.isEmpty() ? r.getString(R.string.str_scheme, tR) : "");
+
+                // Imposta il testo per gli eventi
+                String tE = day.hasEvents() ? "*" : "  ";
+//                ttE.setText(tE);
+
+                // Trova la posizione della squadra dell'utente
+                int userPosition = -1;
+                if (userHalfTeam != null) {
+                    userPosition = day.getInWichTeamIsHalfTeam(userHalfTeam);
+                }
+
+                // Evidenzia SOLO il turno dell'utente
+                if (userPosition >= 0 && userPosition < numShifts && shiftTexts[userPosition] != null) {
+                    shiftTexts[userPosition].setBackgroundColor(sCachedUserShiftBackgroundColor);
+                    shiftTexts[userPosition].setTextColor(isSunday ? sCachedSundayTextColor : sCachedUserShiftTextColor);
+                }
+
+                // Gestisci i colori per il giorno corrente e la domenica
+                if (day.getIsToday()) {
+                    // Colore per oggi (priorità massima)
+                    mView.setBackgroundColor(sCachedTodayBackgroundColor);
+                    setAllTextColors(sCachedNormalTextColor);
+                } else if (isSunday) {
+                    // Colore per la domenica
+                    mView.setBackgroundColor(sCachedSundayBackgroundColor);
+                    setAllTextColors(sCachedSundayTextColor);
+                } else {
+                    // Colori normali
+                    setAllTextColors(sCachedNormalTextColor);
+                }
+            }
+
+            /**
+             * Reimposta i colori dei turni ai valori predefiniti.
+             */
+            private void resetShiftViews() {
+                if (shiftTexts != null) {
+                    for (TextView tv : shiftTexts) {
+                        if (tv != null) {
+                            tv.setBackgroundColor(Color.TRANSPARENT);
+                            tv.setTextColor(sCachedNormalTextColor);
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Imposta il colore del testo per tutti gli elementi.
+             */
+            private void setAllTextColors(int color) {
+                tday.setTextColor(color);
+                twday.setTextColor(color);
+//                ttE.setTextColor(color);
+                ttR.setTextColor(color);
+
+                // Non cambiare il colore dei turni evidenziati dell'utente
+                for (int i = 0; i < shiftTexts.length; i++) {
+                    if (shiftTexts[i] != null &&
+                            shiftTexts[i].getBackground() == null ||
+                            ((android.graphics.drawable.ColorDrawable) shiftTexts[i].getBackground()).getColor() == Color.TRANSPARENT) {
+                        shiftTexts[i].setTextColor(color);
+                    }
+                }
             }
         }
     }

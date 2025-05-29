@@ -35,7 +35,6 @@ public class AboutDialogFragment extends DialogFragment {
                 .setView(view)
                 .setTitle(R.string.app_name) // o "About" o il tuo string resource
                 .setIcon(R.mipmap.ic_launcher)
-//                .setIcon(R.drawable.ic_info) // La tua icona
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> dismiss());
 
         return builder.create();

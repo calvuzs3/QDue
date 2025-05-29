@@ -1,20 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:paddingStart="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_horizontal_margin"
-        android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:paddingBottom="@dimen/activity_horizontal_margin">
+        android:padding="@dimen/dialog_padding"
+        android:paddingStart="@dimen/dialog_padding"
+        android:paddingTop="@dimen/dialog_padding"
+        android:paddingEnd="@dimen/dialog_padding"
+        android:paddingBottom="@dimen/dialog_padding">
 
         <View
-            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_version"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:typeface="normal" />
+
+        <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="?android:attr/listDivider" />
@@ -23,39 +34,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="all"
-            android:paddingTop="@dimen/fab_margin"
-            android:text="@string/app_name"
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/app_version"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:typeface="monospace" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autoLink="all"
-            android:paddingTop="@dimen/fab_margin"
+            android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_desc"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/app_about"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextAppearance.QDue.Body2"
+            android:typeface="normal" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="all"
-            android:paddingTop="@dimen/fab_margin"
+            android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_libraries"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
 
         <TextView
             android:layout_width="match_parent"
@@ -63,62 +59,103 @@
             android:autoLink="all"
             android:paddingTop="4dp"
             android:text="@string/app_libraries_used"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextAppearance.QDue.Body2"
+            android:typeface="normal" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/fab_margin"
+            android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_author_str"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="4dp"
             android:text="@string/app_author_str_name"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:typeface="monospace" />
+            android:textAppearance="@style/TextAppearance.QDue.Body2"
+            android:typeface="normal" />
 
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:paddingTop="@dimen/fab_margin"-->
-<!--            android:text=""-->
-<!--            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
+        <!--        <TextView-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:paddingTop="@dimen/fab_margin"-->
+        <!--            android:text=""-->
+        <!--            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/btn_dismiss_dialog"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="0dp"-->
-<!--            android:layout_gravity="bottom|end"-->
-<!--            android:layout_weight="1"-->
-<!--            android:contentDescription="Togli dialogo About"-->
-<!--            android:minWidth="48dp"-->
-<!--            android:minHeight="48dp"-->
-<!--            android:visibility="visible"-->
-<!--            app:srcCompat="@drawable/btn_close"-->
-<!--            tools:visibility="visible" />-->
+        <!--        <ImageButton-->
+        <!--            android:id="@+id/btn_dismiss_dialog"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="0dp"-->
+        <!--            android:layout_gravity="bottom|end"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:contentDescription="Togli dialogo About"-->
+        <!--            android:minWidth="48dp"-->
+        <!--            android:minHeight="48dp"-->
+        <!--            android:visibility="visible"-->
+        <!--            app:srcCompat="@drawable/btn_close"-->
+        <!--            tools:visibility="visible" />-->
 
-        <!--
+        <!-- Barra informazioni in basso (opzionale) -->
+        <LinearLayout
+            android:id="@+id/ll_dayslist_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dialog_padding"
+            android:background="?attr/colorSurfaceVariant"
+            android:elevation="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:visibility="visible">
+
+            <!-- Indicatore giorno corrente -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/current_day_indicator" />
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:autoLink="all"
-                    android:paddingTop="4dp"
-                    android:text="NoNonsense (&#169;) Jonas Kalderstam"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
+                    android:text="@string/legenda_today"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/legenda_text_size" />
+
+            </LinearLayout>
+
+            <!-- Indicatore turno utente -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="?attr/colorPrimary" />
 
                 <TextView
-                    android:layout_width="fill_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:autoLink="all"
-                    android:paddingTop="4dp"
-                    android:text="Material DateTime Picker (&#169;) W.Dullaer"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
-        -->
+                    android:text="@string/legenda_your_shift"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textSize="@dimen/legenda_text_size" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

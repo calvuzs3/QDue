@@ -10,7 +10,7 @@
 
     <!-- Header con le intestazioni delle colonne -->
     <include
-        android:id="@+id/column_header"
+        android:id="@+id/qdue_calendar_column_header"
         layout="@layout/item_calendar_column_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_calendar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:overScrollMode="never"
@@ -28,9 +28,10 @@
         android:paddingBottom="?attr/actionBarSize"
         android:scrollbars="none"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/column_header"
+        app:layout_constraintTop_toBottomOf="@id/qdue_calendar_column_header"
         tools:listitem="@layout/item_calendar_month" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -38,77 +39,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/go_to_today"
         android:src="@drawable/ic_today"
         android:visibility="gone"
-        app:elevation="6dp"
+        android:theme="@style/Theme.QDue.FloatingActionButton"
+        app:layout_constraintBottom_toBottomOf="@+id/rv_calendar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ll_calendar_info"
-        app:pressedTranslationZ="12dp"
-        app:tint="@android:color/white"
-        app:rippleColor="@android:color/white" />
-
-    <!-- Barra informazioni in basso (opzionale) -->
-    <LinearLayout
-        android:id="@+id/ll_calendar_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorBackgroundLight"
-        android:elevation="4dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <!-- Indicatore giorno corrente -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <View
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/current_day_indicator" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Oggi"
-                android:textColor="@color/colorTextBlack"
-                android:textSize="10sp" />
-
-        </LinearLayout>
-
-        <!-- Indicatore turno utente -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <View
-                android:layout_width="12dp"
-                android:layout_height="3dp"
-                android:layout_marginEnd="4dp"
-                android:background="@color/colorBackgroundLightBlue" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tuo turno"
-                android:textColor="@color/colorTextBlack"
-                android:textSize="10sp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
+        app:rippleColor="?attr/colorOnSecondary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

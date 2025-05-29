@@ -4,7 +4,7 @@
     <!-- App info -->
     <string name="app_id" translatable="false">net.calvuz.qdue</string>
     <string name="app_name" translatable="false">Q-Due</string>
-    <string name="app_version" translatable="false">Ver. 2.0</string>
+    <string name="app_version" translatable="false">Ver. 2.0 - latest 2025</string>
 
     <!-- Dialog -->
     <string name="ok">OK</string>
@@ -13,7 +13,7 @@
     <string name="app_libraries">Librerie utilizzate</string>
     <string name="app_libraries_used">• Android Support Library\n• Material Design Components\n• Navigation Component</string>
     <string name="app_author_str">Autore</string>
-    <string name="app_author_str_name" translatable="false">calvuzs3 - latest 2025</string>
+    <string name="app_author_str_name" translatable="false">calvuzs3</string>
 
     <!-- Preferences -->
     <string name="settings_header">Impostazioni QDue</string>
@@ -44,6 +44,27 @@
     <!-- Sync Preferences -->
     <string name="settings_sync_header">Sincronizza</string>
     <string name="settings_sync_title">Sincronizza periodicamente</string>
+
+
+    <!-- Tema e Aspetto -->
+    <string name="settings_appearance_header">Aspetto</string>
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_summary">Scegli il tema dell\'applicazione</string>
+    <string name="settings_dynamic_colors_title">Colori dinamici</string>
+    <string name="settings_dynamic_colors_summary">Usa i colori del sistema (Android 12+)</string>
+
+    <!-- Array per le opzioni del tema -->
+    <string-array name="theme_entries">
+        <item>Sistema</item>
+        <item>Chiaro</item>
+        <item>Scuro</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
     <!-- END -->>
 
 
@@ -106,6 +127,19 @@
     <string name="qd_preference_scheme_start_day">7</string>
     <string name="qd_preference_scheme_start_month">11</string>
     <string name="qd_preference_scheme_start_year">2018</string>
+    <string name="legenda_today">Oggi</string>
+    <string name="legenda_your_shift">Il tuo turno</string>
+    <string name="placeholder_calendar_day">1</string>
+    <string name="placeholder_calendar_day_n">n</string>
+    <string name="header_sunday">DOM</string>
+    <string name="header_monday">LUN</string>
+    <string name="header_tuesday">MAR</string>
+    <string name="header_thuersday">MER</string>
+    <string name="header_wednsday">GIO</string>
+    <string name="header_friday">VEN</string>
+    <string name="header_saturday">SAB</string>
+    <string name="placeholder_calendar_month">month</string>
+    <string name="progress_bar_loading">Caricamento...</string>
 
 
 </resources>

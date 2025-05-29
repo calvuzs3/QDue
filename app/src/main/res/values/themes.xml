@@ -1,25 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
-    <style name="Theme.QDue" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+
+    <!-- ===== TEMA CHIARO (Light Theme) ===== -->
+
+    <style name="Base.Theme.QDue" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background</item>
+        <!--        <item name="colorBackground">@color/background</item>-->
+        <item name="colorOnBackground">@color/on_background</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+
+        <!-- Material 3 specific -->
+        <item name="colorPrimaryContainer">@color/primary_light</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary</item>
+        <item name="colorSecondaryContainer">@color/background</item>
+        <item name="colorOnSecondaryContainer">@color/on_primary</item>
+
+        <!-- Outline colors -->
+        <item name="colorOutline">@color/divider</item>
+        <item name="colorOutlineVariant">@color/divider_light</item>
+
+        <!-- Custom app attributes -->
+        <item name="colorTodayBackground">@color/today_background</item>
+        <item name="colorUserShift">@color/on_background_dark_user_shift</item>
+        <item name="colorHeaderBackground">@color/surface</item>
+        <item name="colorSundayBackground">@color/background_sunday</item>
+        <item name="colorOnSundayBackground">@color/on_background_sunday</item>
+        <item name="colorFirstShift">@color/shift_morning_light</item>
+        <item name="colorSecondShift">@color/shift_afternoon_light</item>
+        <item name="colorThirdShift">@color/shift_night_light</item>
+        <item name="colorFourthShift">@color/shift_night_light</item>
+        <item name="colorFifthShift">@color/shift_night_light</item>
+
+        <!-- Colori per il caricamento -->
+        <item name="colorLoadingBackground">@color/loading_background</item>
+        <item name="colorLoadingText">@color/loading_text</item>
+        <item name="colorLoadingProgress">@color/loading_progress</item>
+
+        <!-- Colori per i bordi e separatori -->
+        <item name="colorSeparator">@color/separator</item>
+        <item name="colorCardBackground">@color/cardview_light_background</item>
+        <item name="colorCardBorder">@color/cardview_shadow_end_color</item>
+
+        <!-- Window attributes -->
+        <item name="android:windowBackground">@color/background</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- ActionBar/Toolbar attributes -->
+        <item name="actionBarStyle">@style/Theme.QDue.ActionBar</item>
+        <item name="toolbarStyle">@style/Theme.QDue.Toolbar</item>
+
+        <!-- Material components customization -->
+        <item name="materialButtonStyle">@style/Theme.QDue.Button</item>
+        <item name="floatingActionButtonStyle">@style/Theme.QDue.FloatingActionButton</item>
+        <item name="materialCardViewStyle">@style/Theme.QDue.CardView</item>
+
+        <item name="android:textViewStyle">@style/Theme.QDue.TextView</item>
+
+        <!-- Text appearance -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.QDue.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.QDue.Headline2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.QDue.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.QDue.Body2</item>
+
     </style>
 
-    <style name="Theme.QDue.NoActionBar">
+    <!-- ===== STILI COMPONENTI - LIGHT THEME ===== -->
+
+    <!-- TextView -->
+    <style name="Theme.QDue.TextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:minWidth">20dp</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAppearance">@style/TextAppearance.QDue.Body1</item>
+    </style>
+
+    <!-- Toolbar -->
+    <style name="Theme.QDue.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="backgroundColor">@color/primary</item>
+        <item name="titleTextColor">@color/on_primary</item>
+        <item name="subtitleTextColor">@color/on_primary</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+    <!-- Button -->
+    <style name="Theme.QDue.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/primary_container</item>
+        <item name="android:textColor">@color/on_primary_container</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/lato_bold</item>
+    </style>
+
+    <!-- FloatingActionButton -->
+    <style name="Theme.QDue.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/primary_dark_theme</item>
+        <item name="tint">@color/on_primary</item>
+        <item name="elevation">6dp</item>
+        <item name="pressedTranslationZ">12dp</item>
+    </style>
+
+    <!-- CardView -->
+    <style name="Theme.QDue.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/background</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+
+    <!-- ===== TEXT APPEARANCES - LIGHT ===== -->
+
+    <style name="TextAppearance.QDue.Headline1" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Headline2" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Headline3" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Body1" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Body2" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.ActionBar.Title" parent="TextAppearance.Material3.ActionBar.Title">
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <!-- ===== STILI SPECIALI PER L'APP ===== -->
+
+    <!-- Calendar Day Style -->
+    <style name="Theme.QDue.CalendarDay">
+        <item name="android:background">@drawable/calendar_day_background</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- Month Title Style -->
+    <style name="Theme.QDue.MonthTitle" parent="TextAppearance.QDue.Headline3">
+        <item name="android:background">@drawable/month_title_background</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textAppearance">@style/TextAppearance.QDue.Headline3</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:elevation">2dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+    <!-- Shift Indicator Style -->
+    <style name="Theme.QDue.ShiftIndicator">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">4dp</item>
+        <item name="android:layout_gravity">bottom</item>
+    </style>
+
+    <!-- Navigation Drawer Styles -->
+    <style name="Theme.QDue.NavigationView" parent="Widget.Material3.NavigationView">
+        <item name="itemTextColor">@color/on_surface</item>
+        <item name="itemIconTint">@color/surface_variant</item>
+        <item name="android:background">@color/surface</item>
+    </style>
+
+    <!-- Dialog Styles -->
+    <style name="Theme.QDue.Dialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <!--        <item name="android:windowBackground">@drawable/dialog_background</item>-->
+    </style>
+
+    <!-- AlertDialog Style -->
+    <style name="Theme.QDue.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.QDue.Headline2</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.QDue.Body1</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Theme.QDue.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Theme.QDue.Button.Outlined</item>
+    </style>
+
+    <!-- Outlined Button -->
+    <style name="Theme.QDue.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/surface</item>
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/lato_bold</item>
+    </style>
+
+    <!-- ===== TEMA PER PREFERENCES ===== -->
+
+    <!-- Nuovo tema per SettingsActivity con ActionBar -->
+    <style name="Theme.QDue.Settings" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+
+        <!-- Usa gli stessi colori del tema principale -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+
+        <!-- Status Bar visibile con colore coordinato -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Assicura che la finestra non sia full-screen -->
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:fitsSystemWindows">true</item>
+
+        <!-- ActionBar personalizzata -->
+        <item name="actionBarStyle">@style/Theme.QDue.ActionBar</item>
+    </style>
+
+    <!-- ===== FINALLY ===== -->
+
+    <!-- Application theme Wrapper -->
+    <style name="Theme.QDue.Main" parent="Base.Theme.QDue" />
+
+    <!-- ActionBar theme -->
+    <style name="Theme.QDue.ActionBar" parent="Widget.MaterialComponents.ActionBar.Solid">
+        <item name="windowActionBar">true</item>
+        <item name="background">@color/primary</item>
+        <item name="titleTextColor">@color/on_primary</item>
+        <item name="android:layout_height">76dp</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:titleTextStyle">@style/TextAppearance.QDue.ActionBar.Title</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+    <!-- NoActionBar theme -->
+    <style name="Theme.QDue.NoActionBar" parent="Widget.MaterialComponents.ActionBar.Solid">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.QDue.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <!-- AppBarOverlay theme -->
+    <style name="Theme.QDue.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+    </style>
 
-    <style name="Theme.QDue.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <!-- PopupOverlay theme -->
+    <style name="Theme.QDue.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+    </style>
+
 </resources>

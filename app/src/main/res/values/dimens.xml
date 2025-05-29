@@ -7,4 +7,21 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="app_buttons_width">56dp</dimen>
     <dimen name="app_buttons_height">56dp</dimen>
+    <dimen name="dialog_padding">16dp</dimen>
+    <dimen name="legenda_text_size">14sp</dimen>
+    <dimen name="divider_height">2dp</dimen>
+    <dimen name="column_header_padding">2dp</dimen>
+    <dimen name="header_text_size">12sp</dimen>
+    <dimen name="column_min_width">40dp</dimen>
+    <dimen name="column_min_width_nr">20dp</dimen>
+    <dimen name="column_min_width_day">75dp</dimen>
+    <dimen name="dayslist_row_padding">2dp</dimen>
+    <dimen name="dayslist_row_item_padding">8dp</dimen>
+    <dimen name="dayslist_row_divider_height">1dp</dimen>
+    <dimen name="header_padding_top">8dp</dimen>
+    <dimen name="header_padding_bottom">6dp</dimen>
+    <dimen name="fab_elevation">6dp</dimen>
+    <dimen name="calendar_day_height">38dp</dimen>
+    <dimen name="calendar_day_margin">4dp</dimen>
+    <dimen name="calendar_day_padding">4dp</dimen>
 </resources>

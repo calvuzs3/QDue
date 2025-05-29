@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.Nullable;
+import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -24,6 +25,8 @@ import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.dayslist.DayslistViewFragment;
 import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.utils.ThemeManager;
+import net.calvuz.qdue.utils.ThemeUtils;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
 
 /**
@@ -43,6 +46,9 @@ public class QDueMainActivity extends AppCompatActivity
     private QuattroDue mQD;
 
     // UI related
+    // Configura il drawer layout
+    DrawerLayout drawer;
+    NavigationView navigationView;
     private AppBarConfiguration mAppBarConfiguration;
 
     // Fragment di riferimento
@@ -58,7 +64,9 @@ public class QDueMainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (LOG_ENABLED) Log.d(TAG, "onCreate");
+
+        // Test
+        testThemeColors();
 
         // Inizializza il time change receiver
         mTimeChangeReceiver = new TimeChangeReceiver(this);
@@ -78,8 +86,8 @@ public class QDueMainActivity extends AppCompatActivity
         setSupportActionBar(mBinding.appBarMain.toolbar);
 
         // Configura il drawer layout
-        DrawerLayout drawer = mBinding.drawerLayout;
-        NavigationView navigationView = mBinding.navView;
+        drawer = mBinding.drawerLayout;
+        navigationView = mBinding.navView;
 
         // Configurazione del Navigation Controller con il drawer
         mAppBarConfiguration = new AppBarConfiguration.Builder(
@@ -93,8 +101,37 @@ public class QDueMainActivity extends AppCompatActivity
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        // Aggiorna il titolo della toolbar con il nome dell'app
-        updateToolbarTitle();
+        // Intercetta solo nav_settings per chiudere il drawer
+        navigationView.setNavigationItemSelectedListener(item -> {
+
+            int id = item.getItemId();
+
+// Chiudi il drawer prima di navigare
+            drawer.closeDrawer(GravityCompat.START);
+
+            if (id == R.id.nav_settings) {
+                // Naviga verso Settings con un piccolo delay per permettere al drawer di chiudersi
+                new android.os.Handler().postDelayed(() -> {
+                    navController.navigate(R.id.nav_settings);
+                }, 120);
+
+                return true; // Consuma l'evento
+            }
+
+            if (id == R.id.nav_about) {
+
+
+                // Naviga verso About con un piccolo delay per permettere al drawer di chiudersi
+                new android.os.Handler().postDelayed(() -> {
+                    navController.navigate(R.id.nav_about);
+                }, 120);
+
+                return true; // Consuma l'evento
+            }
+
+            // Per tutti gli altri item, usa il comportamento standard di NavigationUI
+            return NavigationUI.onNavDestinationSelected(item, navController);
+        });
 
         // Tieni traccia del fragment corrente
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
@@ -109,14 +146,10 @@ public class QDueMainActivity extends AppCompatActivity
      * Con lo scrolling infinito, mostriamo il nome dell'app invece del mese corrente.
      */
     private void updateToolbarTitle() {
-        if (LOG_ENABLED) Log.d(TAG, "updateToolbarTitle");
 
         if (getSupportActionBar() != null) {
             // Imposta il titolo dell'app
             getSupportActionBar().setTitle(R.string.app_name);
-            if (LOG_ENABLED) Log.d(TAG, "Titolo toolbar aggiornato con nome app");
-        } else {
-            if (LOG_ENABLED) Log.e(TAG, "supportActionBar è null");
         }
     }
 
@@ -134,13 +167,9 @@ public class QDueMainActivity extends AppCompatActivity
 
             if (childFragment instanceof DayslistViewFragment) {
                 ((DayslistViewFragment) childFragment).notifyUpdates();
-                if (LOG_ENABLED) Log.d(TAG, "DayslistViewFragment.notifyUpdates chiamato");
-            } else {
-                if (LOG_ENABLED) Log.d(TAG, "Fragment attivo non è DayslistViewFragment: " +
-                        (childFragment != null ? childFragment.getClass().getSimpleName() : "null"));
             }
         } else {
-            if (LOG_ENABLED) Log.e(TAG, "Fragment non trovato");
+            Log.e(TAG, "Fragment non trovato");
         }
     }
 
@@ -156,12 +185,10 @@ public class QDueMainActivity extends AppCompatActivity
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
 
         if (mID == R.id.action_settings) {
-            if (LOG_ENABLED) Log.d(TAG, "Menu settings selezionato");
             navController.navigate(R.id.nav_settings);
             return true;
         }
         if (mID == R.id.action_about) {
-            if (LOG_ENABLED) Log.d(TAG, "Menu about selezionato");
             navController.navigate(R.id.nav_about);
             return true;
         }
@@ -184,7 +211,6 @@ public class QDueMainActivity extends AppCompatActivity
         registerTimeChangeReceiver();
 
         // Aggiorna l'interfaccia quando l'activity torna in primo piano
-        updateToolbarTitle();
         notifyUpdates();
     }
 
@@ -221,10 +247,8 @@ public class QDueMainActivity extends AppCompatActivity
                 IntentFilter filter = TimeChangeReceiver.createCriticalIntentFilter();
                 registerReceiver(mTimeChangeReceiver, filter);
                 mReceiverRegistered = true;
-                if (LOG_ENABLED) Log.d(TAG, "TimeChangeReceiver registrato");
             } catch (Exception e) {
-                if (LOG_ENABLED)
-                    Log.e(TAG, "Errore nella registrazione del TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "Errore nella registrazione del TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
@@ -237,10 +261,8 @@ public class QDueMainActivity extends AppCompatActivity
             try {
                 unregisterReceiver(mTimeChangeReceiver);
                 mReceiverRegistered = false;
-                if (LOG_ENABLED) Log.d(TAG, "TimeChangeReceiver deregistrato");
             } catch (Exception e) {
-                if (LOG_ENABLED)
-                    Log.e(TAG, "Errore nella deregistrazione del TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "Errore nella deregistrazione del TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
@@ -249,11 +271,10 @@ public class QDueMainActivity extends AppCompatActivity
 
     @Override
     public void onTimeChanged() {
-        if (LOG_ENABLED) Log.d(TAG, "onTimeChanged - aggiornamento interfaccia");
+        Log.d(TAG, "onTimeChanged - aggiornamento interfaccia");
 
         runOnUiThread(() -> {
             // Aggiorna l'interfaccia sul thread UI
-            updateToolbarTitle();
             notifyUpdates();
 
             // Opzionale: mostra un toast per informare l'utente
@@ -263,11 +284,10 @@ public class QDueMainActivity extends AppCompatActivity
 
     @Override
     public void onDateChanged() {
-        if (LOG_ENABLED) Log.d(TAG, "onDateChanged - aggiornamento interfaccia");
+        Log.d(TAG, "onDateChanged - aggiornamento interfaccia");
 
         runOnUiThread(() -> {
             // Aggiorna l'interfaccia sul thread UI
-            updateToolbarTitle();
             notifyUpdates();
 
             // Opzionale: mostra un toast per informare l'utente
@@ -277,16 +297,55 @@ public class QDueMainActivity extends AppCompatActivity
 
     @Override
     public void onTimezoneChanged() {
-        if (LOG_ENABLED) Log.d(TAG, "onTimezoneChanged - aggiornamento interfaccia");
+        Log.d(TAG, "onTimezoneChanged - aggiornamento interfaccia");
 
         runOnUiThread(() -> {
             // Aggiorna l'interfaccia sul thread UI
-            updateToolbarTitle();
             notifyUpdates();
 
             // Opzionale: mostra un toast per informare l'utente
             Toast.makeText(this, "Fuso orario aggiornato", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void testThemeColors() {
+        // Test dei colori dinamici
+        int surfaceColor = ThemeUtils.getDynamicSurfaceColor(this);
+        int onSurfaceColor = ThemeUtils.getDynamicOnSurfaceColor(this);
+        int primaryColor = ThemeUtils.getDynamicPrimaryColor(this);
+
+        // Test colori specifici app
+        int todayBg = ThemeUtils.getTodayBackgroundColor(this);
+        int userShiftBg = ThemeUtils.getUserShiftBackgroundColor(this);
+        int sundayText = ThemeUtils.getSundayTextColor(this);
+
+        Log.d("ThemeTest", "=== COLORI DINAMICI ===");
+        Log.d("ThemeTest", "Surface: " + Integer.toHexString(surfaceColor));
+        Log.d("ThemeTest", "OnSurface: " + Integer.toHexString(onSurfaceColor));
+        Log.d("ThemeTest", "Primary: " + Integer.toHexString(primaryColor));
+
+        Log.d("ThemeTest", "=== COLORI APP ===");
+        Log.d("ThemeTest", "Today BG: " + Integer.toHexString(todayBg));
+        Log.d("ThemeTest", "User Shift BG: " + Integer.toHexString(userShiftBg));
+        Log.d("ThemeTest", "Sunday Text: " + Integer.toHexString(sundayText));
+
+        // Test se il tema scuro è attivo
+        ThemeManager themeManager = ThemeManager.getInstance(this);
+        Log.d("ThemeTest", "Is Dark Mode: " + themeManager.isDarkMode());
+
+        // Confronto con Material Design
+        int materialSurface = ThemeUtils.getMaterialSurfaceColor(this);
+        int yourSurface = getColor(R.color.surface);
+
+        Log.d("ThemeTest", "=== CONFRONTO ===");
+        Log.d("ThemeTest", "Material Surface: " + Integer.toHexString(materialSurface));
+        Log.d("ThemeTest", "Your Surface: " + Integer.toHexString(yourSurface));
+
+        if (materialSurface != yourSurface) {
+            Log.d("ThemeTest", "✅ I tuoi colori sono diversi da Material Design (corretto!)");
+        } else {
+            Log.w("ThemeTest", "⚠️ I colori sono uguali a Material Design");
+        }
     }
 
     @Override
