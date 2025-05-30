@@ -46,9 +46,9 @@
         <color name="background">#fefefe</color>
         <color name="on_background">#1c1c1e</color>
         <color name="surface">#E0F7FA</color>
-        <color name="surface_variant">#f5f5f7</color>
+        <color name="surface_variant">#666666</color>
         <color name="on_surface">#0097A7</color>
-        <color name="on_surface_variant">#6c6c70</color>
+        <color name="on_surface_variant">#E8F5E9</color>
         <color name="surface_tint">#667eea</color>
         <color name="inverse_surface">#2c2c2e</color>
         <color name="inverse_on_surface">#f2f2f7</color>

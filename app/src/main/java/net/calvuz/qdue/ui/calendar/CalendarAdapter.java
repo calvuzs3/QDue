@@ -111,7 +111,7 @@ public class CalendarAdapter extends BaseAdapter {
         /**
          * ViewHolder specifico per le celle del calendario.
          */
-        public static class CalendarDayViewHolder extends DayViewHolder {
+        public class CalendarDayViewHolder extends DayViewHolder {
             public final TextView tvDayNumber;
             public final TextView tvDayName;
             public final View vShiftIndicator;
@@ -123,5 +123,6 @@ public class CalendarAdapter extends BaseAdapter {
                 vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);
             }
         }
+        
 
 }

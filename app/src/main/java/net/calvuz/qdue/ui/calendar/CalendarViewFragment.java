@@ -30,6 +30,7 @@ public class CalendarViewFragment extends BaseFragment {
     private static final boolean LOG_ENABLED = true;
 
     private CalendarAdapter mAdapter;
+private GridLayoutManager mGridLayoutManager;
 
     @Nullable
     @Override
@@ -51,8 +52,21 @@ public class CalendarViewFragment extends BaseFragment {
         }
 
         // Per il calendario, usa GridLayoutManager con 7 colonne
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 7);
-        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mGridLayoutManager = new GridLayoutManager(getContext(), 7);
+        // Configura lo span size per gli header
+        mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (position < mItemsCache.size()) {
+                    SharedViewModels.ViewItem item = mItemsCache.get(position);
+                    if (item instanceof SharedViewModels.MonthHeader) {
+                        return 7; // Header occupa tutta la larghezza
+                    }
+                }
+                return 1; // Giorni occupano 1 cella
+            }
+        });
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
 
         // Il LinearLayoutManager della classe base non serve
         mLayoutManager = null;
@@ -60,8 +74,8 @@ public class CalendarViewFragment extends BaseFragment {
         // Ottimizzazioni
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
-        mRecyclerView.setDrawingCacheEnabled(true);
-        mRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+//        mRecyclerView.setDrawingCacheEnabled(true);
+//        mRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
     }
 
     @Override
@@ -194,36 +208,18 @@ public class CalendarViewFragment extends BaseFragment {
         }
     }
 
+
     /**
-     * Metodi helper per accedere ai metodi protetti della classe base.
+     * Scrolla alla posizione iniziale appropriata.
+     * protected - gridlayoutmanager have to scroll to initial position
+     *             by themselves
      */
-    private void triggerTopLoad() {
-        mIsPendingTopLoad.set(true);
-        // Chiama il metodo protetto della classe base tramite reflection o esponi come protected
-        mBackgroundHandler.postDelayed(() -> executeTopLoad(), 100);
-    }
-
-    private void triggerBottomLoad() {
-        mIsPendingBottomLoad.set(true);
-        mBackgroundHandler.postDelayed(() -> executeBottomLoad(), 100);
-    }
-
-    // Questi metodi dovrebbero essere esposti come protected nella classe base
-    private void executeTopLoad() {
-        // Implementazione semplificata - la classe base dovrebbe esporre questo metodo
-        if (LOG_ENABLED) Log.d(TAG, "executeTopLoad chiamato");
-    }
-
-    private void executeBottomLoad() {
-        // Implementazione semplificata - la classe base dovrebbe esporre questo metodo
-        if (LOG_ENABLED) Log.d(TAG, "executeBottomLoad chiamato");
-    }
-
-    private void processPendingOperations() {
-        // La classe base dovrebbe esporre questo metodo
-    }
-
-    private void scheduleCleanupIfNeeded() {
-        // La classe base dovrebbe esporre questo metodo
+    @Override
+    protected void scrollToInitialPosition() {
+        if (mTodayPosition >= 0) {
+            mGridLayoutManager.scrollToPosition(mTodayPosition);
+        } else {
+            mGridLayoutManager.scrollToPosition(mCurrentCenterPosition);
+        }
     }
 }
