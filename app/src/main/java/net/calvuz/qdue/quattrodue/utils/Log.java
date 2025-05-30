@@ -17,7 +17,7 @@ public final class Log {
     private final static boolean QD_DEBUG = true;
 
     // Wrap the debug and info to the warn to avoid art annoying messages
-    private final static boolean QD_DEBUG_TO_WARN = false;
+    private final static boolean QD_DEBUG_TO_WARN = true;
 
     /**
      * Log con livello VERBOSE.

@@ -35,7 +35,7 @@ import net.calvuz.qdue.utils.TimeChangeReceiver;
  * con lo scrolling infinito.
  */
 public class QDueMainActivity extends AppCompatActivity
-        implements DayslistViewFragment.OnQuattroDueHomeFragmentInteractionListener,
+        implements
         TimeChangeReceiver.TimeChangeListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -346,11 +346,6 @@ public class QDueMainActivity extends AppCompatActivity
         } else {
             Log.w("ThemeTest", "⚠️ I colori sono uguali a Material Design");
         }
-    }
-
-    @Override
-    public void onQuattroDueHomeFragmentInteractionListener(long id) {
-        if (LOG_ENABLED) Log.d(TAG, "onQuattroDueHomeFragmentInteractionListener: " + id);
     }
 
     @Override
