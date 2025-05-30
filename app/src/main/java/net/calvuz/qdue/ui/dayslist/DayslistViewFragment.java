@@ -28,13 +28,19 @@ public class DayslistViewFragment extends BaseFragment {
     private final String TAG = DayslistViewFragment.class.getSimpleName();
 
     // Dayslist adapter
-    private UnifiedDaysListAdapter mAdapter;
+    private DaysListAdapter mAdapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_dayslist_view, container, false);
         return root;
+    }
+
+    @Override
+    protected void findViews(View rootView) {
+        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
+        mRecyclerView = rootView.findViewById(R.id.rv_dayslist);
     }
 
     @Override
@@ -51,7 +57,7 @@ public class DayslistViewFragment extends BaseFragment {
     protected void setupAdapter() {
         Log.d(TAG, "setupAdapter()");
 
-        mAdapter = new UnifiedDaysListAdapter(
+        mAdapter = new DaysListAdapter(
                 getContext(),
                 mItemsCache,
                 mQD.getUserHalfTeam(),
@@ -76,16 +82,17 @@ public class DayslistViewFragment extends BaseFragment {
         }
     }
 
-    @Override
-    protected void findViews(View rootView) {
-        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
-        mRecyclerView = rootView.findViewById(R.id.rv_dayslist);
-
-
+    // Metodo per aggiornare quando cambiano le preferenze
+    // TODO remove method
+    public void notifyUpdates() {
+        if (mAdapter != null) {
+            mAdapter.updateUserTeam(mQD.getUserHalfTeam());
+        }
     }
 
-    // Metodo per aggiornare quando cambiano le preferenze
-    public void notifyUpdates() {
+    @Override
+    protected void onUserTeamChanged() {
+        super.onUserTeamChanged();
         if (mAdapter != null) {
             mAdapter.updateUserTeam(mQD.getUserHalfTeam());
         }

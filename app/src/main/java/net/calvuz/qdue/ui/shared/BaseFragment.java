@@ -10,6 +10,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -104,22 +105,37 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /**
-     * Configura il RecyclerView con le impostazioni comuni.
+     * Override del setupRecyclerView per supportare layout manager personalizzati.
      */
+
     protected void setupRecyclerView() {
         if (mRecyclerView == null) {
-            if (LOG_ENABLED) Log.e(TAG, "mRecyclerView è null - implementare findViews()");
+            Log.e(TAG, "mRecyclerView è null - implementare findViews()");
             return;
         }
 
-        mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        // Verifica se esiste già un LayoutManager
+        // Le sottoclassi possono override questo metodo per layout manager specifici
+
+        RecyclerView.LayoutManager existingLayoutManager = mRecyclerView.getLayoutManager();
+
+        if (existingLayoutManager == null) {
+            // Crea e imposta un nuovo LinearLayoutManager
+            mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+            mRecyclerView.setLayoutManager(mLayoutManager);
+        } else if (existingLayoutManager instanceof LinearLayoutManager) {
+            // Se esiste già un LinearLayoutManager, utilizzalo
+            mLayoutManager = (LinearLayoutManager) existingLayoutManager;
+        } else {
+            // Per altri tipi di LayoutManager, mantieni null e usa i metodi di fallback
+            mLayoutManager = null;
+        }
 
         // Ottimizzazioni comuni
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setItemAnimator(null); // Disabilita animazioni per prestazioni migliori
-        mRecyclerView.setDrawingCacheEnabled(true);
-        mRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        mRecyclerView.setItemAnimator(null);
+//        mRecyclerView.setDrawingCacheEnabled(true);
+//        mRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
     }
 
     /**
@@ -132,12 +148,23 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
+
     /**
      * Setup dello scrolling infinito con logica comune ottimizzata.
      */
     protected void setupInfiniteScrolling() {
+        setupInfiniteScrolling( true);
+    }
+
+    /**
+     * Setup dello scrolling infinito con logica comune ottimizzata.
+     * @param useLayoutManager specifica se utilizzare lo scrolling di LinearLayoutManager
+     *                         oppure la classe che eredita implementa una sua versione
+     *                         e quindi non serve - genererebbe un eccezione
+     */
+    protected void setupInfiniteScrolling(boolean useLayoutManager) {
         if (mQD == null || mDataManager == null) {
-            if (LOG_ENABLED) Log.e(TAG, "setupInfiniteScrolling: componenti non inizializzati");
+            Log.e(TAG, "setupInfiniteScrolling: componenti non inizializzati");
             return;
         }
 
@@ -170,14 +197,16 @@ public abstract class BaseFragment extends Fragment {
             // Setup scroll listener ottimizzato
             mRecyclerView.addOnScrollListener(new OptimizedInfiniteScrollListener());
 
-            // Scrolla alla posizione appropriata
-            scrollToInitialPosition();
+            // Scrolla alla posizione appropriata - se useLayoutManager
+            if (useLayoutManager) {
+                scrollToInitialPosition();
+            }
 
-            if (LOG_ENABLED) Log.d(TAG, "Setup infinito completato: " + mItemsCache.size() +
+            Log.d(TAG, "Setup infinito completato: " + mItemsCache.size() +
                     " elementi, oggi alla posizione: " + mTodayPosition);
 
         } catch (Exception e) {
-            if (LOG_ENABLED) Log.e(TAG, "Errore setup infinito: " + e.getMessage());
+            Log.e(TAG, "Error setupInfiniteScrolling(): " + e.getMessage());
         }
     }
 
@@ -208,8 +237,8 @@ public abstract class BaseFragment extends Fragment {
             if (mScrollVelocity > MAX_SCROLL_VELOCITY) return;
 
             // Ottieni posizioni visibili
-            int firstVisible = mLayoutManager.findFirstVisibleItemPosition();
-            int lastVisible = mLayoutManager.findLastVisibleItemPosition();
+            int firstVisible = getFirstVisiblePosition();
+            int lastVisible = getLastVisiblePosition();
 
             if (firstVisible == RecyclerView.NO_POSITION) return;
 
@@ -245,48 +274,9 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /**
-     * Gestisce il caricamento basato sulla posizione dello scroll.
+     * Espone executeTopLoad come protected per le sottoclassi.
      */
-    private void handleScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
-        // Caricamento verso l'alto (mesi precedenti)
-        if (firstVisible <= 10 && scrollDirection <= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
-
-            if (LOG_ENABLED) Log.d(TAG, "Triggering top load at position: " + firstVisible);
-            triggerTopLoad();
-        }
-
-        // Caricamento verso il basso (mesi successivi)
-        if (lastVisible >= mItemsCache.size() - 10 && scrollDirection >= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
-
-            if (LOG_ENABLED) Log.d(TAG, "Triggering bottom load at position: " + lastVisible);
-            triggerBottomLoad();
-        }
-    }
-
-    /**
-     * Avvia il caricamento dei mesi precedenti.
-     */
-    private void triggerTopLoad() {
-        mIsPendingTopLoad.set(true);
-        showTopLoader();
-        mBackgroundHandler.postDelayed(this::executeTopLoad, 100);
-    }
-
-    /**
-     * Avvia il caricamento dei mesi successivi.
-     */
-    private void triggerBottomLoad() {
-        mIsPendingBottomLoad.set(true);
-        showBottomLoader();
-        mBackgroundHandler.postDelayed(this::executeBottomLoad, 100);
-    }
-
-    /**
-     * Esegue il caricamento dei mesi precedenti.
-     */
-    private void executeTopLoad() {
+    protected void executeTopLoad() {
         if (!mIsPendingTopLoad.compareAndSet(true, false)) return;
         if (!mIsUpdatingCache.compareAndSet(false, true)) return;
 
@@ -307,8 +297,8 @@ public abstract class BaseFragment extends Fragment {
                         // Notifica adapter
                         getAdapter().notifyItemRangeInserted(0, newItems.size());
 
-                        // Mantieni posizione scroll
-                        mLayoutManager.scrollToPositionWithOffset(newItems.size(), 0);
+                        // Mantieni posizione scroll - adattato per diversi LayoutManager
+                        maintainScrollPosition(newItems.size());
 
                         hideTopLoader();
 
@@ -329,9 +319,9 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /**
-     * Esegue il caricamento dei mesi successivi.
+     * Espone executeBottomLoad come protected per le sottoclassi.
      */
-    private void executeBottomLoad() {
+    protected void executeBottomLoad() {
         if (!mIsPendingBottomLoad.compareAndSet(true, false)) return;
         if (!mIsUpdatingCache.compareAndSet(false, true)) return;
 
@@ -376,6 +366,49 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /**
+     * Gestisce il caricamento basato sulla posizione dello scroll.
+     */
+    private void handleScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
+        // Caricamento verso l'alto (mesi precedenti)
+        if (firstVisible <= 10 && scrollDirection <= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
+
+            if (LOG_ENABLED) Log.d(TAG, "Triggering top load at position: " + firstVisible);
+            triggerTopLoad();
+        }
+
+        // Caricamento verso il basso (mesi successivi)
+        if (lastVisible >= mItemsCache.size() - 10 && scrollDirection >= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
+
+            if (LOG_ENABLED) Log.d(TAG, "Triggering bottom load at position: " + lastVisible);
+            triggerBottomLoad();
+        }
+    }
+
+    /**
+     * Avvia il caricamento dei mesi precedenti.
+     * Protected - se una sottoclasse implementa uno scroll listener personalizzato
+     * deve accedere a questi metodi
+     */
+    protected void triggerTopLoad() {
+        mIsPendingTopLoad.set(true);
+        showTopLoader();
+        mBackgroundHandler.postDelayed(this::executeTopLoad, 100);
+    }
+
+    /**
+     * Avvia il caricamento dei mesi successivi.
+     * Protected - se una sottoclasse implementa uno scroll listener personalizzato
+     * deve accedere a questi metodi
+     */
+    protected void triggerBottomLoad() {
+        mIsPendingBottomLoad.set(true);
+        showBottomLoader();
+        mBackgroundHandler.postDelayed(this::executeBottomLoad, 100);
+    }
+
+    /**
      * Aggiunge un mese alla cache.
      */
     private void addMonthToCache(LocalDate monthDate) {
@@ -393,8 +426,10 @@ public abstract class BaseFragment extends Fragment {
 
     /**
      * Processa le operazioni pendenti quando lo scroll si ferma.
+     * Protected - se una sottoclasse implementa uno scroll listener personalizzato
+     * deve accedere a questi metodi
      */
-    private void processPendingOperations() {
+    protected void processPendingOperations() {
         if (mIsPendingTopLoad.get() && !mIsUpdatingCache.get()) {
             executeTopLoad();
         }
@@ -405,8 +440,10 @@ public abstract class BaseFragment extends Fragment {
 
     /**
      * Programma la pulizia della cache se necessario.
+     * Protected - se una sottoclasse implementa uno scroll listener personalizzato
+     * deve accedere a questi metodi
      */
-    private void scheduleCleanupIfNeeded() {
+    protected void scheduleCleanupIfNeeded() {
         int maxElements = QD_MAX_CACHE_SIZE * 35; // ~35 elementi per mese
         if (mItemsCache.size() > maxElements) {
             mBackgroundHandler.postDelayed(() -> {
@@ -454,8 +491,10 @@ public abstract class BaseFragment extends Fragment {
 
     /**
      * Scrolla alla posizione iniziale appropriata.
+     * protected - gridlayoutmanager have to scroll to initial position
+     *             by themselves
      */
-    private void scrollToInitialPosition() {
+    protected void scrollToInitialPosition() {
         if (mTodayPosition >= 0) {
             mLayoutManager.scrollToPosition(mTodayPosition);
         } else {
@@ -660,6 +699,122 @@ public abstract class BaseFragment extends Fragment {
         Log.d(TAG, "onUserTeamChanged");
     }
 
+    // ==================== AGGIUNTE / MODIFICHE ALLA BASECALENDARFRAGMENT ====================
+
+    /*
+        Per supportare meglio il CalendarViewFragment, la classe BaseCalendarFragment
+        dovrebbe esporre alcuni metodi come protected invece che private:
+
+        Nella classe BaseCalendarFragment, cambia questi metodi da private a protected:
+        - executeTopLoad()
+        - executeBottomLoad()
+        - processPendingOperations()
+        - scheduleCleanupIfNeeded()
+        - triggerTopLoad()
+        - triggerBottomLoad()
+
+        E aggiungi questo metodo per supportare layout manager personalizzati:
+
+        protected void setCustomLayoutManager(RecyclerView.LayoutManager layoutManager) {
+            if (mRecyclerView != null) {
+                mRecyclerView.setLayoutManager(layoutManager);
+                if (layoutManager instanceof LinearLayoutManager) {
+                    mLayoutManager = (LinearLayoutManager) layoutManager;
+                }
+            }
+        }
+    */
+
+    /**
+     * Permette alle sottoclassi di impostare un LayoutManager personalizzato.
+     */
+    protected void setCustomLayoutManager(RecyclerView.LayoutManager layoutManager) {
+        if (mRecyclerView != null) {
+            mRecyclerView.setLayoutManager(layoutManager);
+            if (layoutManager instanceof LinearLayoutManager) {
+                mLayoutManager = (LinearLayoutManager) layoutManager;
+            } else {
+                // Per GridLayoutManager o altri, mantieni riferimento per compatibilità
+                mLayoutManager = null;
+            }
+        }
+    }
+
+    /**
+     * Mantiene la posizione di scroll adattandosi al tipo di LayoutManager.
+     */
+    private void maintainScrollPosition(int itemsAdded) {
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+            linearManager.scrollToPositionWithOffset(itemsAdded, 0);
+        } else if (layoutManager instanceof GridLayoutManager) {
+            GridLayoutManager gridManager = (GridLayoutManager) layoutManager;
+            int currentFirst = gridManager.findFirstVisibleItemPosition();
+            if (currentFirst >= 0) {
+                gridManager.scrollToPosition(currentFirst + itemsAdded);
+            }
+        }
+    }
+
+    /**
+     * Utility per ottenere la prima posizione visibile indipendentemente dal LayoutManager.
+     */
+    protected int getFirstVisiblePosition() {
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+
+        if (layoutManager instanceof LinearLayoutManager) {
+            return ((LinearLayoutManager) layoutManager).findFirstVisibleItemPosition();
+        } else if (layoutManager instanceof GridLayoutManager) {
+            return ((GridLayoutManager) layoutManager).findFirstVisibleItemPosition();
+        }
+
+        return RecyclerView.NO_POSITION;
+    }
+
+    /**
+     * Utility per ottenere l'ultima posizione visibile indipendentemente dal LayoutManager.
+     */
+    protected int getLastVisiblePosition() {
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+
+        if (layoutManager instanceof LinearLayoutManager) {
+            return ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
+        } else if (layoutManager instanceof GridLayoutManager) {
+            return ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
+        }
+
+        return RecyclerView.NO_POSITION;
+    }
+
+    /**
+     * Scroll sicuro che funziona con qualsiasi LayoutManager.
+     */
+    protected void scrollToPositionSafely(int position) {
+        if (position < 0 || position >= mItemsCache.size()) return;
+
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+
+        if (layoutManager instanceof LinearLayoutManager) {
+            ((LinearLayoutManager) layoutManager).scrollToPosition(position);
+        } else if (layoutManager instanceof GridLayoutManager) {
+            ((GridLayoutManager) layoutManager).scrollToPosition(position);
+        } else {
+            mRecyclerView.scrollToPosition(position);
+        }
+    }
+
+    /**
+     * Smooth scroll sicuro che funziona con qualsiasi LayoutManager.
+     */
+    protected void smoothScrollToPositionSafely(int position) {
+        if (position < 0 || position >= mItemsCache.size()) return;
+
+        mRecyclerView.smoothScrollToPosition(position);
+    }
+
+    // =========================================================
     // === METODI ASTRATTI DA IMPLEMENTARE NELLE SOTTOCLASSI ===
 
     /**

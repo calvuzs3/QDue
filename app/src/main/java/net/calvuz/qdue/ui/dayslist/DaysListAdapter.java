@@ -2,9 +2,9 @@ package net.calvuz.qdue.ui.dayslist;
 
 import android.content.Context;
 
+import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.shared.BaseAdapter;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
 
 import java.util.List;
 

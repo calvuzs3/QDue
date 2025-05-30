@@ -47,37 +47,37 @@ public class ShiftTypeFactory {
     // Definizione dei turni standard
     public static final ShiftType MORNING = new ShiftType(
             "Mattino",
-            "Turno del mattino (6-14)",
-            6, 0,
+            "Turno del mattino (5-13)",
+            5, 0,
             8, 0,
             COLOR_MORNING);
 
     public static final ShiftType AFTERNOON = new ShiftType(
             "Pomeriggio",
-            "Turno del pomeriggio (14-22)",
-            14, 0,
+            "Turno del pomeriggio (13-21)",
+            13, 0,
             8, 0,
             COLOR_AFTERNOON);
 
     public static final ShiftType NIGHT = new ShiftType(
             "Notte",
-            "Turno notturno (22-6)",
-            22, 0,
+            "Turno notturno (21-5)",
+            21, 0,
             8, 0,
             COLOR_NIGHT);
 
     public static final ShiftType CUSTOM1 = new ShiftType(
             "Personalizzato1",
             "Turno personalizzato 1",
-            10, 0,
-            4, 0,
+            0, 0,
+            0, 0,
             COLOR_CUSTOM1);
 
     public static final ShiftType CUSTOM2 = new ShiftType(
             "Personalizzato2",
             "Turno personalizzato 2",
-            16, 0,
-            4, 0,
+            0, 0,
+            0, 0,
             COLOR_CUSTOM2);
 
     // Inizializza la cache con i tipi predefiniti
@@ -152,9 +152,9 @@ public class ShiftTypeFactory {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
         // Valori predefiniti in base all'indice
-        String defaultName = "Turno " + (index + 1);
-        String defaultDesc = "Descrizione turno " + (index + 1);
-        int defaultStartHour = (index * 8) % 24; // 0, 8, 16, 0, 8, ...
+        String defaultName = getDefaultName(index);
+        String defaultDesc = getDefaultDescription(index);
+        int defaultStartHour = getDefaultStartHour(index);  // ✓ FIX
         int defaultColor = getDefaultColor(index);
 
         // Carica i valori dalle preferenze
@@ -166,8 +166,43 @@ public class ShiftTypeFactory {
         int durationMins = prefs.getInt(KEY_SHIFT_DURATION_MINS_PREFIX + index, 0);
         int color = prefs.getInt(KEY_SHIFT_COLOR_PREFIX + index, defaultColor);
 
-        // Crea e restituisce il tipo di turno
         return new ShiftType(name, desc, startHour, startMin, durationHours, durationMins, color);
+    }
+
+    /**
+     * Restituisce l'ora di inizio predefinita per un turno.
+     */
+    private static int getDefaultStartHour(int index) {
+        switch (index) {
+            case 0: return 5;   // Mattino
+            case 1: return 13;  // Pomeriggio
+            case 2: return 21;  // Notte
+            default: return 5;  // Default per turni aggiuntivi
+        }
+    }
+
+    /**
+     * Restituisce il nome predefinito per un turno.
+     */
+    private static String getDefaultName(int index) {
+        switch (index) {
+            case 0: return "Mattino";
+            case 1: return "Pomeriggio";
+            case 2: return "Notte";
+            default: return "Turno " + (index + 1);
+        }
+    }
+
+    /**
+     * Restituisce la descrizione predefinita per un turno.
+     */
+    private static String getDefaultDescription(int index) {
+        switch (index) {
+            case 0: return "Turno del mattino (5-13)";
+            case 1: return "Turno del pomeriggio (13-21)";
+            case 2: return "Turno notturno (21-5)";
+            default: return "Descrizione turno " + (index + 1);
+        }
     }
 
     /**

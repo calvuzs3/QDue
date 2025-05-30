@@ -100,7 +100,7 @@ public class SharedViewModels {
          */
         public static List<ViewItem> convertForCalendar(List<Day> days, LocalDate monthDate) {
             List<ViewItem> items = new ArrayList<>();
-
+            items.add(new MonthHeader(monthDate));
             if (days.isEmpty()) {
                 // Mese senza dati - crea struttura base
                 LocalDate firstDay = monthDate.withDayOfMonth(1);

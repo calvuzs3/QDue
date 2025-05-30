@@ -127,8 +127,6 @@
     <string name="qd_preference_scheme_start_day">7</string>
     <string name="qd_preference_scheme_start_month">11</string>
     <string name="qd_preference_scheme_start_year">2018</string>
-    <string name="legenda_today">Oggi</string>
-    <string name="legenda_your_shift">Il tuo turno</string>
     <string name="placeholder_calendar_day">1</string>
     <string name="placeholder_calendar_day_n">n</string>
     <string name="header_sunday">DOM</string>
@@ -140,6 +138,14 @@
     <string name="header_saturday">SAB</string>
     <string name="placeholder_calendar_month">month</string>
     <string name="progress_bar_loading">Caricamento...</string>
+
+    <!-- Legenda -->
+    <string name="legenda_title">Legenda</string>
+    <string name="legenda_today">Giorno corrente</string>
+    <string name="legenda_your_shift">Il tuo turno</string>
+    <string name="legenda_shift_morning">Turno Mattino</string>
+    <string name="legenda_shift_afternoon">Turno Pomeriggio</string>
+    <string name="legenda_shift_night">Turno Notte</string>
 
 
 </resources>

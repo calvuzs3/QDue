@@ -36,7 +36,8 @@
             android:autoLink="all"
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_desc"
-            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2"
+            android:textColor="@color/primary" />
 
         <TextView
             android:layout_width="match_parent"
@@ -51,7 +52,8 @@
             android:autoLink="all"
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_libraries"
-            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2"
+            android:textColor="@color/primary" />
 
         <TextView
             android:layout_width="match_parent"
@@ -67,7 +69,9 @@
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_author_str"
-            android:textAppearance="@style/TextAppearance.QDue.Headline2" />
+            android:textAppearance="@style/TextAppearance.QDue.Headline2"
+            android:textColor="@color/primary" />
+
 
         <TextView
             android:layout_width="match_parent"
@@ -77,81 +81,58 @@
             android:textAppearance="@style/TextAppearance.QDue.Body2"
             android:typeface="normal" />
 
-        <!--        <TextView-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:paddingTop="@dimen/fab_margin"-->
-        <!--            android:text=""-->
-        <!--            android:textAppearance="@style/TextAppearance.AppCompat.Title" />-->
-
-        <!--        <ImageButton-->
-        <!--            android:id="@+id/btn_dismiss_dialog"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="0dp"-->
-        <!--            android:layout_gravity="bottom|end"-->
-        <!--            android:layout_weight="1"-->
-        <!--            android:contentDescription="Togli dialogo About"-->
-        <!--            android:minWidth="48dp"-->
-        <!--            android:minHeight="48dp"-->
-        <!--            android:visibility="visible"-->
-        <!--            app:srcCompat="@drawable/btn_close"-->
-        <!--            tools:visibility="visible" />-->
-
-        <!-- Barra informazioni in basso (opzionale) -->
+        <!-- Legenda turni -->
         <LinearLayout
-            android:id="@+id/ll_dayslist_info"
+            android:id="@+id/ll_shifts_legend"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dialog_padding"
             android:background="?attr/colorSurfaceVariant"
             android:elevation="4dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="8dp"
+            android:orientation="vertical"
+            android:padding="12dp"
             android:visibility="visible">
 
-            <!-- Indicatore giorno corrente -->
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <!-- Titolo legenda -->
+            <TextView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginBottom="8dp"
+                android:text="@string/legenda_title"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2" />
 
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/current_day_indicator" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/legenda_today"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="@dimen/legenda_text_size" />
-
-            </LinearLayout>
-
-            <!-- Indicatore turno utente -->
+            <!-- Container per indicatori -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/ll_legend_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:layout_marginEnd="4dp"
-                    android:background="?attr/colorPrimary" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- Indicatore giorno corrente -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/legenda_your_shift"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textSize="@dimen/legenda_text_size" />
+                    android:layout_marginBottom="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="48dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/current_day_indicator" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/legenda_today"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="@dimen/legenda_text_size" />
+
+                </LinearLayout>
+
+                <!-- I turni verranno aggiunti dinamicamente qui -->
 
             </LinearLayout>
 
