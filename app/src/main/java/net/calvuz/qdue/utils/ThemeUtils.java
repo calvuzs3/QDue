@@ -145,7 +145,7 @@ public class ThemeUtils {
 
     @ColorInt
     public static int getOnNormalBackgroundColor(Context context) {
-        return getDynamicOnSurfaceColor(context);
+        return getDynamicOnNormalBackgroundColor(context);
     }
 
     @ColorInt
@@ -225,6 +225,16 @@ public class ThemeUtils {
             return context.getColor(R.color.primary_dark_theme);
         } else {
             return context.getColor(R.color.primary);
+        }
+    }
+
+    @ColorInt
+    public static int getDynamicOnNormalBackgroundColor(Context context) {
+        ThemeManager themeManager = ThemeManager.getInstance(context);
+        if (themeManager.isDarkMode()) {
+            return context.getColor(R.color.on_background_dark);
+        } else {
+            return context.getColor(R.color.on_background);
         }
     }
 }

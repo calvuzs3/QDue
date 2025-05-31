@@ -316,6 +316,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     protected void initializeColorCache() {
         if (mCachedNormalTextColor == 0) {
             mCachedNormalTextColor = ThemeUtils.getOnNormalBackgroundColor(mContext);
+//            mCachedNormalTextColor = ThemeUtils.getOnPri(mContext);
             mCachedSundayTextColor = ThemeUtils.getSundayTextColor(mContext);
             mCachedTodayBackgroundColor = ThemeUtils.getTodayBackgroundColor(mContext);
             mCachedUserShiftBackgroundColor = ThemeUtils.getMaterialPrimaryContainerColor(mContext);

@@ -89,7 +89,7 @@ public class ThemeManager {
     public boolean isDarkMode() {
         int nightModeFlags = context.getResources().getConfiguration().uiMode &
                 Configuration.UI_MODE_NIGHT_MASK;
-        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+        return (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) || (getThemeMode() == THEME_DARK);
     }
 
     /**
