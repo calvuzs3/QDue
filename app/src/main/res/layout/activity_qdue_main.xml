@@ -47,6 +47,6 @@
         app:menu="@menu/bottom_navigation_menu"
         app:itemIconTint="@color/bottom_nav_item_color"
         app:itemTextColor="@color/bottom_nav_item_color"
-        app:labelVisibilityMode="labeled" />
+        app:labelVisibilityMode="unlabeled" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
