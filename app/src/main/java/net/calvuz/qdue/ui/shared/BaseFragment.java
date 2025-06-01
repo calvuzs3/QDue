@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.shared;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
 import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
 import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_SIZE;
 
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
@@ -33,7 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class BaseFragment extends Fragment {
 
     private static final String TAG = "BaseFragment";
-    private static final boolean LOG_ENABLED = true;
 
     // Componenti comuni
     protected QuattroDue mQD;
@@ -80,7 +81,7 @@ public abstract class BaseFragment extends Fragment {
         // Inizializza il data manager
         mDataManager = CalendarDataManager.getInstance();
 
-        if (LOG_ENABLED) Log.d(TAG, "onCreate: " + getClass().getSimpleName());
+        if (DEBUG_FRAGMENT) Log.d(TAG, "onCreate: " + getClass().getSimpleName());
     }
 
     @Override
@@ -98,7 +99,7 @@ public abstract class BaseFragment extends Fragment {
 
         // Inizializza QuattroDue e il data manager
         if (getActivity() != null) {
-            mQD = QuattroDue.getInstance(getActivity().getApplicationContext());
+            mQD = QDue.getQuattrodue();
             mDataManager.initialize(mQD);
             setupInfiniteScrolling();
         }
@@ -253,7 +254,7 @@ public abstract class BaseFragment extends Fragment {
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
             super.onScrollStateChanged(recyclerView, newState);
 
-            if (LOG_ENABLED) {
+            if (DEBUG_FRAGMENT) {
                 String stateStr = newState == RecyclerView.SCROLL_STATE_IDLE ? "IDLE" :
                         newState == RecyclerView.SCROLL_STATE_DRAGGING ? "DRAGGING" : "SETTLING";
                 Log.v(TAG, "Scroll state: " + stateStr + ", velocity: " + mScrollVelocity);
@@ -302,7 +303,7 @@ public abstract class BaseFragment extends Fragment {
 
                         hideTopLoader();
 
-                        if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese precedente: " + prevMonth);
+                        if (DEBUG_FRAGMENT) Log.d(TAG, "Aggiunto mese precedente: " + prevMonth);
                     } finally {
                         mIsUpdatingCache.set(false);
                     }
@@ -312,7 +313,7 @@ public abstract class BaseFragment extends Fragment {
                 hideTopLoader();
             }
         } catch (Exception e) {
-            if (LOG_ENABLED) Log.e(TAG, "Errore caricamento precedente: " + e.getMessage());
+            if (DEBUG_FRAGMENT) Log.e(TAG, "Errore caricamento precedente: " + e.getMessage());
             mIsUpdatingCache.set(false);
             hideTopLoader();
         }
@@ -349,7 +350,7 @@ public abstract class BaseFragment extends Fragment {
 
                         hideBottomLoader();
 
-                        if (LOG_ENABLED) Log.d(TAG, "Aggiunto mese successivo: " + nextMonth);
+                        if (DEBUG_FRAGMENT) Log.d(TAG, "Aggiunto mese successivo: " + nextMonth);
                     } finally {
                         mIsUpdatingCache.set(false);
                     }
@@ -359,7 +360,7 @@ public abstract class BaseFragment extends Fragment {
                 hideBottomLoader();
             }
         } catch (Exception e) {
-            if (LOG_ENABLED) Log.e(TAG, "Errore caricamento successivo: " + e.getMessage());
+            if (DEBUG_FRAGMENT) Log.e(TAG, "Errore caricamento successivo: " + e.getMessage());
             mIsUpdatingCache.set(false);
             hideBottomLoader();
         }
@@ -373,7 +374,7 @@ public abstract class BaseFragment extends Fragment {
         if (firstVisible <= 10 && scrollDirection <= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
 
-            if (LOG_ENABLED) Log.d(TAG, "Triggering top load at position: " + firstVisible);
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering top load at position: " + firstVisible);
             triggerTopLoad();
         }
 
@@ -381,7 +382,7 @@ public abstract class BaseFragment extends Fragment {
         if (lastVisible >= mItemsCache.size() - 10 && scrollDirection >= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
 
-            if (LOG_ENABLED) Log.d(TAG, "Triggering bottom load at position: " + lastVisible);
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering bottom load at position: " + lastVisible);
             triggerBottomLoad();
         }
     }
@@ -482,7 +483,7 @@ public abstract class BaseFragment extends Fragment {
                     getAdapter().notifyItemRemoved(lastIndex);
                 }
 
-                if (LOG_ENABLED) Log.d(TAG, "Cache pulita, dimensione: " + mItemsCache.size());
+                if (DEBUG_FRAGMENT) Log.d(TAG, "Cache pulita, dimensione: " + mItemsCache.size());
             } finally {
                 mIsUpdatingCache.set(false);
             }
@@ -508,10 +509,10 @@ public abstract class BaseFragment extends Fragment {
     protected void scrollToToday() {
         if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
             mRecyclerView.smoothScrollToPosition(mTodayPosition);
-            if (LOG_ENABLED) Log.d(TAG, "Scrolling a oggi, posizione: " + mTodayPosition);
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Scrolling a oggi, posizione: " + mTodayPosition);
         } else {
             // Ricostruisci centrato su oggi
-            if (LOG_ENABLED) Log.d(TAG, "Oggi non in cache, ricostruzione");
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Oggi non in cache, ricostruzione");
             mCurrentDate = LocalDate.now().withDayOfMonth(1);
             setupInfiniteScrolling();
         }
@@ -618,7 +619,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (LOG_ENABLED) Log.d(TAG, "onStart: " + getClass().getSimpleName());
+        if (DEBUG_FRAGMENT) Log.d(TAG, "onStart: " + getClass().getSimpleName());
 
         if (mQD != null) {
             mQD.updatePreferences(getActivity());
@@ -632,7 +633,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (LOG_ENABLED) Log.d(TAG, "onResume: " + getClass().getSimpleName());
+        if (DEBUG_FRAGMENT) Log.d(TAG, "onResume: " + getClass().getSimpleName());
 
         // Aggiorna la posizione di oggi
         mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
@@ -661,14 +662,14 @@ public abstract class BaseFragment extends Fragment {
             mRecyclerView.clearOnScrollListeners();
         }
 
-        if (LOG_ENABLED) Log.d(TAG, "onDestroyView: " + getClass().getSimpleName());
+        if (DEBUG_FRAGMENT) Log.d(TAG, "onDestroyView: " + getClass().getSimpleName());
     }
 
     /**
      * Refresh dei dati quando cambiano le preferenze.
      */
     public void refreshData() {
-        if (LOG_ENABLED) Log.d(TAG, "refreshData chiamato");
+        if (DEBUG_FRAGMENT) Log.d(TAG, "refreshData chiamato");
 
         // Pulisci cache del data manager
         mDataManager.clearCache();
@@ -681,7 +682,7 @@ public abstract class BaseFragment extends Fragment {
      * Notifica aggiornamenti dall'esterno.
      */
     public void notifyUpdates() {
-        if (LOG_ENABLED) Log.d(TAG, "notifyUpdates chiamato");
+        if (DEBUG_FRAGMENT) Log.d(TAG, "notifyUpdates chiamato");
 
         // Aggiorna team utente se necessario
         onUserTeamChanged();

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/layout/fragment_dayslist_view.xml - Aggiornato -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,14 +9,31 @@
     android:fitsSystemWindows="false"
     tools:context=".ui.dayslist.DayslistViewFragment">
 
+    <!-- Guideline per centrare il calendario -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.85" />
+
     <!-- Header con le intestazioni delle colonne -->
     <include
         android:id="@+id/qdue_dayslist_column_header"
         layout="@layout/item_dayslist_column_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:maxWidth="600dp"
+        app:layout_constraintWidth_max="600dp"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- RecyclerView per la lista giorni -->
@@ -23,6 +41,8 @@
         android:id="@+id/rv_dayslist"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:maxWidth="600dp"
+        app:layout_constraintWidth_max="600dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:overScrollMode="never"

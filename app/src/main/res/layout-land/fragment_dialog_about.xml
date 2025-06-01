@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout-land/fragment_dialog_about.xml -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/dialog_padding"
+        android:baselineAligned="false">
+
+        <!-- Contenuto principale (sinistra) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="@dimen/dialog_padding">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_version"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:typeface="normal" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="all"
+                android:paddingTop="@dimen/dialog_padding"
+                android:text="@string/app_desc"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_about"
+                android:textAppearance="@style/TextAppearance.QDue.Body2"
+                android:typeface="normal" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="all"
+                android:paddingTop="@dimen/dialog_padding"
+                android:text="@string/app_libraries"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="all"
+                android:paddingTop="4dp"
+                android:text="@string/app_libraries_used"
+                android:textAppearance="@style/TextAppearance.QDue.Body2"
+                android:typeface="normal" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/dialog_padding"
+                android:text="@string/app_author_str"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="4dp"
+                android:text="@string/app_author_str_name"
+                android:textAppearance="@style/TextAppearance.QDue.Body2"
+                android:typeface="normal" />
+
+        </LinearLayout>
+
+        <!-- Separatore verticale -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="?android:attr/listDivider"
+            android:layout_marginHorizontal="@dimen/dialog_padding" />
+
+        <!-- Legenda turni (destra) -->
+        <LinearLayout
+            android:id="@+id/ll_shifts_legend"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.8"
+            android:background="?attr/colorSurfaceVariant"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:visibility="visible">
+
+            <!-- Titolo legenda -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/legenda_title"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2" />
+
+            <!-- Container per indicatori -->
+            <LinearLayout
+                android:id="@+id/ll_legend_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Indicatore giorno corrente -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:layout_width="32dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/current_day_indicator" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/legenda_today"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+
+                <!-- Gli indicatori dei turni verranno aggiunti dinamicamente qui -->
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
