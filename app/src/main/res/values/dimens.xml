@@ -25,19 +25,20 @@
     <dimen name="calendar_day_padding">4dp</dimen>
 
     <!-- FAB -->
-        <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 
-        <!-- Dimensioni specifiche per sidebar -->
-        <dimen name="sidebar_width">320dp</dimen>
-        <dimen name="sidebar_header_height">120dp</dimen>
-        <dimen name="sidebar_item_height">48dp</dimen>
-        <dimen name="sidebar_item_padding">16dp</dimen>
+    <!-- Dimensioni specifiche per sidebar -->
+    <dimen name="sidebar_width">320dp</dimen>
+    <dimen name="sidebar_header_height">120dp</dimen>
+    <dimen name="sidebar_item_height">48dp</dimen>
+    <dimen name="sidebar_item_padding">16dp</dimen>
 
-        <!-- Navigation items -->
-        <dimen name="nav_item_icon_size">24dp</dimen>
-        <dimen name="nav_item_text_size">16sp</dimen>
+    <!-- Navigation items -->
+    <dimen name="nav_item_icon_size">24dp</dimen>
+    <dimen name="nav_item_text_size">16sp</dimen>
 
-        <!-- Spacing -->
-        <dimen name="content_margin_land">8dp</dimen>
+    <!-- Spacing -->
+    <dimen name="content_margin_land">8dp</dimen>
+    <dimen name="list_maxview">500dp</dimen>
 
 </resources>
