@@ -20,18 +20,27 @@
         <color name="primary_variant">#764ba2</color>
         <color name="primary_light">#8a9ff5</color>
         <color name="primary_dark">#4c5bc7</color>
+        <color name="on_primary_dark">#ffffff</color>
+        <color name="primary_dark_variant">#4c5bc7</color>
         <color name="on_primary">#ffffff</color>
         <color name="primary_container">#e8eaff</color>
         <color name="on_primary_container">#1a1c38</color>
+
+        <color name="primary_dark_theme">#8a9ff5</color>
 
         <!-- Secondary Colors (Verde Turchese dall'icona) -->
         <color name="secondary">#43e97b</color>
         <color name="secondary_variant">#38f9d7</color>
         <color name="secondary_light">#5fffa7</color>
         <color name="secondary_dark">#2bc653</color>
+        <color name="secondary_dark_variant">#2bc653</color>
         <color name="on_secondary">#ffffff</color>
+        <color name="on_secondary_dark">#ffffff</color>
+        <color name="on_secondary_dark_variant">#ffffff</color>
         <color name="secondary_container">#e6fff0</color>
         <color name="on_secondary_container">#0a2e1a</color>
+
+        <color name="secondary_dark_theme">#5fffa7</color>
 
         <!-- Tertiary Colors (Azzurro Chiaro dall'icona) -->
         <color name="tertiary">#87ceeb</color>
@@ -39,16 +48,26 @@
         <color name="tertiary_light">#a8d8f0</color>
         <color name="tertiary_dark">#5ba0c7</color>
         <color name="on_tertiary">#ffffff</color>
-        <color name="tertiary_container">#f0f8ff</color>
+        <color name="on_tertiary_dark">#ffffff</color>
         <color name="on_tertiary_container">#1a2832</color>
+        <color name="tertiary_container">#f0f8ff</color>
+
+        <color name="tertiary_dark_theme">#a8d8f0</color>
 
         <!-- System Colors -->
         <color name="background">#fefefe</color>
-        <color name="on_background">#1c1c1e</color>
+        <color name="background_dark">#121212</color>
         <color name="surface">#E0F7FA</color>
+        <color name="surface_dark">#1e1e1e</color>
         <color name="surface_variant">#666666</color>
+        <color name="surface_variant_dark">#2c2c2c</color>
+        <color name="on_background">#1c1c1e</color>
+        <color name="on_background_dark">#f1f1f1</color>
         <color name="on_surface">#0097A7</color>
+        <color name="on_surface_dark">#e0e0e0</color>
         <color name="on_surface_variant">#E8F5E9</color>
+        <color name="surface_dark_variant">#666666</color>
+        <color name="on_surface_dark_variant">#E8F5E9</color>
         <color name="surface_tint">#667eea</color>
         <color name="inverse_surface">#2c2c2e</color>
         <color name="inverse_on_surface">#f2f2f7</color>
@@ -72,27 +91,6 @@
         <color name="outline_variant">#e5e7eb</color>
         <color name="scrim">#000000</color>
         <color name="shadow">#1f2937</color>
-
-        <!-- ============================================ -->
-        <!-- DARK THEME VARIANTS -->
-        <!-- ============================================ -->
-
-        <color name="primary_dark_theme">#8a9ff5</color>
-        <color name="on_primary_dark">#ffffff</color>
-
-        <color name="secondary_dark_theme">#5fffa7</color>
-        <color name="on_secondary_dark">#ffffff</color>
-
-        <color name="tertiary_dark_theme">#a8d8f0</color>
-        <color name="on_tertiary_dark">#ffffff</color>
-
-        <color name="background_dark">#121212</color>
-        <color name="on_background_dark">#f1f1f1</color>
-
-        <color name="surface_dark">#1e1e1e</color>
-        <color name="surface_variant_dark">#2c2c2c</color>
-        <color name="on_surface_dark">#e0e0e0</color>
-
 
         <!-- ============================================ -->
         <!-- CATPPUCCIN MACCHIATO PALETTE -->
@@ -164,11 +162,17 @@
         <color name="loading_background">#FAFAFA</color>
         <color name="loading_text">#757575</color>
         <color name="loading_progress">#2196F3</color>
+        <color name="loading_dark_background">#FAFAFA</color>
+        <color name="loading_dark_text">#757575</color>
+        <color name="loading_dark_progress">#2196F3</color>
 
         <!-- Colori per i bordi e separatori -->
         <color name="separator">#E0E0E0</color>
+        <color name="separator_dark">#E0E0E0</color>
         <color name="card_bcakground">#FFFFFF</color>
         <color name="card_border">#EEEEEE</color>
+        <color name="cardview_shadow_end_color">#E0E0E0</color>
+        <color name="cardview_dark_shadow_end_color">#E0E0E0</color>
 
         <!-- Catppuccin Theme -->
         <color name="shift_morning_macc">#a6da95</color>
@@ -191,6 +195,8 @@
         <!-- Dividers -->
         <color name="divider">#E0E0E0</color>
         <color name="divider_light">#F0F0F0</color>
+        <color name="divider_dark">#F6F3F3</color>
+        <color name="divider_dark_light">#D1CFCF</color>
 
         <!-- Highlighting -->
         <color name="today_background">#FFF9C4</color>

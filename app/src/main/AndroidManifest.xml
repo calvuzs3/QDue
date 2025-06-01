@@ -18,7 +18,7 @@
         <activity
             android:name=".QDueMainActivity"
             android:exported="true"
-            android:theme="@style/Theme.QDue.Main">
+            android:theme="@style/Theme.QDue">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

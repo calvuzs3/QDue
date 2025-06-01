@@ -22,7 +22,7 @@
 
         <!-- Background colors -->
         <item name="android:colorBackground">@color/background</item>
-        <!--        <item name="colorBackground">@color/background</item>-->
+        <item name="colorBackground">@color/background</item>
         <item name="colorOnBackground">@color/on_background</item>
 
         <!-- Status bar -->
@@ -50,9 +50,12 @@
         <!-- Custom app attributes -->
         <item name="colorTodayBackground">@color/today_background</item>
         <item name="colorUserShift">@color/on_background_dark_user_shift</item>
+        <item name="colorUserShiftBackground">@color/background_user_shift</item>
         <item name="colorHeaderBackground">@color/surface</item>
+
         <item name="colorSundayBackground">@color/background_sunday</item>
         <item name="colorOnSundayBackground">@color/on_background_sunday</item>
+
         <item name="colorFirstShift">@color/shift_morning_light</item>
         <item name="colorSecondShift">@color/shift_afternoon_light</item>
         <item name="colorThirdShift">@color/shift_night_light</item>
@@ -90,7 +93,6 @@
         <item name="textAppearanceHeadline2">@style/TextAppearance.QDue.Headline2</item>
         <item name="textAppearanceBody1">@style/TextAppearance.QDue.Body1</item>
         <item name="textAppearanceBody2">@style/TextAppearance.QDue.Body2</item>
-
     </style>
 
     <!-- ===== STILI COMPONENTI - LIGHT THEME ===== -->
@@ -102,6 +104,17 @@
         <item name="android:paddingEnd">2dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:textAppearance">@style/TextAppearance.QDue.Body1</item>
+    </style>
+
+    <!-- ActionBar theme -->
+    <style name="Theme.QDue.ActionBar" parent="Widget.MaterialComponents.ActionBar.Solid">
+        <item name="windowActionBar">true</item>
+        <item name="background">@color/primary</item>
+        <item name="titleTextColor">@color/on_primary</item>
+        <item name="android:layout_height">76dp</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:titleTextStyle">@style/TextAppearance.QDue.ActionBar.Title</item>
+        <item name="android:elevation">4dp</item>
     </style>
 
     <!-- Toolbar -->
@@ -137,43 +150,6 @@
         <item name="contentPadding">16dp</item>
     </style>
 
-
-    <!-- ===== TEXT APPEARANCES - LIGHT ===== -->
-
-    <style name="TextAppearance.QDue.Headline1" parent="TextAppearance.Material3.DisplayLarge">
-        <item name="android:textColor">?attr/colorOnPrimary</item>
-        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
-        <item name="android:textSize">32sp</item>
-    </style>
-
-    <style name="TextAppearance.QDue.Headline2" parent="TextAppearance.Material3.DisplayMedium">
-        <item name="android:textColor">?attr/colorOnPrimary</item>
-        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
-        <item name="android:textSize">24sp</item>
-    </style>
-
-    <style name="TextAppearance.QDue.Headline3" parent="TextAppearance.Material3.DisplayMedium">
-        <item name="android:textColor">?attr/colorOnPrimary</item>
-        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
-        <item name="android:textSize">20sp</item>
-    </style>
-
-    <style name="TextAppearance.QDue.Body1" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:textColor">@color/on_background</item>
-        <item name="android:textSize">18sp</item>
-    </style>
-
-    <style name="TextAppearance.QDue.Body2" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:textColor">@color/on_background</item>
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <style name="TextAppearance.QDue.ActionBar.Title" parent="TextAppearance.Material3.ActionBar.Title">
-        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
-        <item name="android:textColor">@color/on_primary</item>
-        <item name="android:textSize">20sp</item>
-    </style>
-
     <!-- ===== STILI SPECIALI PER L'APP ===== -->
 
     <!-- Calendar Day Style -->
@@ -194,7 +170,7 @@
         <item name="android:padding">8dp</item>
         <item name="android:gravity">center</item>
         <item name="android:elevation">2dp</item>
-        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
     </style>
 
     <!-- Shift Indicator Style -->
@@ -263,18 +239,7 @@
     <!-- ===== FINALLY ===== -->
 
     <!-- Application theme Wrapper -->
-    <style name="Theme.QDue.Main" parent="Base.Theme.QDue" />
-
-    <!-- ActionBar theme -->
-    <style name="Theme.QDue.ActionBar" parent="Widget.MaterialComponents.ActionBar.Solid">
-        <item name="windowActionBar">true</item>
-        <item name="background">@color/primary</item>
-        <item name="titleTextColor">@color/on_primary</item>
-        <item name="android:layout_height">76dp</item>
-        <item name="android:textColor">@color/on_primary</item>
-        <item name="android:titleTextStyle">@style/TextAppearance.QDue.ActionBar.Title</item>
-        <item name="android:elevation">4dp</item>
-    </style>
+    <style name="Theme.QDue" parent="Base.Theme.QDue" />
 
     <!-- NoActionBar theme -->
     <style name="Theme.QDue.NoActionBar" parent="Widget.MaterialComponents.ActionBar.Solid">
@@ -294,6 +259,37 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorOnPrimary">@color/on_primary</item>
+    </style>
+
+
+    <!-- ===== TEXT APPEARANCES - LIGHT ===== -->
+
+    <style name="TextAppearance.QDue.Headline1" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Headline2" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Headline3" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <!--        <item name="android:fontFamily">@font/lato_bold</item>-->
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Body1" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Body2" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/on_background</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>
