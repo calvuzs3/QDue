@@ -15,31 +15,36 @@ import net.calvuz.qdue.quattrodue.Costants;
 import net.calvuz.qdue.quattrodue.utils.Log;
 
 /**
- * Rappresenta un giorno del calendario con i suoi turni di lavoro.
+ * Represents a calendar day with its work shifts.
+ *
+ * Each day contains multiple shifts and tracks teams that are off work.
+ * Supports cloning for template-based generation.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public class Day implements Cloneable {
 
-    // TAG
     public final static String TAG = Day.class.getSimpleName();
 
-    // Configurazione del logging
+    // Logging configuration
     private final static boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
     private final static boolean LOG_SHIFTS = LOG_ENABLED;
     private final static boolean LOG_STOPS = LOG_ENABLED;
 
-    // Formattatore per i giorni della settimana
+    // Day of week formatter
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("EEEE");
 
-    // Dati principali
-    private LocalDate localDate;  // NON final per permettere la modifica
+    // Core data
+    private LocalDate localDate;  // Not final to allow modification
     private boolean isToday;
     private List<Shift> shifts;
     private List<HalfTeam> offWorkHalfTeams;
 
     /**
-     * Crea un nuovo giorno con la data specificata.
+     * Creates a new day with the specified date.
      *
-     * @param date La data del giorno
+     * @param date The date of the day
      */
     public Day(LocalDate date) {
         if (LOG_ENABLED) Log.v(TAG, "New Day {" + date + "}");
@@ -47,13 +52,13 @@ public class Day implements Cloneable {
         this.localDate = date;
         this.shifts = new ArrayList<>();
 
-        // Imposta isToday se è oggi
+        // Set isToday if it's today
         LocalDate today = LocalDate.now();
         this.isToday = date.equals(today);
 
         if (LOG_ENABLED) Log.d(TAG, date + " - " + this.localDate);
 
-        // Inizializza le squadre a riposo con tutte le squadre disponibili
+        // Initialize off-work teams with all available teams
         try {
             this.offWorkHalfTeams = new ArrayList<>(HALFTEAM_ALL);
         } catch (Exception e) {
@@ -62,10 +67,10 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Trova l'indice del turno in cui si trova una determinata squadra.
+     * Finds the shift index where a specific team is working.
      *
-     * @param halfTeam La squadra da cercare
-     * @return L'indice del turno o -1 se la squadra non è in turno
+     * @param halfTeam The team to search for
+     * @return The shift index or -1 if team is not working
      */
     public int getInWichTeamIsHalfTeam(HalfTeam halfTeam) {
         if (shifts == null || shifts.isEmpty()) {
@@ -84,18 +89,18 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Restituisce tutti i turni del giorno.
+     * Returns all shifts of the day.
      *
-     * @return La lista dei turni
+     * @return Immutable list of shifts
      */
     public List<Shift> getShifts() {
         return shifts != null ? Collections.unmodifiableList(shifts) : new ArrayList<>();
     }
 
     /**
-     * Imposta i turni del giorno creando un clone per ogni turno passato.
+     * Sets the shifts for this day by cloning each provided shift.
      *
-     * @param shifts I turni da copiare
+     * @param shifts The shifts to copy
      */
     private void setShifts(@NonNull List<Shift> shifts) {
         this.shifts = new ArrayList<>();
@@ -110,9 +115,9 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Aggiunge un nuovo turno al giorno.
+     * Adds a new shift to the day.
      *
-     * @param shift Il turno da aggiungere
+     * @param shift The shift to add
      */
     public void addShift(Shift shift) {
         if (shifts == null) {
@@ -122,7 +127,7 @@ public class Day implements Cloneable {
         shifts.add(shift);
         if (LOG_SHIFTS) Log.d(TAG, "addShift: " + shift);
 
-        // Rimuove le squadre del turno dalla lista delle squadre a riposo
+        // Remove shift teams from off-work teams list
         if (offWorkHalfTeams != null && !offWorkHalfTeams.isEmpty()) {
             Iterator<HalfTeam> itr = offWorkHalfTeams.iterator();
 
@@ -140,9 +145,9 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Imposta le squadre a riposo creando un clone per ogni squadra passata.
+     * Sets off-work teams by cloning each provided team.
      *
-     * @param offWorkHalfTeams La lista delle squadre a riposo
+     * @param offWorkHalfTeams List of off-work teams
      */
     private void setOffWorkHalfTeams(@NonNull List<HalfTeam> offWorkHalfTeams) {
         this.offWorkHalfTeams = new ArrayList<>();
@@ -157,9 +162,9 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Aggiunge una squadra alla lista delle squadre a riposo.
+     * Adds a team to the off-work teams list.
      *
-     * @param halfTeam La squadra da aggiungere
+     * @param halfTeam The team to add
      */
     private void addOffWorkHalfTeam(HalfTeam halfTeam) {
         if (this.offWorkHalfTeams == null) {
@@ -169,36 +174,28 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Restituisce il giorno del mese.
-     *
-     * @return Il giorno del mese
+     * @return Day of month (1-31)
      */
     public int getDayOfMonth() {
         return localDate.getDayOfMonth();
     }
 
     /**
-     * Restituisce il giorno della settimana.
-     *
-     * @return Il giorno della settimana (1-7, dove 1 è lunedì e 7 è domenica)
+     * @return Day of week (1-7, where 1 is Monday and 7 is Sunday)
      */
     public int getDayOfWeek() {
         return localDate.getDayOfWeek().getValue();
     }
 
     /**
-     * Restituisce il nome del giorno della settimana.
-     *
-     * @return Il nome del giorno della settimana
+     * @return Localized day of week name
      */
     public String getDayOfWeekAsString() {
         return localDate.format(DAY_FORMATTER);
     }
 
     /**
-     * Restituisce una stringa con tutte le squadre a riposo.
-     *
-     * @return Una stringa con i nomi delle squadre a riposo
+     * @return String with all off-work team names
      */
     public String getOffWorkHalfTeamsAsString() {
         if (offWorkHalfTeams == null || offWorkHalfTeams.isEmpty()) {
@@ -213,10 +210,10 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Restituisce una stringa con le squadre di un determinato turno.
+     * Returns teams for a specific shift as string.
      *
-     * @param position L'indice del turno
-     * @return Una stringa con i nomi delle squadre del turno
+     * @param position The shift index
+     * @return String with team names for the shift
      */
     public String getTeamsAsString(int position) {
         if (shifts == null || shifts.size() <= position) {
@@ -227,56 +224,49 @@ public class Day implements Cloneable {
     }
 
     /**
-     * Verifica se questo giorno è oggi.
-     *
-     * @return true se è oggi, false altrimenti
+     * @return true if this day is today
      */
     public boolean getIsToday() {
         return this.isToday;
     }
 
     /**
-     * Imposta se questo giorno è oggi.
+     * Sets whether this day is today.
      *
-     * @param isToday true se è oggi, false altrimenti
+     * @param isToday true if this is today
      */
     public void setIsToday(boolean isToday) {
         this.isToday = isToday;
     }
 
     /**
-     * Imposta la data del giorno.
+     * Sets the date of this day.
      *
-     * @param date La nuova data
+     * @param date The new date
      */
     public void setLocalDate(@NonNull LocalDate date) {
-        // Ora possiamo modificare la data perché localDate non è final
         this.localDate = date;
         if (LOG_ENABLED) Log.d(TAG, "setLocalDate: " + date);
     }
 
     /**
-     * Restituisce la data del giorno.
-     *
-     * @return La data
+     * @return The date of this day
      */
     public LocalDate getDate() {
         return this.localDate;
     }
 
     /**
-     * Verifica se il giorno ha eventi.
-     *
-     * @return true se ha eventi, false altrimenti
+     * @return true if day has events (currently always false)
      */
     public boolean hasEvents() {
         return false;
     }
 
     /**
-     * Imposta un turno come fermata impianti.
+     * Marks a shift as a plant stop.
      *
-     * @param shiftIndex L'indice del turno (1-based)
+     * @param shiftIndex The shift index (1-based)
      */
     public void setStop(int shiftIndex) {
         if (shifts != null && shifts.size() >= shiftIndex && shiftIndex > 0) {
@@ -310,18 +300,18 @@ public class Day implements Cloneable {
     public Day clone() throws CloneNotSupportedException {
         Day cloned = (Day) super.clone();
 
-        // Reimposta isToday su false per il clone
+        // Reset isToday to false for clone
         cloned.setIsToday(false);
 
-        // Clona la data
+        // Clone the date
         cloned.localDate = localDate;
 
-        // Clona le squadre a riposo
+        // Clone off-work teams
         if (this.offWorkHalfTeams != null) {
             cloned.setOffWorkHalfTeams(this.offWorkHalfTeams);
         }
 
-        // Clona i turni
+        // Clone shifts
         if (this.shifts != null) {
             cloned.setShifts(this.shifts);
         }

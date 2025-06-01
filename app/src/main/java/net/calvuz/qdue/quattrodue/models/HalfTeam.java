@@ -1,48 +1,46 @@
 package net.calvuz.qdue.quattrodue.models;
 
 import androidx.annotation.NonNull;
-
 import java.util.Objects;
 
 /**
- * Rappresenta una squadra (o mezza squadra) dei lavoratori.
- * Ogni HalfTeam è identificato da un nome univoco (solitamente un singolo carattere).
+ * Represents a work team (or half-team) of workers.
  *
- * @author Luke (originale)
- * @author Aggiornato 21/05/2025
+ * Each HalfTeam is identified by a unique name (typically a single character).
+ * Supports cloning and comparison operations for team management.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public class HalfTeam implements Cloneable, Comparable<HalfTeam> {
 
-    // TAG
     public static final String TAG = HalfTeam.class.getSimpleName();
 
-    // Proprietà principali
+    // Core properties
     private final String name;
 
     /**
-     * Crea una nuova mezza squadra con il nome specificato (singolo carattere).
+     * Creates a new half-team with the specified name.
      *
-     * @param c Carattere identificativo della squadra
+     * @param name Team identifier (typically a single character)
      */
-    public HalfTeam(String c) {
-        this.name = c;
+    public HalfTeam(String name) {
+        this.name = name;
     }
 
     /**
-     * Restituisce il nome della squadra.
-     *
-     * @return Nome della squadra
+     * @return The team name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Verifica se questa squadra corrisponde a un'altra per nome.
-     * Metodo di utilità compatibile con la versione originale.
+     * Checks if this team matches another team by name.
+     * Utility method compatible with original version.
      *
-     * @param other Altra squadra da confrontare
-     * @return true se le squadre hanno lo stesso nome, false altrimenti
+     * @param other Other team to compare
+     * @return true if teams have the same name
      */
     public boolean isSameTeamAs(HalfTeam other) {
         if (other == null) return false;
@@ -71,20 +69,19 @@ public class HalfTeam implements Cloneable, Comparable<HalfTeam> {
 
     @Override
     public HalfTeam clone() throws CloneNotSupportedException {
-        HalfTeam clone = (HalfTeam) super.clone();
-        // Non è necessaria altra logica perché il nome è immutabile
-        // e non conserviamo altri stati mutabili
-        return clone;
+        // No additional logic needed as name is immutable
+        // and we don't store other mutable state
+        return (HalfTeam) super.clone();
     }
 
     /**
-     * Confronta questa squadra con un'altra per l'ordinamento.
-     * L'ordinamento è basato sul nome.
+     * Compares this team with another for sorting.
+     * Sorting is based on team name.
      *
-     * @param other Altra squadra da confrontare
-     * @return valore negativo se questa squadra precede l'altra,
-     * valore positivo se questa squadra segue l'altra,
-     * zero se le squadre sono uguali
+     * @param other Other team to compare
+     * @return negative if this team precedes other,
+     *         positive if this team follows other,
+     *         zero if teams are equal
      */
     @Override
     public int compareTo(HalfTeam other) {

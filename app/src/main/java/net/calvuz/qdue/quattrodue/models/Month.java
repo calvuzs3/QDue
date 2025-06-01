@@ -13,28 +13,31 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Rappresenta un mese del calendario con i suoi giorni e fermate programmate.
+ * Represents a calendar month with its days and scheduled plant stops.
  *
- * @author Luke (originale)
- * @author Aggiornato 21/05/2025
+ * Manages a collection of days and applies predefined stop schedules.
+ * Contains static stop data that should ideally be loaded from external source.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public class Month {
 
-    /* TAG */
     private static final String TAG = Month.class.getSimpleName();
 
-    /* Proprietà del mese */
+    // Month properties
     private final LocalDate firstDayOfMonth;
     private boolean isCurrent;
     private List<Day> daysList;
 
     /**
-     * Lista statica delle fermate programmate.
-     * NOTA: In un'implementazione ideale, queste informazioni dovrebbero essere caricate
-     * da un database o da un file di configurazione.
+     * Static list of scheduled plant stops.
+     * NOTE: In an ideal implementation, this data should be loaded
+     * from a database or configuration file.
      */
     private static final List<Stop> STOPS = new ArrayList<>();
 
+    // Initialize static stop data
     static {
         // 2018
         STOPS.add(new Stop(2018, 8, 11, 3, 2018, 8, 20, 1));
@@ -46,51 +49,49 @@ public class Month {
         STOPS.add(new Stop(2019, 8, 13, 3, 2019, 8, 21, 1));
         STOPS.add(new Stop(2019, 12, 24, 3, 2019, 12, 27, 1));
         STOPS.add(new Stop(2019, 12, 31, 3, 2019, 12, 32, 1));
-        // Aggiungi qui le fermate per gli anni successivi
+        // Add more years as needed
     }
 
     /**
-     * Costruttore che inizializza un mese a partire da una data.
-     * La data viene impostata al primo giorno del mese.
+     * Creates a month starting from the given date.
+     * The date is always set to the first day of the month.
      *
-     * @param date Data di riferimento per il mese
+     * @param date Reference date for the month
      */
     public Month(LocalDate date) {
-        // Impostiamo sempre la data al primo giorno del mese
+        // Always set to first day of month
         this.firstDayOfMonth = date.withDayOfMonth(1);
         this.daysList = new ArrayList<>();
 
         int daysInMonth = YearMonth.of(date.getYear(), date.getMonth()).lengthOfMonth();
 
         if (QD_LOG_ENABLED) {
-            Log.d(TAG, firstDayOfMonth + " (giorni nel mese: " + daysInMonth + ")");
+            Log.d(TAG, firstDayOfMonth + " (days in month: " + daysInMonth + ")");
         }
 
-        // Verifica se è il mese corrente
+        // Check if this is the current month
         LocalDate today = LocalDate.now();
         setIsCurrent(today.getYear() == date.getYear() &&
                 today.getMonth() == date.getMonth());
     }
 
     /**
-     * Verifica se questo mese è il mese corrente.
-     *
-     * @return true se è il mese corrente, false altrimenti
+     * @return true if this is the current month
      */
     public boolean isCurrent() {
         return isCurrent;
     }
 
     /**
-     * Imposta se questo mese è il mese corrente.
+     * Sets whether this is the current month.
      *
-     * @param isCurrent true se è il mese corrente, false altrimenti
+     * @param isCurrent true if this is the current month
      */
     private void setIsCurrent(boolean isCurrent) {
         this.isCurrent = isCurrent;
 
         if (isCurrent && daysList != null && !daysList.isEmpty()) {
-            // Se è il mese corrente, impostiamo il giorno corrente
+            // If current month, set today
             LocalDate today = LocalDate.now();
             setToday(today.getDayOfMonth());
 
@@ -101,9 +102,9 @@ public class Month {
     }
 
     /**
-     * Imposta il giorno corrente nel mese.
+     * Sets the current day in the month.
      *
-     * @param dayOfMonth Giorno del mese (1-31)
+     * @param dayOfMonth Day of month (1-31)
      */
     public void setToday(int dayOfMonth) {
         if (daysList != null && dayOfMonth > 0 && dayOfMonth <= daysList.size()) {
@@ -116,84 +117,80 @@ public class Month {
     }
 
     /**
-     * Restituisce la lista dei giorni del mese.
-     *
-     * @return Lista immutabile dei giorni
+     * @return Immutable list of days in the month
      */
     public List<Day> getDaysList() {
         return daysList != null ? Collections.unmodifiableList(daysList) : new ArrayList<>();
     }
 
     /**
-     * Imposta la lista dei giorni del mese.
+     * Sets the list of days for this month.
      *
-     * @param daysList Lista dei giorni
+     * @param daysList List of days
      */
     public void setDaysList(List<Day> daysList) {
         this.daysList = new ArrayList<>(daysList);
 
         if (QD_LOG_ENABLED) {
-            Log.d(TAG, "setDaysList: lista giorni impostata");
+            Log.d(TAG, "setDaysList: days list set");
         }
 
-        // Se è il mese corrente, impostiamo il giorno corrente
+        // If current month, set today
         if (isCurrent()) {
             setToday(LocalDate.now().getDayOfMonth());
         }
     }
 
     /**
-     * Configura le fermate per questo mese.
-     * Carica le fermate predefinite e le applica ai giorni del mese.
+     * Configures stops for this month.
+     * Loads predefined stops and applies them to month days.
      */
     public void setStops() {
         processStops();
     }
 
     /**
-     * Elabora le fermate programmate per questo mese.
-     * Questo metodo recupera le fermate pertinenti e le applica ai giorni del mese.
+     * Processes scheduled stops for this month.
+     * Retrieves relevant stops and applies them to days.
      */
     private void processStops() {
-        // Recupera le fermate per il mese corrente
+        // Get stops for current month
         List<Stop> monthStops = getStopsForMonth(firstDayOfMonth.getYear(),
                 firstDayOfMonth.getMonthValue());
 
         for (Stop stop : monthStops) {
-
             try {
                 applyStop(stop);
             } catch (Exception e) {
-                Log.e(TAG, "Errore durante l'applicazione della fermata: " + e.getMessage());
+                Log.e(TAG, "Error applying stop: " + e.getMessage());
             }
         }
     }
 
     /**
-     * Applica una fermata ai giorni del mese.
+     * Applies a stop to the days of the month.
      *
-     * @param stop Fermata da applicare
+     * @param stop Stop to apply
      */
     private void applyStop(Stop stop) {
-        // Conta i turni
+        // Count shifts
         int shiftCounter = stop.shift;
-        // Conta i giorni
+        // Count days
         int dayCounter = stop.day;
 
-        // Continua finché non raggiungiamo il giorno finale o la fine del mese
+        // Continue until we reach end day or end of month
         while (dayCounter < stop.endday && dayCounter <= daysList.size()) {
-            // Ottieni il giorno
+            // Get the day
             Day day = daysList.get(dayCounter - 1);
 
             if (day != null) {
-
-                // Imposta i turni come fermate
+                // Set shifts as stops
                 while (shiftCounter < 4) {
                     day.setStop(shiftCounter);
                     shiftCounter++;
                 }
 
-                // Resetta il contatore dei turni per il giorno successivo
+                // Reset shift counter for next day
                 shiftCounter = 1;
             }
 
@@ -202,9 +199,9 @@ public class Month {
     }
 
     /**
-     * Genera e inizializza la lista dei giorni del mese.
-     * Questo metodo può essere chiamato dopo aver creato l'oggetto Month
-     * per popolare la lista dei giorni.
+     * Generates and initializes the list of days in the month.
+     * This method can be called after creating the Month object
+     * to populate the days list.
      */
     public void generateDays() {
         int daysInMonth = YearMonth.of(firstDayOfMonth.getYear(), firstDayOfMonth.getMonth()).lengthOfMonth();
@@ -215,68 +212,56 @@ public class Month {
             daysList.add(new Day(date));
         }
 
-        // Se è il mese corrente, impostiamo il giorno corrente
+        // If current month, set today
         if (isCurrent()) {
             setToday(LocalDate.now().getDayOfMonth());
         }
     }
 
     /**
-     * Recupera le fermate programmate per un determinato mese.
+     * Retrieves scheduled stops for a specific month.
      *
-     * @param year  Anno
-     * @param month Mese (1-12)
-     * @return Lista delle fermate per il mese specificato
+     * @param year  Year
+     * @param month Month (1-12)
+     * @return List of stops for the specified month
      */
     private List<Stop> getStopsForMonth(int year, int month) {
-
-
-        // Filtra le fermate per l'anno e il mese specificati
+        // Filter stops for specified year and month
         return STOPS.stream()
                 .filter(stop -> stop.year == year && stop.month == month)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Restituisce il primo giorno del mese.
-     *
-     * @return Data del primo giorno del mese
+     * @return First day of the month
      */
     public LocalDate getFirstDayOfMonth() {
         return firstDayOfMonth;
     }
 
     /**
-     * Restituisce l'anno del mese.
-     *
-     * @return Anno
+     * @return Year of the month
      */
     public int getYear() {
         return firstDayOfMonth.getYear();
     }
 
     /**
-     * Restituisce il numero del mese (1-12).
-     *
-     * @return Numero del mese
+     * @return Month number (1-12)
      */
     public int getMonthValue() {
         return firstDayOfMonth.getMonthValue();
     }
 
     /**
-     * Restituisce il nome del mese.
-     *
-     * @return Nome del mese
+     * @return Month name
      */
     public String getMonthName() {
         return firstDayOfMonth.getMonth().toString();
     }
 
     /**
-     * Restituisce una rappresentazione testuale del mese (es. "Maggio 2025").
-     *
-     * @return Stringa rappresentativa del mese
+     * @return Text representation of the month (e.g., "May 2025")
      */
     public String getTitle() {
         return firstDayOfMonth.getMonth().toString() + " " + firstDayOfMonth.getYear();
@@ -284,7 +269,7 @@ public class Month {
 
     @Override
     public String toString() {
-        return TAG + "{" + firstDayOfMonth + ", giorni: " +
+        return TAG + "{" + firstDayOfMonth + ", days: " +
                 (daysList != null ? daysList.size() : 0) + "}";
     }
 

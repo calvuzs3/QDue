@@ -1,9 +1,7 @@
 package net.calvuz.qdue.quattrodue.models;
 
-import android.os.Build;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -11,32 +9,37 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Rappresenta un tipo di turno con orario, durata e colore associato.
+ * Represents a shift type with schedule, duration and associated color.
+ *
+ * Defines the template for shifts including start time, duration, and visual appearance.
+ * Immutable value object that can be reused across multiple shifts.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public class ShiftType {
 
-    // TAG
-    public static final String TAG = HalfTeam.class.getSimpleName();
+    public static final String TAG = ShiftType.class.getSimpleName();
 
-    // Proprietà principali
-    private final String name;             // Nome del turno (es. "Mattino")
-    private final String description;      // Descrizione (es. "Turno del mattino 6-14")
-    private final LocalTime startTime;     // Orario di inizio
-    private final Duration duration;       // Durata del turno
-    private final @ColorInt int color;     // Colore associato al turno
+    // Core properties
+    private final String name;             // Shift name (e.g., "Morning")
+    private final String description;      // Description (e.g., "Morning shift 6-14")
+    private final LocalTime startTime;     // Start time
+    private final Duration duration;       // Shift duration
+    private final @ColorInt int color;     // Associated color for UI
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
-     * Costruttore completo con tutti i parametri.
+     * Complete constructor with all parameters.
      *
-     * @param name Nome del turno
-     * @param description Descrizione del turno
-     * @param startHour Ora di inizio (0-23)
-     * @param startMinute Minuto di inizio (0-59)
-     * @param durationHours Durata in ore
-     * @param durationMinutes Durata in minuti aggiuntivi
-     * @param color Colore associato al turno (formato ARGB)
+     * @param name Name of the shift
+     * @param description Description of the shift
+     * @param startHour Start hour (0-23)
+     * @param startMinute Start minute (0-59)
+     * @param durationHours Duration in hours
+     * @param durationMinutes Additional duration in minutes
+     * @param color Associated color (ARGB format)
      */
     public ShiftType(String name, String description, int startHour, int startMinute,
                      int durationHours, int durationMinutes, @ColorInt int color) {
@@ -48,118 +51,96 @@ public class ShiftType {
     }
 
     /**
-     * Restituisce il nome del turno.
-     *
-     * @return Nome del turno
+     * @return Shift name
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Restituisce la descrizione del turno.
-     *
-     * @return Descrizione del turno
+     * @return Shift description
      */
     public String getDescription() {
         return description;
     }
 
     /**
-     * Restituisce l'ora di inizio.
-     *
-     * @return Ora di inizio (0-23)
+     * @return Start hour (0-23)
      */
     public int getStartHour() {
         return startTime.getHour();
     }
 
     /**
-     * Restituisce il minuto di inizio.
-     *
-     * @return Minuto di inizio (0-59)
+     * @return Start minute (0-59)
      */
     public int getStartMinute() {
         return startTime.getMinute();
     }
 
     /**
-     * Restituisce l'orario di inizio come oggetto LocalTime.
-     *
-     * @return Orario di inizio
+     * @return Start time as LocalTime object
      */
     public LocalTime getStartTime() {
         return startTime;
     }
 
     /**
-     * Restituisce la durata del turno in ore.
-     *
-     * @return Ore di durata
+     * @return Shift duration in hours
      */
     public int getDurationHours() {
         return (int) duration.toHours();
     }
 
     /**
-     * Restituisce i minuti aggiuntivi della durata.
-     *
-     * @return Minuti aggiuntivi di durata (0-59)
+     * @return Additional minutes of duration (0-59)
      */
     public int getDurationMinutes() {
         return duration.toMinutesPart();
     }
 
     /**
-     * Restituisce la durata totale come oggetto Duration.
-     *
-     * @return Durata del turno
+     * @return Total duration as Duration object
      */
     public Duration getDuration() {
         return duration;
     }
 
     /**
-     * Restituisce il colore associato al turno.
-     *
-     * @return Colore in formato ARGB
+     * @return Associated color in ARGB format
      */
     public @ColorInt int getColor() {
         return color;
     }
 
     /**
-     * Calcola l'orario di fine del turno.
+     * Calculates the end time of the shift.
      *
-     * @return Orario di fine
+     * @return End time
      */
     public LocalTime getEndTime() {
         return startTime.plus(duration);
     }
 
     /**
-     * Verifica se un determinato orario è compreso nel turno.
+     * Checks if a given time is within the shift.
      *
-     * @param time Orario da verificare
-     * @return true se l'orario è compreso nel turno, false altrimenti
+     * @param time Time to verify
+     * @return true if time is within the shift
      */
     public boolean includes(LocalTime time) {
         return !time.isBefore(startTime) && !time.isAfter(getEndTime());
     }
 
     /**
-     * Restituisce una rappresentazione testuale dell'orario di inizio.
-     *
-     * @return Orario di inizio formattato (es. "06:00")
+     * @return Formatted start time (e.g., "06:00")
      */
     public String getFormattedStartTime() {
         return startTime.format(TIME_FORMATTER);
     }
 
     /**
-     * Restituisce una rappresentazione testuale dell'orario di fine.
-     *
-     * @return Orario di fine formattato (es. "14:00")
+     * @return Formatted end time (e.g., "14:00")
      */
     public String getFormattedEndTime() {
         return getEndTime().format(TIME_FORMATTER);
@@ -186,6 +167,6 @@ public class ShiftType {
     @NonNull
     @Override
     public String toString() {
-        return  TAG +"{" + name + " " + getFormattedStartTime() + "-" + getFormattedEndTime() + "}";
+        return TAG + "{" + name + " " + getFormattedStartTime() + "-" + getFormattedEndTime() + "}";
     }
 }

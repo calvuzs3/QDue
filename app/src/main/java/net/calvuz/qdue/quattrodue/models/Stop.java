@@ -1,4 +1,5 @@
 package net.calvuz.qdue.quattrodue.models;
+
 import androidx.annotation.NonNull;
 
 import java.time.LocalDate;
@@ -6,47 +7,46 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Rappresenta una fermata degli impianti in un periodo specifico.
- * Una fermata è definita da una data di inizio, una data di fine,
- * e dai turni coinvolti.
+ * Represents a plant stop during a specific period.
  *
- * @author Luke (originale)
- * @author Aggiornato 21/05/2025
+ * A stop is defined by start date/shift and end date/shift.
+ * Supports date range operations and overlap detection.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public final class Stop {
 
-    /* TAG */
     private static final String TAG = Stop.class.getSimpleName();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    /* Proprietà della fermata */
-    // Data di inizio
+    // Stop properties - start period
     public final int year;
     public final int month;
     public final int day;
     public final int shift;
 
-    // Data di fine
+    // Stop properties - end period
     public final int endyear;
     public final int endmonth;
     public final int endday;
     public final int endshift;
 
-    // Date come oggetti LocalDate per facilitare i calcoli
+    // LocalDate objects for easier calculations
     private final LocalDate startDate;
     private final LocalDate endDate;
 
     /**
-     * Crea una nuova fermata con le date di inizio e fine specificate.
+     * Creates a new stop with specified start and end periods.
      *
-     * @param year Anno di inizio
-     * @param month Mese di inizio (1-12)
-     * @param day Giorno di inizio (1-31)
-     * @param shift Turno di inizio (1-3)
-     * @param endyear Anno di fine
-     * @param endmonth Mese di fine (1-12)
-     * @param endday Giorno di fine (1-31)
-     * @param endshift Turno di fine (1-3)
+     * @param year Start year
+     * @param month Start month (1-12)
+     * @param day Start day (1-31)
+     * @param shift Start shift (1-3)
+     * @param endyear End year
+     * @param endmonth End month (1-12)
+     * @param endday End day (1-31)
+     * @param endshift End shift (1-3)
      */
     public Stop(int year, int month, int day, int shift,
                 int endyear, int endmonth, int endday, int endshift) {
@@ -59,13 +59,13 @@ public final class Stop {
         this.endday = endday;
         this.endshift = endshift;
 
-        // Creiamo oggetti LocalDate per facilitare i calcoli
+        // Create LocalDate objects for easier calculations
         this.startDate = LocalDate.of(year, month, day);
 
-        // Gestiamo il caso del giorno 32 (usato come workaround nella vecchia implementazione)
+        // Handle day 32 case (used as workaround in old implementation)
         int adjustedEndDay = endday;
         if (adjustedEndDay > 31) {
-            // Aggiungiamo un mese e impostiamo il giorno a 1
+            // Add one month and set day to 1
             LocalDate nextMonth = LocalDate.of(endyear, endmonth, 1).plusMonths(1);
             this.endDate = nextMonth;
         } else {
@@ -74,12 +74,12 @@ public final class Stop {
     }
 
     /**
-     * Alternativo costruttore che utilizza oggetti LocalDate.
+     * Alternative constructor using LocalDate objects.
      *
-     * @param startDate Data di inizio
-     * @param startShift Turno di inizio (1-3)
-     * @param endDate Data di fine
-     * @param endShift Turno di fine (1-3)
+     * @param startDate Start date
+     * @param startShift Start shift (1-3)
+     * @param endDate End date
+     * @param endShift End shift (1-3)
      */
     public Stop(LocalDate startDate, int startShift, LocalDate endDate, int endShift) {
         this.year = startDate.getYear();
@@ -97,20 +97,20 @@ public final class Stop {
     }
 
     /**
-     * Verifica se una data specifica è compresa nella fermata.
+     * Checks if a specific date is included in the stop period.
      *
-     * @param date Data da verificare
-     * @return true se la data è compresa nella fermata, false altrimenti
+     * @param date Date to verify
+     * @return true if date is within the stop period
      */
     public boolean includes(LocalDate date) {
         return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
     /**
-     * Verifica se questa fermata si sovrappone con un'altra.
+     * Checks if this stop overlaps with another stop.
      *
-     * @param other Altra fermata da verificare
-     * @return true se c'è sovrapposizione, false altrimenti
+     * @param other Other stop to verify
+     * @return true if there's overlap
      */
     public boolean overlaps(Stop other) {
         return includes(other.startDate) || includes(other.endDate) ||
@@ -118,27 +118,23 @@ public final class Stop {
     }
 
     /**
-     * Calcola la durata della fermata in giorni.
+     * Calculates the duration of the stop in days.
      *
-     * @return Numero di giorni della fermata
+     * @return Number of days in the stop
      */
     public int getDurationInDays() {
         return (int) (endDate.toEpochDay() - startDate.toEpochDay() + 1);
     }
 
     /**
-     * Restituisce la data di inizio come oggetto LocalDate.
-     *
-     * @return Data di inizio
+     * @return Start date as LocalDate object
      */
     public LocalDate getStartDate() {
         return startDate;
     }
 
     /**
-     * Restituisce la data di fine come oggetto LocalDate.
-     *
-     * @return Data di fine
+     * @return End date as LocalDate object
      */
     public LocalDate getEndDate() {
         return endDate;

@@ -13,30 +13,31 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Rappresenta un turno di lavoro in un giorno specifico.
- * Un turno è caratterizzato da un tipo (ShiftType) e può includere più squadre (HalfTeam).
+ * Represents a work shift on a specific day.
  *
- * @author Luke (originale)
- * @author Aggiornato 21/05/2025
+ * A shift is characterized by a shift type and can include multiple teams.
+ * Supports plant stops and cloning for template-based generation.
+ *
+ * @author Luke (original)
+ * @author Updated 21/05/2025
  */
 public class Shift implements Cloneable {
 
-    // TAG
     private static final String TAG = Shift.class.getSimpleName();
 
-    // Configurazione del logging
+    // Logging configuration
     private final static boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
 
-    // Proprietà del turno
+    // Shift properties
     private final ShiftType shiftType;
-    private boolean stop; // true se il turno è in fermata
+    private boolean stop; // true if shift is during plant stop
     private final Set<HalfTeam> halfTeams;
-    private LocalDate date; // Data opzionale del turno
+    private LocalDate date; // Optional shift date
 
     /**
-     * Crea un nuovo turno con il tipo specificato.
+     * Creates a new shift with the specified type.
      *
-     * @param shiftType Tipo di turno
+     * @param shiftType Type of shift
      */
     public Shift(ShiftType shiftType) {
         this.shiftType = shiftType;
@@ -45,10 +46,10 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Crea un nuovo turno con tipo e data.
+     * Creates a new shift with type and date.
      *
-     * @param shiftType Tipo di turno
-     * @param date Data del turno
+     * @param shiftType Type of shift
+     * @param date Date of the shift
      */
     public Shift(ShiftType shiftType, LocalDate date) {
         this.shiftType = shiftType;
@@ -58,31 +59,29 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Verifica se il turno è in fermata.
-     *
-     * @return true se il turno è in fermata, false altrimenti
+     * @return true if shift is during plant stop
      */
     public boolean isStop() {
         return stop;
     }
 
     /**
-     * Imposta lo stato di fermata del turno.
+     * Sets the plant stop status of the shift.
      *
-     * @param stop true se il turno è in fermata, false altrimenti
+     * @param stop true if shift is during plant stop
      */
     public void setStop(boolean stop) {
         this.stop = stop;
     }
 
     /**
-     * Aggiunge una squadra al turno.
+     * Adds a team to the shift.
      *
-     * @param halfTeam Squadra da aggiungere
+     * @param halfTeam Team to add
      */
     public void addTeam(HalfTeam halfTeam) {
         if (halfTeam == null) {
-            if (LOG_ENABLED) Log.w(TAG, "Tentativo di aggiungere una squadra null");
+            if (LOG_ENABLED) Log.w(TAG, "Attempt to add null team");
             return;
         }
 
@@ -90,19 +89,17 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Restituisce tutte le squadre assegnate al turno.
-     *
-     * @return Set immutabile delle squadre
+     * @return Immutable set of teams assigned to the shift
      */
     public Set<HalfTeam> getHalfTeams() {
         return Collections.unmodifiableSet(halfTeams);
     }
 
     /**
-     * Verifica se una specifica squadra è assegnata a questo turno.
+     * Checks if a specific team is assigned to this shift.
      *
-     * @param halfTeam Squadra da verificare
-     * @return true se la squadra è assegnata al turno, false altrimenti
+     * @param halfTeam Team to check
+     * @return true if team is assigned to the shift
      */
     public boolean containsHalfTeam(HalfTeam halfTeam) {
         if (halfTeam == null) return false;
@@ -112,9 +109,7 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Restituisce una stringa con i nomi di tutte le squadre del turno.
-     *
-     * @return Stringa concatenata con i nomi delle squadre
+     * @return Concatenated string with all team names in the shift
      */
     public String getTeamsAsString() {
         return halfTeams.stream()
@@ -123,54 +118,44 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Restituisce il tipo di turno.
-     *
-     * @return Tipo di turno
+     * @return The shift type
      */
     public ShiftType getShiftType() {
         return shiftType;
     }
 
     /**
-     * Restituisce la data del turno.
-     *
-     * @return Data del turno, o null se non specificata
+     * @return The shift date, or null if not specified
      */
     public LocalDate getDate() {
         return date;
     }
 
     /**
-     * Imposta la data del turno.
+     * Sets the shift date.
      *
-     * @param date Data del turno
+     * @param date Shift date
      */
     public void setDate(LocalDate date) {
         this.date = date;
     }
 
     /**
-     * Restituisce il nome del turno.
-     *
-     * @return Nome del turno
+     * @return The shift name
      */
     public String getName() {
-        return shiftType != null ? shiftType.getName() : "Sconosciuto";
+        return shiftType != null ? shiftType.getName() : "Unknown";
     }
 
     /**
-     * Restituisce l'ora di inizio del turno.
-     *
-     * @return Ora di inizio formattata
+     * @return Formatted start time of the shift
      */
     public String getStartTime() {
         return shiftType != null ? shiftType.getFormattedStartTime() : "";
     }
 
     /**
-     * Restituisce l'ora di fine del turno.
-     *
-     * @return Ora di fine formattata
+     * @return Formatted end time of the shift
      */
     public String getEndTime() {
         return shiftType != null ? shiftType.getFormattedEndTime() : "";
@@ -185,7 +170,7 @@ public class Shift implements Cloneable {
         if (shiftType != null) {
             sb.append(shiftType.getName());
         } else {
-            sb.append("Sconosciuto");
+            sb.append("Unknown");
         }
 
         if (isStop()) {
@@ -222,26 +207,27 @@ public class Shift implements Cloneable {
         return Objects.hash(shiftType, stop, date, halfTeams.size());
     }
 
+    @NonNull
     @Override
     public Shift clone() throws CloneNotSupportedException {
         Shift clone = (Shift) super.clone();
 
-        // Copia lo stato di fermata
+        // Copy stop status
         clone.setStop(this.stop);
 
-        // Copia la data
+        // Copy date
         if (this.date != null) {
             clone.setDate(LocalDate.of(this.date.getYear(),
                     this.date.getMonth(),
                     this.date.getDayOfMonth()));
         }
 
-        // Clona le squadre
+        // Clone teams
         for (HalfTeam team : this.halfTeams) {
             try {
                 clone.addTeam(team.clone());
             } catch (CloneNotSupportedException e) {
-                Log.e(TAG, "Errore durante la clonazione della squadra: " + e.getMessage());
+                Log.e(TAG, "Error cloning team: " + e.getMessage());
             }
         }
 
@@ -249,7 +235,7 @@ public class Shift implements Cloneable {
     }
 
     /**
-     * Builder per creare istanze di Shift in modo fluente.
+     * Builder for creating Shift instances fluently.
      */
     public static class Builder {
         private ShiftType shiftType;

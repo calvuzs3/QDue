@@ -24,6 +24,10 @@ public final class Costants {
     // Numero massimo di mesi in memoria per evitare memory leak
     public static final int QD_MAX_CACHE_SIZE = 24;
 
+    // Configurazione cache
+    public static final int QD_MAX_CACHED_MONTHS = 24;
+    public static final long QD_CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minuti
+
     // Initial date of the scheme
     public final static int QD_SCHEME_START_DAY = 7;
     public final static int QD_SCHEME_START_MONTH = 11;

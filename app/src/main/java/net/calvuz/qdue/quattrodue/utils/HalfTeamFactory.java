@@ -8,22 +8,26 @@ import java.util.Map;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 
 /**
- * Factory per creare e gestire le squadre (HalfTeam).
- * Implementa un sistema di cache per le squadre predefinite.
+ * Factory for creating and managing teams (HalfTeam).
+ *
+ * Implements a cache system for predefined teams (A-I) and provides
+ * utilities for team creation, validation and retrieval.
+ *
+ * @author Updated 21/05/2025
  */
 public final class HalfTeamFactory {
 
     private static final String TAG = "HalfTeamFactory";
 
-    // Cache delle squadre per nome
+    // Team cache by name
     private static final Map<String, HalfTeam> teamCache = new HashMap<>();
 
-    // Non permettere l'istanziazione
+    // Prevent instantiation
     private HalfTeamFactory() {}
 
-    // Inizializzazione statica delle squadre predefinite
+    // Static initialization of predefined teams
     static {
-        // Inizializza le squadre di base da A a I
+        // Initialize base teams A to I
         for (char c = 'A'; c <= 'I'; c++) {
             String name = String.valueOf(c);
             teamCache.put(name, new HalfTeam(name));
@@ -31,24 +35,24 @@ public final class HalfTeamFactory {
     }
 
     /**
-     * Ottiene una squadra dal nome. Se la squadra esiste nella cache,
-     * restituisce l'istanza esistente, altrimenti ne crea una nuova.
+     * Gets a team by name. If team exists in cache, returns existing instance,
+     * otherwise creates a new one.
      *
-     * @param name Nome della squadra
-     * @return HalfTeam corrispondente, o null se il nome è null
+     * @param name Team name
+     * @return Corresponding HalfTeam, or null if name is null
      */
     public static HalfTeam getByName(String name) {
         if (name == null || name.isEmpty()) {
             return null;
         }
 
-        // Converti il nome in maiuscolo (per garantire coerenza)
+        // Convert name to uppercase for consistency
         String upperName = name.toUpperCase();
 
-        // Cerca nella cache
+        // Search in cache
         HalfTeam team = teamCache.get(upperName);
 
-        // Se non trovato, crea una nuova istanza e aggiungila alla cache
+        // If not found, create new instance and add to cache
         if (team == null) {
             team = new HalfTeam(upperName);
             teamCache.put(upperName, team);
@@ -58,22 +62,22 @@ public final class HalfTeamFactory {
     }
 
     /**
-     * Ottiene una squadra dal carattere.
+     * Gets a team by character.
      *
-     * @param c Carattere identificativo della squadra
-     * @return HalfTeam corrispondente
+     * @param c Character identifier of the team
+     * @return Corresponding HalfTeam
      */
     public static HalfTeam getByChar(char c) {
         return getByName(String.valueOf(c));
     }
 
     /**
-     * Crea una nuova squadra personalizzata.
-     * Questa squadra NON viene aggiunta alla cache.
+     * Creates a new custom team.
+     * This team is NOT added to the cache.
      *
-     * @param name Nome della squadra
-     * @param description Descrizione della squadra
-     * @return Nuova HalfTeam
+     * @param name Team name
+     * @param description Team description (currently unused)
+     * @return New HalfTeam
      */
     public static HalfTeam createCustom(String name, String description) {
         if (name == null || name.isEmpty()) {
@@ -84,19 +88,19 @@ public final class HalfTeamFactory {
     }
 
     /**
-     * Ottiene tutte le squadre predefinite (A-I).
+     * Gets all predefined teams (A-I).
      *
-     * @return Lista delle squadre predefinite
+     * @return List of predefined teams
      */
     public static List<HalfTeam> getAllTeams() {
         return new ArrayList<>(teamCache.values());
     }
 
     /**
-     * Ottiene tutte le squadre con nomi nei caratteri specificati.
+     * Gets all teams with names in the specified array.
      *
-     * @param names Array di nomi delle squadre
-     * @return Lista delle squadre corrispondenti
+     * @param names Array of team names
+     * @return List of corresponding teams
      */
     public static List<HalfTeam> getTeamsByNames(String[] names) {
         List<HalfTeam> teams = new ArrayList<>();
@@ -116,10 +120,10 @@ public final class HalfTeamFactory {
     }
 
     /**
-     * Ottiene tutte le squadre con nomi nei caratteri specificati.
+     * Gets all teams with identifiers in the specified character array.
      *
-     * @param chars Array di caratteri identificativi delle squadre
-     * @return Lista delle squadre corrispondenti
+     * @param chars Array of team identifier characters
+     * @return List of corresponding teams
      */
     public static List<HalfTeam> getTeamsByChars(char[] chars) {
         List<HalfTeam> teams = new ArrayList<>();
@@ -139,10 +143,10 @@ public final class HalfTeamFactory {
     }
 
     /**
-     * Verifica se una squadra è valida (ha un nome non nullo e ben formato).
+     * Validates if a team is valid (has non-null and well-formed name).
      *
-     * @param team Squadra da verificare
-     * @return true se la squadra è valida, false altrimenti
+     * @param team Team to validate
+     * @return true if team is valid
      */
     public static boolean isValidTeam(HalfTeam team) {
         return team != null && team.getName() != null && !team.getName().isEmpty();

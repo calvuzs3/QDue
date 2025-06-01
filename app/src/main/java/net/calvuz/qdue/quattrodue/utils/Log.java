@@ -1,29 +1,31 @@
 package net.calvuz.qdue.quattrodue.utils;
 
 /**
- * Wrapper class for Log.
- * Questa classe è stata migliorata ma mantiene la retrocompatibilità
- * con la versione originale.
+ * Wrapper class for Android Log.
  *
- * Created by luke on 20/09/17.
- * Updated on 21/05/2025.
+ * Enhanced version that maintains backward compatibility with original.
+ * Provides centralized logging control and optional redirection to
+ * warn level to avoid verbose ART messages.
+ *
+ * @author luke (original)
+ * @author Updated 21/05/2025
  */
 public final class Log {
 
     // Default TAG
     private final static String TAG = "QD LOG";
 
-    // Debug - default a true per mantenere la retrocompatibilità
+    // Debug enabled - default true for backward compatibility
     private final static boolean QD_DEBUG = true;
 
-    // Wrap the debug and info to the warn to avoid art annoying messages
-    private final static boolean QD_DEBUG_TO_WARN = true;
+    // Redirect debug and info to warn to avoid annoying ART messages
+    private final static boolean QD_DEBUG_TO_WARN = false;
 
     /**
-     * Log con livello VERBOSE.
+     * Log with VERBOSE level.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
      */
     public static void v(String tag, String msg) {
         if (QD_DEBUG) {
@@ -36,9 +38,9 @@ public final class Log {
     }
 
     /**
-     * Log con livello DEBUG, utilizzando il tag predefinito.
+     * Log with DEBUG level, using default tag.
      *
-     * @param msg Messaggio da loggare
+     * @param msg Message to log
      */
     public static void d(String msg) {
         if (QD_DEBUG) {
@@ -47,10 +49,10 @@ public final class Log {
     }
 
     /**
-     * Log con livello DEBUG.
+     * Log with DEBUG level.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
      */
     public static void d(String tag, String msg) {
         if (QD_DEBUG) {
@@ -63,10 +65,10 @@ public final class Log {
     }
 
     /**
-     * Log con livello INFO.
+     * Log with INFO level.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
      */
     public static void i(String tag, String msg) {
         if (QD_DEBUG) {
@@ -79,10 +81,10 @@ public final class Log {
     }
 
     /**
-     * Log con livello WARNING.
+     * Log with WARNING level.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
      */
     public static void w(String tag, String msg) {
         if (QD_DEBUG) {
@@ -91,10 +93,10 @@ public final class Log {
     }
 
     /**
-     * Log con livello ERROR.
+     * Log with ERROR level.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
      */
     public static void e(String tag, String msg) {
         if (QD_DEBUG) {
@@ -103,11 +105,11 @@ public final class Log {
     }
 
     /**
-     * Log con livello DEBUG che include eccezione.
+     * Log with DEBUG level including exception.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
-     * @param t Eccezione da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
+     * @param t Exception to log
      */
     public static void d(String tag, String msg, Throwable t) {
         if (QD_DEBUG) {
@@ -120,11 +122,11 @@ public final class Log {
     }
 
     /**
-     * Log con livello ERROR che include eccezione.
+     * Log with ERROR level including exception.
      *
-     * @param tag Tag per identificare la sorgente del log
-     * @param msg Messaggio da loggare
-     * @param t Eccezione da loggare
+     * @param tag Tag to identify log source
+     * @param msg Message to log
+     * @param t Exception to log
      */
     public static void e(String tag, String msg, Throwable t) {
         if (QD_DEBUG) {
