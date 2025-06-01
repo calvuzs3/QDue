@@ -1,6 +1,7 @@
 package net.calvuz.qdue.quattrodue.models;
 
-import net.calvuz.qdue.quattrodue.Costants;
+import static net.calvuz.qdue.quattrodue.Costants.QD_LOG_ENABLED;
+
 import net.calvuz.qdue.quattrodue.utils.Log;
 
 import java.time.LocalDate;
@@ -21,10 +22,6 @@ public class Month {
 
     /* TAG */
     private static final String TAG = Month.class.getSimpleName();
-
-    /* Logging configuration */
-    private static final boolean LOG_ENABLED = Costants.QD_LOG_ENABLED;
-    private static final boolean LOG_STOPS = true;
 
     /* Proprietà del mese */
     private final LocalDate firstDayOfMonth;
@@ -65,7 +62,7 @@ public class Month {
 
         int daysInMonth = YearMonth.of(date.getYear(), date.getMonth()).lengthOfMonth();
 
-        if (LOG_ENABLED) {
+        if (QD_LOG_ENABLED) {
             Log.d(TAG, firstDayOfMonth + " (giorni nel mese: " + daysInMonth + ")");
         }
 
@@ -97,7 +94,7 @@ public class Month {
             LocalDate today = LocalDate.now();
             setToday(today.getDayOfMonth());
 
-            if (LOG_ENABLED) {
+            if (QD_LOG_ENABLED) {
                 Log.d(TAG, "setIsCurrent: " + today.getDayOfMonth());
             }
         }
@@ -112,7 +109,7 @@ public class Month {
         if (daysList != null && dayOfMonth > 0 && dayOfMonth <= daysList.size()) {
             daysList.get(dayOfMonth - 1).setIsToday(true);
 
-            if (LOG_ENABLED) {
+            if (QD_LOG_ENABLED) {
                 Log.d(TAG, "setToday: " + dayOfMonth);
             }
         }
@@ -135,7 +132,7 @@ public class Month {
     public void setDaysList(List<Day> daysList) {
         this.daysList = new ArrayList<>(daysList);
 
-        if (LOG_ENABLED) {
+        if (QD_LOG_ENABLED) {
             Log.d(TAG, "setDaysList: lista giorni impostata");
         }
 
@@ -158,28 +155,17 @@ public class Month {
      * Questo metodo recupera le fermate pertinenti e le applica ai giorni del mese.
      */
     private void processStops() {
-        if (LOG_STOPS) {
-            Log.v(TAG, "processStops: inizio elaborazione fermate");
-        }
-
         // Recupera le fermate per il mese corrente
         List<Stop> monthStops = getStopsForMonth(firstDayOfMonth.getYear(),
                 firstDayOfMonth.getMonthValue());
 
         for (Stop stop : monthStops) {
-            if (LOG_STOPS) {
-                Log.d(TAG, "processStops: " + stop);
-            }
 
             try {
                 applyStop(stop);
             } catch (Exception e) {
                 Log.e(TAG, "Errore durante l'applicazione della fermata: " + e.getMessage());
             }
-        }
-
-        if (LOG_STOPS) {
-            Log.v(TAG, "processStops: fine elaborazione fermate");
         }
     }
 
@@ -200,9 +186,6 @@ public class Month {
             Day day = daysList.get(dayCounter - 1);
 
             if (day != null) {
-                if (LOG_STOPS) {
-                    Log.d(TAG, "applyStop: " + day);
-                }
 
                 // Imposta i turni come fermate
                 while (shiftCounter < 4) {
@@ -246,9 +229,7 @@ public class Month {
      * @return Lista delle fermate per il mese specificato
      */
     private List<Stop> getStopsForMonth(int year, int month) {
-        if (LOG_STOPS) {
-            Log.d(TAG, "getStopsForMonth(" + year + ", " + month + ")");
-        }
+
 
         // Filtra le fermate per l'anno e il mese specificati
         return STOPS.stream()

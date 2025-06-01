@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout-land/activity_qdue_main.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    tools:context=".QDueMainActivity">
+
+    <!-- Sidebar sinistra (1/3 dello schermo) -->
+    <LinearLayout
+        android:id="@+id/sidebar_container"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:background="?attr/colorSurface"
+        android:elevation="4dp">
+
+        <!-- Header della sidebar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:background="@drawable/side_nav_bar">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/nav_header_vertical_spacing"
+                android:text="@string/app_name"
+                android:textAlignment="viewEnd"
+                android:textAppearance="@style/TextAppearance.QDue.Headline1" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_id"
+                android:textAlignment="viewEnd"
+                android:textAppearance="@style/TextAppearance.QDue.Headline2" />
+
+        </LinearLayout>
+
+        <!-- Navigation Items -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/sidebar_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            app:menu="@menu/sidebar_navigation_menu"
+            app:itemTextColor="@color/sidebar_nav_item_color"
+            app:itemIconTint="@color/sidebar_nav_item_color" />
+
+    </LinearLayout>
+
+    <!-- Container principale (2/3 dello schermo) -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2">
+
+        <!-- AppBar -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.Toolbar
+                style="@style/Theme.QDue.Toolbar"
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:elevation="4dp"
+                app:popupTheme="@style/Theme.QDue.PopupOverlay"/>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- Fragment Container -->
+        <fragment
+            android:id="@+id/nav_host_fragment_content_main"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/mobile_navigation"
+            tools:ignore="FragmentTagUsage" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</LinearLayout>
