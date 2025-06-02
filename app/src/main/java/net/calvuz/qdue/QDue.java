@@ -26,6 +26,10 @@ public class QDue extends Application {
         super.onCreate();
         context = this;
         locale = getSystemLocale();
+
+        // 1. Init ShiftTypeFactory
+
+        // 2. Init QuattroDue
         quattrodue = QuattroDue.getInstance(this);
 
         // Inizializza il tema dell'applicazione

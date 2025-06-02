@@ -1,22 +1,32 @@
 package net.calvuz.qdue.quattrodue.utils;
 
-import net.calvuz.qdue.quattrodue.models.ShiftType;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+
+import net.calvuz.qdue.quattrodue.models.ShiftType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 /**
- * Factory for creating and managing shift types.
+ * Dynamic factory for creating and managing shift types.
  *
- * Supports variable number of shifts per day and provides
- * persistence through SharedPreferences. Includes predefined
- * shift types and utilities for custom shift creation.
+ * Supports variable number of shifts with external JSON API loading.
+ * Members access cached elements generated during setup phase rather
+ * than static predefined elements. Provides both local persistence
+ * and remote configuration capabilities.
  *
  * @author Updated 21/05/2025
  */
@@ -24,299 +34,498 @@ public class ShiftTypeFactory {
 
     private static final String TAG = ShiftTypeFactory.class.getSimpleName();
 
-    // Preferences keys
-    private static final String PREFS_NAME = "shift_types_prefs";
+    // Preferences for local persistence
+    private static final String PREFS_NAME = "dynamic_shift_types";
     private static final String KEY_SHIFT_COUNT = "shift_count";
-    private static final String KEY_SHIFT_NAME_PREFIX = "shift_name_";
-    private static final String KEY_SHIFT_DESC_PREFIX = "shift_desc_";
-    private static final String KEY_SHIFT_START_HOUR_PREFIX = "shift_start_hour_";
-    private static final String KEY_SHIFT_START_MIN_PREFIX = "shift_start_min_";
-    private static final String KEY_SHIFT_DURATION_HOURS_PREFIX = "shift_dur_hours_";
-    private static final String KEY_SHIFT_DURATION_MINS_PREFIX = "shift_dur_mins_";
-    private static final String KEY_SHIFT_COLOR_PREFIX = "shift_color_";
+    private static final String KEY_LAST_API_SYNC = "last_api_sync";
+    private static final String KEY_CACHE_VERSION = "cache_version";
 
-    // Default values
-    private static final int DEFAULT_SHIFT_COUNT = 3;
+    // JSON keys for API response parsing
+    private static final String JSON_KEY_SHIFTS = "shifts";
+    private static final String JSON_KEY_NAME = "name";
+    private static final String JSON_KEY_DESCRIPTION = "description";
+    private static final String JSON_KEY_START_HOUR = "startHour";
+    private static final String JSON_KEY_START_MINUTE = "startMinute";
+    private static final String JSON_KEY_DURATION_HOURS = "durationHours";
+    private static final String JSON_KEY_DURATION_MINUTES = "durationMinutes";
+    private static final String JSON_KEY_COLOR = "color";
+    private static final String JSON_KEY_ID = "id";
 
-    // Cache for shift types
-    private static Map<String, ShiftType> shiftTypeCache = new HashMap<>();
+    // Dynamic cache for shift types (thread-safe)
+    private static final Map<String, ShiftType> dynamicCache = new ConcurrentHashMap<>();
+    private static final Map<Integer, ShiftType> indexCache = new ConcurrentHashMap<>();
 
-    // Predefined colors for shifts
-    private static final int COLOR_MORNING = Color.parseColor("#B3E5FC");  // Light Blue
-    private static final int COLOR_AFTERNOON = Color.parseColor("#FFE0B2"); // Light Orange
-    private static final int COLOR_NIGHT = Color.parseColor("#E1BEE7");    // Light Purple
-    private static final int COLOR_CUSTOM1 = Color.parseColor("#C8E6C9");  // Light Green
-    private static final int COLOR_CUSTOM2 = Color.parseColor("#FFCDD2");  // Light Red
-
-    // Standard shift type definitions
-    public static final ShiftType MORNING = new ShiftType(
-            "Morning",
-            "Morning shift (5-13)",
-            5, 0,
-            8, 0,
-            COLOR_MORNING);
-
-    public static final ShiftType AFTERNOON = new ShiftType(
-            "Afternoon",
-            "Afternoon shift (13-21)",
-            13, 0,
-            8, 0,
-            COLOR_AFTERNOON);
-
-    public static final ShiftType NIGHT = new ShiftType(
-            "Night",
-            "Night shift (21-5)",
-            21, 0,
-            8, 0,
-            COLOR_NIGHT);
-
-    public static final ShiftType CUSTOM1 = new ShiftType(
-            "Custom1",
-            "Custom shift 1",
-            0, 0,
-            0, 0,
-            COLOR_CUSTOM1);
-
-    public static final ShiftType CUSTOM2 = new ShiftType(
-            "Custom2",
-            "Custom shift 2",
-            0, 0,
-            0, 0,
-            COLOR_CUSTOM2);
-
-    // Initialize cache with predefined types
-    static {
-        shiftTypeCache.put("MORNING", MORNING);
-        shiftTypeCache.put("AFTERNOON", AFTERNOON);
-        shiftTypeCache.put("NIGHT", NIGHT);
-        shiftTypeCache.put("CUSTOM1", CUSTOM1);
-        shiftTypeCache.put("CUSTOM2", CUSTOM2);
+    public static boolean isInitialized() {
+        return initialized;
     }
+
+    // Factory state
+    private static volatile boolean initialized = false;
+    private static volatile int currentShiftCount = 0;
+    private static String lastApiEndpoint = null;
+
+    // HTTP client for API calls
+    private static OkHttpClient httpClient = new OkHttpClient();
+
+    // Default colors for fallback
+    private static final int[] DEFAULT_COLORS = {
+            Color.parseColor("#B3E5FC"),  // Light Blue
+            Color.parseColor("#FFE0B2"),  // Light Orange
+            Color.parseColor("#E1BEE7"),  // Light Purple
+            Color.parseColor("#C8E6C9"),  // Light Green
+            Color.parseColor("#FFCDD2"),  // Light Red
+            Color.parseColor("#F0F4C3"),  // Light Yellow
+            Color.parseColor("#D1C4E9"),  // Light Indigo
+            Color.parseColor("#FFCCBC")   // Light Deep Orange
+    };
 
     // Prevent instantiation
     private ShiftTypeFactory() {}
 
     /**
-     * Gets the number of configured shifts.
+     * Initializes the factory with a specific number of shifts.
+     * Creates default shift types if no external source is configured.
      *
      * @param context Application context
+     * @param shiftCount Number of shifts to create
+     * @return CompletableFuture that completes when initialization is done
+     */
+    public static CompletableFuture<Boolean> initialize(Context context, int shiftCount) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                clearCache();
+                currentShiftCount = Math.max(1, Math.min(shiftCount, 8)); // Limit 1-8 shifts
+
+                // Try to load from local storage first
+                if (loadFromLocalStorage(context)) {
+                    initialized = true;
+                    Log.d(TAG, "Initialized from local storage with " + currentShiftCount + " shifts");
+                    return true;
+                }
+
+                // Create default shifts if no local data
+                createDefaultShifts();
+                saveToLocalStorage(context);
+                initialized = true;
+
+                Log.d(TAG, "Initialized with default shifts: " + currentShiftCount);
+                return true;
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error during initialization: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Initializes the factory by loading shift types from external JSON API.
+     *
+     * @param context Application context
+     * @param apiEndpoint URL to fetch shift types JSON
+     * @return CompletableFuture with success status
+     */
+    public static CompletableFuture<Boolean> initializeFromApi(Context context, String apiEndpoint) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                lastApiEndpoint = apiEndpoint;
+
+                // Try API first
+                String jsonResponse = fetchFromApi(apiEndpoint);
+                if (jsonResponse != null && parseJsonShifts(jsonResponse)) {
+                    saveToLocalStorage(context);
+                    initialized = true;
+                    Log.d(TAG, "Initialized from API with " + currentShiftCount + " shifts");
+                    return true;
+                }
+
+                // Fallback to local storage
+                if (loadFromLocalStorage(context)) {
+                    initialized = true;
+                    Log.d(TAG, "API failed, using cached data");
+                    return true;
+                }
+
+                // Last resort: default shifts
+                currentShiftCount = 3;
+                createDefaultShifts();
+                initialized = true;
+                Log.w(TAG, "API and cache failed, using defaults");
+                return true;
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing from API: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Refreshes shift types from the last used API endpoint.
+     *
+     * @param context Application context
+     * @return CompletableFuture with success status
+     */
+    public static CompletableFuture<Boolean> refreshFromApi(Context context) {
+        if (lastApiEndpoint == null) {
+            return CompletableFuture.completedFuture(false);
+        }
+        return initializeFromApi(context, lastApiEndpoint);
+    }
+
+    /**
+     * Gets a shift type by index from the dynamic cache.
+     *
+     * @param index Shift index (0-based)
+     * @return ShiftType or null if not found
+     */
+    public static ShiftType getShiftType(int index) {
+        ensureInitialized();
+        return indexCache.get(index);
+    }
+
+    /**
+     * Gets a shift type by name from the dynamic cache.
+     *
+     * @param name Shift name
+     * @return ShiftType or null if not found
+     */
+    public static ShiftType getShiftType(String name) {
+        ensureInitialized();
+        return dynamicCache.get(name);
+    }
+
+    /**
+     * Gets all shift types from the dynamic cache.
+     *
+     * @return List of all configured shift types
+     */
+    public static List<ShiftType> getAllShiftTypes() {
+        ensureInitialized();
+        List<ShiftType> result = new ArrayList<>();
+        for (int i = 0; i < currentShiftCount; i++) {
+            ShiftType shift = indexCache.get(i);
+            if (shift != null) {
+                result.add(shift);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the current number of configured shifts.
+     *
      * @return Number of shifts
      */
-    public static int getShiftCount(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getInt(KEY_SHIFT_COUNT, DEFAULT_SHIFT_COUNT);
+    public static int getShiftCount() {
+        ensureInitialized();
+        return currentShiftCount;
     }
 
     /**
-     * Sets the number of shifts.
+     * Adds a new shift type to the dynamic cache.
      *
-     * @param context Application context
-     * @param count Number of shifts (1-5)
+     * @param shiftType Shift type to add
+     * @return Index assigned to the shift type
      */
-    public static void setShiftCount(Context context, int count) {
-        if (count < 1) count = 1; // At least one shift
-        if (count > 5) count = 5; // Maximum 5 shifts
+    public static int addShiftType(ShiftType shiftType) {
+        if (shiftType == null) return -1;
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
-        editor.putInt(KEY_SHIFT_COUNT, count);
-        editor.apply();
+        int index = currentShiftCount;
+        dynamicCache.put(shiftType.getName(), shiftType);
+        indexCache.put(index, shiftType);
+        currentShiftCount++;
+
+        Log.d(TAG, "Added shift type: " + shiftType.getName() + " at index " + index);
+        return index;
     }
 
     /**
-     * Saves a shift type to preferences.
+     * Updates an existing shift type in the cache.
      *
-     * @param context Application context
-     * @param index Shift index (0-based)
-     * @param shiftType Shift type to save
+     * @param index Index to update
+     * @param shiftType New shift type
+     * @return true if update was successful
      */
-    public static void saveShiftType(Context context, int index, ShiftType shiftType) {
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
-
-        editor.putString(KEY_SHIFT_NAME_PREFIX + index, shiftType.getName());
-        editor.putString(KEY_SHIFT_DESC_PREFIX + index, shiftType.getDescription());
-        editor.putInt(KEY_SHIFT_START_HOUR_PREFIX + index, shiftType.getStartHour());
-        editor.putInt(KEY_SHIFT_START_MIN_PREFIX + index, shiftType.getStartMinute());
-        editor.putInt(KEY_SHIFT_DURATION_HOURS_PREFIX + index, shiftType.getDurationHours());
-        editor.putInt(KEY_SHIFT_DURATION_MINS_PREFIX + index, shiftType.getDurationMinutes());
-        editor.putInt(KEY_SHIFT_COLOR_PREFIX + index, shiftType.getColor());
-
-        editor.apply();
-    }
-
-    /**
-     * Loads a shift type from preferences.
-     *
-     * @param context Application context
-     * @param index Shift index (0-based)
-     * @return Loaded shift type
-     */
-    public static ShiftType loadShiftType(Context context, int index) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
-        // Default values based on index
-        String defaultName = getDefaultName(index);
-        String defaultDesc = getDefaultDescription(index);
-        int defaultStartHour = getDefaultStartHour(index);
-        int defaultColor = getDefaultColor(index);
-
-        // Load values from preferences
-        String name = prefs.getString(KEY_SHIFT_NAME_PREFIX + index, defaultName);
-        String desc = prefs.getString(KEY_SHIFT_DESC_PREFIX + index, defaultDesc);
-        int startHour = prefs.getInt(KEY_SHIFT_START_HOUR_PREFIX + index, defaultStartHour);
-        int startMin = prefs.getInt(KEY_SHIFT_START_MIN_PREFIX + index, 0);
-        int durationHours = prefs.getInt(KEY_SHIFT_DURATION_HOURS_PREFIX + index, 8);
-        int durationMins = prefs.getInt(KEY_SHIFT_DURATION_MINS_PREFIX + index, 0);
-        int color = prefs.getInt(KEY_SHIFT_COLOR_PREFIX + index, defaultColor);
-
-        return new ShiftType(name, desc, startHour, startMin, durationHours, durationMins, color);
-    }
-
-    /**
-     * Returns default start hour for a shift.
-     */
-    private static int getDefaultStartHour(int index) {
-        switch (index) {
-            case 0: return 5;   // Morning
-            case 1: return 13;  // Afternoon
-            case 2: return 21;  // Night
-            default: return 5;  // Default for additional shifts
-        }
-    }
-
-    /**
-     * Returns default name for a shift.
-     */
-    private static String getDefaultName(int index) {
-        switch (index) {
-            case 0: return "Morning";
-            case 1: return "Afternoon";
-            case 2: return "Night";
-            default: return "Shift " + (index + 1);
-        }
-    }
-
-    /**
-     * Returns default description for a shift.
-     */
-    private static String getDefaultDescription(int index) {
-        switch (index) {
-            case 0: return "Morning shift (5-13)";
-            case 1: return "Afternoon shift (13-21)";
-            case 2: return "Night shift (21-5)";
-            default: return "Description shift " + (index + 1);
-        }
-    }
-
-    /**
-     * Returns a default color based on index.
-     *
-     * @param index Shift index
-     * @return Default color
-     */
-    private static int getDefaultColor(int index) {
-        switch (index) {
-            case 0: return COLOR_MORNING;
-            case 1: return COLOR_AFTERNOON;
-            case 2: return COLOR_NIGHT;
-            case 3: return COLOR_CUSTOM1;
-            case 4: return COLOR_CUSTOM2;
-            default: return Color.GRAY;
-        }
-    }
-
-    /**
-     * Loads all configured shift types.
-     *
-     * @param context Application context
-     * @return List of shift types
-     */
-    public static List<ShiftType> loadAllShiftTypes(Context context) {
-        int count = getShiftCount(context);
-        List<ShiftType> shiftTypes = new ArrayList<>(count);
-
-        for (int i = 0; i < count; i++) {
-            shiftTypes.add(loadShiftType(context, i));
+    public static boolean updateShiftType(int index, ShiftType shiftType) {
+        if (index < 0 || index >= currentShiftCount || shiftType == null) {
+            return false;
         }
 
-        return shiftTypes;
+        // Remove old entry from name cache
+        ShiftType oldShift = indexCache.get(index);
+        if (oldShift != null) {
+            dynamicCache.remove(oldShift.getName());
+        }
+
+        // Add new entry
+        dynamicCache.put(shiftType.getName(), shiftType);
+        indexCache.put(index, shiftType);
+
+        Log.d(TAG, "Updated shift type at index " + index + ": " + shiftType.getName());
+        return true;
     }
 
     /**
-     * Resets all shift types to default values.
-     *
-     * @param context Application context
-     */
-    public static void resetToDefaults(Context context) {
-        setShiftCount(context, DEFAULT_SHIFT_COUNT);
-
-        // Set default shifts
-        saveShiftType(context, 0, MORNING);
-        saveShiftType(context, 1, AFTERNOON);
-        saveShiftType(context, 2, NIGHT);
-    }
-
-    /**
-     * Creates a new custom shift type.
+     * Creates a custom shift type and adds it to the cache.
      *
      * @param name Shift name
      * @param description Shift description
-     * @param startHour Start hour
-     * @param startMinute Start minute
+     * @param startHour Start hour (0-23)
+     * @param startMinute Start minute (0-59)
      * @param durationHours Duration in hours
      * @param durationMinutes Additional duration in minutes
-     * @param color Shift color
-     * @return New shift type
+     * @param color Shift color (ARGB)
+     * @return Index of the created shift type
      */
-    public static ShiftType createCustom(String name, String description,
-                                         int startHour, int startMinute,
-                                         int durationHours, int durationMinutes,
-                                         int color) {
-        return new ShiftType(name, description, startHour, startMinute,
+    public static int createAndAddShiftType(String name, String description,
+                                            int startHour, int startMinute,
+                                            int durationHours, int durationMinutes,
+                                            int color) {
+        ShiftType shiftType = new ShiftType(name, description, startHour, startMinute,
                 durationHours, durationMinutes, color);
+        return addShiftType(shiftType);
     }
 
     /**
-     * Creates a new custom shift type with default color.
+     * Saves current shift types to local storage for persistence.
      *
-     * @param name Shift name
-     * @param description Shift description
-     * @param startHour Start hour
-     * @param startMinute Start minute
-     * @param durationHours Duration in hours
-     * @param durationMinutes Additional duration in minutes
-     * @return New shift type
+     * @param context Application context
+     * @return true if save was successful
      */
-    public static ShiftType createCustom(String name, String description,
-                                         int startHour, int startMinute,
-                                         int durationHours, int durationMinutes) {
-        // Assign color based on name for consistency
-        int color;
-        switch (name.toLowerCase()) {
-            case "morning": color = COLOR_MORNING; break;
-            case "afternoon": color = COLOR_AFTERNOON; break;
-            case "night": color = COLOR_NIGHT; break;
-            default: color = Color.GRAY;
-        }
+    public static boolean saveToLocalStorage(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
 
-        return createCustom(name, description, startHour, startMinute,
-                durationHours, durationMinutes, color);
+            // Save metadata
+            editor.putInt(KEY_SHIFT_COUNT, currentShiftCount);
+            editor.putLong(KEY_LAST_API_SYNC, System.currentTimeMillis());
+            editor.putInt(KEY_CACHE_VERSION, 1);
+
+            // Save each shift type
+            for (int i = 0; i < currentShiftCount; i++) {
+                ShiftType shift = indexCache.get(i);
+                if (shift != null) {
+                    String prefix = "shift_" + i + "_";
+                    editor.putString(prefix + "name", shift.getName());
+                    editor.putString(prefix + "description", shift.getDescription());
+                    editor.putInt(prefix + "start_hour", shift.getStartHour());
+                    editor.putInt(prefix + "start_minute", shift.getStartMinute());
+                    editor.putInt(prefix + "duration_hours", shift.getDurationHours());
+                    editor.putInt(prefix + "duration_minutes", shift.getDurationMinutes());
+                    editor.putInt(prefix + "color", shift.getColor());
+                }
+            }
+
+            editor.apply();
+            Log.d(TAG, "Saved " + currentShiftCount + " shift types to local storage");
+            return true;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving to local storage: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // === PRIVATE METHODS ===
+
+    /**
+     * Ensures the factory is initialized with default values if needed.
+     */
+    private static void ensureInitialized() {
+        if (!initialized) {
+            Log.w(TAG, "Factory not initialized, creating defaults");
+            currentShiftCount = 3;
+            createDefaultShifts();
+            initialized = true;
+        }
     }
 
     /**
-     * Gets a standard shift type.
-     *
-     * @param index Shift index (1-based)
-     * @return Standard shift type
-     * @throws IllegalArgumentException if index is invalid
+     * Clears both dynamic caches.
      */
-    public static ShiftType getStandardShiftType(int index) {
-        switch (index) {
-            case 1: return MORNING;
-            case 2: return AFTERNOON;
-            case 3: return NIGHT;
-            case 4: return CUSTOM1;
-            case 5: return CUSTOM2;
-            default: throw new IllegalArgumentException("Invalid shift index: " + index);
+    private static void clearCache() {
+        dynamicCache.clear();
+        indexCache.clear();
+        Log.d(TAG, "Cache cleared");
+    }
+
+    /**
+     * Creates default shift types for fallback scenarios.
+     */
+    private static void createDefaultShifts() {
+        clearCache();
+
+        String[] defaultNames = {"Morning", "Afternoon", "Night"};
+        int[] defaultStartHours = {5, 13, 21};
+
+        for (int i = 0; i < currentShiftCount && i < defaultNames.length; i++) {
+            ShiftType shift = new ShiftType(
+                    defaultNames[i],
+                    defaultNames[i],
+                    defaultStartHours[i],
+                    0,
+                    8,
+                    0,
+                    DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+            );
+
+            dynamicCache.put(shift.getName(), shift);
+            indexCache.put(i, shift);
         }
+
+        Log.d(TAG, "Created " + currentShiftCount + " default shifts");
+    }
+
+    /**
+     * Loads shift types from local storage.
+     *
+     * @param context Application context
+     * @return true if loading was successful
+     */
+    private static boolean loadFromLocalStorage(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+            currentShiftCount = prefs.getInt(KEY_SHIFT_COUNT, 0);
+            if (currentShiftCount == 0) {
+                return false;
+            }
+
+            clearCache();
+
+            // Load each shift type
+            for (int i = 0; i < currentShiftCount; i++) {
+                String prefix = "shift_" + i + "_";
+                String name = prefs.getString(prefix + "name", null);
+
+                if (name == null) continue;
+
+                String description = prefs.getString(prefix + "description", "");
+                int startHour = prefs.getInt(prefix + "start_hour", 8);
+                int startMinute = prefs.getInt(prefix + "start_minute", 0);
+                int durationHours = prefs.getInt(prefix + "duration_hours", 8);
+                int durationMinutes = prefs.getInt(prefix + "duration_minutes", 0);
+                int color = prefs.getInt(prefix + "color", DEFAULT_COLORS[i % DEFAULT_COLORS.length]);
+
+                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                        durationHours, durationMinutes, color);
+                dynamicCache.put(name, shift);
+                indexCache.put(i, shift);
+            }
+
+            Log.d(TAG, "Loaded " + currentShiftCount + " shifts from local storage");
+            return true;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading from local storage: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fetches JSON data from the API endpoint.
+     *
+     * @param apiEndpoint API URL
+     * @return JSON response string or null if failed
+     */
+    private static String fetchFromApi(String apiEndpoint) {
+        try {
+            Request request = new Request.Builder()
+                    .url(apiEndpoint)
+                    .addHeader("Accept", "application/json")
+                    .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String jsonData = response.body().string();
+                    Log.d(TAG, "Successfully fetched data from API");
+                    return jsonData;
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error fetching from API: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Parses JSON response and populates the cache.
+     *
+     * @param jsonResponse JSON string from API
+     * @return true if parsing was successful
+     */
+    private static boolean parseJsonShifts(String jsonResponse) {
+        try {
+            JSONObject root = new JSONObject(jsonResponse);
+            JSONArray shiftsArray = root.getJSONArray(JSON_KEY_SHIFTS);
+
+            clearCache();
+            currentShiftCount = shiftsArray.length();
+
+            for (int i = 0; i < shiftsArray.length(); i++) {
+                JSONObject shiftJson = shiftsArray.getJSONObject(i);
+
+                String name = shiftJson.getString(JSON_KEY_NAME);
+                String description = shiftJson.optString(JSON_KEY_DESCRIPTION, "");
+                int startHour = shiftJson.getInt(JSON_KEY_START_HOUR);
+                int startMinute = shiftJson.optInt(JSON_KEY_START_MINUTE, 0);
+                int durationHours = shiftJson.getInt(JSON_KEY_DURATION_HOURS);
+                int durationMinutes = shiftJson.optInt(JSON_KEY_DURATION_MINUTES, 0);
+
+                // Parse color (can be hex string or integer)
+                int color = DEFAULT_COLORS[i % DEFAULT_COLORS.length]; // Default fallback
+                if (shiftJson.has(JSON_KEY_COLOR)) {
+                    try {
+                        String colorStr = shiftJson.getString(JSON_KEY_COLOR);
+                        if (colorStr.startsWith("#")) {
+                            color = Color.parseColor(colorStr);
+                        } else {
+                            color = shiftJson.getInt(JSON_KEY_COLOR);
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Invalid color for shift " + name + ", using default");
+                    }
+                }
+
+                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                        durationHours, durationMinutes, color);
+                dynamicCache.put(name, shift);
+                indexCache.put(i, shift);
+            }
+
+            Log.d(TAG, "Parsed " + currentShiftCount + " shifts from JSON");
+            return true;
+
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing JSON: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Interface for handling API loading results.
+     */
+    public interface LoadCallback {
+        void onSuccess(int shiftCount);
+        void onError(String error);
+    }
+
+    /**
+     * Async helper for loading with callback.
+     *
+     * @param context Application context
+     * @param apiEndpoint API URL
+     * @param callback Result callback
+     */
+    public static void loadFromApiAsync(Context context, String apiEndpoint, LoadCallback callback) {
+        initializeFromApi(context, apiEndpoint).thenAccept(success -> {
+            if (success) {
+                callback.onSuccess(currentShiftCount);
+            } else {
+                callback.onError("Failed to load from API");
+            }
+        });
     }
 }

@@ -21,10 +21,14 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentDialogAboutBinding;
 import net.calvuz.qdue.quattrodue.models.ShiftType;
 import net.calvuz.qdue.quattrodue.utils.ShiftTypeFactory;
+import net.calvuz.qdue.utils.Log;
 
 import java.util.List;
 
 public class AboutDialogFragment extends DialogFragment {
+
+    // TAG
+    private String TAG = "AboutDialogFragment";
 
     private FragmentDialogAboutBinding binding;
 
@@ -100,17 +104,17 @@ public class AboutDialogFragment extends DialogFragment {
 
         try {
             // Ottieni i tipi di turno configurati
-            List<ShiftType> shiftTypes;
-            if (getContext() != null) {
-                shiftTypes = ShiftTypeFactory.loadAllShiftTypes(getContext());
-            } else {
+            List<ShiftType> shiftTypes ;
+//            if (getContext() != null) {
+                shiftTypes = ShiftTypeFactory.getAllShiftTypes();
+//            } else {
                 // Fallback ai turni standard
-                shiftTypes = List.of(
-                        ShiftTypeFactory.MORNING,
-                        ShiftTypeFactory.AFTERNOON,
-                        ShiftTypeFactory.NIGHT
-                );
-            }
+//                shiftTypes = List.of(
+//                        ShiftTypeFactory.MORNING,
+//                        ShiftTypeFactory.AFTERNOON,
+//                        ShiftTypeFactory.NIGHT
+//                );
+//            }
 
             // Aggiungi un indicatore per ogni turno
             for (int i = 0; i < shiftTypes.size(); i++) {
@@ -119,10 +123,11 @@ public class AboutDialogFragment extends DialogFragment {
             }
 
         } catch (Exception e) {
+            Log.e(TAG, "ShiftType list not acquired");
             // In caso di errore, mostra solo i turni base
-            addShiftLegendItem(legendContainer, ShiftTypeFactory.MORNING);
-            addShiftLegendItem(legendContainer, ShiftTypeFactory.AFTERNOON);
-            addShiftLegendItem(legendContainer, ShiftTypeFactory.NIGHT);
+//            addShiftLegendItem(legendContainer, ShiftTypeFactory.MORNING);
+//            addShiftLegendItem(legendContainer, ShiftTypeFactory.AFTERNOON);
+//            addShiftLegendItem(legendContainer, ShiftTypeFactory.NIGHT);
         }
     }
 

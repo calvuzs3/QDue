@@ -387,10 +387,12 @@ public class QuattroDue {
         final String TAG = QuattroDue.TAG + " fetchShiftTypes()";
         Log.v(TAG, "start");
 
-        shiftTypes = new ArrayList<>(3);
-        shiftTypes.add(ShiftTypeFactory.MORNING);
-        shiftTypes.add(ShiftTypeFactory.AFTERNOON);
-        shiftTypes.add(ShiftTypeFactory.NIGHT);
+        shiftTypes = ShiftTypeFactory.getAllShiftTypes();
+
+//        shiftTypes = new ArrayList<>(3);
+//        shiftTypes.add(ShiftTypeFactory.MORNING);
+//        shiftTypes.add(ShiftTypeFactory.AFTERNOON);
+//        shiftTypes.add(ShiftTypeFactory.NIGHT);
 
         Log.v(TAG, "completed");
     }

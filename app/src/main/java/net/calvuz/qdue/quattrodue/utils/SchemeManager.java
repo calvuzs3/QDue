@@ -214,11 +214,13 @@ public final class SchemeManager {
 
         try {
             // List of template cycle days
-            List<ShiftType> shiftTypes = new ArrayList<>();
-            for (int i = 0; i < SHIFTS_PER_DAY; i++) {
-                shiftTypes.add(ShiftTypeFactory.createCustom(String.valueOf(i + 1),
-                        "Shift " + (i + 1), 5 + i*8, 0, 8, 0));
-            }
+            List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
+            // Old version
+//            List<ShiftType> shiftTypes = new ArrayList<>();
+//            for (int i = 0; i < SHIFTS_PER_DAY; i++) {
+//                shiftTypes.add(ShiftTypeFactory.createCustom(String.valueOf(i + 1),
+//                        "Shift " + (i + 1), 5 + i*8, 0, 8, 0));
+//            }
 
             List<Day> cycleDays = generateCycleDays(shiftTypes);
 
