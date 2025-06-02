@@ -37,7 +37,7 @@
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_desc"
             android:textAppearance="@style/TextAppearance.QDue.Headline2"
-            android:textColor="@color/primary" />
+            android:textColor="?attr/colorPrimary" />
 
         <TextView
             android:layout_width="match_parent"
@@ -53,7 +53,7 @@
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_libraries"
             android:textAppearance="@style/TextAppearance.QDue.Headline2"
-            android:textColor="@color/primary" />
+            android:textColor="?attr/colorPrimary" />
 
         <TextView
             android:layout_width="match_parent"
@@ -70,8 +70,7 @@
             android:paddingTop="@dimen/dialog_padding"
             android:text="@string/app_author_str"
             android:textAppearance="@style/TextAppearance.QDue.Headline2"
-            android:textColor="@color/primary" />
-
+            android:textColor="?attr/colorPrimary" />
 
         <TextView
             android:layout_width="match_parent"

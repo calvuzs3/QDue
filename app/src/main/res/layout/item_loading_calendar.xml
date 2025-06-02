@@ -15,7 +15,7 @@
         android:layout_height="32dp"
         android:layout_marginBottom="8dp"
         android:indeterminate="true"
-        android:progressTint="?attr/colorPrimary" />
+        android:indeterminateTint="?attr/colorPrimary" />
 
     <!-- Testo di caricamento -->
     <TextView
@@ -25,12 +25,14 @@
         android:text="@string/progress_bar_loading"
         android:textSize="14sp"
         android:textAlignment="center"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="center" />
 
     <!-- Separatore sottile per distinguere dall'elemento successivo -->
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/divider_height"
-        android:layout_marginTop="12dp" />
+        android:layout_marginTop="12dp"
+        android:background="?attr/colorOutline" />
 
 </LinearLayout>

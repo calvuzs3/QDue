@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.quattrodue.Costants;
 import net.calvuz.qdue.quattrodue.utils.Log;
 
@@ -187,11 +188,23 @@ public class Day implements Cloneable {
         return localDate.getDayOfWeek().getValue();
     }
 
+
     /**
-     * @return Localized day of week name
+     * Returns the localized day of week name using QDue's configured locale.
+     *
+     * @return Localized day of week name in the app's configured locale
      */
     public String getDayOfWeekAsString() {
-        return localDate.format(DAY_FORMATTER);
+        try {
+            // Use QDue's configured locale instead of system default
+            DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("EEEE", QDue.getLocale());
+            return localDate.format(dayFormatter);
+        } catch (Exception e) {
+            // Fallback to system locale if QDue locale is not available
+            Log.w(TAG, "Failed to use QDue locale for day formatting, falling back to system locale: " + e.getMessage());
+            DateTimeFormatter fallbackFormatter = DateTimeFormatter.ofPattern("EEEE");
+            return localDate.format(fallbackFormatter);
+        }
     }
 
     /**

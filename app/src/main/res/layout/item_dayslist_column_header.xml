@@ -30,7 +30,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_day"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
@@ -43,7 +43,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_weekday"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
@@ -56,7 +56,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_morning"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
@@ -69,7 +69,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_afternoon"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_night"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
@@ -95,7 +95,7 @@
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
             android:text="@string/header_off"
-            android:textColor="@color/on_primary"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
