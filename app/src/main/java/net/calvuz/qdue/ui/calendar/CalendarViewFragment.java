@@ -1,6 +1,8 @@
 
 package net.calvuz.qdue.ui.calendar;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +29,6 @@ import java.util.List;
 public class CalendarViewFragment extends BaseFragment {
 
     private static final String TAG = "CalendarViewFragment";
-    private static final boolean LOG_ENABLED = true;
 
     private CalendarAdapter mAdapter;
 private GridLayoutManager mGridLayoutManager;
@@ -47,46 +48,44 @@ private GridLayoutManager mGridLayoutManager;
     @Override
     protected void setupRecyclerView() {
         if (mRecyclerView == null) {
-            if (LOG_ENABLED) Log.e(TAG, "mRecyclerView è null");
+            Log.e(TAG, "mRecyclerView is null");
             return;
         }
 
-        // Per il calendario, usa GridLayoutManager con 7 colonne
+        // For calendar, use GridLayoutManager with 7 columns
         mGridLayoutManager = new GridLayoutManager(getContext(), 7);
-        // Configura lo span size per gli header
+        // Configure span size for headers
         mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
                 if (position < mItemsCache.size()) {
                     SharedViewModels.ViewItem item = mItemsCache.get(position);
                     if (item instanceof SharedViewModels.MonthHeader) {
-                        return 7; // Header occupa tutta la larghezza
+                        return 7; // Header occupies full width
                     }
                 }
-                return 1; // Giorni occupano 1 cella
+                return 1; // Days occupy 1 cell
             }
         });
         mRecyclerView.setLayoutManager(mGridLayoutManager);
 
-        // Il LinearLayoutManager della classe base non serve
+        // Base class LinearLayoutManager is not needed
         mLayoutManager = null;
 
-        // Ottimizzazioni
+        // Optimizations
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
-//        mRecyclerView.setDrawingCacheEnabled(true);
-//        mRecyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
     }
 
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
-        // Per il calendario, converte includendo celle vuote per completare la griglia
+        // For calendar, convert including empty cells to complete the grid
         return SharedViewModels.DataConverter.convertForCalendar(days, monthDate);
     }
 
     @Override
     protected void setupAdapter() {
-        if (LOG_ENABLED) Log.d(TAG, "setupAdapter");
+        if (DEBUG_FRAGMENT) Log.v(TAG, "setupAdapter");
 
         mAdapter = new CalendarAdapter(
                 getContext(),
@@ -107,7 +106,7 @@ private GridLayoutManager mGridLayoutManager;
 
         boolean showFab = true;
         if (mTodayPosition >= 0) {
-            // Per il calendario in griglia, calcola se oggi è visibile
+            // For grid calendar, calculate if today is visible
             showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
         }
 
@@ -127,15 +126,15 @@ private GridLayoutManager mGridLayoutManager;
     }
 
     /**
-     * Override dei metodi di scroll per gestire GridLayoutManager.
+     * Override infinite scrolling setup for GridLayoutManager.
      */
     @Override
     protected void setupInfiniteScrolling() {
-        // La classe base usa LinearLayoutManager, ma per il calendario usiamo GridLayoutManager
-        // Reimplementiamo solo la parte di scroll detection
-        super.setupInfiniteScrolling();
+        // Base class uses LinearLayoutManager, but calendar uses GridLayoutManager
+        // Re-implement only scroll detection part
+        super.setupInfiniteScrolling(false); // Don't use base layout manager
 
-        // Sostituisci il listener per gestire GridLayoutManager
+        // Replace listener to handle GridLayoutManager
         if (mRecyclerView != null) {
             mRecyclerView.clearOnScrollListeners();
             mRecyclerView.addOnScrollListener(new CalendarScrollListener());
@@ -143,7 +142,8 @@ private GridLayoutManager mGridLayoutManager;
     }
 
     /**
-     * Listener personalizzato per il GridLayoutManager del calendario.
+     * Custom listener for calendar GridLayoutManager.
+     * FIXED: Posts adapter changes to next frame to avoid scroll callback conflicts.
      */
     private class CalendarScrollListener extends RecyclerView.OnScrollListener {
         @Override
@@ -161,10 +161,10 @@ private GridLayoutManager mGridLayoutManager;
 
             if (firstVisible == RecyclerView.NO_POSITION) return;
 
-            // Gestisci caricamento basato su scroll per griglia
+            // Handle loading based on scroll for grid
             handleGridScrollBasedLoading(firstVisible, lastVisible, dy);
 
-            // Aggiorna visibilità FAB
+            // Update FAB visibility
             updateFabVisibility(firstVisible, lastVisible);
         }
 
@@ -182,37 +182,42 @@ private GridLayoutManager mGridLayoutManager;
         }
     }
 
+
     /**
-     * Gestisce il caricamento per la griglia calendario.
+     * Handles loading for calendar grid.
+     * FIXED: Operations are posted to next frame.
      */
     private void handleGridScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
-        // Per la griglia 7x6, calcola quante "righe" siamo dall'inizio/fine
+        // For 7x6 grid, calculate how many "rows" we are from start/end
         int firstRow = firstVisible / 7;
         int lastRow = lastVisible / 7;
-        int totalRows = (mItemsCache.size() + 6) / 7; // Arrotonda per eccesso
+        int totalRows = (mItemsCache.size() + 6) / 7; // Round up
 
-        // Caricamento verso l'alto (primi 2 righe visibili)
+        // Load upward (first 2 rows visible)
         if (firstRow <= 2 && scrollDirection <= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
 
-            if (LOG_ENABLED) Log.d(TAG, "Triggering top load at row: " + firstRow);
-            triggerTopLoad();
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering top load at row: " + firstRow);
+
+            // POST TO NEXT FRAME TO AVOID SCROLL CALLBACK ISSUES
+            mMainHandler.post(() -> triggerTopLoad());
         }
 
-        // Caricamento verso il basso (ultime 2 righe visibili)
+        // Load downward (last 2 rows visible)
         if (lastRow >= totalRows - 3 && scrollDirection >= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
 
-            if (LOG_ENABLED) Log.d(TAG, "Triggering bottom load at row: " + lastRow);
-            triggerBottomLoad();
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering bottom load at row: " + lastRow);
+
+            // POST TO NEXT FRAME TO AVOID SCROLL CALLBACK ISSUES
+            mMainHandler.post(() -> triggerBottomLoad());
         }
     }
 
 
     /**
-     * Scrolla alla posizione iniziale appropriata.
-     * protected - gridlayoutmanager have to scroll to initial position
-     *             by themselves
+     * Scroll to initial appropriate position.
+     * Protected - GridLayoutManager needs to scroll to initial position by itself.
      */
     @Override
     protected void scrollToInitialPosition() {

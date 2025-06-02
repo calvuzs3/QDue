@@ -10,6 +10,7 @@ import net.calvuz.qdue.utils.ThemeManager;
 
 import java.util.Locale;
 
+
 public class QDue extends Application {
 
     @SuppressLint("StaticFieldLeak")
@@ -67,6 +68,7 @@ public class QDue extends Application {
         public static boolean DEBUG_ACTIVITY = true;
         public static boolean DEBUG_FRAGMENT = true;
         public static boolean DEBUG_COLORS = false;
+        public static boolean DEBUG_SHARED_VIEW_MODELS = false;
 
     }
 

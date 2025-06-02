@@ -5,8 +5,10 @@ package net.calvuz.qdue.utils;
  * Questa classe è stata migliorata ma mantiene la retrocompatibilità
  * con la versione originale.
  *
- * Created by luke on 20/09/17.
+ * Created on 20/09/17.
  * Updated on 21/05/2025.
+ *
+ * @author calvuzs3
  */
 public final class Log {
 
@@ -17,7 +19,7 @@ public final class Log {
     private final static boolean QD_DEBUG = true;
 
     // Wrap the debug and info to the warn to avoid art annoying messages
-    private final static boolean QD_DEBUG_TO_WARN = true;
+    private final static boolean QD_DEBUG_TO_WARN = false;
 
     /**
      * Log con livello VERBOSE.
