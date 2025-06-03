@@ -124,6 +124,17 @@ public abstract class BaseFragment extends Fragment {
     /** Delay before processing operations after scroll settles */
     protected static final long SCROLL_SETTLE_DELAY = 150;
 
+    // ==================== ENHANCED CONSTANTS ====================
+
+    /** Number of months to load in a single operation */
+    private static final int MONTHS_PER_LOAD = 3;
+
+    /** Preload trigger zone (in calendar weeks) */
+    private static final int PRELOAD_TRIGGER_WEEKS = 6; // ~1.5 months
+
+    /** Maximum number of months to keep in cache */
+    private static final int MAX_CACHED_MONTHS = 18; // ~1.5 years
+
     /**
      * Initialize fragment components and handlers.
      * Sets up async handlers and data manager.
@@ -373,110 +384,432 @@ public abstract class BaseFragment extends Fragment {
      *
      * This method is thread-safe and posts all adapter operations to the next frame
      * to avoid conflicts with scroll callbacks.
+     * FIXED: Execute top load operation with proper error handling and debugging
+     * ENHANCED: Execute top load operation - loads multiple months at once
+     * ENHANCED: Better today position updates during cache operations
      */
     protected void executeTopLoad() {
         final String METHOD_TAG = TAG + " executeTopLoad";
 
-        if (!mIsPendingTopLoad.compareAndSet(true, false)) return;
-        if (!mIsUpdatingCache.compareAndSet(false, true)) return;
+        if (!mIsPendingTopLoad.compareAndSet(true, false)) {
+            Log.w(METHOD_TAG, "No pending top load - aborting");
+            hideTopLoader();
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            Log.w(METHOD_TAG, "Cache update in progress - aborting");
+            mIsPendingTopLoad.set(true);
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Starting multi-month top load execution");
 
         try {
             LocalDate firstMonth = findFirstMonthInCache();
-            if (firstMonth != null) {
-                LocalDate prevMonth = firstMonth.minusMonths(1);
-
-                // POST TO NEXT FRAME - CRITICAL FIX for scroll callback conflicts
-                mMainHandler.post(() -> {
-                    try {
-                        List<SharedViewModels.ViewItem> newItems = generateMonthItems(prevMonth);
-                        mItemsCache.addAll(0, newItems);
-
-                        // Update positions
-                        if (mTodayPosition >= 0) mTodayPosition += newItems.size();
-                        mCurrentCenterPosition += newItems.size();
-
-                        // POST ADAPTER NOTIFICATIONS TO NEXT FRAME
-                        mMainHandler.post(() -> {
-                            if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(0, newItems.size());
-                            }
-                        });
-
-                        // Maintain scroll position - adapted for different LayoutManager types
-                        maintainScrollPosition(newItems.size());
-
-                        hideTopLoader();
-
-                        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Added previous month: " + prevMonth);
-                    } finally {
-                        mIsUpdatingCache.set(false);
-                    }
-                });
-            } else {
+            if (firstMonth == null) {
+                Log.e(METHOD_TAG, "Cannot find first month in cache");
                 mIsUpdatingCache.set(false);
                 hideTopLoader();
+                return;
             }
+
+            List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+
+            for (int i = 1; i <= MONTHS_PER_LOAD; i++) {
+                LocalDate monthToLoad = firstMonth.minusMonths(i);
+                Log.d(METHOD_TAG, "Loading previous month " + i + ": " + monthToLoad);
+
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                if (!monthItems.isEmpty()) {
+                    allNewItems.addAll(0, monthItems);
+                }
+            }
+
+            if (allNewItems.isEmpty()) {
+                Log.w(METHOD_TAG, "No items generated for any previous months");
+                mIsUpdatingCache.set(false);
+                hideTopLoader();
+                return;
+            }
+
+            Log.d(METHOD_TAG, "Generated " + allNewItems.size() + " items for " + MONTHS_PER_LOAD + " previous months");
+
+            mMainHandler.post(() -> {
+                try {
+                    if (mItemsCache == null) {
+                        Log.e(METHOD_TAG, "Items cache is null during UI update");
+                        return;
+                    }
+
+                    mItemsCache.addAll(0, allNewItems);
+                    Log.d(METHOD_TAG, "Added items to cache. New size: " + mItemsCache.size());
+
+                    // ENHANCED: Better today position tracking
+                    if (mTodayPosition >= 0) {
+                        mTodayPosition += allNewItems.size();
+                    } else {
+                        // Today position was lost - try to find it again
+                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+                        Log.d(METHOD_TAG, "Recomputed today position: " + mTodayPosition);
+                    }
+
+                    mCurrentCenterPosition += allNewItems.size();
+
+                    mMainHandler.post(() -> {
+                        try {
+                            if (getAdapter() != null) {
+                                getAdapter().notifyItemRangeInserted(0, allNewItems.size());
+                                Log.d(METHOD_TAG, "Notified adapter of " + allNewItems.size() + " inserted items");
+                            }
+                        } catch (Exception e) {
+                            Log.e(METHOD_TAG, "Error notifying adapter: " + e.getMessage());
+                        }
+                    });
+
+                    maintainScrollPosition(allNewItems.size());
+
+                    mMainHandler.postDelayed(() -> {
+                        hideTopLoader();
+                        Log.d(METHOD_TAG, "Multi-month top load completed successfully");
+                        schedulePreloadingCheck();
+                    }, 100);
+
+                } catch (Exception e) {
+                    Log.e(METHOD_TAG, "Error during UI update: " + e.getMessage());
+                    hideTopLoader();
+                } finally {
+                    mIsUpdatingCache.set(false);
+                }
+            });
+
         } catch (Exception e) {
-            Log.e(METHOD_TAG, "Error loading previous month: " + e.getMessage());
+            Log.e(METHOD_TAG, "Error loading previous months: " + e.getMessage());
             mIsUpdatingCache.set(false);
             hideTopLoader();
         }
     }
+
 
     /**
      * Execute bottom load operation (loading next months).
      *
      * This method is thread-safe and posts all adapter operations to the next frame
      * to avoid conflicts with scroll callbacks.
+     * FIXED: Execute bottom load operation with proper error handling and debugging
+     * ENHANCED: Execute bottom load operation - loads multiple months at once
+     * ENHANCED: Better today position updates during bottom loading
      */
     protected void executeBottomLoad() {
         final String METHOD_TAG = TAG + " executeBottomLoad";
 
-        if (!mIsPendingBottomLoad.compareAndSet(true, false)) return;
-        if (!mIsUpdatingCache.compareAndSet(false, true)) return;
+        if (!mIsPendingBottomLoad.compareAndSet(true, false)) {
+            Log.w(METHOD_TAG, "No pending bottom load - aborting");
+            hideBottomLoader();
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            Log.w(METHOD_TAG, "Cache update in progress - aborting");
+            mIsPendingBottomLoad.set(true);
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Starting multi-month bottom load execution");
 
         try {
             LocalDate lastMonth = findLastMonthInCache();
-            if (lastMonth != null) {
-                LocalDate nextMonth = lastMonth.plusMonths(1);
+            if (lastMonth == null) {
+                Log.e(METHOD_TAG, "Cannot find last month in cache");
+                mIsUpdatingCache.set(false);
+                hideBottomLoader();
+                return;
+            }
 
-                // POST TO NEXT FRAME - CRITICAL FIX for scroll callback conflicts
+            List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+
+            for (int i = 1; i <= MONTHS_PER_LOAD; i++) {
+                LocalDate monthToLoad = lastMonth.plusMonths(i);
+                Log.d(METHOD_TAG, "Loading next month " + i + ": " + monthToLoad);
+
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                if (!monthItems.isEmpty()) {
+                    allNewItems.addAll(monthItems);
+                }
+            }
+
+            if (allNewItems.isEmpty()) {
+                Log.w(METHOD_TAG, "No items generated for any next months");
+                mIsUpdatingCache.set(false);
+                hideBottomLoader();
+                return;
+            }
+
+            Log.d(METHOD_TAG, "Generated " + allNewItems.size() + " items for " + MONTHS_PER_LOAD + " next months");
+
+            mMainHandler.post(() -> {
+                try {
+                    if (mItemsCache == null) {
+                        Log.e(METHOD_TAG, "Items cache is null during UI update");
+                        return;
+                    }
+
+                    int insertPos = mItemsCache.size();
+                    mItemsCache.addAll(allNewItems);
+                    Log.d(METHOD_TAG, "Added items to cache. New size: " + mItemsCache.size());
+
+                    // ENHANCED: Better today position tracking
+                    if (mTodayPosition < 0) {
+                        // Today position not set - try to find it in the expanded cache
+                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+                        Log.d(METHOD_TAG, "Found today position in expanded cache: " + mTodayPosition);
+                    }
+
+                    mMainHandler.post(() -> {
+                        try {
+                            if (getAdapter() != null) {
+                                getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                                Log.d(METHOD_TAG, "Notified adapter of " + allNewItems.size() + " inserted items at position " + insertPos);
+                            }
+                        } catch (Exception e) {
+                            Log.e(METHOD_TAG, "Error notifying adapter: " + e.getMessage());
+                        }
+                    });
+
+                    mMainHandler.postDelayed(() -> {
+                        hideBottomLoader();
+                        Log.d(METHOD_TAG, "Multi-month bottom load completed successfully");
+                        schedulePreloadingCheck();
+                    }, 100);
+
+                } catch (Exception e) {
+                    Log.e(METHOD_TAG, "Error during UI update: " + e.getMessage());
+                    hideBottomLoader();
+                } finally {
+                    mIsUpdatingCache.set(false);
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error loading next months: " + e.getMessage());
+            mIsUpdatingCache.set(false);
+            hideBottomLoader();
+        }
+    }
+
+    /**
+     * NEW: Schedule preloading check to maintain buffer zones
+     */
+    private void schedulePreloadingCheck() {
+        final String METHOD_TAG = TAG + " schedulePreloadingCheck";
+
+        // Schedule preloading check after a short delay
+        mMainHandler.postDelayed(() -> {
+            if (!mIsUpdatingCache.get() && mScrollVelocity == 0) {
+                performPreloadingCheck();
+            }
+        }, 500); // Check after scrolling settles
+    }
+
+    /**
+     * NEW: Perform silent preloading to maintain buffer zones
+     */
+    private void performPreloadingCheck() {
+        final String METHOD_TAG = TAG + " performPreloadingCheck";
+
+        if (mIsUpdatingCache.get()) {
+            Log.d(METHOD_TAG, "Cache update in progress - skipping preload check");
+            return;
+        }
+
+        // Get current scroll position
+        int currentPosition = getCurrentVisiblePosition();
+        if (currentPosition == RecyclerView.NO_POSITION) {
+            return;
+        }
+
+        int cacheSize = mItemsCache.size();
+        int bufferZone = PRELOAD_TRIGGER_WEEKS * 7; // Convert weeks to items
+
+        // Check if we need to preload at the top
+        if (currentPosition < bufferZone && !mIsPendingTopLoad.get()) {
+            Log.d(METHOD_TAG, "Triggering silent top preload at position: " + currentPosition);
+            triggerSilentTopLoad();
+        }
+
+        // Check if we need to preload at the bottom
+        if (currentPosition > cacheSize - bufferZone && !mIsPendingBottomLoad.get()) {
+            Log.d(METHOD_TAG, "Triggering silent bottom preload at position: " + currentPosition);
+            triggerSilentBottomLoad();
+        }
+
+        // Check if cache is too large and needs cleanup
+        if (cacheSize > MAX_CACHED_MONTHS * 35) { // ~35 items per month
+            Log.d(METHOD_TAG, "Cache too large (" + cacheSize + "), scheduling cleanup");
+            scheduleCleanupIfNeeded();
+        }
+    }
+
+    /**
+     * NEW: Silent top load without visible loader
+     */
+    private void triggerSilentTopLoad() {
+        final String METHOD_TAG = TAG + " triggerSilentTopLoad";
+
+        if (mIsUpdatingCache.get() || mIsPendingTopLoad.get()) {
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Starting silent top load");
+        mIsPendingTopLoad.set(true);
+
+        // Execute without showing loader
+        mBackgroundHandler.postDelayed(() -> {
+            executeSilentTopLoad();
+        }, 100);
+    }
+
+    /**
+     * NEW: Silent bottom load without visible loader
+     */
+    private void triggerSilentBottomLoad() {
+        final String METHOD_TAG = TAG + " triggerSilentBottomLoad";
+
+        if (mIsUpdatingCache.get() || mIsPendingBottomLoad.get()) {
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Starting silent bottom load");
+        mIsPendingBottomLoad.set(true);
+
+        // Execute without showing loader
+        mBackgroundHandler.postDelayed(() -> {
+            executeSilentBottomLoad();
+        }, 100);
+    }
+
+    /**
+     * NEW: Execute silent top load (similar to executeTopLoad but without loader UI)
+     */
+    private void executeSilentTopLoad() {
+        final String METHOD_TAG = TAG + " executeSilentTopLoad";
+
+        if (!mIsPendingTopLoad.compareAndSet(true, false)) {
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            mIsPendingTopLoad.set(true);
+            return;
+        }
+
+        try {
+            LocalDate firstMonth = findFirstMonthInCache();
+            if (firstMonth == null) {
+                mIsUpdatingCache.set(false);
+                return;
+            }
+
+            // Load 2 months silently
+            List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+            for (int i = 1; i <= 2; i++) {
+                LocalDate monthToLoad = firstMonth.minusMonths(i);
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                if (!monthItems.isEmpty()) {
+                    allNewItems.addAll(0, monthItems);
+                }
+            }
+
+            if (!allNewItems.isEmpty()) {
                 mMainHandler.post(() -> {
                     try {
-                        List<SharedViewModels.ViewItem> newItems = generateMonthItems(nextMonth);
-                        int insertPos = mItemsCache.size();
-                        mItemsCache.addAll(newItems);
+                        mItemsCache.addAll(0, allNewItems);
+                        if (mTodayPosition >= 0) mTodayPosition += allNewItems.size();
+                        mCurrentCenterPosition += allNewItems.size();
 
-                        // Check if today is in new elements
-                        if (mTodayPosition < 0) {
-                            int todayInNew = SharedViewModels.DataConverter.findTodayPosition(newItems);
-                            if (todayInNew >= 0) {
-                                mTodayPosition = insertPos + todayInNew;
-                            }
-                        }
-
-                        // POST ADAPTER NOTIFICATIONS TO NEXT FRAME
                         mMainHandler.post(() -> {
                             if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(insertPos, newItems.size());
+                                getAdapter().notifyItemRangeInserted(0, allNewItems.size());
                             }
                         });
 
-                        hideBottomLoader();
-
-                        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Added next month: " + nextMonth);
+                        maintainScrollPosition(allNewItems.size());
+                        Log.d(METHOD_TAG, "Silent top load completed: " + allNewItems.size() + " items");
                     } finally {
                         mIsUpdatingCache.set(false);
                     }
                 });
             } else {
                 mIsUpdatingCache.set(false);
-                hideBottomLoader();
             }
         } catch (Exception e) {
-            Log.e(METHOD_TAG, "Error loading next month: " + e.getMessage());
+            Log.e(METHOD_TAG, "Error in silent top load: " + e.getMessage());
             mIsUpdatingCache.set(false);
-            hideBottomLoader();
+        }
+    }
+
+    /**
+     * NEW: Execute silent bottom load (similar to executeBottomLoad but without loader UI)
+     */
+    private void executeSilentBottomLoad() {
+        final String METHOD_TAG = TAG + " executeSilentBottomLoad";
+
+        if (!mIsPendingBottomLoad.compareAndSet(true, false)) {
+            return;
+        }
+
+        if (!mIsUpdatingCache.compareAndSet(false, true)) {
+            mIsPendingBottomLoad.set(true);
+            return;
+        }
+
+        try {
+            LocalDate lastMonth = findLastMonthInCache();
+            if (lastMonth == null) {
+                mIsUpdatingCache.set(false);
+                return;
+            }
+
+            // Load 2 months silently
+            List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+            for (int i = 1; i <= 2; i++) {
+                LocalDate monthToLoad = lastMonth.plusMonths(i);
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                if (!monthItems.isEmpty()) {
+                    allNewItems.addAll(monthItems);
+                }
+            }
+
+            if (!allNewItems.isEmpty()) {
+                mMainHandler.post(() -> {
+                    try {
+                        int insertPos = mItemsCache.size();
+                        mItemsCache.addAll(allNewItems);
+
+                        if (mTodayPosition < 0) {
+                            int todayInNew = SharedViewModels.DataConverter.findTodayPosition(allNewItems);
+                            if (todayInNew >= 0) {
+                                mTodayPosition = insertPos + todayInNew;
+                            }
+                        }
+
+                        mMainHandler.post(() -> {
+                            if (getAdapter() != null) {
+                                getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                            }
+                        });
+
+                        Log.d(METHOD_TAG, "Silent bottom load completed: " + allNewItems.size() + " items");
+                    } finally {
+                        mIsUpdatingCache.set(false);
+                    }
+                });
+            } else {
+                mIsUpdatingCache.set(false);
+            }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error in silent bottom load: " + e.getMessage());
+            mIsUpdatingCache.set(false);
         }
     }
 
@@ -511,29 +844,73 @@ public abstract class BaseFragment extends Fragment {
     /**
      * Trigger top load operation (previous months).
      * Sets up loading state and schedules execution.
+     * FIXED: Trigger top load with better state management
      */
     protected void triggerTopLoad() {
         final String METHOD_TAG = TAG + " triggerTopLoad";
 
+        // Check if already loading or pending
+        if (mIsUpdatingCache.get()) {
+            Log.w(METHOD_TAG, "Cache update in progress - ignoring trigger");
+            return;
+        }
+
+        if (mIsPendingTopLoad.get()) {
+            Log.w(METHOD_TAG, "Top load already pending - ignoring trigger");
+            return;
+        }
+
+        if (mShowingTopLoader) {
+            Log.w(METHOD_TAG, "Top loader already showing - ignoring trigger");
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Triggering top load");
+
         mIsPendingTopLoad.set(true);
         showTopLoader();
-        mBackgroundHandler.postDelayed(this::executeTopLoad, 100);
 
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Top load triggered");
+        // Execute with a small delay to ensure loader is visible
+        mBackgroundHandler.postDelayed(() -> {
+            Log.d(METHOD_TAG, "Executing delayed top load");
+            executeTopLoad();
+        }, 200); // Increased delay to ensure loader visibility
     }
 
     /**
      * Trigger bottom load operation (next months).
      * Sets up loading state and schedules execution.
+     * FIXED: Trigger bottom load with better state management
      */
     protected void triggerBottomLoad() {
         final String METHOD_TAG = TAG + " triggerBottomLoad";
 
+        // Check if already loading or pending
+        if (mIsUpdatingCache.get()) {
+            Log.w(METHOD_TAG, "Cache update in progress - ignoring trigger");
+            return;
+        }
+
+        if (mIsPendingBottomLoad.get()) {
+            Log.w(METHOD_TAG, "Bottom load already pending - ignoring trigger");
+            return;
+        }
+
+        if (mShowingBottomLoader) {
+            Log.w(METHOD_TAG, "Bottom loader already showing - ignoring trigger");
+            return;
+        }
+
+        Log.d(METHOD_TAG, "Triggering bottom load");
+
         mIsPendingBottomLoad.set(true);
         showBottomLoader();
-        mBackgroundHandler.postDelayed(this::executeBottomLoad, 100);
 
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Bottom load triggered");
+        // Execute with a small delay to ensure loader is visible
+        mBackgroundHandler.postDelayed(() -> {
+            Log.d(METHOD_TAG, "Executing delayed bottom load");
+            executeBottomLoad();
+        }, 200); // Increased delay to ensure loader visibility
     }
 
     /**
@@ -746,6 +1123,57 @@ public abstract class BaseFragment extends Fragment {
     }
 
     /**
+     * ENHANCED: Initial scroll with better timing and fallbacks
+     */
+    protected void scrollToInitialPositionEnhanced() {
+        final String METHOD_TAG = TAG + " scrollToInitialPositionEnhanced";
+
+        if (mRecyclerView == null) {
+            Log.e(METHOD_TAG, "RecyclerView is null");
+            return;
+        }
+
+        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
+        if (layoutManager == null) {
+            Log.e(METHOD_TAG, "LayoutManager is null");
+            return;
+        }
+
+        // CRITICAL: Verify today position is valid before scrolling
+        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+            try {
+                Log.d(METHOD_TAG, "Scrolling to today at position: " + mTodayPosition);
+
+                if (layoutManager instanceof LinearLayoutManager) {
+                    ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(mTodayPosition, 0);
+                } else if (layoutManager instanceof GridLayoutManager) {
+                    ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(mTodayPosition, 0);
+                } else {
+                    mRecyclerView.scrollToPosition(mTodayPosition);
+                }
+
+                Log.d(METHOD_TAG, "Successfully scrolled to today");
+
+            } catch (Exception e) {
+                Log.e(METHOD_TAG, "Error scrolling to today: " + e.getMessage());
+                // Fallback to center position
+                try {
+                    mRecyclerView.scrollToPosition(mCurrentCenterPosition);
+                } catch (Exception fallbackError) {
+                    Log.e(METHOD_TAG, "Fallback scroll also failed: " + fallbackError.getMessage());
+                }
+            }
+        } else {
+            Log.w(METHOD_TAG, "Today position invalid (" + mTodayPosition + "), scrolling to center");
+            try {
+                mRecyclerView.scrollToPosition(mCurrentCenterPosition);
+            } catch (Exception e) {
+                Log.e(METHOD_TAG, "Center scroll failed: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Scroll to today's date.
      * If today is not in cache, rebuilds cache centered on today.
      */
@@ -763,16 +1191,291 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
+    /**
+     * NEW: Load months around today when it's not in cache
+     */
+    private void loadMonthsAroundToday() {
+        final String METHOD_TAG = TAG + " loadMonthsAroundToday";
+
+        if (mIsUpdatingCache.get()) {
+            Log.w(METHOD_TAG, "Cache update in progress, cannot load today");
+            return;
+        }
+
+        // Show loading indicator
+        showTodayLoadingIndicator();
+
+        mBackgroundHandler.post(() -> {
+            if (!mIsUpdatingCache.compareAndSet(false, true)) {
+                hideTodayLoadingIndicator();
+                return;
+            }
+
+            try {
+                LocalDate today = LocalDate.now();
+                LocalDate todayMonth = today.withDayOfMonth(1);
+
+                // Determine if we need to add months before or after current cache
+                LocalDate firstCachedMonth = findFirstMonthInCache();
+                LocalDate lastCachedMonth = findLastMonthInCache();
+
+                if (firstCachedMonth == null || lastCachedMonth == null) {
+                    // Cache is empty or corrupted - rebuild around today
+                    Log.w(METHOD_TAG, "Cache appears corrupted, rebuilding around today");
+                    rebuildCacheAroundToday();
+                    return;
+                }
+
+                // Calculate what months we need to load
+                List<LocalDate> monthsToLoad = new ArrayList<>();
+
+                if (todayMonth.isBefore(firstCachedMonth)) {
+                    // Today is before cache - load months from today to cache start
+                    LocalDate month = todayMonth;
+                    while (month.isBefore(firstCachedMonth)) {
+                        monthsToLoad.add(month);
+                        month = month.plusMonths(1);
+                    }
+                    // Also load a few months around today for better UX
+                    for (int i = 1; i <= 2; i++) {
+                        monthsToLoad.add(0, todayMonth.minusMonths(i));
+                    }
+
+                    loadMonthsAtBeginning(monthsToLoad);
+
+                } else if (todayMonth.isAfter(lastCachedMonth)) {
+                    // Today is after cache - load months from cache end to today
+                    LocalDate month = lastCachedMonth.plusMonths(1);
+                    while (!month.isAfter(todayMonth)) {
+                        monthsToLoad.add(month);
+                        month = month.plusMonths(1);
+                    }
+                    // Also load a few months around today for better UX
+                    for (int i = 1; i <= 2; i++) {
+                        monthsToLoad.add(todayMonth.plusMonths(i));
+                    }
+
+                    loadMonthsAtEnd(monthsToLoad);
+
+                } else {
+                    // Today should be in cache but we couldn't find it
+                    // This might be a calculation error - refresh the cache
+                    Log.w(METHOD_TAG, "Today should be in cache but not found - refreshing today position");
+                    refreshTodayPosition();
+                }
+
+            } catch (Exception e) {
+                Log.e(METHOD_TAG, "Error loading months around today: " + e.getMessage());
+                hideTodayLoadingIndicator();
+                mIsUpdatingCache.set(false);
+            }
+        });
+    }
+
+    /**
+     * NEW: Load months at the beginning of cache
+     */
+    private void loadMonthsAtBeginning(List<LocalDate> monthsToLoad) {
+        final String METHOD_TAG = TAG + " loadMonthsAtBeginning";
+
+        List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+
+        for (LocalDate month : monthsToLoad) {
+            List<SharedViewModels.ViewItem> monthItems = generateMonthItems(month);
+            allNewItems.addAll(monthItems);
+        }
+
+        if (!allNewItems.isEmpty()) {
+            mMainHandler.post(() -> {
+                try {
+                    mItemsCache.addAll(0, allNewItems);
+
+                    // Update positions
+                    if (mTodayPosition >= 0) mTodayPosition += allNewItems.size();
+                    mCurrentCenterPosition += allNewItems.size();
+
+                    // Find today's new position
+                    mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+
+                    mMainHandler.post(() -> {
+                        if (getAdapter() != null) {
+                            getAdapter().notifyItemRangeInserted(0, allNewItems.size());
+                        }
+                    });
+
+                    // Scroll to today
+                    scrollToTodayAfterLoad();
+
+                } finally {
+                    mIsUpdatingCache.set(false);
+                    hideTodayLoadingIndicator();
+                }
+            });
+        } else {
+            mIsUpdatingCache.set(false);
+            hideTodayLoadingIndicator();
+        }
+    }
+
+    /**
+     * NEW: Load months at the end of cache
+     */
+    private void loadMonthsAtEnd(List<LocalDate> monthsToLoad) {
+        final String METHOD_TAG = TAG + " loadMonthsAtEnd";
+
+        List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
+
+        for (LocalDate month : monthsToLoad) {
+            List<SharedViewModels.ViewItem> monthItems = generateMonthItems(month);
+            allNewItems.addAll(monthItems);
+        }
+
+        if (!allNewItems.isEmpty()) {
+            mMainHandler.post(() -> {
+                try {
+                    int insertPos = mItemsCache.size();
+                    mItemsCache.addAll(allNewItems);
+
+                    // Find today's position in the expanded cache
+                    mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+
+                    mMainHandler.post(() -> {
+                        if (getAdapter() != null) {
+                            getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                        }
+                    });
+
+                    // Scroll to today
+                    scrollToTodayAfterLoad();
+
+                } finally {
+                    mIsUpdatingCache.set(false);
+                    hideTodayLoadingIndicator();
+                }
+            });
+        } else {
+            mIsUpdatingCache.set(false);
+            hideTodayLoadingIndicator();
+        }
+    }
+
+    /**
+     * NEW: Rebuild entire cache around today (fallback option)
+     */
+    private void rebuildCacheAroundToday() {
+        final String METHOD_TAG = TAG + " rebuildCacheAroundToday";
+
+        mMainHandler.post(() -> {
+            try {
+                // Clear current cache
+                int oldSize = mItemsCache.size();
+                mItemsCache.clear();
+
+                if (getAdapter() != null) {
+                    getAdapter().notifyItemRangeRemoved(0, oldSize);
+                }
+
+                // Rebuild around today
+                LocalDate today = LocalDate.now();
+                LocalDate todayMonth = today.withDayOfMonth(1);
+
+                for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
+                    LocalDate monthDate = todayMonth.plusMonths(i);
+                    addMonthToCache(monthDate);
+                }
+
+                // Find today's position
+                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+                mCurrentCenterPosition = mTodayPosition >= 0 ? mTodayPosition : mItemsCache.size() / 2;
+
+                if (getAdapter() != null) {
+                    getAdapter().notifyDataSetChanged();
+                }
+
+                // Scroll to today
+                scrollToTodayAfterLoad();
+
+            } finally {
+                mIsUpdatingCache.set(false);
+                hideTodayLoadingIndicator();
+            }
+        });
+    }
+
+    /**
+     * NEW: Refresh today position in current cache
+     */
+    private void refreshTodayPosition() {
+        final String METHOD_TAG = TAG + " refreshTodayPosition";
+
+        mMainHandler.post(() -> {
+            try {
+                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+                Log.d(METHOD_TAG, "Refreshed today position: " + mTodayPosition);
+
+                if (mTodayPosition >= 0) {
+                    scrollToTodayAfterLoad();
+                } else {
+                    Log.w(METHOD_TAG, "Today still not found after refresh");
+                }
+
+            } finally {
+                mIsUpdatingCache.set(false);
+                hideTodayLoadingIndicator();
+            }
+        });
+    }
+
+    /**
+     * NEW: Scroll to today after loading is complete
+     */
+    private void scrollToTodayAfterLoad() {
+        final String METHOD_TAG = TAG + " scrollToTodayAfterLoad";
+
+        // Small delay to ensure adapter updates are complete
+        mMainHandler.postDelayed(() -> {
+            if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+                Log.d(METHOD_TAG, "Scrolling to today at position: " + mTodayPosition);
+                mRecyclerView.smoothScrollToPosition(mTodayPosition);
+            } else {
+                Log.w(METHOD_TAG, "Cannot scroll to today - invalid position: " + mTodayPosition);
+            }
+        }, 100);
+    }
+
+    // ==================== LOADING INDICATOR HELPERS ====================
+
+    /**
+     * NEW: Show loading indicator for "go to today" operation
+     */
+    private void showTodayLoadingIndicator() {
+        // This could be a toast, progress dialog, or FAB animation
+        // For now, just log - can be enhanced with actual UI
+        Log.d(TAG, "Loading months around today...");
+    }
+
+    /**
+     * NEW: Hide loading indicator for "go to today" operation
+     */
+    private void hideTodayLoadingIndicator() {
+        Log.d(TAG, "Finished loading months around today");
+    }
+
     // === LOADING INDICATOR MANAGEMENT ===
 
     /**
      * Show top loading indicator.
      * Adds loading item to cache and notifies adapter on next frame.
+     * Override showTopLoader with more debugging
      */
     private void showTopLoader() {
         final String METHOD_TAG = TAG + " showTopLoader";
 
-        if (mShowingTopLoader) return;
+        if (mShowingTopLoader) {
+            Log.w(METHOD_TAG, "Top loader already showing - ignoring request");
+            return;
+        }
+
         mShowingTopLoader = true;
 
         SharedViewModels.LoadingItem loader = new SharedViewModels.LoadingItem(
@@ -782,64 +1485,94 @@ public abstract class BaseFragment extends Fragment {
         if (mTodayPosition >= 0) mTodayPosition++;
         mCurrentCenterPosition++;
 
+        Log.w(METHOD_TAG, "Added top loader - cache size now: " + mItemsCache.size());
+
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
         mMainHandler.post(() -> {
             if (getAdapter() != null) {
                 getAdapter().notifyItemInserted(0);
+                Log.w(METHOD_TAG, "Notified adapter of top loader insertion");
             }
         });
-
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Top loader shown");
     }
 
     /**
      * Show bottom loading indicator.
      * Adds loading item to cache and notifies adapter on next frame.
+     * Override showBottomLoader with more debugging
      */
     private void showBottomLoader() {
         final String METHOD_TAG = TAG + " showBottomLoader";
 
-        if (mShowingBottomLoader) return;
+        if (mShowingBottomLoader) {
+            Log.w(METHOD_TAG, "Bottom loader already showing - ignoring request");
+            return;
+        }
+
         mShowingBottomLoader = true;
 
         SharedViewModels.LoadingItem loader = new SharedViewModels.LoadingItem(
                 SharedViewModels.LoadingItem.LoadingType.BOTTOM);
         mItemsCache.add(loader);
 
+        Log.w(METHOD_TAG, "Added bottom loader - cache size now: " + mItemsCache.size());
+
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
         mMainHandler.post(() -> {
             if (getAdapter() != null) {
                 getAdapter().notifyItemInserted(mItemsCache.size() - 1);
+                Log.w(METHOD_TAG, "Notified adapter of bottom loader insertion");
             }
         });
-
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Bottom loader shown");
     }
 
+    /**
+     * FIXED: Hide top loader with better error handling
+     */
     private void hideTopLoader() {
-        if (!mShowingTopLoader) return;
+        final String METHOD_TAG = TAG + " hideTopLoader";
 
-        for (int i = 0; i < mItemsCache.size(); i++) {
-            if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
-                SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
-                if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.TOP) {
-                    mItemsCache.remove(i);
-                    if (mTodayPosition > i) mTodayPosition--;
-                    if (mCurrentCenterPosition > i) mCurrentCenterPosition--;
+        if (!mShowingTopLoader) {
+            Log.d(METHOD_TAG, "Top loader not showing - nothing to hide");
+            return;
+        }
 
-                    // POST ADAPTER NOTIFICATION TO NEXT FRAME
-                    final int finalI = i;
-                    mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRemoved(finalI);
-                        }
-                    });
-                    break;
+        Log.d(METHOD_TAG, "Hiding top loader");
+
+        try {
+            for (int i = 0; i < mItemsCache.size(); i++) {
+                if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
+                    SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
+                    if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.TOP) {
+                        mItemsCache.remove(i);
+                        if (mTodayPosition > i) mTodayPosition--;
+                        if (mCurrentCenterPosition > i) mCurrentCenterPosition--;
+
+                        Log.d(METHOD_TAG, "Removed top loader from position " + i);
+
+                        // POST ADAPTER NOTIFICATION TO NEXT FRAME
+                        final int finalI = i;
+                        mMainHandler.post(() -> {
+                            try {
+                                if (getAdapter() != null) {
+                                    getAdapter().notifyItemRemoved(finalI);
+                                    Log.d(METHOD_TAG, "Notified adapter of top loader removal");
+                                }
+                            } catch (Exception e) {
+                                Log.e(METHOD_TAG, "Error notifying adapter of loader removal: " + e.getMessage());
+                            }
+                        });
+                        break;
+                    }
                 }
             }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error hiding top loader: " + e.getMessage());
+        } finally {
+            mShowingTopLoader = false;
         }
-        mShowingTopLoader = false;
     }
+
 
     /**
      * Hide bottom loading indicator.
@@ -848,28 +1581,43 @@ public abstract class BaseFragment extends Fragment {
     private void hideBottomLoader() {
         final String METHOD_TAG = TAG + " hideBottomLoader";
 
-        if (!mShowingBottomLoader) return;
+        if (!mShowingBottomLoader) {
+            Log.d(METHOD_TAG, "Bottom loader not showing - nothing to hide");
+            return;
+        }
 
-        for (int i = mItemsCache.size() - 1; i >= 0; i--) {
-            if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
-                SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
-                if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.BOTTOM) {
-                    mItemsCache.remove(i);
+        Log.d(METHOD_TAG, "Hiding bottom loader");
 
-                    // POST ADAPTER NOTIFICATION TO NEXT FRAME
-                    final int finalI = i;
-                    mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRemoved(finalI);
-                        }
-                    });
-                    break;
+        try {
+            for (int i = mItemsCache.size() - 1; i >= 0; i--) {
+                if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
+                    SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
+                    if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.BOTTOM) {
+                        mItemsCache.remove(i);
+
+                        Log.d(METHOD_TAG, "Removed bottom loader from position " + i);
+
+                        // POST ADAPTER NOTIFICATION TO NEXT FRAME
+                        final int finalI = i;
+                        mMainHandler.post(() -> {
+                            try {
+                                if (getAdapter() != null) {
+                                    getAdapter().notifyItemRemoved(finalI);
+                                    Log.d(METHOD_TAG, "Notified adapter of bottom loader removal");
+                                }
+                            } catch (Exception e) {
+                                Log.e(METHOD_TAG, "Error notifying adapter of loader removal: " + e.getMessage());
+                            }
+                        });
+                        break;
+                    }
                 }
             }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error hiding bottom loader: " + e.getMessage());
+        } finally {
+            mShowingBottomLoader = false;
         }
-        mShowingBottomLoader = false;
-
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Bottom loader hidden");
     }
 
 

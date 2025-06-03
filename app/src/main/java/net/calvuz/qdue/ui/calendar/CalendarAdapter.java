@@ -108,6 +108,46 @@ public class CalendarAdapter extends BaseAdapter {
             return 0;
         }
 
+    /**
+     * Override loading ViewHolder creation for calendar-specific layout
+     */
+    @Override
+    protected RecyclerView.ViewHolder createLoadingViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        // Create a more visible loading layout for calendar
+        View view = inflater.inflate(R.layout.item_loading_calendar, parent, false);
+
+        // Make sure the loading view has proper height for calendar grid
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        if (params == null) {
+            params = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+
+        // Set minimum height to be visible
+        view.setMinimumHeight(120); // dp converted to pixels would be better
+        view.setBackgroundColor(mContext.getColor(android.R.color.holo_orange_light)); // TEMPORARY: visible color for debugging
+
+        return new LoadingViewHolder(view);
+    }
+
+    /**
+     * Override loading binding to make it more visible for debugging
+     */
+    @Override
+    protected void bindLoading(LoadingViewHolder holder, SharedViewModels.LoadingItem loading) {
+        super.bindLoading(holder, loading);
+
+        // Make loading items highly visible for debugging
+        holder.itemView.setBackgroundColor(mContext.getColor(android.R.color.holo_red_light));
+        holder.loadingText.setText("LOADING: " + loading.loadingType);
+        holder.loadingText.setTextColor(mContext.getColor(android.R.color.white));
+        holder.loadingText.setTextSize(16);
+
+        Log.w(TAG, "BINDING LOADING ITEM: " + loading.loadingType);
+    }
+
         /**
          * ViewHolder specifico per le celle del calendario.
          */

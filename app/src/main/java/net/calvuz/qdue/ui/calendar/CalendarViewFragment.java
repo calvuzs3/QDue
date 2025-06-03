@@ -45,37 +45,6 @@ private GridLayoutManager mGridLayoutManager;
         mRecyclerView = rootView.findViewById(R.id.rv_calendar);
     }
 
-    @Override
-    protected void setupRecyclerView() {
-        if (mRecyclerView == null) {
-            Log.e(TAG, "mRecyclerView is null");
-            return;
-        }
-
-        // For calendar, use GridLayoutManager with 7 columns
-        mGridLayoutManager = new GridLayoutManager(getContext(), 7);
-        // Configure span size for headers
-        mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                if (position < mItemsCache.size()) {
-                    SharedViewModels.ViewItem item = mItemsCache.get(position);
-                    if (item instanceof SharedViewModels.MonthHeader) {
-                        return 7; // Header occupies full width
-                    }
-                }
-                return 1; // Days occupy 1 cell
-            }
-        });
-        mRecyclerView.setLayoutManager(mGridLayoutManager);
-
-        // Base class LinearLayoutManager is not needed
-        mLayoutManager = null;
-
-        // Optimizations
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setItemAnimator(null);
-    }
 
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
@@ -184,36 +153,45 @@ private GridLayoutManager mGridLayoutManager;
 
 
     /**
-     * Handles loading for calendar grid.
-     * FIXED: Operations are posted to next frame.
+     * Calculates effective grid position excluding headers.
+     * Headers span 7 cells but only count as 1 item in calculations.
      */
-    private void handleGridScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
-        // For 7x6 grid, calculate how many "rows" we are from start/end
-        int firstRow = firstVisible / 7;
-        int lastRow = lastVisible / 7;
-        int totalRows = (mItemsCache.size() + 6) / 7; // Round up
+    private int calculateEffectiveGridPosition(int position) {
+        if (position < 0 || position >= mItemsCache.size()) return position;
 
-        // Load upward (first 2 rows visible)
-        if (firstRow <= 2 && scrollDirection <= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
+        int effectivePosition = 0;
+        int headerCount = 0;
 
-            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering top load at row: " + firstRow);
-
-            // POST TO NEXT FRAME TO AVOID SCROLL CALLBACK ISSUES
-            mMainHandler.post(() -> triggerTopLoad());
+        for (int i = 0; i <= position && i < mItemsCache.size(); i++) {
+            SharedViewModels.ViewItem item = mItemsCache.get(i);
+            if (item instanceof SharedViewModels.MonthHeader) {
+                headerCount++;
+            } else {
+                effectivePosition++;
+            }
         }
 
-        // Load downward (last 2 rows visible)
-        if (lastRow >= totalRows - 3 && scrollDirection >= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
-
-            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering bottom load at row: " + lastRow);
-
-            // POST TO NEXT FRAME TO AVOID SCROLL CALLBACK ISSUES
-            mMainHandler.post(() -> triggerBottomLoad());
-        }
+        // Each header takes up space equivalent to 1 row (7 cells) in grid calculations
+        return effectivePosition + (headerCount * 7);
     }
 
+    /**
+     * Calculates total effective items for proper grid boundary detection.
+     */
+    private int calculateTotalEffectiveItems() {
+        int effectiveItems = 0;
+        int headerCount = 0;
+
+        for (SharedViewModels.ViewItem item : mItemsCache) {
+            if (item instanceof SharedViewModels.MonthHeader) {
+                headerCount++;
+            } else {
+                effectiveItems++;
+            }
+        }
+
+        return effectiveItems + (headerCount * 7);
+    }
 
     /**
      * Scroll to initial appropriate position.
@@ -225,6 +203,250 @@ private GridLayoutManager mGridLayoutManager;
             mGridLayoutManager.scrollToPosition(mTodayPosition);
         } else {
             mGridLayoutManager.scrollToPosition(mCurrentCenterPosition);
+        }
+    }
+
+    /**
+     * OVERRIDE: Grid-specific initial scroll with better positioning
+     */
+    protected void scrollToInitialPositionEnhanced() {
+        final String METHOD_TAG = TAG + " scrollToInitialPositionEnhanced";
+
+        if (mRecyclerView == null || mGridLayoutManager == null) {
+            Log.e(METHOD_TAG, "RecyclerView or GridLayoutManager is null");
+            return;
+        }
+
+        // CRITICAL: Verify today position is valid before scrolling
+        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+            try {
+                Log.d(METHOD_TAG, "Grid scrolling to today at position: " + mTodayPosition);
+
+                // For grid, use scrollToPositionWithOffset for better control
+                // Offset by a few rows to show context around today
+                int offset = calculateGridOffset();
+                mGridLayoutManager.scrollToPositionWithOffset(mTodayPosition, offset);
+
+                Log.d(METHOD_TAG, "Successfully scrolled to today with offset: " + offset);
+
+            } catch (Exception e) {
+                Log.e(METHOD_TAG, "Error scrolling to today: " + e.getMessage());
+                // Fallback to simple scroll
+                try {
+                    mGridLayoutManager.scrollToPosition(mTodayPosition);
+                } catch (Exception fallbackError) {
+                    Log.e(METHOD_TAG, "Fallback grid scroll also failed: " + fallbackError.getMessage());
+                }
+            }
+        } else {
+            Log.w(METHOD_TAG, "Today position invalid (" + mTodayPosition + "), scrolling to center");
+            try {
+                mGridLayoutManager.scrollToPosition(mCurrentCenterPosition);
+            } catch (Exception e) {
+                Log.e(METHOD_TAG, "Center grid scroll failed: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * NEW: Calculate appropriate offset for grid scroll to show context
+     */
+    private int calculateGridOffset() {
+        // For calendar grid, offset by 2-3 rows (14-21 cells) to show context
+        // This ensures today isn't at the very top of the screen
+        return -getResources().getDimensionPixelSize(R.dimen.calendar_day_height) * 3;
+    }
+
+    /**
+    * ENHANCED: Override scroll to today for grid-specific behavior
+ */
+    @Override
+    protected void scrollToToday() {
+        final String METHOD_TAG = TAG + " scrollToToday";
+
+        // First, try to find today in current cache
+        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+
+        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+            // Today is in cache - scroll to it with grid-specific positioning
+            Log.d(METHOD_TAG, "Today found in cache at position: " + mTodayPosition);
+
+            if (mGridLayoutManager != null) {
+                // For grid, use smooth scroll with offset for better positioning
+                mRecyclerView.post(() -> {
+                    try {
+                        // First scroll near the position
+                        int targetPosition = Math.max(0, mTodayPosition - 14); // ~2 weeks before
+                        mGridLayoutManager.scrollToPosition(targetPosition);
+
+                        // Then smooth scroll to exact position
+                        mRecyclerView.postDelayed(() -> {
+                            mRecyclerView.smoothScrollToPosition(mTodayPosition);
+                        }, 100);
+                    } catch (Exception e) {
+                        Log.e(METHOD_TAG, "Error in grid scroll to today: " + e.getMessage());
+                        mRecyclerView.smoothScrollToPosition(mTodayPosition);
+                    }
+                });
+            } else {
+                mRecyclerView.smoothScrollToPosition(mTodayPosition);
+            }
+            return;
+        }
+
+        // Today is not in cache - use base class smart loading
+        super.scrollToToday();
+    }
+
+    /**
+     * Override setupRecyclerView to fix span size for loading items
+     */
+    @Override
+    protected void setupRecyclerView() {
+        if (mRecyclerView == null) {
+            Log.e(TAG, "mRecyclerView is null");
+            return;
+        }
+
+        // For calendar, use GridLayoutManager with 7 columns
+        mGridLayoutManager = new GridLayoutManager(getContext(), 7);
+
+        // FIXED: Configure span size for headers AND loading items
+        mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (position < mItemsCache.size()) {
+                    SharedViewModels.ViewItem item = mItemsCache.get(position);
+                    if (item instanceof SharedViewModels.MonthHeader) {
+                        return 7; // Header occupies full width
+                    }
+                    // FIX: Loading items should also occupy full width
+                    if (item instanceof SharedViewModels.LoadingItem) {
+                        return 7; // Loading occupies full width
+                    }
+                }
+                return 1; // Days occupy 1 cell
+            }
+        });
+
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
+
+        // Base class LinearLayoutManager is not needed
+        mLayoutManager = null;
+
+        // Optimizations
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setItemAnimator(null);
+    }
+
+
+    /**
+     * DIAGNOSTIC: Enhanced debugging for grid scroll issues
+     */
+    private void debugGridState() {
+        if (!DEBUG_FRAGMENT) return;
+
+        if (mGridLayoutManager != null) {
+            int firstVisible = mGridLayoutManager.findFirstVisibleItemPosition();
+            int lastVisible = mGridLayoutManager.findLastVisibleItemPosition();
+            int firstCompletelyVisible = mGridLayoutManager.findFirstCompletelyVisibleItemPosition();
+            int lastCompletelyVisible = mGridLayoutManager.findLastCompletelyVisibleItemPosition();
+
+            Log.d(TAG, "Grid State - First: " + firstVisible + ", Last: " + lastVisible);
+            Log.d(TAG, "Grid State - FirstComplete: " + firstCompletelyVisible + ", LastComplete: " + lastCompletelyVisible);
+            Log.d(TAG, "Grid State - Today position: " + mTodayPosition + ", Cache size: " + mItemsCache.size());
+
+            // Check if today is actually visible
+            if (mTodayPosition >= 0) {
+                boolean todayVisible = mTodayPosition >= firstVisible && mTodayPosition <= lastVisible;
+                Log.d(TAG, "Grid State - Today visible: " + todayVisible);
+            }
+        }
+    }
+
+    /**
+     * DIAGNOSTIC: Add method to check for invisible loaders
+     */
+    private void debugCacheState() {
+        if (!DEBUG_FRAGMENT) return;
+
+        int headers = 0, days = 0, empty = 0, loading = 0;
+
+        for (int i = 0; i < mItemsCache.size(); i++) {
+            SharedViewModels.ViewItem item = mItemsCache.get(i);
+            String type = "UNKNOWN";
+
+            if (item instanceof SharedViewModels.MonthHeader) {
+                headers++;
+                type = "HEADER";
+            } else if (item instanceof SharedViewModels.DayItem) {
+                days++;
+                type = "DAY";
+            } else if (item instanceof SharedViewModels.EmptyItem) {
+                empty++;
+                type = "EMPTY";
+            } else if (item instanceof SharedViewModels.LoadingItem) {
+                loading++;
+                type = "LOADING";
+                SharedViewModels.LoadingItem loadingItem = (SharedViewModels.LoadingItem) item;
+                Log.w(TAG, "FOUND LOADING ITEM at position " + i + " type: " + loadingItem.loadingType);
+            }
+
+            if (i < 10 || i > mItemsCache.size() - 10) {
+                Log.d(TAG, "Position " + i + ": " + type);
+            }
+        }
+
+        Log.d(TAG, "Cache state - Headers: " + headers + ", Days: " + days + ", Empty: " + empty + ", Loading: " + loading);
+
+        // Check for flags
+        Log.d(TAG, "Flags - ShowingTopLoader: " + mShowingTopLoader + ", ShowingBottomLoader: " + mShowingBottomLoader);
+        Log.d(TAG, "Flags - PendingTopLoad: " + mIsPendingTopLoad.get() + ", PendingBottomLoad: " + mIsPendingBottomLoad.get());
+    }
+
+    /**
+     * Override scroll methods to add debugging
+     */
+    private void handleGridScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
+        // Add debugging at start
+        debugCacheState();
+
+        // Calculate effective grid positions excluding headers
+        int effectiveFirst = calculateEffectiveGridPosition(firstVisible);
+        int effectiveLast = calculateEffectiveGridPosition(lastVisible);
+        int totalEffectiveItems = calculateTotalEffectiveItems();
+
+        // More conservative trigger zones to prevent frequent loading
+        int loadTriggerZone = 21; // INCREASED: 3 full weeks to be extra conservative
+
+        // Load upward - only when very close to top
+        if (effectiveFirst <= loadTriggerZone && scrollDirection <= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
+
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering top load at effective position: " + effectiveFirst);
+
+            // Delay the trigger slightly to ensure scroll has stabilized
+            mMainHandler.postDelayed(() -> {
+                // Double-check conditions before triggering
+                if (!mIsUpdatingCache.get() && !mIsPendingTopLoad.get()) {
+                    triggerTopLoad();
+                }
+            }, 100); // INCREASED delay
+        }
+
+        // Load downward - only when very close to bottom
+        if (effectiveLast >= totalEffectiveItems - loadTriggerZone && scrollDirection >= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
+
+            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering bottom load at effective position: " + effectiveLast);
+
+            // Delay the trigger slightly to ensure scroll has stabilized
+            mMainHandler.postDelayed(() -> {
+                // Double-check conditions before triggering
+                if (!mIsUpdatingCache.get() && !mIsPendingBottomLoad.get()) {
+                    triggerBottomLoad();
+                }
+            }, 100); // INCREASED delay
         }
     }
 }
