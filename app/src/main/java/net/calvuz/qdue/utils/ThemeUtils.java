@@ -11,25 +11,25 @@ import net.calvuz.qdue.R;
 
 /**
  * Utility class for retrieving colors and attributes from the current theme.
- *
+ * <p>
  * This class provides a comprehensive set of methods to access theme colors in a consistent way.
  * It supports both Material Design standard colors and application-specific custom colors.
  * The utility handles theme attribute resolution and provides convenience methods for
  * commonly used colors throughout the application.
- *
+ * <p>
  * Features:
  * - Material Design 3 color system support
  * - Custom application color retrieval
  * - Dynamic color switching based on theme mode
  * - Shift-specific color management
  * - Theme attribute resolution utilities
- *
+ * <p>
  * Color Categories:
  * - Material Design Standard Colors: Primary, Secondary, Surface, etc.
  * - Application-Specific Colors: Today highlighting, user shifts, etc.
  * - Dynamic Colors: Theme-aware colors that change with light/dark mode
  * - Shift Colors: Work shift specific colors for UI highlighting
- *
+ * <p>
  * Usage:
  * <pre>
  * int primaryColor = ThemeUtils.getMaterialPrimaryColor(context);
@@ -57,7 +57,7 @@ public class ThemeUtils {
 
     /**
      * Retrieves a color from the current theme attributes.
-     *
+     * <p>
      * This is the foundation method that resolves theme attributes to actual color values.
      * All other color methods in this class ultimately use this method for theme resolution.
      *
@@ -274,6 +274,8 @@ public class ThemeUtils {
         return getDynamicOnNormalBackgroundColor(context);
     }
 
+    // ==================== SHIFT-SPECIFIC COLORS ====================
+
     /**
      * Gets the user shift color from theme attributes.
      *
@@ -285,41 +287,6 @@ public class ThemeUtils {
         return getThemeColor(context, R.attr.colorUserShift);
     }
 
-    // ==================== SHIFT-SPECIFIC COLORS ====================
-
-    /**
-     * Gets the color for morning shifts.
-     *
-     * @param context Application context
-     * @return Morning shift color
-     */
-    @ColorInt
-    public static int getShiftMorningColor(Context context) {
-        return getThemeColor(context, R.attr.colorShiftMorning);
-    }
-
-    /**
-     * Gets the color for afternoon shifts.
-     *
-     * @param context Application context
-     * @return Afternoon shift color
-     */
-    @ColorInt
-    public static int getShiftAfternoonColor(Context context) {
-        return getThemeColor(context, R.attr.colorShiftAfternoon);
-    }
-
-    /**
-     * Gets the color for night shifts.
-     *
-     * @param context Application context
-     * @return Night shift color
-     */
-    @ColorInt
-    public static int getShiftNightColor(Context context) {
-        return getThemeColor(context, R.attr.colorShiftNight);
-    }
-
     /**
      * Gets the color for the first shift of the day.
      *
@@ -328,7 +295,7 @@ public class ThemeUtils {
      */
     @ColorInt
     public static int getFirstShiftColor(Context context) {
-        return getThemeColor(context, R.attr.colorFirstShift);
+        return getThemeColor(context, R.attr.colorShiftFirst);
     }
 
     /**
@@ -339,7 +306,7 @@ public class ThemeUtils {
      */
     @ColorInt
     public static int getSecondShiftColor(Context context) {
-        return getThemeColor(context, R.attr.colorSecondShift);
+        return getThemeColor(context, R.attr.colorShiftSecond);
     }
 
     /**
@@ -350,7 +317,7 @@ public class ThemeUtils {
      */
     @ColorInt
     public static int getThirdShiftColor(Context context) {
-        return getThemeColor(context, R.attr.colorThirdShift);
+        return getThemeColor(context, R.attr.colorShiftThird);
     }
 
     /**
@@ -362,7 +329,7 @@ public class ThemeUtils {
      */
     @ColorInt
     public static int getFourthShiftColor(Context context) {
-        return getThemeColor(context, R.attr.colorSecondShift);
+        return getThemeColor(context, R.attr.colorShiftFourth);
     }
 
     /**
@@ -374,7 +341,42 @@ public class ThemeUtils {
      */
     @ColorInt
     public static int getFifthShiftColor(Context context) {
-        return getThemeColor(context, R.attr.colorThirdShift);
+        return getThemeColor(context, R.attr.colorShiftFifth);
+    }
+
+    /**
+     * Gets the color for the third shift of the day.
+     *
+     * @param context Application context
+     * @return Sixth shift color
+     */
+    @ColorInt
+    public static int getSixthShiftColor(Context context) {
+        return getThemeColor(context, R.attr.colorShiftSixth);
+    }
+
+    /**
+     * Gets the color for the fourth shift of the day.
+     * Currently defaults to second shift color.
+     *
+     * @param context Application context
+     * @return Seventh shift color
+     */
+    @ColorInt
+    public static int getSeventhShiftColor(Context context) {
+        return getThemeColor(context, R.attr.colorShiftSeventh);
+    }
+
+    /**
+     * Gets the color for the fifth shift of the day.
+     * Currently defaults to third shift color.
+     *
+     * @param context Application context
+     * @return Eighth shift color
+     */
+    @ColorInt
+    public static int getEighthShiftColor(Context context) {
+        return getThemeColor(context, R.attr.colorShiftEighth);
     }
 
     // ==================== DYNAMIC COLORS (Light/Dark Theme Aware) ====================

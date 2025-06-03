@@ -7,25 +7,26 @@
         <attr name="colorTodayBackground" format="color|reference" />
         <attr name="colorUserShift" format="color|reference" />
         <attr name="colorUserShiftBackground" format="color|reference" />
+        <attr name="colorSunday"   format="color" />
         <attr name="colorSundayBackground" format="color|reference" />
         <attr name="colorOnSundayBackground" format="color|reference" />
 
         <attr name="colorHeaderBackground" format="color|reference" />
-        <attr name="colorFirstShift" format="color" />
-        <attr name="colorSecondShift" format="color" />
-        <attr name="colorThirdShift" format="color" />
-        <attr name="colorFourthShift" format="color" />
-        <attr name="colorFifthShift" format="color" />
 
-        <attr name="colorShiftMorning" format="color|reference" />
-        <attr name="colorShiftAfternoon" format="color|reference" />
-        <attr name="colorShiftNight" format="color|reference" />
+        <!-- Colori per il Shift in CalendarView -->
+        <attr name="colorShiftFirst" format="color|reference" />
+        <attr name="colorShiftSecond" format="color|reference" />
+        <attr name="colorShiftThird" format="color|reference" />
+        <attr name="colorShiftFourth" format="color|reference" />
+        <attr name="colorShiftFifth" format="color|reference" />
+        <attr name="colorShiftSixth" format="color|reference" />
+        <attr name="colorShiftSeventh" format="color|reference" />
+        <attr name="colorShiftEighth" format="color|reference" />
 
+        <!-- Colori per il Calendar -->
         <attr name="colorCalendarToday" format="color|reference" />
         <attr name="colorCalendarWeekend" format="color|reference" />
         <attr name="colorCalendarHeader" format="color|reference" />
-
-        <attr name="colorError" format="color" />
 
         <!-- Colori per il caricamento -->
         <attr name="colorLoadingBackground" format="color" />

@@ -49,18 +49,21 @@
 
         <!-- Custom app attributes -->
         <item name="colorTodayBackground">@color/today_background</item>
-        <item name="colorUserShift">@color/on_background_dark_user_shift</item>
-        <item name="colorUserShiftBackground">@color/background_user_shift</item>
         <item name="colorHeaderBackground">@color/surface</item>
 
         <item name="colorSundayBackground">@color/background_sunday</item>
         <item name="colorOnSundayBackground">@color/on_background_sunday</item>
 
-        <item name="colorFirstShift">@color/shift_morning_light</item>
-        <item name="colorSecondShift">@color/shift_afternoon_light</item>
-        <item name="colorThirdShift">@color/shift_night_light</item>
-        <item name="colorFourthShift">@color/shift_night_light</item>
-        <item name="colorFifthShift">@color/shift_night_light</item>
+        <item name="colorUserShift">@color/on_background_dark_user_shift</item>
+        <item name="colorUserShiftBackground">@color/background_user_shift</item>
+        <item name="colorShiftFirst">@color/shift_morning_light</item>
+        <item name="colorShiftSecond">@color/shift_afternoon_light</item>
+        <item name="colorShiftThird">@color/shift_night_light</item>
+        <item name="colorShiftFourth">@color/shift_night_light</item>
+        <item name="colorShiftFifth">@color/shift_night_light</item>
+        <item name="colorShiftSixth">@color/shift_night_light</item>
+        <item name="colorShiftSeventh">@color/shift_night_light</item>
+        <item name="colorShiftEighth">@color/shift_night_light</item>
 
         <!-- Colori per il caricamento -->
         <item name="colorLoadingBackground">@color/loading_background</item>

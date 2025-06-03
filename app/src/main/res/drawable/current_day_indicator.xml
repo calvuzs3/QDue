@@ -2,12 +2,12 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <solid android:color="@color/today_background" />
+    <solid android:color="?attr/colorTodayBackground" />
 
     <corners android:radius="6dp" />
 
     <stroke
         android:width="2dp"
-        android:color="@color/on_today_background" />
+        android:color="?attr/colorCardBorder" />
 
 </shape>
