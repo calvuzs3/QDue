@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -34,8 +35,11 @@ import net.calvuz.qdue.utils.ThemeUtils;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
 
 /**
- * Activity principale con gestione automatica portrait/landscape.
- * Android gestisce automaticamente il cambio layout attraverso i resource qualifiers.
+ * Main Activity with responsive toolbar visibility.
+ * - Portrait: Toolbar visible + BottomNavigation
+ * - Landscape: Toolbar hidden + Sidebar Navigation
+ *
+ * Key improvement: Toolbar always exists in binding, just hidden in landscape
  */
 public class QDueMainActivity extends AppCompatActivity
         implements
@@ -49,11 +53,11 @@ public class QDueMainActivity extends AppCompatActivity
     private ActivityQdueMainBinding binding;
     private NavController navController;
 
-    // Navigation components (uno dei due sarà null in base al layout)
+    // Navigation components (one will be null based on orientation)
     private BottomNavigationView bottomNavigation;
     private NavigationView sidebarNavigation;
 
-    // Fragment di riferimento
+    // Current fragment reference
     private Fragment mCurrentFragment = null;
 
     // Time Change Receiver
@@ -67,29 +71,29 @@ public class QDueMainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Test
+        // Test theme colors if needed
         if (DEBUG_COLORS) testThemeColors();
 
-        Log.d( TAG, String.valueOf(QDue.getContext() == getApplicationContext()));
+        Log.d(TAG, String.valueOf(QDue.getContext() == getApplicationContext()));
 
-        // Inizializza il time change receiver
+        // Initialize time change receiver
         mTimeChangeReceiver = new TimeChangeReceiver(this);
 
-        // Registra il listener per le preferenze
+        // Register preference listener
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
-        // Inizializza il binding e il layout
+        // Initialize binding and layout
         binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Configura la toolbar (se presente nel layout)
-        if (!(binding.toolbar == null)) setSupportActionBar(binding.toolbar);
+        // Configure toolbar (always exists now, may be hidden)
+        setupToolbar();
 
-        // Setup navigation con controllo sicuro
+        // Setup navigation with safe error handling
         setupNavigationSafely();
 
-        // Tieni traccia del fragment corrente
+        // Track current fragment
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             mCurrentFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
             if (DEBUG_ACTIVITY)
@@ -98,66 +102,98 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     /**
-     * Setup sicuro della navigazione con controllo degli errori.
+     * Setup toolbar with orientation-aware visibility.
+     * Toolbar exists in both orientations but is hidden in landscape.
+     */
+    private void setupToolbar() {
+        try {
+            // Toolbar always exists in binding now
+            setSupportActionBar(binding.toolbar);
+
+            // Check orientation and adjust visibility
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+            if (isLandscape) {
+                // Hide toolbar and AppBar in landscape
+                binding.toolbar.setVisibility(View.GONE);
+                if (binding.appBarLayout != null) {
+                    binding.appBarLayout.setVisibility(View.GONE);
+                }
+                if (DEBUG_ACTIVITY) Log.d(TAG, "Toolbar hidden for landscape mode");
+            } else {
+                // Show toolbar in portrait
+                binding.toolbar.setVisibility(View.VISIBLE);
+                if (binding.appBarLayout != null) {
+                    binding.appBarLayout.setVisibility(View.VISIBLE);
+                }
+                if (DEBUG_ACTIVITY) Log.d(TAG, "Toolbar visible for portrait mode");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error configuring toolbar: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Setup navigation safely with error handling.
      */
     private void setupNavigationSafely() {
         try {
-            // Metodo 1: Trova il NavHostFragment direttamente
+            // Method 1: Find NavHostFragment directly
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.nav_host_fragment_content_main);
 
             if (navHostFragment != null) {
                 navController = navHostFragment.getNavController();
-                if (DEBUG_ACTIVITY) Log.d(TAG, "NavController trovato tramite NavHostFragment");
+                if (DEBUG_ACTIVITY) Log.d(TAG, "NavController found via NavHostFragment");
             } else {
-                // Metodo 2: Fallback con Navigation.findNavController
+                // Method 2: Fallback with Navigation.findNavController
                 navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-                if (DEBUG_ACTIVITY)
-                    Log.d(TAG, "NavController trovato tramite Navigation.findNavController");
+                if (DEBUG_ACTIVITY) Log.d(TAG, "NavController found via Navigation.findNavController");
             }
 
             // Setup navigation components
             setupNavigationComponents();
 
         } catch (IllegalStateException e) {
-            Log.e(TAG, "Errore setup NavController: " + e.getMessage());
+            Log.e(TAG, "Error setting up NavController: " + e.getMessage());
 
-            // Retry dopo un piccolo delay
+            // Retry after small delay
             findViewById(R.id.nav_host_fragment_content_main).post(() -> {
                 try {
                     navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
                     setupNavigationComponents();
-                    if (DEBUG_ACTIVITY) Log.d(TAG, "NavController trovato al secondo tentativo");
+                    if (DEBUG_ACTIVITY) Log.d(TAG, "NavController found on second attempt");
                 } catch (Exception retryException) {
-                    Log.e(TAG, "Impossibile trovare NavController anche al secondo tentativo: " + retryException.getMessage());
+                    Log.e(TAG, "Failed to find NavController on retry: " + retryException.getMessage());
                 }
             });
         }
     }
 
     /**
-     * Setup dei componenti di navigazione una volta che il NavController è disponibile.
+     * Setup navigation components based on current orientation.
      */
     private void setupNavigationComponents() {
         if (navController == null) {
-            Log.e(TAG, "NavController è null, impossibile configurare navigazione");
+            Log.e(TAG, "NavController is null, cannot configure navigation");
             return;
         }
 
-        // Cerca i componenti di navigazione (solo uno esisterà in base al layout)
+        // Find navigation components (only one will exist based on layout)
         bottomNavigation = findViewById(R.id.bottom_navigation);
         sidebarNavigation = findViewById(R.id.sidebar_navigation);
 
-        // Determina quale tipo di navigazione è disponibile
+        // Determine current orientation
         boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
         if (DEBUG_ACTIVITY) {
-            Log.d(TAG, "Orientamento: " + (isLandscape ? "Landscape" : "Portrait"));
-            Log.d(TAG, "Bottom Navigation disponibile: " + (bottomNavigation != null));
-            Log.d(TAG, "Sidebar Navigation disponibile: " + (sidebarNavigation != null));
+            Log.d(TAG, "Orientation: " + (isLandscape ? "Landscape" : "Portrait"));
+            Log.d(TAG, "Bottom Navigation available: " + (bottomNavigation != null));
+            Log.d(TAG, "Sidebar Navigation available: " + (sidebarNavigation != null));
         }
 
-        // Setup navigation in base ai componenti disponibili
+        // Setup navigation based on available components
         if (bottomNavigation != null) {
             setupBottomNavigation();
         }
@@ -166,27 +202,28 @@ public class QDueMainActivity extends AppCompatActivity
             setupSidebarNavigation();
         }
 
-        // Configura ActionBar
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_dayslist, R.id.nav_calendar)
-                .build();
+        // Configure ActionBar only in portrait mode (when toolbar is visible)
+        if (!isLandscape && binding.toolbar.getVisibility() == View.VISIBLE) {
+            mAppBarConfiguration = new AppBarConfiguration.Builder(
+                    R.id.nav_dayslist, R.id.nav_calendar)
+                    .build();
 
-        if (binding.toolbar != null) {
             NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+            if (DEBUG_ACTIVITY) Log.d(TAG, "ActionBar configured for portrait mode");
+        } else {
+            if (DEBUG_ACTIVITY) Log.d(TAG, "Skipping ActionBar setup for landscape mode");
         }
     }
 
     /**
-     * Setup bottom navigation (portrait).
+     * Setup bottom navigation (portrait mode).
      */
     private void setupBottomNavigation() {
-        if (DEBUG_ACTIVITY) Log.d(TAG, "Configurando Bottom Navigation");
+        if (DEBUG_ACTIVITY) Log.d(TAG, "Configuring Bottom Navigation");
 
         try {
-            // Setup bottom navigation con NavController
             NavigationUI.setupWithNavController(bottomNavigation, navController);
 
-            // Gestisci click personalizzati se necessario
             bottomNavigation.setOnItemSelectedListener(item -> {
                 int id = item.getItemId();
 
@@ -199,29 +236,26 @@ public class QDueMainActivity extends AppCompatActivity
                         return true;
                     }
 
-                    // Per gli altri item, usa il comportamento standard
                     return NavigationUI.onNavDestinationSelected(item, navController);
                 } catch (Exception e) {
-                    Log.e(TAG, "Errore durante navigazione: " + e.getMessage());
+                    Log.e(TAG, "Error during bottom navigation: " + e.getMessage());
                     return false;
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, "Errore setup bottom navigation: " + e.getMessage());
+            Log.e(TAG, "Error setting up bottom navigation: " + e.getMessage());
         }
     }
 
     /**
-     * Setup sidebar navigation (landscape).
+     * Setup sidebar navigation (landscape mode).
      */
     private void setupSidebarNavigation() {
-        if (DEBUG_ACTIVITY) Log.d(TAG, "Configurando Sidebar Navigation");
+        if (DEBUG_ACTIVITY) Log.d(TAG, "Configuring Sidebar Navigation");
 
         try {
-            // Setup sidebar navigation con NavController
             NavigationUI.setupWithNavController(sidebarNavigation, navController);
 
-            // Gestisci click personalizzati
             sidebarNavigation.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
 
@@ -234,38 +268,36 @@ public class QDueMainActivity extends AppCompatActivity
                         return true;
                     }
 
-                    // Per gli altri item, usa il comportamento standard
                     return NavigationUI.onNavDestinationSelected(item, navController);
                 } catch (Exception e) {
-                    Log.e(TAG, "Errore durante navigazione sidebar: " + e.getMessage());
+                    Log.e(TAG, "Error during sidebar navigation: " + e.getMessage());
                     return false;
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, "Errore setup sidebar navigation: " + e.getMessage());
+            Log.e(TAG, "Error setting up sidebar navigation: " + e.getMessage());
         }
     }
 
     /**
-     * Aggiorna il titolo della toolbar.
+     * Update toolbar title safely.
      */
     private void updateToolbarTitle() {
-        if (getSupportActionBar() != null) {
+        // Only update title if ActionBar exists and is visible
+        if (getSupportActionBar() != null && binding.toolbar.getVisibility() == View.VISIBLE) {
             getSupportActionBar().setTitle(R.string.app_name);
         }
     }
 
     /**
-     * Notifica il fragment di aggiornare i dati.
+     * Notify fragments to update data.
      */
     private void notifyUpdates() {
         if (DEBUG_ACTIVITY) Log.d(TAG, "notifyUpdates");
 
         try {
-            // Cerca il fragment attivo
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
             if (fragment != null) {
-                // Se è un NavHostFragment, cerca il fragment figlio attivo
                 if (fragment instanceof NavHostFragment) {
                     Fragment childFragment = ((NavHostFragment) fragment).getChildFragmentManager().getPrimaryNavigationFragment();
 
@@ -274,17 +306,18 @@ public class QDueMainActivity extends AppCompatActivity
                     }
                 }
             } else {
-                Log.e(TAG, "Fragment non trovato");
+                Log.e(TAG, "Fragment not found");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Errore durante notifyUpdates: " + e.getMessage());
+            Log.e(TAG, "Error during notifyUpdates: " + e.getMessage());
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Solo per portrait (quando non c'è sidebar), in landscape le opzioni sono nella sidebar
-        if (sidebarNavigation == null) {
+        // Only show menu for portrait mode (when there's no sidebar)
+        boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+        if (sidebarNavigation == null && isPortrait) {
             getMenuInflater().inflate(R.menu.main, menu);
         }
         return true;
@@ -308,7 +341,7 @@ public class QDueMainActivity extends AppCompatActivity
                 return true;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Errore durante navigazione menu: " + e.getMessage());
+            Log.e(TAG, "Error during menu navigation: " + e.getMessage());
         }
 
         return super.onOptionsItemSelected(item);
@@ -316,22 +349,22 @@ public class QDueMainActivity extends AppCompatActivity
 
     @Override
     public boolean onSupportNavigateUp() {
-        if (navController != null && mAppBarConfiguration != null) {
+        // Only handle navigation up if we have ActionBar visible (portrait mode)
+        if (navController != null && mAppBarConfiguration != null &&
+                getSupportActionBar() != null && binding.toolbar.getVisibility() == View.VISIBLE) {
             return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                     || super.onSupportNavigateUp();
         }
         return super.onSupportNavigateUp();
     }
 
+    // ... (rest of the existing methods remain unchanged)
+
     @Override
     protected void onResume() {
         super.onResume();
         if (DEBUG_ACTIVITY) Log.d(TAG, "onResume");
-
-        // Registra il receiver per i cambiamenti di tempo
         registerTimeChangeReceiver();
-
-        // Aggiorna l'interfaccia quando l'activity torna in primo piano
         notifyUpdates();
     }
 
@@ -339,8 +372,6 @@ public class QDueMainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         if (DEBUG_ACTIVITY) Log.d(TAG, "onPause");
-
-        // Annulla la registrazione del receiver
         unregisterTimeChangeReceiver();
     }
 
@@ -348,19 +379,12 @@ public class QDueMainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         if (DEBUG_ACTIVITY) Log.d(TAG, "onDestroy");
-
-        // Assicurati di annullare la registrazione del receiver
         unregisterTimeChangeReceiver();
-
-        // Deregistra il listener
         if (sharedPreferences != null) {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
         }
     }
 
-    /**
-     * Registra il BroadcastReceiver per i cambiamenti di tempo.
-     */
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerTimeChangeReceiver() {
         if (!mReceiverRegistered && mTimeChangeReceiver != null) {
@@ -369,99 +393,92 @@ public class QDueMainActivity extends AppCompatActivity
                 registerReceiver(mTimeChangeReceiver, filter);
                 mReceiverRegistered = true;
             } catch (Exception e) {
-                Log.e(TAG, "Errore nella registrazione del TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "Error registering TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
 
-    /**
-     * Annulla la registrazione del BroadcastReceiver.
-     */
     private void unregisterTimeChangeReceiver() {
         if (mReceiverRegistered && mTimeChangeReceiver != null) {
             try {
                 unregisterReceiver(mTimeChangeReceiver);
                 mReceiverRegistered = false;
             } catch (Exception e) {
-                Log.e(TAG, "Errore nella deregistrazione del TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "Error unregistering TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
 
-    // Implementazione dell'interfaccia TimeChangeListener
-
+    // TimeChangeListener implementation
     @Override
     public void onTimeChanged() {
-        Log.d(TAG, "onTimeChanged - aggiornamento interfaccia");
-
+        Log.d(TAG, "onTimeChanged - updating interface");
         runOnUiThread(() -> {
             notifyUpdates();
-            Toast.makeText(this, "Ora di sistema aggiornata", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "System time updated", Toast.LENGTH_SHORT).show();
         });
     }
 
     @Override
     public void onDateChanged() {
-        Log.d(TAG, "onDateChanged - aggiornamento interfaccia");
-
+        Log.d(TAG, "onDateChanged - updating interface");
         runOnUiThread(() -> {
             notifyUpdates();
-            Toast.makeText(this, "Data di sistema aggiornata", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "System date updated", Toast.LENGTH_SHORT).show();
         });
     }
 
     @Override
     public void onTimezoneChanged() {
-        Log.d(TAG, "onTimezoneChanged - aggiornamento interfaccia");
-
+        Log.d(TAG, "onTimezoneChanged - updating interface");
         runOnUiThread(() -> {
             notifyUpdates();
-            Toast.makeText(this, "Fuso orario aggiornato", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Timezone updated", Toast.LENGTH_SHORT).show();
         });
     }
 
     private void testThemeColors() {
-        // Test dei colori dinamici
+        // Test dynamic colors
         int surfaceColor = ThemeUtils.getDynamicSurfaceColor(this);
         int onSurfaceColor = ThemeUtils.getDynamicOnSurfaceColor(this);
         int primaryColor = ThemeUtils.getDynamicPrimaryColor(this);
 
-        // Test colori specifici app
+        // Test app-specific colors
         int todayBg = ThemeUtils.getTodayBackgroundColor(this);
         int userShiftBg = ThemeUtils.getUserShiftBackgroundColor(this);
         int sundayText = ThemeUtils.getSundayTextColor(this);
 
-        Log.d("ThemeTest", "=== COLORI DINAMICI ===");
+        Log.d("ThemeTest", "=== DYNAMIC COLORS ===");
         Log.d("ThemeTest", "Surface: " + Integer.toHexString(surfaceColor));
         Log.d("ThemeTest", "OnSurface: " + Integer.toHexString(onSurfaceColor));
         Log.d("ThemeTest", "Primary: " + Integer.toHexString(primaryColor));
 
-        Log.d("ThemeTest", "=== COLORI APP ===");
+        Log.d("ThemeTest", "=== APP COLORS ===");
         Log.d("ThemeTest", "Today BG: " + Integer.toHexString(todayBg));
         Log.d("ThemeTest", "User Shift BG: " + Integer.toHexString(userShiftBg));
         Log.d("ThemeTest", "Sunday Text: " + Integer.toHexString(sundayText));
 
-        // Test se il tema scuro è attivo
+        // Test dark mode detection
         ThemeManager themeManager = ThemeManager.getInstance(this);
         Log.d("ThemeTest", "Is Dark Mode: " + themeManager.isDarkMode());
 
-        // Confronto con Material Design
+        // Compare with Material Design
         int materialSurface = ThemeUtils.getMaterialSurfaceColor(this);
         int yourSurface = getColor(R.color.surface);
 
-        Log.d("ThemeTest", "=== CONFRONTO ===");
+        Log.d("ThemeTest", "=== COMPARISON ===");
         Log.d("ThemeTest", "Material Surface: " + Integer.toHexString(materialSurface));
         Log.d("ThemeTest", "Your Surface: " + Integer.toHexString(yourSurface));
 
         if (materialSurface != yourSurface) {
-            Log.d("ThemeTest", "✅ I tuoi colori sono diversi da Material Design (corretto!)");
+            Log.d("ThemeTest", "✅ Your colors are different from Material Design (correct!)");
         } else {
-            Log.w("ThemeTest", "⚠️ I colori sono uguali a Material Design");
+            Log.w("ThemeTest", "⚠️ Colors are the same as Material Design");
         }
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
-        if (DEBUG_ACTIVITY) Log.d(TAG, "Preferenza cambiata: " + key);
+        if (DEBUG_ACTIVITY) Log.d(TAG, "Preference changed: " + key);
     }
 }

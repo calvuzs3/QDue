@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/color/navigation_ripple_color.xml -->
+<!-- Ripple effect color selector for navigation items -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Ripple for active items -->
+    <item android:color="?attr/colorPrimary" android:alpha="0.12" android:state_checked="true" />
+
+    <!-- Ripple for pressed state -->
+    <item android:color="?attr/colorPrimaryContainer" android:alpha="0.16" android:state_pressed="true" />
+
+    <!-- Default ripple -->
+    <item android:color="?attr/colorOnSurface" android:alpha="0.08" />
+
+</selector>

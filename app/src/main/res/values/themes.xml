@@ -65,17 +65,18 @@
         <item name="colorShiftSeventh">@color/shift_night_light</item>
         <item name="colorShiftEighth">@color/shift_night_light</item>
 
-        <!-- Colori per il caricamento -->
+        <!-- Loading -->
         <item name="colorLoadingBackground">@color/loading_background</item>
         <item name="colorLoadingText">@color/loading_text</item>
         <item name="colorLoadingProgress">@color/loading_progress</item>
 
-        <!-- Colori per i bordi e separatori -->
+        <!-- Borders and separators -->
         <item name="colorSeparator">@color/separator</item>
         <item name="colorCardBackground">@color/cardview_light_background</item>
         <item name="colorCardBorder">@color/cardview_shadow_end_color</item>
 
         <!-- Window attributes -->
+        <item name="android:fitsSystemWindows">true</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -155,33 +156,38 @@
 
     <!-- ===== STILI SPECIALI PER L'APP ===== -->
 
+    <!-- BottomNavigation Active Indicator Style -->
+    <style name="Theme.QDue.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">?attr/colorPrimaryContainer</item>
+        <item name="android:width">64dp</item>
+        <item name="android:height">32dp</item>
+        <item name="cornerRadius">16dp</item>
+    </style>
+
+    <!-- Sidebar Navigation Item Shape -->
+    <style name="Theme.QDue.SidebarNavigation.ItemShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
     <!-- Stile per Bottom Navigation -->
     <style name="Theme.QDue.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
         <item name="android:background">?attr/colorSurface</item>
-        <item name="itemIconTint">@color/bottom_nav_item_color</item>
-        <item name="itemTextColor">@color/bottom_nav_item_color</item>
+        <item name="itemIconTint">@color/nav_bottom_item_color</item>
+        <item name="itemTextColor">@color/nav_bottom_item_color</item>
         <item name="itemActiveIndicatorStyle">@style/Theme.QDue.BottomNavigation.ActiveIndicator</item>
         <item name="elevation">8dp</item>
-    </style>
-
-    <style name="Theme.QDue.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">?attr/colorPrimaryContainer</item>
     </style>
 
     <!-- Stile per Sidebar Navigation -->
     <style name="Theme.QDue.SidebarNavigation" parent="Widget.Material3.NavigationView">
         <item name="android:background">?attr/colorSurface</item>
-        <item name="itemTextColor">@color/sidebar_nav_item_color</item>
-        <item name="itemIconTint">@color/sidebar_nav_item_color</item>
+        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
+        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
         <item name="itemShapeAppearance">@style/Theme.QDue.SidebarNavigation.ItemShape</item>
         <item name="itemShapeInsetStart">8dp</item>
         <item name="itemShapeInsetEnd">8dp</item>
         <item name="elevation">0dp</item>
-    </style>
-
-    <style name="Theme.QDue.SidebarNavigation.ItemShape" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
     </style>
 
     <!-- Calendar Day Style -->
@@ -270,7 +276,7 @@
 
     <!-- ===== FINALLY ===== -->
 
-    <!-- Application theme Wrapper -->
+    <!-- Application theme -->
     <style name="Theme.QDue" parent="Base.Theme.QDue" />
 
     <!-- NoActionBar theme -->

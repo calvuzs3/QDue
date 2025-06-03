@@ -159,6 +159,20 @@
 
     <!-- ===== SPECIAL APP STYLES ===== -->
 
+    <!-- BottomNavigation Active Indicator Style -->
+    <style name="Theme.QDue.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">?attr/colorPrimaryContainer</item>
+        <item name="android:width">64dp</item>
+        <item name="android:height">32dp</item>
+        <item name="cornerRadius">16dp</item>
+    </style>
+
+    <!-- Sidebar Navigation Item Shape -->
+    <style name="Theme.QDue.SidebarNavigation.ItemShape" >
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
     <!-- Calendar Day Style -->
     <style name="Theme.QDue.CalendarDay">
         <item name="android:background">@drawable/calendar_day_background</item>

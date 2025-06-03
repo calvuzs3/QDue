@@ -146,6 +146,9 @@
     <string name="legenda_shift_morning">Turno Mattino</string>
     <string name="legenda_shift_afternoon">Turno Pomeriggio</string>
     <string name="legenda_shift_night">Turno Notte</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_sys">Sistema</string>
 
 
 </resources>

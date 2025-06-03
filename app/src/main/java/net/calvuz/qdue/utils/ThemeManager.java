@@ -150,17 +150,16 @@ public class ThemeManager {
      * Gets a human-readable name for the current theme mode.
      *
      * @return Theme mode name in Italian ("Sistema", "Chiaro", or "Scuro")
-     * @deprecated Consider using string resources for localization
      */
     public String getThemeModeName() {
         switch (getThemeMode()) {
             case THEME_LIGHT:
-                return "Chiaro";
+                return context.getString(R.string.theme_light);
             case THEME_DARK:
-                return "Scuro";
+                return context.getString(R.string.theme_dark);
             case THEME_SYSTEM:
             default:
-                return "Sistema";
+                return context.getString(R.string.theme_sys);
         }
     }
 

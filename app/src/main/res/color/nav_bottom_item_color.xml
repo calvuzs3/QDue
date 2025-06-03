@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/color/nav_bottom_item_color.xml -->
+<!-- Enhanced selector for BottomNavigation with better state management -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Active/Selected state - High contrast primary color -->
+    <item android:color="?attr/colorPrimary" android:state_checked="true" />
+
+    <!-- Pressed state - Immediate visual feedback -->
+    <item android:color="?attr/colorPrimaryContainer" android:state_pressed="true" />
+
+    <!-- Focused state - Accessibility support for keyboard/D-pad navigation -->
+    <item android:color="?attr/colorPrimary" android:state_focused="true" />
+
+    <!-- Hovered state - Mouse/trackpad support for larger devices -->
+    <item android:color="?attr/colorOnSurfaceVariant" android:state_hovered="true" />
+
+    <!-- Default inactive state - Subtle visibility -->
+    <item android:color="?attr/colorOutline" />
+
+</selector>
