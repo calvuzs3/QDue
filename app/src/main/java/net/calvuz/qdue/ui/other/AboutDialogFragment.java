@@ -1,5 +1,7 @@
 package net.calvuz.qdue.ui.other;
 
+import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
+
 import android.app.Dialog;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentDialogAboutBinding;
 import net.calvuz.qdue.quattrodue.models.ShiftType;
@@ -155,7 +158,7 @@ public class AboutDialogFragment extends DialogFragment {
                 shiftType.getFormattedStartTime() + "-" +
                 shiftType.getFormattedEndTime() + ") " +
                 shiftType.getName());
-        textView.setTextColor(getResources().getColor(R.color.surface, getContext().getTheme()));
+        textView.setTextColor(getColorByThemeAttr(getContext(), com.google.android.material.R.attr.colorOnSurface));
         textView.setTextSize(12);
 
         // Crea l'indicatore colorato

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/activity_qdue_main.xml -->
+<!-- FIXED: Main activity layout with unified toolbar for navigation -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".QDueMainActivity">
+
+    <!--
+    AppBar with unified toolbar
+    Note: In order to allow your Top App Bar to grow taller when the system font setting increases,
+    you can use android:layout_height="wrap_content" + android:minHeight="?attr/actionBarSize"
+    on your MaterialToolbar
+    -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:backgroundTint="?attr/colorPrimary"
+            app:navigationIcon="@android:drawable/menu_frame"
+            app:menu="@menu/toolbar_menu"
+            app:title="@string/app_name"
+            app:titleTextAppearance="@style/TextAppearance.Material3.HeadlineLarge"
+            app:titleTextColor="?attr/colorOnPrimary" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -29,7 +29,7 @@
 
     <!-- Dimensioni specifiche per sidebar -->
     <dimen name="sidebar_width">320dp</dimen>
-    <dimen name="sidebar_header_height">120dp</dimen>
+    <dimen name="sidebar_header_height">96dp</dimen>
     <dimen name="sidebar_item_height">48dp</dimen>
     <dimen name="sidebar_item_padding">16dp</dimen>
 

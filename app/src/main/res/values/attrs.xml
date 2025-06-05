@@ -1,19 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?><!-- ===== attrs.xml (res/values/attrs.xml) ===== -->
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Q-Due Custom Attributes -->
-    <declare-styleable name="QDueTheme">
-        <attr name="colorBackground" format="color" />
 
+    <!-- ============================================ -->
+    <!-- QDUE CUSTOM THEME ATTRIBUTES -->
+    <!-- Modern color system with semantic naming -->
+    <!-- ============================================ -->
+
+    <declare-styleable name="QDueTheme">
+
+        <!-- ============================================ -->
+        <!-- HIGHLIGHTING COLORS -->
+        <!-- ============================================ -->
+
+        <!-- Today highlighting attributes -->
         <attr name="colorTodayBackground" format="color|reference" />
+        <attr name="colorTodayBorder" format="color|reference" />
+        <attr name="colorOnTodayBackground" format="color|reference" />
+
+        <!-- User shift highlighting attributes -->
         <attr name="colorUserShift" format="color|reference" />
         <attr name="colorUserShiftBackground" format="color|reference" />
-        <attr name="colorSunday"   format="color" />
+        <attr name="colorUserShiftBorder" format="color|reference" />
+
+        <!-- Sunday highlighting attributes -->
         <attr name="colorSundayBackground" format="color|reference" />
         <attr name="colorOnSundayBackground" format="color|reference" />
 
-        <attr name="colorHeaderBackground" format="color|reference" />
+        <!-- ============================================ -->
+        <!-- SHIFT TYPE COLORS -->
+        <!-- Support for up to 8 shifts -->
+        <!-- ============================================ -->
 
-        <!-- Colori per il Shift in CalendarView -->
         <attr name="colorShiftFirst" format="color|reference" />
         <attr name="colorShiftSecond" format="color|reference" />
         <attr name="colorShiftThird" format="color|reference" />
@@ -23,20 +40,78 @@
         <attr name="colorShiftSeventh" format="color|reference" />
         <attr name="colorShiftEighth" format="color|reference" />
 
-        <!-- Colori per il Calendar -->
+        <!-- ============================================ -->
+        <!-- UI COMPONENT COLORS -->
+        <!-- ============================================ -->
+
+        <!-- Loading state colors -->
+        <attr name="colorLoadingBackground" format="color|reference" />
+        <attr name="colorLoadingText" format="color|reference" />
+        <attr name="colorLoadingProgress" format="color|reference" />
+
+        <!-- Card and container colors -->
+        <attr name="colorCardBackground" format="color|reference" />
+        <attr name="colorCardBorder" format="color|reference" />
+
+        <!-- Separator and divider colors -->
+        <attr name="colorSeparator" format="color|reference" />
+
+        <!-- ============================================ -->
+        <!-- DEPRECATED ATTRIBUTES -->
+        <!-- Kept for backward compatibility -->
+        <!-- ============================================ -->
+
+        <!-- Legacy background color -->
+        <attr name="colorBackground" format="color" />
+
+        <attr name="colorSurfaceTint" format="color" />
+        <attr name="colorOnUserShift" format="color" />
+
+        <!-- Legacy calendar colors -->
         <attr name="colorCalendarToday" format="color|reference" />
         <attr name="colorCalendarWeekend" format="color|reference" />
         <attr name="colorCalendarHeader" format="color|reference" />
 
-        <!-- Colori per il caricamento -->
-        <attr name="colorLoadingBackground" format="color" />
-        <attr name="colorLoadingText" format="color" />
-        <attr name="colorLoadingProgress" format="color" />
+        <!-- Legacy Sunday color (use colorOnSundayBackground instead) -->
+        <attr name="colorSunday" format="color" />
 
-        <!-- Colori per i bordi e separatori -->
-        <attr name="colorSeparator" format="color" />
-        <attr name="colorCardBackground" format="color" />
-        <attr name="colorCardBorder" format="color" />
+        <!-- Legacy header background -->
+        <attr name="colorHeaderBackground" format="color|reference" />
+
+    </declare-styleable>
+
+    <!-- ============================================ -->
+    <!-- CUSTOM VIEW ATTRIBUTES -->
+    <!-- For custom QDue components -->
+    <!-- ============================================ -->
+
+    <declare-styleable name="QDueCalendarDay">
+        <attr name="dayNumber" format="integer" />
+        <attr name="isToday" format="boolean" />
+        <attr name="isSunday" format="boolean" />
+        <attr name="hasUserShift" format="boolean" />
+        <attr name="shiftColor" format="color|reference" />
+    </declare-styleable>
+
+    <declare-styleable name="QDueShiftIndicator">
+        <attr name="shiftType" format="enum">
+            <enum name="morning" value="0" />
+            <enum name="afternoon" value="1" />
+            <enum name="night" value="2" />
+            <enum name="fourth" value="3" />
+            <enum name="fifth" value="4" />
+            <enum name="sixth" value="5" />
+            <enum name="seventh" value="6" />
+            <enum name="eighth" value="7" />
+        </attr>
+        <attr name="indicatorHeight" format="dimension" />
+        <attr name="indicatorRadius" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="QDueMonthTitle">
+        <attr name="monthText" format="string" />
+        <attr name="yearText" format="string" />
+        <attr name="showYear" format="boolean" />
     </declare-styleable>
 
 </resources>

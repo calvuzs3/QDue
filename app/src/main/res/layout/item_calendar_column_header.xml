@@ -23,9 +23,10 @@
             android:layout_weight="1"
             android:paddingStart="@dimen/column_header_padding"
             android:paddingEnd="@dimen/column_header_padding"
+            android:background="?attr/colorSundayBackground"
             android:text="@string/header_sunday"
             android:textAlignment="center"
-            android:textColor="?attr/colorError"
+            android:textColor="?attr/colorOnSundayBackground"
             android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 

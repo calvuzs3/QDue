@@ -1,43 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/fragment_dayslist_view.xml - Aggiornato -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false"
     tools:context=".ui.dayslist.DayslistViewFragment">
 
-    <!-- Header con le intestazioni delle colonne -->
+    <!-- AppBarMain -->
+    <include
+        android:id="@+id/appbar_main"
+        layout="@layout/appbar_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Header con le intestazioni delle colonne (margin-top for shared toolbar) -->
     <include
         android:id="@+id/qdue_dayslist_column_header"
         layout="@layout/item_dayslist_column_header"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxWidth="600dp"
-        app:layout_constraintWidth_max="600dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="72dp"
+        android:maxWidth="600dp" />
 
     <!-- RecyclerView per la lista giorni -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_dayslist"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:maxWidth="600dp"
-        app:layout_constraintWidth_max="600dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="116dp"
         android:clipToPadding="false"
+        android:maxWidth="600dp"
         android:overScrollMode="never"
-        android:paddingHorizontal="8dp"
-        android:paddingBottom="16dp"
+        android:paddingHorizontal="4dp"
+        android:paddingBottom="120dp"
         android:scrollbars="none"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/qdue_dayslist_column_header"
         tools:listitem="@layout/item_dayslist_row" />
 
     <!-- Floating Action Button per tornare a oggi -->
@@ -46,13 +43,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/go_to_today"
         android:src="@drawable/ic_today"
-        android:theme="@style/Theme.QDue.FloatingActionButton"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/rv_dayslist"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:rippleColor="?attr/colorOnSecondary" />
+        android:visibility="visible" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

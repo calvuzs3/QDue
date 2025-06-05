@@ -1,5 +1,7 @@
 package net.calvuz.qdue.ui.shared;
 
+import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
@@ -16,23 +18,22 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.utils.ThemeUtils;
 
 import java.util.List;
 
 /**
  * Base unified adapter for both DaysList and Calendar views.
- *
+ * <p>
  * This abstract class provides common functionality for displaying shift schedule data
  * in RecyclerView components. Subclasses only need to specialize specific binding logic
  * while maintaining shared functionality.
- *
+ * <p>
  * The adapter supports multiple view types including:
  * - Month headers
  * - Day items with shift information
  * - Loading indicators
  * - Empty placeholder items
- *
+ * <p>
  * Features:
  * - Color theme support with cached theme colors
  * - User team highlighting
@@ -47,53 +48,83 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     // ==================== CONSTANTS AND VIEW TYPES ====================
 
-    /** Tag for logging purposes */
+    /**
+     * Tag for logging purposes
+     */
     protected static final String TAG = "BaseAdapter";
 
-    /** View type constant for month header items */
+    /**
+     * View type constant for month header items
+     */
     protected static final int VIEW_TYPE_MONTH_HEADER = 0;
 
-    /** View type constant for day items */
+    /**
+     * View type constant for day items
+     */
     protected static final int VIEW_TYPE_DAY = 1;
 
-    /** View type constant for loading indicators */
+    /**
+     * View type constant for loading indicators
+     */
     protected static final int VIEW_TYPE_LOADING = 2;
 
-    /** View type constant for empty placeholder items */
+    /**
+     * View type constant for empty placeholder items
+     */
     protected static final int VIEW_TYPE_EMPTY = 3;
 
-    /** Starting value for custom view types that subclasses can use */
+    /**
+     * Starting value for custom view types that subclasses can use
+     */
     protected static final int VIEW_TYPE_CUSTOM_START = 100;
 
     // ==================== CORE MEMBER VARIABLES ====================
 
-    /** Application context for resource access */
+    /**
+     * Application context for resource access
+     */
     protected final Context mContext;
 
-    /** List of view items to display in the adapter */
+    /**
+     * List of view items to display in the adapter
+     */
     protected List<SharedViewModels.ViewItem> mItems;
 
-    /** Current user's half team for highlighting purposes */
+    /**
+     * Current user's half team for highlighting purposes
+     */
     protected HalfTeam mUserHalfTeam;
 
-    /** Number of shifts to display per day */
+    /**
+     * Number of shifts to display per day
+     */
     protected final int mNumShifts;
 
     // ==================== CACHED THEME COLORS ====================
 
-    /** Cached normal text color to avoid repeated theme lookups */
+    /**
+     * Cached normal text color to avoid repeated theme lookups
+     */
     protected int mCachedNormalTextColor = 0;
 
-    /** Cached Sunday text color for weekend highlighting */
+    /**
+     * Cached Sunday text color for weekend highlighting
+     */
     protected int mCachedSundayTextColor = 0;
 
-    /** Cached today background color for current day highlighting */
+    /**
+     * Cached today background color for current day highlighting
+     */
     protected int mCachedTodayBackgroundColor = 0;
 
-    /** Cached user shift background color for team highlighting */
+    /**
+     * Cached user shift background color for team highlighting
+     */
     protected int mCachedUserShiftBackgroundColor = 0;
 
-    /** Cached user shift text color for team highlighting */
+    /**
+     * Cached user shift text color for team highlighting
+     */
     protected int mCachedUserShiftTextColor = 0;
 
     // ==================== CONSTRUCTOR ====================
@@ -519,11 +550,11 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected void initializeColorCache() {
         if (mCachedNormalTextColor == 0) {
-            mCachedNormalTextColor = ThemeUtils.getOnNormalBackgroundColor(mContext);
-            mCachedSundayTextColor = ThemeUtils.getSundayTextColor(mContext);
-            mCachedTodayBackgroundColor = ThemeUtils.getTodayBackgroundColor(mContext);
-            mCachedUserShiftBackgroundColor = ThemeUtils.getMaterialPrimaryContainerColor(mContext);
-            mCachedUserShiftTextColor = ThemeUtils.getMaterialOnPrimaryContainerColor(mContext);
+            mCachedNormalTextColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface);
+            mCachedSundayTextColor = getColorByThemeAttr(mContext, R.attr.colorOnSundayBackground);
+            mCachedTodayBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorTodayBackground);
+            mCachedUserShiftBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorUserShiftBackground);
+            mCachedUserShiftTextColor = getColorByThemeAttr(mContext, R.attr.colorOnUserShift);
         }
     }
 
@@ -556,7 +587,9 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Contains a single TextView for displaying month/year information.
      */
     public static class MonthHeaderViewHolder extends RecyclerView.ViewHolder {
-        /** TextView displaying the month title */
+        /**
+         * TextView displaying the month title
+         */
         public final TextView tvMonthTitle;
 
         /**
@@ -575,10 +608,14 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Contains a progress bar and text for displaying loading states.
      */
     public static class LoadingViewHolder extends RecyclerView.ViewHolder {
-        /** Progress bar for loading animation */
+        /**
+         * Progress bar for loading animation
+         */
         public final ProgressBar progressBar;
 
-        /** TextView for loading message */
+        /**
+         * TextView for loading message
+         */
         public final TextView loadingText;
 
         /**
@@ -613,19 +650,29 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Contains TextViews for day number, day name, shift teams, and rest teams.
      */
     public class DayViewHolder extends RecyclerView.ViewHolder {
-        /** TextView for day number */
+        /**
+         * TextView for day number
+         */
         public final TextView tday;
 
-        /** TextView for day of week name */
+        /**
+         * TextView for day of week name
+         */
         public final TextView twday;
 
-        /** Array of TextViews for shift team information */
+        /**
+         * Array of TextViews for shift team information
+         */
         public final TextView[] shiftTexts;
 
-        /** TextView for teams on rest */
+        /**
+         * TextView for teams on rest
+         */
         public final TextView ttR;
 
-        /** Root view of the item for background manipulation */
+        /**
+         * Root view of the item for background manipulation
+         */
         public final View mView;
 
         /**

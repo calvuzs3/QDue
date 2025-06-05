@@ -2,11 +2,15 @@ package net.calvuz.qdue.ui.dayslist;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
@@ -29,6 +33,7 @@ public class DayslistViewFragment extends BaseFragment {
 
     // Dayslist adapter
     private DaysListAdapter mAdapter;
+    private Toolbar mToolbar;
 
     @Nullable
     @Override
@@ -38,9 +43,19 @@ public class DayslistViewFragment extends BaseFragment {
     }
 
     @Override
-    protected void findViews(View rootView) {
-        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
-        mRecyclerView = rootView.findViewById(R.id.rv_dayslist);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Setup toolbar - base class doesn't
+        setupToolbar(view);
+    }
+
+    @Override
+    protected void findViews(View view) {
+
+        mRecyclerView = view.findViewById(R.id.rv_dayslist);
+        mToolbar = view.findViewById(R.id.toolbar);
+        mFabGoToToday = view.findViewById(R.id.fab_go_to_today);
     }
 
     @Override
@@ -83,7 +98,6 @@ public class DayslistViewFragment extends BaseFragment {
     }
 
     // Metodo per aggiornare quando cambiano le preferenze
-    // TODO remove method
     public void notifyUpdates() {
         if (mAdapter != null) {
             mAdapter.updateUserTeam(mQD.getUserHalfTeam());
@@ -97,4 +111,100 @@ public class DayslistViewFragment extends BaseFragment {
             mAdapter.updateUserTeam(mQD.getUserHalfTeam());
         }
     }
+
+    /**
+     * FIXED: Setup toolbar with proper orientation handling.
+     * Just in case of need, because it has been removed from land/layouts
+     */
+    private void setupToolbar(View root) {
+        final String mTAG = "setupToolbar: ";
+
+        if (mToolbar == null) {
+            Log.e(TAG, mTAG + "Toolbar not found in fragment layout");
+            return;
+        }
+
+        try {
+            // Set toolbar as ActionBar for this fragment's activity
+            if (getActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
+                androidx.appcompat.app.AppCompatActivity activity =
+                        (androidx.appcompat.app.AppCompatActivity) getActivity();
+                activity.setSupportActionBar(mToolbar);
+
+                // Configure ActionBar
+                if (activity.getSupportActionBar() != null) {
+                    activity.getSupportActionBar().setDisplayShowTitleEnabled(true);
+                }
+            }
+
+            // CRITICAL: Set menu item click listener
+            mToolbar.setOnMenuItemClickListener(item -> {
+
+                int id = item.getItemId();
+                Log.v(TAG, mTAG + "onMenuItemClickListener() -> ("
+                        + id + ") \n"
+                        + item.getTitle());
+                try {
+                    if (item.getTitle() == (String) getResources().getString(R.string.go_to_today))
+                        Log.v(TAG, mTAG + "stringhe coincidenti");
+                    scrollToToday();
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error: " + e.getMessage());
+                }
+
+                try {
+                    if (id == R.id.action_about) {
+                        navigateTo(R.id.nav_about);
+                        return true;
+                    }
+                    if (id == R.id.action_settings) {
+                        navigateTo(R.id.nav_settings);
+                        return true;
+                    }
+                    if (id == R.id.fab_go_to_today) {
+                        Log.e(TAG, mTAG + "FAB found as a menu item in setuptoolbar");
+                        return true;
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "onMenuItemClick failed: " + e.getMessage());
+                }
+
+                Log.v(TAG, mTAG + "onMenuItemClickListener() ->" +
+                        " got (" + id + ")" + " expected (" + R.id.fab_go_to_today + ") \n");
+                return true;
+            });
+
+            // Enable options menu for this fragment
+            setHasOptionsMenu(true);
+
+            Log.d(TAG, mTAG + "Fragment toolbar setup complete");
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error setting up fragment toolbar: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        MenuInflater menuiflater = getActivity().getMenuInflater();
+        menuiflater.inflate(R.menu.toolbar_menu, menu);
+    }
+
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+//
+//        if (item.getItemId() == R.id.action_about) {
+//            navigateTo(R.id.nav_about);
+//            return true;
+//        }
+//        if (item.getItemId() == R.id.action_settings) {
+//            navigateTo(R.id.nav_settings);
+//            return true;
+//        }
+//        if (item.getItemId() == R.id.fab_go_to_today) {
+//            Log.e(TAG, "FAB found as a menu item");
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 }

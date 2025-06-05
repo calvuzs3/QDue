@@ -32,13 +32,12 @@
             android:visibility="gone"
             tools:visibility="visible">
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                style="@style/Theme.QDue.Toolbar"
+            <com.google.android.material.appbar.MaterialToolbar
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                style="@style/Widget.QDue.Toolbar"
+                android:layout_gravity="start|top"
                 android:visibility="gone"
-                app:popupTheme="@style/Theme.QDue.PopupOverlay"
                 tools:visibility="visible" />
 
         </com.google.android.material.appbar.AppBarLayout>

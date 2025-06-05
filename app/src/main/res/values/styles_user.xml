@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- res/values/styles_user.xml -->
+<resources>
+    <!-- Circular Image View Style -->
+    <style name="CircularImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Profile Header Gradient (create in drawable) -->
+    <!-- res/drawable/profile_header_gradient.xml -->
+</resources>

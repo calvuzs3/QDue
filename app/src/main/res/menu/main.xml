@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<!-- Icons will automatically use theme colors when tint is not hardcoded -->
-<item
-    android:id="@+id/action_about"
-    android:orderInCategory="90"
-    android:title="@string/menu_title_about"
-    android:icon="@drawable/ic_info"
-    app:showAsAction="ifRoom"
-    app:iconTint="?attr/colorCardBackground" />    <!-- ✅ Add tint for menu items -->
+    <!-- Icons will automatically use theme colors when tint is not hardcoded -->
 
-<item
-    android:id="@+id/action_settings"
-    android:icon="@drawable/ic_settings"
-    android:orderInCategory="100"
-    android:title="@string/menu_title_settings"
-    app:showAsAction="ifRoom"
-    app:iconTint="?attr/colorCardBackground" />    <!-- ✅ Add tint for menu items -->
+    <item
+        android:id="@+id/action_user_profile"
+        android:icon="@drawable/ic_person"
+        android:orderInCategory="10"
+        android:title="@string/menu_user_profile"
+        app:iconTint="?attr/colorCardBackground"
+        app:showAsAction="ifRoom" />    <!-- ✅ Add tint for menu items -->
+
+    <item
+        android:id="@+id/action_about"
+        android:icon="@drawable/ic_info"
+        android:orderInCategory="90"
+        android:title="@string/menu_title_about"
+        app:iconTint="?attr/colorCardBackground"
+        app:showAsAction="ifRoom" />    <!-- ✅ Add tint for menu items -->
+
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="100"
+        android:title="@string/menu_title_settings"
+        app:iconTint="?attr/colorCardBackground"
+        app:showAsAction="ifRoom" />    <!-- ✅ Add tint for menu items -->
 </menu>

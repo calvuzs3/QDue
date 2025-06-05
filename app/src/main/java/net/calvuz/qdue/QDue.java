@@ -6,7 +6,8 @@ import android.content.Context;
 import android.os.Build;
 
 import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.utils.ThemeManager;
+import net.calvuz.qdue.user.data.database.UserDatabase;
+import net.calvuz.qdue.utils.Log;
 
 import java.util.Locale;
 
@@ -28,14 +29,13 @@ public class QDue extends Application {
         context = this;
         locale = getSystemLocale();
 
-        // 1. Init ShiftTypeFactory
+        // 1. Initialize ShiftTypeFactory
 
-        // 2. Init QuattroDue
+        // 2. Initialize QuattroDue
         quattrodue = QuattroDue.getInstance(this);
 
-        // Inizializza il tema dell'applicazione
-        ThemeManager themeManager = ThemeManager.getInstance(this);
-        themeManager.applyTheme();
+        // 3. Initialize User database
+        initializeUserDatabase();
     }
 
     /* ===== GETTERS ===== */
@@ -72,6 +72,17 @@ public class QDue extends Application {
 
     }
 
+    private void initializeUserDatabase() {
+        try {
+            // Initialize user database in background
+            new Thread(() -> {
+                UserDatabase.getInstance(this);
+                Log.v("QDue", "User database initialized");
+            }).start();
+        } catch (Exception e) {
+            Log.e("QDue", "Error initializing user database: " + e.getMessage());
+        }
+    }
 }
 
 

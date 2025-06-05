@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/activity_qdue_main.xml -->
-<!-- Main activity layout using modular components -->
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/activity_qdue_main.xml -->
+<!-- FIXED: Main activity layout with unified toolbar for navigation -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,17 +8,17 @@
     android:fitsSystemWindows="true"
     tools:context=".QDueMainActivity">
 
-    <!-- Include AppBar with Fragment Container -->
+    <!-- Content Area - Fragment Container -->
     <include
-        layout="@layout/app_bar_main"
+        layout="@layout/content_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Include Bottom Navigation -->
+    <!-- Bottom Navigation -->
     <include
         layout="@layout/nav_bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom" />
 
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -15,7 +15,7 @@
 
         <TextView
             android:id="@+id/tday"
-            android:layout_width="20dp"
+            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:minWidth="18dp"
@@ -77,6 +77,6 @@
         android:id="@+id/item_dayslist_row_separator"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dayslist_row_divider_height"
-        android:background="?attr/colorOutlineVariant" />
+        android:background="?attr/colorOutline" />
 
 </LinearLayout>

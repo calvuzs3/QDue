@@ -5,7 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
+import android.util.TypedValue;
 
 import java.util.List;
 
@@ -247,5 +250,26 @@ public final class Library {
      */
     public static boolean isVersionCached() {
         return sVersionCode != null;
+    }
+
+    /**
+     * Get the attr resource as color
+     *
+     * @param context context
+     * @param attr Attribute  in style
+     * @param defaultColor fallback default color
+     * @return The color ID you can apply (R.color.id)
+     */
+    public static int getColorByThemeAttr(Context context, int attr, int defaultColor) {
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        boolean got = theme.resolveAttribute(attr, typedValue, true);
+        return got ? typedValue.data : defaultColor;
+    }
+    public static int getColorByThemeAttr(Context context, int attr) {
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        boolean got = theme.resolveAttribute(attr, typedValue, true);
+        return got ? typedValue.data : Color.RED;
     }
 }

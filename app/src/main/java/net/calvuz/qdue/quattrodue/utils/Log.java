@@ -16,7 +16,7 @@ public final class Log {
     private final static String TAG = "QD LOG";
 
     // Debug enabled - default true for backward compatibility
-    private final static boolean QD_DEBUG = true;
+    private final static boolean QD_DEBUG = false;
 
     // Redirect debug and info to warn to avoid annoying ART messages
     private final static boolean QD_DEBUG_TO_WARN = false;

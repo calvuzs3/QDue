@@ -8,7 +8,6 @@
     android:layout_width="320dp"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?attr/colorSurface"
     android:elevation="8dp">
 
     <!-- Sidebar Header with App Branding -->
@@ -26,9 +25,8 @@
             android:layout_height="wrap_content"
             android:text="@string/app_name"
             android:textAlignment="viewEnd"
-            android:textAppearance="@style/TextAppearance.QDue.Headline1"
-            android:textColor="?attr/colorOnPrimary"
-            android:layout_marginBottom="4dp" />
+            android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
+            android:textColor="?attr/colorOnPrimary" />
 
         <!-- App ID/Version -->
         <TextView
@@ -36,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="@string/app_version"
             android:textAlignment="viewEnd"
-            android:textAppearance="@style/TextAppearance.QDue.Body2"
+            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
             android:textColor="?attr/colorOnPrimary"
             android:alpha="0.7" />
 
@@ -47,12 +45,12 @@
         android:id="@+id/sidebar_navigation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
+        android:background="?attr/colorSurfaceVariant"
         android:scrollbars="none"
         app:menu="@menu/sidebar_navigation_menu"
         app:itemTextColor="@color/nav_sidebar_item_color"
         app:itemIconTint="@color/nav_sidebar_item_color"
-        app:itemShapeAppearance="@style/Theme.QDue.SidebarNavigation.ItemShape"
+        app:itemShapeAppearance="@style/Widget.Material3.SideSheet"
         app:itemShapeInsetStart="8dp"
         app:itemShapeInsetEnd="8dp"
         app:itemRippleColor="@color/navigation_ripple_color"

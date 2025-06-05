@@ -1,54 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- res/layout/item_calendar_day.xml -->
+<!-- Enhanced calendar day cell with better visibility -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/calendar_day_margin"
-    android:background="@drawable/calendar_day_background"
-    android:minHeight="@dimen/calendar_day_height"
+    android:layout_margin="1dp"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="1dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="0.8dp"
+    android:minHeight="48dp"
+    app:rippleColor="?attr/colorPrimaryContainer"
     tools:theme="@style/Theme.QDue">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
         android:orientation="vertical"
-        android:paddingTop="4dp"
-        android:layout_marginTop="8dp">
+        android:gravity="center"
+        android:padding="4dp">
 
-        <!-- Numero del giorno -->
+        <!-- Day Number - Made larger and more prominent -->
         <TextView
-            style="@style/TextAppearance.QDue.Headline3"
             android:id="@+id/tv_day_number"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="end|bottom"
-            android:layout_marginBottom="0dp"
-            android:paddingBottom="2dp"
-            android:text="@string/placeholder_calendar_day"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minHeight="28dp"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"
+            android:text="@string/placeholder_calendar_day"
+            tools:text="15" />
 
-        <!-- Nome del giorno (opzionale, solo per alcune celle) -->
+        <!-- Day Name (optional, for header days) -->
         <TextView
             android:id="@+id/tv_day_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textSize="10sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone"
             android:text="@string/placeholder_calendar_day_n"
-            android:textColor="@color/on_surface_dark"
-            android:textSize="@dimen/legenda_text_size"
-            android:visibility="gone" />
+            tools:text="MON"
+            tools:visibility="visible" />
 
-        <!-- Indicatore per il turno dell'utente -->
+        <!-- Shift Indicator Bar - Made more prominent -->
         <View
             android:id="@+id/v_shift_indicator"
             android:layout_width="match_parent"
             android:layout_height="4dp"
-            android:layout_gravity="end|bottom"
-            android:layout_marginBottom="4dp"
-            android:background="@color/background_user_shift"
-            android:visibility="invisible" />
+            android:layout_marginTop="2dp"
+            android:background="?attr/colorPrimary"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            tools:background="?attr/colorShiftFirst" />
 
     </LinearLayout>
 
+    <!-- State overlay for today/selected states -->
+    <View
+        android:id="@+id/v_state_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorTodayBackground"
+        android:alpha="0.2"
+        android:visibility="gone" />
 
-</FrameLayout>
+</com.google.android.material.card.MaterialCardView>

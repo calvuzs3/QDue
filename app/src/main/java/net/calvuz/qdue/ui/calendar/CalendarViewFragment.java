@@ -1,15 +1,15 @@
-
 package net.calvuz.qdue.ui.calendar;
-
-import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,16 +22,21 @@ import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;
 import java.util.List;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
+
 /**
  * Fragment per la visualizzazione calendario dei turni dell'utente.
  * Utilizza l'adapter base unificato specializzato per la vista calendario.
  */
 public class CalendarViewFragment extends BaseFragment {
 
+    // TAG
     private static final String TAG = "CalendarViewFragment";
 
+    // Members
     private CalendarAdapter mAdapter;
-private GridLayoutManager mGridLayoutManager;
+    private GridLayoutManager mGridLayoutManager;
+    private Toolbar mToolbar;
 
     @Nullable
     @Override
@@ -40,11 +45,20 @@ private GridLayoutManager mGridLayoutManager;
     }
 
     @Override
-    protected void findViews(View rootView) {
-        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
-        mRecyclerView = rootView.findViewById(R.id.rv_calendar);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Setup toolbar - base class doesn't
+        setupToolbar(view);
     }
 
+    @Override
+    protected void findViews(View rootView) {
+
+        mRecyclerView = rootView.findViewById(R.id.rv_calendar);
+        mToolbar = rootView.findViewById(R.id.toolbar);
+        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
+    }
 
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
@@ -150,7 +164,6 @@ private GridLayoutManager mGridLayoutManager;
             }
         }
     }
-
 
     /**
      * Calculates effective grid position excluding headers.
@@ -258,10 +271,10 @@ private GridLayoutManager mGridLayoutManager;
     }
 
     /**
-    * ENHANCED: Override scroll to today for grid-specific behavior
- */
+     * ENHANCED: Override scroll to today for grid-specific behavior
+     */
     @Override
-    protected void scrollToToday() {
+    public void scrollToToday() {
         final String METHOD_TAG = TAG + " scrollToToday";
 
         // First, try to find today in current cache
@@ -338,7 +351,6 @@ private GridLayoutManager mGridLayoutManager;
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
     }
-
 
     /**
      * DIAGNOSTIC: Enhanced debugging for grid scroll issues
@@ -423,7 +435,8 @@ private GridLayoutManager mGridLayoutManager;
         if (effectiveFirst <= loadTriggerZone && scrollDirection <= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
 
-            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering top load at effective position: " + effectiveFirst);
+            if (DEBUG_FRAGMENT)
+                Log.d(TAG, "Triggering top load at effective position: " + effectiveFirst);
 
             // Delay the trigger slightly to ensure scroll has stabilized
             mMainHandler.postDelayed(() -> {
@@ -438,7 +451,8 @@ private GridLayoutManager mGridLayoutManager;
         if (effectiveLast >= totalEffectiveItems - loadTriggerZone && scrollDirection >= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
 
-            if (DEBUG_FRAGMENT) Log.d(TAG, "Triggering bottom load at effective position: " + effectiveLast);
+            if (DEBUG_FRAGMENT)
+                Log.d(TAG, "Triggering bottom load at effective position: " + effectiveLast);
 
             // Delay the trigger slightly to ensure scroll has stabilized
             mMainHandler.postDelayed(() -> {
@@ -448,5 +462,83 @@ private GridLayoutManager mGridLayoutManager;
                 }
             }, 100); // INCREASED delay
         }
+    }
+
+    /**
+     * FIXED: Setup toolbar
+     * it has been removed from land/layouts
+     */
+    private void setupToolbar(View root) {
+        final String mTAG = "setupToolbar: ";
+
+        if (mToolbar == null) {
+            Log.e(TAG, mTAG + "Toolbar not found in fragment layout");
+            return;
+        }
+
+        try {
+            // Set toolbar as ActionBar for this fragment's activity
+            if (getActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
+                androidx.appcompat.app.AppCompatActivity activity =
+                        (androidx.appcompat.app.AppCompatActivity) getActivity();
+                activity.setSupportActionBar(mToolbar);
+
+                // Configure ActionBar
+                if (activity.getSupportActionBar() != null) {
+                    activity.getSupportActionBar().setDisplayShowTitleEnabled(true);
+                }
+            }
+
+            // CRITICAL: Set menu item click listener
+            mToolbar.setOnMenuItemClickListener(item -> {
+
+                int id = item.getItemId();
+                Log.v(TAG, mTAG + "onMenuItemClickListener() -> ("
+                        + id + ") \n"
+                        + item.getTitle());
+                try {
+                    if (item.getTitle() == (String) getResources().getString(R.string.go_to_today))
+                        Log.v(TAG, mTAG + "stringhe coincidenti");
+                    scrollToToday();
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error: " + e.getMessage());
+                }
+
+                try {
+                    if (id == R.id.action_about) {
+                        navigateTo(R.id.nav_about);
+                        return true;
+                    }
+                    if (id == R.id.action_settings) {
+                        navigateTo(R.id.nav_settings);
+                        return true;
+                    }
+                    if (id == R.id.fab_go_to_today) {
+                        Log.e(TAG, mTAG + "FAB found as a menu item in setuptoolbar");
+                        return true;
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "onMenuItemClick failed: " + e.getMessage());
+                }
+
+                Log.v(TAG, mTAG + "onMenuItemClickListener() ->" +
+                        " got (" + id + ")" + " expected (" + R.id.fab_go_to_today + ") \n");
+                return true;
+            });
+
+            // Enable options menu for this fragment
+            setHasOptionsMenu(true);
+
+            Log.d(TAG, mTAG + "Fragment toolbar setup complete");
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error setting up fragment toolbar: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        MenuInflater menuiflater = getActivity().getMenuInflater();
+        menuiflater.inflate(R.menu.toolbar_menu, menu);
     }
 }

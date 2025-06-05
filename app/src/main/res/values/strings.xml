@@ -150,5 +150,131 @@
     <string name="theme_light">Chiaro</string>
     <string name="theme_sys">Sistema</string>
 
+    <!-- User Profile Activity -->
+    <string name="user_profile">Profilo Utente</string>
+    <string name="user_name_placeholder">Nome Utente</string>
 
+    <!-- Authentication Section -->
+    <string name="authentication">Autenticazione</string>
+    <string name="sign_in_with_google">Accedi con Google</string>
+    <string name="google_account_connected">Account Google collegato</string>
+    <string name="authenticated_with_google">Autenticato con Google</string>
+    <string name="google_account_options">Opzioni Account Google</string>
+    <string name="google_account_connected_message">Il tuo account Google è già collegato. Vuoi disconnetterlo?</string>
+    <string name="disconnect">Disconnetti</string>
+    <string name="google_account_disconnected">Account Google disconnesso</string>
+    <string name="google_signin_successful">Accesso Google completato con successo</string>
+    <string name="google_signin_failed">Accesso Google fallito</string>
+    <string name="error_disconnecting_google">Errore durante la disconnessione dell\'account Google</string>
+
+    <!-- Personal Information Section -->
+    <string name="personal_information">Informazioni Personali</string>
+    <string name="first_name">Nome</string>
+    <string name="last_name">Cognome</string>
+    <string name="nickname_optional">Nickname (opzionale)</string>
+    <string name="email">Email</string>
+
+    <!-- Professional Information Section -->
+    <string name="professional_information">Informazioni Professionali</string>
+    <string name="employee_id_matricola">Matricola</string>
+    <string name="job_title_role">Ruolo/Posizione</string>
+    <string name="job_level_grade">Livello/Grado</string>
+    <string name="hire_date">Data Assunzione</string>
+
+    <!-- Organizational Information Section -->
+    <string name="organizational_information">Informazioni Organizzative</string>
+    <string name="establishment_company">Stabilimento/Ditta</string>
+    <string name="macro_department">Macroreparto</string>
+    <string name="sub_department_optional">Sottoreparto (opzionale)</string>
+    <string name="team_squad_optional">Team/Squadra (opzionale)</string>
+
+    <!-- Contact Information Section -->
+    <string name="contact_information">Informazioni di Contatto</string>
+    <string name="work_phone_optional">Telefono Lavoro (opzionale)</string>
+    <string name="personal_phone_optional">Telefono Personale (opzionale)</string>
+
+    <!-- Action Buttons -->
+    <string name="save_profile">Salva Profilo</string>
+    <string name="reset_changes">Ripristina Modifiche</string>
+    <string name="change_profile_image">Cambia Immagine Profilo</string>
+    <string name="choose_from_gallery">Scegli dalla Galleria</string>
+    <string name="remove_image">Rimuovi Immagine</string>
+
+    <!-- Validation Messages -->
+    <string name="error_first_name_required">Il nome è obbligatorio</string>
+    <string name="error_last_name_required">Il cognome è obbligatorio</string>
+    <string name="error_email_required">L\'email è obbligatoria</string>
+    <string name="error_email_invalid">Formato email non valido</string>
+    <string name="error_establishment_required">Lo stabilimento è obbligatorio</string>
+    <string name="error_macro_department_required">Il macroreparto è obbligatorio</string>
+    <string name="error_date_invalid">Formato data non valido</string>
+
+    <!-- Success Messages -->
+    <string name="profile_saved_successfully">Profilo salvato con successo</string>
+    <string name="profile_completed_successfully">Profilo completato con successo!</string>
+    <string name="error_saving_profile">Errore durante il salvataggio del profilo</string>
+
+    <!-- Dialogs -->
+    <string name="reset_changes_confirmation">Sei sicuro di voler ripristinare tutte le modifiche non salvate?</string>
+    <string name="unsaved_changes">Modifiche non Salvate</string>
+    <string name="unsaved_changes_message">Hai modifiche non salvate. Cosa vuoi fare?</string>
+    <string name="discard">Ignora</string>
+    <string name="cancel">Annulla</string>
+    <string name="reset">Ripristina</string>
+
+    <!-- Establishment Management -->
+    <string name="add_establishment">Aggiungi Stabilimento</string>
+    <string name="establishment_name">Nome Stabilimento</string>
+    <string name="establishment_code">Codice Stabilimento</string>
+    <string name="establishment_address">Indirizzo</string>
+    <string name="establishment_phone">Telefono</string>
+    <string name="establishment_email">Email</string>
+
+    <!-- Department Management -->
+    <string name="add_macro_department">Aggiungi Macroreparto</string>
+    <string name="macro_department_name">Nome Macroreparto</string>
+    <string name="macro_department_code">Codice Macroreparto</string>
+    <string name="macro_department_description">Descrizione</string>
+    <string name="manager_name">Nome Responsabile</string>
+
+    <string name="add_sub_department">Aggiungi Sottoreparto</string>
+    <string name="sub_department_name">Nome Sottoreparto</string>
+    <string name="sub_department_code">Codice Sottoreparto</string>
+    <string name="sub_department_description">Descrizione</string>
+    <string name="supervisor_name">Nome Supervisore</string>
+
+    <!-- Google Web Client ID (replace with your actual client ID) -->
+    <string name="google_web_client_id">YOUR_GOOGLE_WEB_CLIENT_ID_HERE</string>
+
+    <!-- Menu Items -->
+    <string name="menu_user_profile">Profilo Utente</string>
+    <string name="menu_manage_organization">Gestisci Organizzazione</string>
+
+    <!-- Organization Management -->
+    <string name="organization_management">Gestione Organizzazione</string>
+    <string name="establishments">Stabilimenti</string>
+    <string name="departments">Reparti</string>
+    <string name="no_establishments_found">Nessuno stabilimento trovato</string>
+    <string name="no_departments_found">Nessun reparto trovato</string>
+
+    <!-- Statistics -->
+    <string name="user_statistics">Statistiche Utenti</string>
+    <string name="total_users">Utenti Totali</string>
+    <string name="active_users">Utenti Attivi</string>
+    <string name="completed_profiles">Profili Completati</string>
+    <string name="google_auth_users">Utenti con Google</string>
+    <string name="profile_completion_rate">Tasso Completamento Profili</string>
+
+    <!-- Date Format -->
+    <string name="date_format_display">dd/MM/yyyy</string>
+
+    // ========================================
+    // Additional strings for integration
+    // ========================================
+
+    <!-- UserProfile -->
+    <string name="complete_your_profile">Completa il tuo Profilo</string>
+    <string name="complete_profile_message">Per utilizzare al meglio l\'app, completa le informazioni del tuo profilo.</string>
+    <string name="complete_now">Completa Ora</string>
+    <string name="later">Più Tardi</string>
 </resources>

@@ -5,11 +5,10 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="16dp"
-    tools:theme="@style/Theme.QDue">
+    android:padding="16dp">
 
     <!-- Indicatore di caricamento circolare -->
-    <ProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progress_bar"
         android:layout_width="32dp"
         android:layout_height="32dp"
