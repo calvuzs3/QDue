@@ -1,120 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ============================================ -->
-    <!-- SIMPLIFIED CUSTOM THEME ATTRIBUTES -->
-    <!-- Reduced to essential app-specific colors only -->
+    <!-- ESSENTIAL CUSTOM ATTRIBUTES ONLY -->
+    <!-- Cleaned up to bare minimum for app functionality -->
     <!-- ============================================ -->
 
     <declare-styleable name="QDueTheme">
 
-        <!-- ============================================ -->
-        <!-- HIERARCHICAL HIGHLIGHTING COLORS -->
-        <!-- Priority: Today > User Shift > Sunday -->
-        <!-- ============================================ -->
-
-        <!-- Today highlighting (Highest Priority) -->
+        <!-- Hierarchical State Colors (Priority: Today > User > Sunday) -->
         <attr name="colorTodayBackground" format="color|reference" />
         <attr name="colorTodayBorder" format="color|reference" />
         <attr name="colorOnTodayBackground" format="color|reference" />
 
-        <!-- User shift highlighting (High Priority) -->
         <attr name="colorUserShiftBackground" format="color|reference" />
         <attr name="colorUserShiftBorder" format="color|reference" />
         <attr name="colorOnUserShift" format="color|reference" />
 
-        <!-- Sunday highlighting (Medium Priority) -->
         <attr name="colorSundayBackground" format="color|reference" />
         <attr name="colorSundayBorder" format="color|reference" />
         <attr name="colorOnSundayBackground" format="color|reference" />
 
-        <!-- ============================================ -->
-        <!-- COMBINED STATE COLORS -->
-        <!-- For overlapping highlights -->
-        <!-- ============================================ -->
-
-        <!-- Today + User Shift combination -->
+        <!-- Combined State Colors -->
         <attr name="colorTodayUserBackground" format="color|reference" />
         <attr name="colorTodayUserBorder" format="color|reference" />
-
-        <!-- Today + Sunday combination -->
         <attr name="colorTodaySundayBackground" format="color|reference" />
-
-        <!-- User Shift + Sunday combination -->
         <attr name="colorUserSundayBackground" format="color|reference" />
 
-        <!-- ============================================ -->
-        <!-- SHIFT TYPE COLORS (All 8 Required) -->
-        <!-- Fixed colors for consistency across themes -->
-        <!-- ============================================ -->
+        <!-- Shift Colors (All 8 Required) -->
+        <attr name="colorShiftMorning" format="color|reference" />
+        <attr name="colorShiftAfternoon" format="color|reference" />
+        <attr name="colorShiftNight" format="color|reference" />
+        <attr name="colorShiftRest" format="color|reference" />
+        <attr name="colorShiftFifth" format="color|reference" />
+        <attr name="colorShiftSixth" format="color|reference" />
+        <attr name="colorShiftSeventh" format="color|reference" />
+        <attr name="colorShiftEighth" format="color|reference" />
 
-        <!-- Primary shifts (most important) -->
-        <attr name="colorShiftMorning" format="color|reference" />       <!-- Shift 1 -->
-        <attr name="colorShiftAfternoon" format="color|reference" />     <!-- Shift 2 -->
-        <attr name="colorShiftNight" format="color|reference" />         <!-- Shift 3 -->
-        <attr name="colorShiftRest" format="color|reference" />          <!-- Shift 4 -->
-
-        <!-- Extended shifts -->
-        <attr name="colorShiftFifth" format="color|reference" />         <!-- Shift 5 -->
-        <attr name="colorShiftSixth" format="color|reference" />         <!-- Shift 6 -->
-        <attr name="colorShiftSeventh" format="color|reference" />       <!-- Shift 7 -->
-        <attr name="colorShiftEighth" format="color|reference" />        <!-- Shift 8 -->
-
-        <!-- ============================================ -->
-        <!-- SIMPLIFIED UI COMPONENT COLORS -->
-        <!-- Only essential app-specific colors -->
-        <!-- ============================================ -->
-
-        <!-- Card and container colors -->
+        <!-- Essential UI Colors -->
         <attr name="colorCardBackground" format="color|reference" />
         <attr name="colorCardBorder" format="color|reference" />
-
-        <!-- Loading state colors -->
         <attr name="colorLoadingBackground" format="color|reference" />
         <attr name="colorLoadingProgress" format="color|reference" />
-
-        <!-- ============================================ -->
-        <!-- LEGACY ATTRIBUTES -->
-        <!-- Kept for backward compatibility, to be removed -->
-        <!-- ============================================ -->
-
-        <!-- TODO: Remove in future versions -->
-        <!--
-        <attr name="colorBackground" format="color" />
-        <attr name="colorSurfaceTint" format="color" />
-        <attr name="colorSeparator" format="color|reference" />
-        <attr name="colorHeaderBackground" format="color|reference" />
-        -->
 
     </declare-styleable>
 
     <!-- ============================================ -->
-    <!-- CUSTOM COMPONENT ATTRIBUTES -->
-    <!-- Simplified for essential functionality -->
+    <!-- SIMPLIFIED COMPONENT ATTRIBUTES -->
     <!-- ============================================ -->
 
-    <!-- Calendar Day Component -->
     <declare-styleable name="QDueCalendarDay">
         <attr name="dayNumber" format="integer" />
-        <attr name="isToday" format="boolean" />
-        <attr name="isSunday" format="boolean" />
-        <attr name="hasUserShift" format="boolean" />
-
-        <!-- Simplified to single shift color -->
-        <attr name="shiftColor" format="color|reference" />
-
-        <!-- State combinations -->
         <attr name="highlightState" format="enum">
             <enum name="none" value="0" />
             <enum name="today" value="1" />
             <enum name="userShift" value="2" />
             <enum name="sunday" value="3" />
             <enum name="todayUserShift" value="4" />
-            <enum name="todaySunday" value="5" />
-            <enum name="userSunday" value="6" />
         </attr>
+        <attr name="shiftColor" format="color|reference" />
     </declare-styleable>
 
-    <!-- Shift Indicator Component -->
     <declare-styleable name="QDueShiftIndicator">
         <attr name="shiftType" format="enum">
             <enum name="morning" value="0" />
@@ -125,23 +70,6 @@
             <enum name="sixth" value="5" />
             <enum name="seventh" value="6" />
             <enum name="eighth" value="7" />
-        </attr>
-
-        <!-- Simplified sizing -->
-        <attr name="indicatorSize" format="dimension" />
-        <attr name="indicatorRadius" format="dimension" />
-    </declare-styleable>
-
-    <!-- Month Header Component -->
-    <declare-styleable name="QDueMonthHeader">
-        <attr name="monthText" format="string" />
-        <attr name="showYear" format="boolean" />
-
-        <!-- Simplified styling -->
-        <attr name="headerStyle" format="enum">
-            <enum name="standard" value="0" />
-            <enum name="compact" value="1" />
-            <enum name="expanded" value="2" />
         </attr>
     </declare-styleable>
 

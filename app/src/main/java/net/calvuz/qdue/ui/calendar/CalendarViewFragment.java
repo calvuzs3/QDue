@@ -267,7 +267,7 @@ public class CalendarViewFragment extends BaseFragment {
     private int calculateGridOffset() {
         // For calendar grid, offset by 2-3 rows (14-21 cells) to show context
         // This ensures today isn't at the very top of the screen
-        return -getResources().getDimensionPixelSize(R.dimen.calendar_day_height) * 3;
+        return -getResources().getDimensionPixelSize(R.dimen.calendar_day_size) * 3;
     }
 
     /**

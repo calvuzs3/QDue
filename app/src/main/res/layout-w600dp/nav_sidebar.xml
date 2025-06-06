@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/nav_sidebar.xml -->
+<!-- IMPROVED: Enhanced sidebar with better Material 3 design -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="320dp"
+    android:layout_height="match_parent"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- ============================================ -->
+        <!-- ENHANCED SIDEBAR HEADER -->
+        <!-- Material 3 design with better typography -->
+        <!-- ============================================ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/sidebar_header_gradient">
+
+            <!-- App Logo/Icon (Future enhancement) -->
+<!--            <ImageView-->
+<!--                android:layout_width="48dp"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:layout_marginBottom="8dp"-->
+<!--                android:src="@mipmap/ic_launcher"-->
+<!--                android:contentDescription="@string/app_name"-->
+<!--                app:tint="?attr/colorOnPrimary"-->
+<!--                android:alpha="0.9" />-->
+
+            <!-- App Name with Material 3 Typography -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                android:textColor="?attr/colorOnPrimary"
+                android:fontFamily="@font/lato_bold"
+                android:letterSpacing="0.02" />
+
+            <!-- App Version/Subtitle -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_desc"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnPrimary"
+                android:alpha="0.8"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- ============================================ -->
+        <!-- ENHANCED NAVIGATION MENU -->
+        <!-- Improved with Material 3 styling -->
+        <!-- ============================================ -->
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/sidebar_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="?attr/colorSurface"
+            android:paddingTop="8dp"
+            app:menu="@menu/sidebar_navigation_menu"
+
+        app:itemTextAppearance="@style/TextAppearance.Material3.LabelLarge"
+        app:itemTextColor="@color/nav_sidebar_item_color"
+        app:itemIconTint="@color/nav_sidebar_item_color"
+        app:itemIconSize="24dp"
+
+        app:itemShapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+        app:itemShapeFillColor="?attr/colorSecondaryContainer"
+        app:itemShapeInsetStart="12dp"
+        app:itemShapeInsetEnd="12dp"
+        app:itemShapeInsetTop="4dp"
+        app:itemShapeInsetBottom="4dp"
+
+        app:itemVerticalPadding="16dp"
+        app:itemHorizontalPadding="20dp"
+        app:itemMinHeight="56dp"
+
+        app:itemRippleColor="@color/navigation_ripple_color"
+
+        app:headerLayout="@null" />
+
+        <!-- ============================================ -->
+        <!-- SIDEBAR FOOTER (Optional for future features) -->
+        <!-- ============================================ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="?attr/colorSurfaceVariant"
+            android:alpha="0.7">
+
+            <!-- Version info -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_version"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textAlignment="center"
+                android:alpha="0.6" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
