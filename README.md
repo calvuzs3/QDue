@@ -35,73 +35,30 @@ QDue è lo strumento indispensabile per chiunque lavori con turni a ciclo contin
 
 Scarica QDue oggi e trasforma la gestione dei tuoi turni di lavoro in un'esperienza semplice ed efficiente.
 
-# Lavoro Grafica:
 
-Eccellente! Ora ho tutte le informazioni necessarie. Procederò con la semplificazione in fasi logiche.
+## 1.1.1 Grafica Migliorata
 
-### Phase 1: Color System Optimization
-Creerò un sistema colori semplificato che:
-
-Usa Material You quando disponibile
-Fallback al gradient purple-blue del logo
-Mantiene tutti gli 8 shift colors con priorità ai primi 3
-Implementa evidenziazione gerarchica: Today > User Shift > Sunday
-
-##### Phase 1 Completata!
-Ho completato la Phase 1: Color System Optimization con i seguenti miglioramenti:
-✅ Sistema Colori Semplificato
+#### ✅ Sistema Colori Semplificato
 
 Material You primario con fallback purple-blue del logo
-8 shift colors mantenuti (priorità ai primi 3)
-Evidenziazione gerarchica: Today > User Shift > Sunday
-Combinazioni intelligenti per stati sovrapposti
+Combinazioni per stati sovrapposti
 
-✅ Temi Ottimizzati
+#### ✅ Temi Ottimizzati
 
 Base theme unificato Material 3 + Dynamic Colors
 Attributi custom ridotti all'essenziale
 Supporto automatico light/dark theme
 
-✅ Sidebar Migliorata
+#### ✅ Sidebar Migliorata
 
 Design Material 3 con gradient header
 Navigazione ottimizzata con stati chiari
 Pronta per tablet con layout adattivo
 
-🎯 Risultati Principali
-
-File colors.xml: Da ~200 righe a ~150 righe (-25%)
-File attrs.xml: Da ~80 righe a ~45 righe (-44%)
-File themes.xml: Struttura semplificata mantenendo funzionalità
-Componenti unificati con stili coerenti
-
-#### Phase 2 Completata!
-✅ Risultati Ottimizzazione Layout
 1. Sistema dimensioni standardizzato
-
-Grid 8dp Material 3 compliant
-Componenti con sizing consistente
-Touch target 48dp garantiti
-
 2. Layout ottimizzati
-
-Calendar day: 48x48dp standardizzato
-Days list row: 56dp height consistente
-Headers unificati con typography corretta
-
 3. Spacing unificato
-
-Margin/padding da valori random (2dp, 6dp, 12dp) a standard (4dp, 8dp, 16dp, 24dp)
-Componenti allineati al grid system
-
 4. Miglioramenti smartphone
 
-Sidebar compatta (72dp header vs 120dp)
-Touch target ottimizzati
-Layout responsive ready per tablet
 
-📊 Impatto Semplificazione
-
--40% dimensioni custom: Da 30+ dimens a sistema standardizzato
-+25% consistency: Spacing unificato tra componenti
-+15% performance: Meno calcoli layout, dimensioni pre-definite
+## 1.0.1 Primo rilascio beta
