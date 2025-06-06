@@ -30,7 +30,7 @@ public interface FragmentCommunicationInterface {
      *
      * @param title The new title to display in the toolbar
      */
-//    void onFragmentTitleChanged(String title);
+    void onFragmentTitleChanged(String title);
 
     /**
      * Called when fragment needs to send a status message to the activity.
@@ -40,7 +40,7 @@ public interface FragmentCommunicationInterface {
      * @param message The status message to display
      * @param isError Whether this is an error message (affects styling)
      */
-//    void onFragmentStatusMessage(String message, boolean isError);
+    void onFragmentStatusMessage(String message, boolean isError);
 
     /**
      * Called when fragment needs to update the toolbar menu.
@@ -48,7 +48,7 @@ public interface FragmentCommunicationInterface {
      *
      * @param menuId Resource ID of the menu to inflate, or 0 to clear menu
      */
-//    void onFragmentMenuChanged(int menuId);
+    void onFragmentMenuChanged(int menuId);
 
     /**
      * Called when fragment needs to show/hide the toolbar.
@@ -56,7 +56,7 @@ public interface FragmentCommunicationInterface {
      *
      * @param visible Whether the toolbar should be visible
      */
-//    void onFragmentToolbarVisibilityChanged(boolean visible);
+    void onFragmentToolbarVisibilityChanged(boolean visible);
 
     /**
      * Called when fragment needs to navigate to another destination.
@@ -76,7 +76,7 @@ public interface FragmentCommunicationInterface {
      * @param success Whether the operation was successful
      * @param resultData Optional result data from the operation
      */
-//    void onFragmentOperationComplete(String operationType, boolean success, android.os.Bundle resultData);
+    void onFragmentOperationComplete(String operationType, boolean success, android.os.Bundle resultData);
 
     /**
      * Generic method for custom communication needs.
@@ -86,5 +86,5 @@ public interface FragmentCommunicationInterface {
      * @param action Action identifier (e.g., "update_fab", "show_loading")
      * @param data Data bundle containing parameters for the action
      */
-//    void onFragmentCustomAction(String action, android.os.Bundle data);
+    void onFragmentCustomAction(String action, android.os.Bundle data);
 }

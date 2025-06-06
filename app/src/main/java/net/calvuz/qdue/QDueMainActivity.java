@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -64,98 +65,7 @@ public class QDueMainActivity extends AppCompatActivity
     // Shared Preferences
     private SharedPreferences sharedPreferences;
 
-    /**
-     * MINIMAL TEST: Replace onCreate() temporarily with this
-     */
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//
-//        // MINIMAL TEST: Skip all complex setup
-//        binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
-//        setContentView(binding.getRoot());
-//
-//        // MINIMAL SETUP: Just toolbar
-//        if (binding.toolbar != null) {
-//            setSupportActionBar(binding.toolbar);
-//            Log.d(TAG, "MINIMAL TEST: Toolbar set as ActionBar");
-//
-//            // Force visibility
-//            binding.toolbar.setVisibility(View.VISIBLE);
-//            Log.d(TAG, "MINIMAL TEST: Toolbar visibility set to VISIBLE");
-//
-//            // Check if ActionBar exists
-//            if (getSupportActionBar() != null) {
-//                getSupportActionBar().setDisplayShowTitleEnabled(true);
-//                getSupportActionBar().setTitle("MINIMAL TEST");
-//                Log.d(TAG, "MINIMAL TEST: ActionBar configured");
-//            } else {
-//                Log.e(TAG, "MINIMAL TEST: getSupportActionBar() returned NULL!");
-//            }
-//        } else {
-//            Log.e(TAG, "MINIMAL TEST: binding.toolbar is NULL!");
-//        }
-//    }
-//    /**
-//     * CRITICAL TEST: Replace entire onCreate() with this to test if binding is the problem
-//     */
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//
-//        Log.d(TAG, "=== BYPASS BINDING TEST ===");
-//
-//        // TEST 1: Create toolbar programmatically (no XML, no binding)
-//        LinearLayout rootLayout = new LinearLayout(this);
-//        rootLayout.setOrientation(LinearLayout.VERTICAL);
-//        rootLayout.setBackgroundColor(Color.RED);
-//
-//        // Create toolbar in code
-//        androidx.appcompat.widget.Toolbar toolbar = new androidx.appcompat.widget.Toolbar(this);
-//        toolbar.setLayoutParams(new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT,
-//                (int)(56 * getResources().getDisplayMetrics().density)
-//        ));
-//        toolbar.setBackgroundColor(Color.GREEN);
-//        toolbar.setTitle("PROGRAMMATIC TOOLBAR");
-//        toolbar.setTitleTextColor(Color.BLACK);
-//        toolbar.setElevation(8f);
-//
-//        // Create test content
-//        TextView testContent = new TextView(this);
-//        testContent.setLayoutParams(new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT,
-//                LinearLayout.LayoutParams.MATCH_PARENT
-//        ));
-//        testContent.setText("PROGRAMMATIC CONTENT");
-//        testContent.setBackgroundColor(Color.BLUE);
-//        testContent.setTextColor(Color.WHITE);
-//        testContent.setTextSize(24f);
-//        testContent.setGravity(android.view.Gravity.CENTER);
-//
-//        // Add to layout
-//        rootLayout.addView(toolbar);
-//        rootLayout.addView(testContent);
-//
-//        // Set as content view (NO BINDING)
-//        setContentView(rootLayout);
-//
-//        // Try to set as ActionBar
-//        setSupportActionBar(toolbar);
-//
-//        Log.d(TAG, "Programmatic toolbar created");
-//        Log.d(TAG, "Toolbar height: " + toolbar.getHeight());
-//        Log.d(TAG, "ActionBar: " + (getSupportActionBar() != null ? "EXISTS" : "NULL"));
-//
-//        // Post-layout check
-//        toolbar.post(() -> {
-//            Log.d(TAG, "POST-LAYOUT Toolbar height: " + toolbar.getHeight());
-//            Log.d(TAG, "POST-LAYOUT Toolbar visibility: " + toolbar.getVisibility());
-//            int[] location = new int[2];
-//            toolbar.getLocationOnScreen(location);
-//            Log.d(TAG, "POST-LAYOUT Toolbar position: [" + location[0] + ", " + location[1] + "]");
-//        });
-//    }
+    // ======================= METHODS ============================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,40 +84,14 @@ public class QDueMainActivity extends AppCompatActivity
         binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-//        setupToolbar();
-        setupNavigationSafely();
-
-        // Call this in onCreate() after setContentView(binding.getRoot());
-
-//        debugToolbarVisibility();    // 1. Debug
-//        debugToolbarOverlap();
-//        setupToolbar();             // 2. Setup (ora con fix)
-//        forceToolbarLayout();       // 3. Force layout
-//        setupNavigationSafely();    // 4. Navigation
-//
-//        cleanupDebugStyling();
-
-
-        // Configure toolbar (always exists now, may be hidden)
-//        setupToolbar();
-
-        // Setup navigation with safe error handling
-//        setupNavigationSafely();
-
-        // REMOVED: setupFAB() - FAB is handled by fragments
-
-        // Track current fragment
-//        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-//            mCurrentFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-//            if (DEBUG_ACTIVITY)
-//                Log.d(TAG, "Fragment changed: " + (mCurrentFragment != null ? mCurrentFragment.getClass().getSimpleName() : "null"));
-//        });
+        // Navigation
+        setupNavigation();
     }
 
     /**
      * Setup navigation safely with error handling.
      */
-    private void setupNavigationSafely() {
+    private void setupNavigation() {
         try {
             // Method 1: Find NavHostFragment directly
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -312,16 +196,6 @@ public class QDueMainActivity extends AppCompatActivity
         }
     }
 
-//    /**
-//     * Update toolbar title safely.
-//     */
-//    private void updateToolbarTitle() {
-//        // Only update title if ActionBar exists and is visible
-//        if (getSupportActionBar() != null && toolbar.getVisibility() == View.VISIBLE) {
-////            getSupportActionBar().setTitle(R.string.app_name);
-//        }
-//    }
-
     /**
      * Notify fragments to update data.
      */
@@ -422,44 +296,6 @@ public class QDueMainActivity extends AppCompatActivity
             Toast.makeText(this, "Timezone updated", Toast.LENGTH_SHORT).show();
         });
     }
-// CRITICAL FIXES for QDueMainActivity.java menu navigation
-
-//    /**
-//     * FIXED: Setup toolbar with proper orientation handling.
-//     * Now toolbar exists in binding and is properly configured.
-//     */
-//    private void setupToolbar() {
-//        final String METHOD_TAG = TAG + " setupToolbar";
-//
-//        try {
-//            // FIXED: Toolbar now exists in binding
-//            if (binding.toolbar != null) {
-//                setSupportActionBar(binding.toolbar);
-//
-//                // Check orientation and adjust visibility
-//                boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-//
-//                if (isLandscape) {
-//                    // Hide entire AppBar in landscape
-//                    if (binding.appBarLayout != null) {
-//                        binding.appBarLayout.setVisibility(View.GONE);
-//                    }
-//                    if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "AppBar hidden for landscape mode");
-//                } else {
-//                    // Show AppBar in portrait
-//                    if (binding.appBarLayout != null) {
-//                        binding.appBarLayout.setVisibility(View.VISIBLE);
-//                    }
-//                    if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "AppBar visible for portrait mode");
-//                }
-//            } else {
-//                Log.e(METHOD_TAG, "Toolbar not found in binding!");
-//            }
-//
-//        } catch (Exception e) {
-//            Log.e(METHOD_TAG, "Error configuring toolbar: " + e.getMessage());
-//        }
-//    }
 
     /**
      * FIXED: Configure ActionBar only when toolbar is visible
@@ -491,133 +327,14 @@ public class QDueMainActivity extends AppCompatActivity
         if (sidebarNavigation != null) {
             setupSidebarNavigation();
         }
-
-//        // FIXED: Configure ActionBar only when toolbar is visible
-//        if (!isLandscape && binding.toolbar != null &&
-//                binding.toolbar.getVisibility() == View.VISIBLE) {
-//
-//            mAppBarConfiguration = new AppBarConfiguration.Builder(
-//                    R.id.nav_dayslist, R.id.nav_calendar)
-//                    .build();
-//
-//            NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-//            if (DEBUG_ACTIVITY) Log.d(TAG, "ActionBar configured for portrait mode");
-//        } else {
-//            if (DEBUG_ACTIVITY) Log.d(TAG, "Skipping ActionBar setup for landscape mode");
-//        }
     }
-
-//    /**
-//     * FIXED: Create options menu with null-safe checks
-//     */
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        final String METHOD_TAG = TAG + " onCreateOptionsMenu";
-//
-//        try {
-//            // FIXED: Show menu only in portrait when toolbar is visible
-//            boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-//
-//            // NULL-SAFE: Check if binding and toolbar exist
-//            boolean toolbarVisible = binding != null &&
-//                    binding.toolbar != null &&
-//                    binding.toolbar.getVisibility() == View.VISIBLE;
-//
-//            if (isPortrait && toolbarVisible && sidebarNavigation == null) {
-//                getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-//                if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Menu inflated for portrait mode");
-//                return true;
-//            }
-//
-//            if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Menu not created - conditions not met");
-//            return super.onCreateOptionsMenu(menu);
-//
-//        } catch (Exception e) {
-//            Log.e(METHOD_TAG, "Error creating options menu: " + e.getMessage());
-//            return super.onCreateOptionsMenu(menu);
-//        }
-//    }
-
-//    /**
-//     * FIXED: Handle menu item selection with better error handling.
-//     */
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//        final String METHOD_TAG = TAG + " onOptionsItemSelected";
-//
-//        if (navController == null) {
-//            Log.e(METHOD_TAG, "NavController is null, cannot handle menu selection");
-//            return super.onOptionsItemSelected(item);
-//        }
-//
-//        int mID = item.getItemId();
-//
-//        try {
-//            if (mID == R.id.action_settings) {
-//                Log.d(METHOD_TAG, "Navigating to Settings");
-//                navController.navigate(R.id.nav_settings);
-//                return true;
-//            }
-//            if (mID == R.id.action_about) {
-//                Log.d(METHOD_TAG, "Navigating to About");
-//                navController.navigate(R.id.nav_about);
-//                return true;
-//            }
-//        } catch (Exception e) {
-//            Log.e(METHOD_TAG, "Error during menu navigation: " + e.getMessage());
-//
-//            // FALLBACK: Try using Intent for Settings
-//            if (mID == R.id.action_settings) {
-//                try {
-//                    Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
-//                    startActivity(settingsIntent);
-//                    return true;
-//                } catch (Exception intentError) {
-//                    Log.e(METHOD_TAG, "Fallback Intent also failed: " + intentError.getMessage());
-//                }
-//            }
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
-//    /**
-//     * FIXED: Support navigate up with null-safe checks
-//     */
-//    @Override
-//    public boolean onSupportNavigateUp() {
-//        final String METHOD_TAG = TAG + " onSupportNavigateUp";
-//
-//        try {
-//            // Only handle navigation up if we have ActionBar visible (portrait mode)
-//            boolean isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
-//
-//            // NULL-SAFE: Check if binding and toolbar exist
-//            boolean toolbarVisible = binding != null &&
-//                    binding.toolbar != null &&
-//                    binding.toolbar.getVisibility() == View.VISIBLE;
-//
-//            if (navController != null && mAppBarConfiguration != null &&
-//                    getSupportActionBar() != null && isPortrait && toolbarVisible) {
-//
-//                if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Handling navigation up");
-//                return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-//                        || super.onSupportNavigateUp();
-//            }
-//
-//            if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Navigation up not handled - conditions not met");
-//            return super.onSupportNavigateUp();
-//
-//        } catch (Exception e) {
-//            Log.e(METHOD_TAG, "Error in onSupportNavigateUp: " + e.getMessage());
-//            return super.onSupportNavigateUp();
-//        }
-//    }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
         if (DEBUG_ACTIVITY) Log.d(TAG, "Preference changed: " + key);
     }
+
+    // ========== COMMUNICATION INTERFACE IMPLEMENTATION ==========
 
     @Override
     public void onFragmentNavigationRequested(int destinationId, Bundle data) {
@@ -635,102 +352,163 @@ public class QDueMainActivity extends AppCompatActivity
                 Log.e(TAG, mTAG + " NavController is null, cannot navigate");
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG+ " Error during navigation: " + e.getMessage());
+            Log.e(TAG, mTAG + " Error during navigation: " + e.getMessage());
         }
     }
-//    /**
-//     * TEMPORARY DEBUG METHOD - Add to QDueMainActivity.java onCreate() after setContentView
-//     */
-//    private void debugToolbarVisibility() {
-//        Log.d(TAG, "=== TOOLBAR DEBUG ===");
-//        Log.d(TAG, "binding.toolbar: " + (binding.toolbar != null ? "EXISTS" : "NULL"));
-//        Log.d(TAG, "binding.appBarLayout: " + (binding.appBarLayout != null ? "EXISTS" : "NULL"));
-//
-//        if (binding.toolbar != null) {
-//            Log.d(TAG, "toolbar visibility: " + binding.toolbar.getVisibility());
-//            Log.d(TAG, "toolbar height: " + binding.toolbar.getHeight());
-//        }
-//
-//        if (binding.appBarLayout != null) {
-//            Log.d(TAG, "appBarLayout visibility: " + binding.appBarLayout.getVisibility());
-//            Log.d(TAG, "appBarLayout height: " + binding.appBarLayout.getHeight());
-//        }
-//
-//        // Force toolbar to be visible for testing
-//        if (binding.appBarLayout != null) {
-//            binding.appBarLayout.setVisibility(View.VISIBLE);
-//            binding.appBarLayout.setBackgroundColor(Color.RED); // Temporary red background
-//        }
-//
-//        if (binding.toolbar != null) {
-//            binding.toolbar.setVisibility(View.VISIBLE);
-//            binding.toolbar.setBackgroundColor(Color.BLUE); // Temporary blue background
-//        }
-//    }
-//
-//    /**
-//     * TEMPORARY: Force layout measurement - Add in onCreate() after setupToolbar()
-//     */
-//    private void forceToolbarLayout() {
-//        if (binding.appBarLayout != null && binding.toolbar != null) {
-//            // Force immediate layout
-//            binding.appBarLayout.measure(
-//                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-//                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-//            );
-//            binding.appBarLayout.layout(0, 0, binding.appBarLayout.getMeasuredWidth(), binding.appBarLayout.getMeasuredHeight());
-//
-//            // Post another debug check
-//            binding.toolbar.post(() -> {
-//                Log.d(TAG, "After force layout - toolbar height: " + binding.toolbar.getHeight());
-//                Log.d(TAG, "After force layout - appBar height: " + binding.appBarLayout.getHeight());
-//            });
-//        }
-//    }
-//
-//    /**
-//     * TEMPORARY: DEBUG METHOD: Test if toolbar is hidden by content or z-index
-//     * Add this in onCreate() after forceToolbarLayout()
-//     */
-//    private void debugToolbarOverlap() {
-//        Log.d(TAG, "=== OVERLAP DEBUG ===");
-//
-//        if (binding.toolbar != null && binding.appBarLayout != null) {
-//            // Test 1: Make toolbar highly visible with extreme styling
-//            binding.toolbar.setBackgroundColor(Color.RED);
-//            binding.toolbar.setElevation(100f); // Extreme elevation
-//            binding.appBarLayout.setElevation(100f);
-//            binding.appBarLayout.setBackgroundColor(Color.YELLOW);
-//
-//            // Test 2: Add temporary huge padding to content to see if overlap
-//            View contentInclude = findViewById(R.id.nav_host_fragment_content_main);
-//            if (contentInclude != null) {
-//                contentInclude.setPadding(0, 200, 0, 0); // 200px top padding
-//                Log.d(TAG, "Added 200px padding to content");
-//            }
-//
-//            // Test 3: Log Z-order
-//            Log.d(TAG, "AppBar elevation: " + binding.appBarLayout.getElevation());
-//            Log.d(TAG, "Toolbar elevation: " + binding.toolbar.getElevation());
-//
-//            // Test 4: Check content bounds
-//            if (contentInclude != null) {
-//                contentInclude.post(() -> {
-//                    int[] location = new int[2];
-//                    contentInclude.getLocationOnScreen(location);
-//                    Log.d(TAG, "Content top position: " + location[1]);
-//                    Log.d(TAG, "Content height: " + contentInclude.getHeight());
-//                });
-//            }
-//
-//            // Test 5: Check toolbar bounds
-//            binding.toolbar.post(() -> {
-//                int[] location = new int[2];
-//                binding.toolbar.getLocationOnScreen(location);
-//                Log.d(TAG, "Toolbar top position: " + location[1]);
-//                Log.d(TAG, "Toolbar bottom position: " + (location[1] + binding.toolbar.getHeight()));
-//            });
-//        }
-//    }
 
+    @Override
+    public void onFragmentTitleChanged(String title) {
+        final String METHOD_TAG = TAG + " onFragmentTitleChanged";
+
+        try {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle(title);
+                if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Updated toolbar title to: " + title);
+            }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error updating toolbar title: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFragmentStatusMessage(String message, boolean isError) {
+        final String METHOD_TAG = TAG + " onFragmentStatusMessage";
+
+        try {
+            if (isError) {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            } else {
+                Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).show();
+            }
+            if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Displayed status message: " + message);
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error showing status message: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFragmentMenuChanged(int menuId) {
+        final String METHOD_TAG = TAG + " onFragmentMenuChanged";
+
+        // Invalidate options menu to trigger onCreateOptionsMenu with new menu
+        try {
+            invalidateOptionsMenu();
+            if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Invalidated options menu for menuId: " + menuId);
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error changing fragment menu: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFragmentToolbarVisibilityChanged(boolean visible) {
+        final String METHOD_TAG = TAG + " onFragmentToolbarVisibilityChanged";
+
+        try {
+            // Handle toolbar visibility for different orientations
+            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+            if (!isLandscape && binding.appBarLayout != null) {
+                // Only affect toolbar in portrait mode
+                binding.appBarLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
+                if (DEBUG_ACTIVITY) Log.d(METHOD_TAG, "Set toolbar visibility: " + visible);
+            }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error changing toolbar visibility: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFragmentOperationComplete(String operationType, boolean success, Bundle resultData) {
+        final String METHOD_TAG = TAG + " onFragmentOperationComplete";
+
+        try {
+            if (DEBUG_ACTIVITY) {
+                Log.d(METHOD_TAG, "Operation completed: " + operationType + ", success: " + success);
+            }
+
+            switch (operationType) {
+                case "data_refresh":
+                    if (success) {
+                        notifyUpdates();
+                    }
+                    break;
+
+                case "scroll_to_today":
+                    if (success) {
+                        onFragmentStatusMessage("Navigated to today", false);
+                    }
+                    break;
+
+                default:
+                    // Handle other operation types as needed
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error handling operation completion: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onFragmentCustomAction(String action, Bundle data) {
+        final String METHOD_TAG = TAG + " onFragmentCustomAction";
+
+        try {
+            switch (action) {
+                case "update_toolbar_title":
+                    if (data != null && data.containsKey("title")) {
+                        String title = data.getString("title");
+                        onFragmentTitleChanged(title);
+                    }
+                    break;
+
+                case "show_loading":
+                    // Handle loading indicator requests
+                    boolean show = data != null && data.getBoolean("show", false);
+                    showLoadingIndicator(show);
+                    break;
+
+                case "update_fab_visibility":
+                    // Handle FAB visibility updates if needed
+                    boolean visible = data != null && data.getBoolean("visible", true);
+                    handleFabVisibility(visible);
+                    break;
+
+                default:
+                    if (DEBUG_ACTIVITY) {
+                        Log.d(METHOD_TAG, "Unhandled custom action: " + action);
+                    }
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(METHOD_TAG, "Error handling custom action '" + action + "': " + e.getMessage());
+        }
+    }
+
+    /**
+     * Show/hide loading indicator for long operations.
+     */
+    private void showLoadingIndicator(boolean show) {
+        // Implementation depends on your loading indicator setup
+        // This could be a progress bar in the binding, or a custom loading overlay
+        try {
+            // Example implementation - adjust based on your actual UI
+            View loadingOverlay = findViewById(R.id.loading_overlay);
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error controlling loading indicator: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle FAB visibility if activity needs to coordinate with fragment FABs.
+     */
+    private void handleFabVisibility(boolean visible) {
+        // Implementation depends on whether activity has its own FABs to coordinate
+        // For now, this is mainly handled by individual fragments
+        if (DEBUG_ACTIVITY) {
+            Log.d(TAG, "FAB visibility coordination: " + visible);
+        }
+    }
 }

@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
@@ -29,7 +28,7 @@ import java.util.List;
 public class DayslistViewFragment extends BaseFragment {
 
     // TAG
-    private final String TAG = DayslistViewFragment.class.getSimpleName();
+    private final String TAG = "DayslistViewFragment";
 
     // Dayslist adapter
     private DaysListAdapter mAdapter;
@@ -58,6 +57,15 @@ public class DayslistViewFragment extends BaseFragment {
         mFabGoToToday = view.findViewById(R.id.fab_go_to_today);
     }
 
+    /**
+     * Return 1 column for list-like appearance using GridLayoutManager.
+     * This unifies the implementation with CalendarViewFragment while maintaining list behavior.
+     */
+    @Override
+    protected int getGridColumnCount() {
+        return 1; // Single column for list-like behavior
+    }
+
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
         return SharedViewModels.DataConverter.convertForDaysList(days, monthDate);
@@ -70,7 +78,7 @@ public class DayslistViewFragment extends BaseFragment {
 
     @Override
     protected void setupAdapter() {
-        Log.d(TAG, "setupAdapter()");
+        Log.v(TAG, "setupAdapter: called.");
 
         mAdapter = new DaysListAdapter(
                 getContext(),
@@ -97,7 +105,9 @@ public class DayslistViewFragment extends BaseFragment {
         }
     }
 
-    // Metodo per aggiornare quando cambiano le preferenze
+    /**
+     * Handle updates when preferences change.
+     */
     public void notifyUpdates() {
         if (mAdapter != null) {
             mAdapter.updateUserTeam(mQD.getUserHalfTeam());
@@ -134,22 +144,25 @@ public class DayslistViewFragment extends BaseFragment {
                 // Configure ActionBar
                 if (activity.getSupportActionBar() != null) {
                     activity.getSupportActionBar().setDisplayShowTitleEnabled(true);
+                    activity.getSupportActionBar().setTitle(getString(R.string.app_name));
                 }
             }
 
             // CRITICAL: Set menu item click listener
             mToolbar.setOnMenuItemClickListener(item -> {
+                String sTAG = "setOnMenuItemClickListener: ";
 
                 int id = item.getItemId();
                 Log.v(TAG, mTAG + "onMenuItemClickListener() -> ("
                         + id + ") \n"
                         + item.getTitle());
                 try {
-                    if (item.getTitle() == (String) getResources().getString(R.string.go_to_today))
-                        Log.v(TAG, mTAG + "stringhe coincidenti");
-                    scrollToToday();
+                    if (item.getTitle() == (String) getResources().getString(R.string.go_to_today)) {
+                        Log.v(TAG, mTAG + sTAG + "found by string value");
+                        scrollToToday();
+                    }
                 } catch (Exception e) {
-                    Log.e(TAG, mTAG + "Error: " + e.getMessage());
+                    Log.e(TAG, mTAG + sTAG + "Error: " + e.getMessage());
                 }
 
                 try {
@@ -162,49 +175,33 @@ public class DayslistViewFragment extends BaseFragment {
                         return true;
                     }
                     if (id == R.id.fab_go_to_today) {
-                        Log.e(TAG, mTAG + "FAB found as a menu item in setuptoolbar");
+                        Log.e(TAG, mTAG + sTAG + "FAB found as a menu item in setuptoolbar");
                         return true;
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, mTAG + "onMenuItemClick failed: " + e.getMessage());
+                    Log.e(TAG, mTAG + sTAG + "Error: " + e.getMessage());
                 }
 
-                Log.v(TAG, mTAG + "onMenuItemClickListener() ->" +
-                        " got (" + id + ")" + " expected (" + R.id.fab_go_to_today + ") \n");
+                Log.v(TAG, mTAG + sTAG + "() -> " +
+                        "got (" + id + ")" + " expected (" + R.id.fab_go_to_today + ") \n");
                 return true;
             });
 
             // Enable options menu for this fragment
+            //TODO: update to MenuProvider interface
             setHasOptionsMenu(true);
 
-            Log.d(TAG, mTAG + "Fragment toolbar setup complete");
+            Log.v(TAG, mTAG + "Fragment toolbar setup complete");
 
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error setting up fragment toolbar: " + e.getMessage());
         }
     }
 
+    //TODO: update to MenuProvider interface
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         MenuInflater menuiflater = getActivity().getMenuInflater();
         menuiflater.inflate(R.menu.toolbar_menu, menu);
     }
-
-//    @Override
-//    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-//
-//        if (item.getItemId() == R.id.action_about) {
-//            navigateTo(R.id.nav_about);
-//            return true;
-//        }
-//        if (item.getItemId() == R.id.action_settings) {
-//            navigateTo(R.id.nav_settings);
-//            return true;
-//        }
-//        if (item.getItemId() == R.id.fab_go_to_today) {
-//            Log.e(TAG, "FAB found as a menu item");
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
 }

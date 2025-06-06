@@ -26,6 +26,7 @@ import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,6 +74,8 @@ public abstract class BaseFragment extends Fragment {
      * LinearLayoutManager reference (null for GridLayoutManager)
      */
     protected LinearLayoutManager mLayoutManager;
+    protected GridLayoutManager mGridLayoutManager;
+
 
     /**
      * Floating Action Button for "go to today" functionality
@@ -190,7 +193,7 @@ public abstract class BaseFragment extends Fragment {
      */
     protected FragmentCommunicationInterface communicationInterface;
 
-    // ==================== COMMUNICATION INTERFACE ====================
+    // ==================== COMMUNICATION INTERFACE ===============
 
     /**
      * Get reference to communication interface during attachment.
@@ -199,12 +202,14 @@ public abstract class BaseFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
+        final String mTAG = "onAttach: ";
+
         try {
             // Get reference to activity's communication interface
             communicationInterface = (FragmentCommunicationInterface) context;
-            Log.v(TAG, "onAttach: Communication interface attached");
+            Log.v(TAG, mTAG + "Communication interface attached");
         } catch (ClassCastException e) {
-            Log.e(TAG, "onAttach: Error in attacching Comunication Interface");
+            Log.e(TAG, mTAG + "Error in attacching Comunication Interface");
             throw new ClassCastException(context.toString()
                     + " must implement FragmentCommunicationInterface");
         }
@@ -217,7 +222,7 @@ public abstract class BaseFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         communicationInterface = null;
-        Log.d(TAG, "onDetach: Communication interface detached");
+        Log.v(TAG, "onDetach: Communication interface detached");
     }
 
     // ==================== COMMUNICATION HELPER METHODS ====================
@@ -248,7 +253,8 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String METHOD_TAG = TAG + " onCreate";
+        final String mTAG = "onCreate: ";
+        Log.v(mTAG, mTAG + getClass().getSimpleName());
 
         // Initialize handlers for async operations
         mMainHandler = new Handler(Looper.getMainLooper());
@@ -256,8 +262,6 @@ public abstract class BaseFragment extends Fragment {
 
         // Initialize centralized data manager
         mDataManager = CalendarDataManager.getInstance();
-
-        if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Fragment created: " + getClass().getSimpleName());
     }
 
     /**
@@ -267,7 +271,9 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         final String mTAG = "onViewCreated: ";
+        Log.v(TAG, mTAG + "called.");
 
         // Subclasses must implement findViews() to initialize their specific views
         findViews(view);
@@ -288,45 +294,347 @@ public abstract class BaseFragment extends Fragment {
         setupFAB();
     }
 
+    // ==================== RECYCLER ===========================
+
     /**
-     * Setup RecyclerView with support for custom LayoutManagers.
-     * <p>
-     * This method handles both LinearLayoutManager (for DaysListFragment)
-     * and GridLayoutManager (for CalendarFragment). Subclasses can override
-     * this method to provide their own LayoutManager setup.
+     * Setup RecyclerView with unified GridLayoutManager approach.
+     * Both DayslistViewFragment (1 column) and CalendarViewFragment (7 columns) will use GridLayoutManager.
+     * This unifies scroll handling, infinite loading, and sticky header logic.
      */
     protected void setupRecyclerView() {
+
         final String mTAG = "setupRecyclerView: ";
+        Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
-            Log.e(TAG, "RecyclerView is null - subclass must implement findViews()");
+            Log.e(TAG, mTAG+"RecyclerView is null - subclass must implement findViews()");
             return;
         }
 
-        // Check if LayoutManager already exists
-        // Subclasses can override this method for specific LayoutManager types
-        RecyclerView.LayoutManager existingLayoutManager = mRecyclerView.getLayoutManager();
+        // Get column count from subclass
+        int columnCount = getGridColumnCount();
 
-        if (existingLayoutManager == null) {
-            // Create and set new LinearLayoutManager as default
-            mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-            mRecyclerView.setLayoutManager(mLayoutManager);
-            if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Created new LinearLayoutManager");
-        } else if (existingLayoutManager instanceof LinearLayoutManager) {
-            // Use existing LinearLayoutManager
-            mLayoutManager = (LinearLayoutManager) existingLayoutManager;
-            if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Using existing LinearLayoutManager");
-        } else {
-            // For other LayoutManager types (e.g., GridLayoutManager), keep null and use fallback methods
-            mLayoutManager = null;
-            if (DEBUG_FRAGMENT)
-                Log.d(TAG, mTAG + "Using non-LinearLayoutManager, set mLayoutManager to null");
-        }
+        // Create unified GridLayoutManager
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
+
+        // Configure span size for headers and loading items
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (position < mItemsCache.size()) {
+                    SharedViewModels.ViewItem item = mItemsCache.get(position);
+
+                    // Headers and loading items always span full width
+                    if (item instanceof SharedViewModels.MonthHeader ||
+                            item instanceof SharedViewModels.LoadingItem) {
+                        return columnCount; // Full width
+                    }
+                }
+                return 1; // Regular items take 1 column
+            }
+        });
+
+        mRecyclerView.setLayoutManager(gridLayoutManager);
+
+        // Store reference for position calculations
+        mGridLayoutManager = gridLayoutManager;
+
+        // Set mLayoutManager to null since we're using GridLayoutManager
+        mLayoutManager = null;
 
         // Apply common optimizations
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
+
+            Log.d(mTAG, mTAG+"Configured GridLayoutManager with " + columnCount + " columns");
     }
+
+    /**
+     * Abstract method for subclasses to specify column count.
+     * DayslistViewFragment returns 1, CalendarViewFragment returns 7.
+     */
+    protected abstract int getGridColumnCount();
+
+
+    // ======================================================================
+
+    /**
+     * Unified scroll listener for both fragment types.
+     * Handles infinite scrolling and sticky header updates.
+     */
+    private class UnifiedGridScrollListener extends RecyclerView.OnScrollListener {
+
+        private static final String LISTENER_TAG = "UnifiedGridScrollListener";
+
+        @Override
+        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            long currentTime = System.currentTimeMillis();
+
+            // Calculate scroll velocity for performance optimization
+            if (mLastScrollTime > 0) {
+                long timeDiff = currentTime - mLastScrollTime;
+                if (timeDiff > 0) {
+                    mScrollVelocity = (int) (Math.abs(dy) / timeDiff * 16); // Normalized to 60fps
+                }
+            }
+
+            // Throttling to avoid too frequent updates
+            if (currentTime - mLastScrollTime < 100) return;
+            mLastScrollTime = currentTime;
+
+            // Skip updates if scrolling too fast
+            if (mScrollVelocity > MAX_SCROLL_VELOCITY) return;
+
+            // Get visible positions using GridLayoutManager
+            int firstVisible = getFirstVisiblePosition();
+            int lastVisible = getLastVisiblePosition();
+
+            if (firstVisible == RecyclerView.NO_POSITION) return;
+
+            // Handle infinite scrolling
+            mMainHandler.post(() -> handleUnifiedScrollBasedLoading(firstVisible, lastVisible, dy));
+
+            // Update FAB visibility
+            updateFabVisibility(firstVisible, lastVisible);
+
+            // Update sticky header in toolbar
+            updateStickyHeader(firstVisible, lastVisible);
+        }
+
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                mScrollVelocity = 0;
+
+                // Process pending operations after scroll stops
+                mMainHandler.postDelayed(() -> {
+                    if (mScrollVelocity == 0) {
+                        processPendingOperations();
+                        scheduleCleanupIfNeeded();
+                    }
+                }, SCROLL_SETTLE_DELAY);
+            }
+        }
+    }
+
+    /**
+     * Unified scroll-based loading logic that works for both 1-column and 7-column grids.
+     */
+    private void handleUnifiedScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
+        final String mTAG = "handleUnifiedScrollBasedLoading: ";
+
+        // Conservative trigger zones
+        int loadTriggerZone = getLoadTriggerZone();
+
+        // Load upward (previous months) when near top
+        if (firstVisible <= loadTriggerZone && scrollDirection <= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
+
+            if (DEBUG_FRAGMENT) {
+                Log.d(TAG, mTAG + "Triggering top load at position: " + firstVisible);
+            }
+
+            mMainHandler.postDelayed(() -> {
+                if (!mIsUpdatingCache.get() && !mIsPendingTopLoad.get()) {
+                    triggerTopLoad();
+                }
+            }, 100);
+        }
+
+        // Load downward (next months) when near bottom
+        if (lastVisible >= mItemsCache.size() - loadTriggerZone && scrollDirection >= 0 &&
+                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
+
+            if (DEBUG_FRAGMENT) {
+                Log.d(TAG, mTAG + "Triggering bottom load at position: " + lastVisible);
+            }
+
+            mMainHandler.postDelayed(() -> {
+                if (!mIsUpdatingCache.get() && !mIsPendingBottomLoad.get()) {
+                    triggerBottomLoad();
+                }
+            }, 100);
+        }
+    }
+
+    /**
+     * Get load trigger zone based on column count.
+     * More conservative for calendar view due to grid density.
+     */
+    private int getLoadTriggerZone() {
+        int columnCount = getGridColumnCount();
+        return columnCount == 1 ? 10 : 21; // 10 items for list, 21 items (~3 weeks) for calendar
+    }
+
+    /**
+     * Update sticky header in toolbar based on currently visible month.
+     */
+    private void updateStickyHeader(int firstVisible, int lastVisible) {
+
+        // Find the month header that's currently most visible
+        LocalDate currentMonth = findCurrentVisibleMonth(firstVisible, lastVisible);
+
+        if (currentMonth != null) {
+            updateToolbarTitle(currentMonth);
+        }
+    }
+
+    /**
+     * Find which month is currently most visible in the viewport.
+     */
+    private LocalDate findCurrentVisibleMonth(int firstVisible, int lastVisible) {
+        // Find the first month header in the visible range
+        for (int i = firstVisible; i <= lastVisible && i < mItemsCache.size(); i++) {
+            SharedViewModels.ViewItem item = mItemsCache.get(i);
+
+            if (item instanceof SharedViewModels.MonthHeader) {
+                return ((SharedViewModels.MonthHeader) item).monthDate;
+            }
+
+            if (item instanceof SharedViewModels.DayItem) {
+                return ((SharedViewModels.DayItem) item).monthDate;
+            }
+        }
+
+        // Fallback: search backwards from first visible
+        for (int i = firstVisible - 1; i >= 0; i--) {
+            SharedViewModels.ViewItem item = mItemsCache.get(i);
+
+            if (item instanceof SharedViewModels.MonthHeader) {
+                return ((SharedViewModels.MonthHeader) item).monthDate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Update toolbar title with formatted month name.
+     * Shows only month name for current year, "Month Year" for other years.
+     */
+    private void updateToolbarTitle(LocalDate monthDate) {
+        if (getActivity() == null) return;
+
+        try {
+            LocalDate today = LocalDate.now();
+            String formattedTitle;
+
+            if (monthDate.getYear() == today.getYear()) {
+                // Current year: show only month name
+                formattedTitle = monthDate.format(DateTimeFormatter.ofPattern("MMMM", QDue.getLocale()));
+            } else {
+                // Different year: show month and year
+                formattedTitle = monthDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", QDue.getLocale()));
+            }
+
+            // Update toolbar title - this will be implemented in the activity
+            if (communicationInterface != null) {
+                Bundle data = new Bundle();
+                data.putString("title", formattedTitle);
+                communicationInterface.onFragmentCustomAction("update_toolbar_title", data);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "updateToolbarTitle: Error updating toolbar title: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Override setupInfiniteScrolling to use unified approach.
+     */
+    protected void setupInfiniteScrolling() {
+        setupInfiniteScrolling(false); // Don't use base LinearLayoutManager approach
+
+        // Clear existing listeners and add unified listener
+        if (mRecyclerView != null) {
+            mRecyclerView.clearOnScrollListeners();
+            mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
+        }
+    }
+
+    /**
+     * Updated position methods to work with GridLayoutManager.
+     */
+    protected int getFirstVisiblePosition() {
+        if (mGridLayoutManager != null) {
+            return mGridLayoutManager.findFirstVisibleItemPosition();
+        }
+        return RecyclerView.NO_POSITION;
+    }
+
+    protected int getLastVisiblePosition() {
+        if (mGridLayoutManager != null) {
+            return mGridLayoutManager.findLastVisibleItemPosition();
+        }
+        return RecyclerView.NO_POSITION;
+    }
+
+    /**
+     * Updated scroll methods for GridLayoutManager.
+     */
+    protected void scrollToInitialPosition() {
+        if (mGridLayoutManager == null) return;
+
+        int targetPosition = mTodayPosition >= 0 ? mTodayPosition : mCurrentCenterPosition;
+
+        try {
+            mGridLayoutManager.scrollToPositionWithOffset(targetPosition, 0);
+            if (DEBUG_FRAGMENT) {
+                Log.d(TAG, "GridLayoutManager scrolled to position: " + targetPosition);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in scrollToInitialPosition: " + e.getMessage());
+            try {
+                mGridLayoutManager.scrollToPosition(targetPosition);
+            } catch (Exception fallbackError) {
+                Log.e(TAG, "Fallback scroll also failed: " + fallbackError.getMessage());
+            }
+        }
+    }
+
+    public void scrollToToday() {
+        final String mTAG = "scrollToToday: ";
+
+        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+            if (mGridLayoutManager != null) {
+                mRecyclerView.smoothScrollToPosition(mTodayPosition);
+            }
+            Log.v(TAG, mTAG+"Scrolling to today, position: " + mTodayPosition);
+        } else {
+            // Rebuild cache centered on today
+            Log.d(TAG, mTAG + "Today not in cache, rebuilding");
+            mCurrentDate = LocalDate.now().withDayOfMonth(1);
+            setupInfiniteScrolling();
+        }
+    }
+
+
+     /**
+     * Maintain scroll position for GridLayoutManager.
+     *
+     * @param itemsAdded number of items added at the beginning
+     */
+
+    private void maintainScrollPosition(int itemsAdded) {
+        if (mGridLayoutManager != null) {
+            try {
+                mGridLayoutManager.scrollToPositionWithOffset(itemsAdded, 0);
+                if (DEBUG_FRAGMENT) {
+                    Log.d(TAG, "Maintained GridLayoutManager position");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error maintaining scroll position: " + e.getMessage());
+            }
+        }
+    }
+
+    // ======================================================================
+
+    // ================================= UI =================================
 
     /**
      * Configure the common Floating Action Button behavior.
@@ -344,15 +652,10 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
-    /**
-     * Setup infinite scrolling with optimized logic.
-     * Uses default LayoutManager scrolling behavior.
-     */
-    protected void setupInfiniteScrolling() {
-        setupInfiniteScrolling(true);
-    }
 
     /**
+     * TODO eliminare
+     *
      * Setup infinite scrolling with configurable LayoutManager usage.
      *
      * @param useLayoutManager whether to use LayoutManager for initial scrolling
@@ -1190,122 +1493,9 @@ public abstract class BaseFragment extends Fragment {
         return RecyclerView.NO_POSITION;
     }
 
-//    /**
-//     * Scroll to initial appropriate position.
-//     * Works safely with both LinearLayoutManager and GridLayoutManager.
-//     */
-//    protected void scrollToInitialPosition() {
-//        scrollToInitialPositionEnhanced();
-//        return;
-//
-//        final String mTAG = "scrollToInitialPosition: ";
-//
-//        if (mRecyclerView == null) return;
-//
-//        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-//        if (layoutManager == null) return;
-//
-//        try {
-//            int targetPosition = mTodayPosition >= 0 ? mTodayPosition : mCurrentCenterPosition;
-//
-//            if (layoutManager instanceof LinearLayoutManager) {
-//                ((LinearLayoutManager) layoutManager).scrollToPosition(targetPosition);
-//                if (DEBUG_FRAGMENT)
-//                    Log.d(TAG, mTAG+"LinearLayoutManager scrolled to position: " + targetPosition);
-//            } else if (layoutManager instanceof GridLayoutManager) {
-//                ((GridLayoutManager) layoutManager).scrollToPosition(targetPosition);
-//                if (DEBUG_FRAGMENT)
-//                    Log.d(TAG, mTAG+"GridLayoutManager scrolled to position: " + targetPosition);
-//            } else {
-//                // Generic fallback for any other LayoutManager
-//                mRecyclerView.scrollToPosition(targetPosition);
-//                if (DEBUG_FRAGMENT)
-//                    Log.d(TAG, mTAG+"Generic scroll to position: " + targetPosition);
-//            }
-//        } catch (Exception e) {
-//            Log.e(TAG, mTAG+"Error in scrollToInitialPosition: " + e.getMessage());
-//
-//            // Final fallback attempt
-//            try {
-//                if (mTodayPosition >= 0) {
-//                    mRecyclerView.scrollToPosition(mTodayPosition);
-//                } else {
-//                    mRecyclerView.scrollToPosition(mCurrentCenterPosition);
-//                }
-//            } catch (Exception fallbackError) {
-//                Log.e(TAG, mTAG+"Fallback scroll also failed: " + fallbackError.getMessage());
-//            }
-//        }
-//    }
 
-    /**
-     * ENHANCED: Initial scroll with better timing and fallbacks
-     */
-    protected void scrollToInitialPosition() {
-        final String mTAG = "scrollToInitialPositionEnhanced: ";
 
-        if (mRecyclerView == null) {
-            Log.e(TAG, mTAG + "RecyclerView is null");
-            return;
-        }
 
-        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-        if (layoutManager == null) {
-            Log.e(TAG, mTAG + "LayoutManager is null");
-            return;
-        }
-
-        // CRITICAL: Verify today position is valid before scrolling
-        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
-            try {
-                Log.d(TAG, mTAG + "Scrolling to today at position: " + mTodayPosition);
-
-                if (layoutManager instanceof LinearLayoutManager) {
-                    ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(mTodayPosition, 0);
-                } else if (layoutManager instanceof GridLayoutManager) {
-                    ((GridLayoutManager) layoutManager).scrollToPositionWithOffset(mTodayPosition, 0);
-                } else {
-                    mRecyclerView.scrollToPosition(mTodayPosition);
-                }
-
-                Log.d(TAG, mTAG + "Successfully scrolled to today");
-
-            } catch (Exception e) {
-                Log.e(TAG, mTAG + "Error scrolling to today: " + e.getMessage());
-                // Fallback to center position
-                try {
-                    mRecyclerView.scrollToPosition(mCurrentCenterPosition);
-                } catch (Exception fallbackError) {
-                    Log.e(TAG, mTAG + "Fallback scroll also failed: " + fallbackError.getMessage());
-                }
-            }
-        } else {
-            Log.w(TAG, mTAG + "Today position invalid (" + mTodayPosition + "), scrolling to center");
-            try {
-                mRecyclerView.scrollToPosition(mCurrentCenterPosition);
-            } catch (Exception e) {
-                Log.e(TAG, mTAG + "Center scroll failed: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Scroll to today's date.
-     * If today is not in cache, rebuilds cache centered on today.
-     */
-    public void scrollToToday() {
-        final String mTAG = "scrollToToday: ";
-
-        if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
-            mRecyclerView.smoothScrollToPosition(mTodayPosition);
-            Log.v(TAG, mTAG + "Scrolling to today, position: " + mTodayPosition);
-        } else {
-            // Rebuild cache centered on today
-            Log.d(TAG, mTAG + "Today not in cache, rebuilding");
-            mCurrentDate = LocalDate.now().withDayOfMonth(1);
-            setupInfiniteScrolling();
-        }
-    }
 
     /**
      * NEW: Load months around today when it's not in cache
@@ -1922,154 +2112,10 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
-    /**
-     * Maintain scroll position adapting to LayoutManager type.
-     * Handles null mLayoutManager gracefully.
-     *
-     * @param itemsAdded number of items added at the beginning
-     */
-    private void maintainScrollPosition(int itemsAdded) {
-        final String mTAG = "maintainScrollPosition: ";
 
-        if (mRecyclerView == null) return;
 
-        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-        if (layoutManager == null) return;
 
-        try {
-            if (layoutManager instanceof LinearLayoutManager) {
-                LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
-                linearManager.scrollToPositionWithOffset(itemsAdded, 0);
-                if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Maintained LinearLayoutManager position");
-            } else if (layoutManager instanceof GridLayoutManager) {
-                GridLayoutManager gridManager = (GridLayoutManager) layoutManager;
-                int currentFirst = gridManager.findFirstVisibleItemPosition();
-                if (currentFirst >= 0) {
-                    gridManager.scrollToPosition(currentFirst + itemsAdded);
-                    if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Maintained GridLayoutManager position");
-                }
-            } else {
-                // Generic fallback for other LayoutManager types
-                layoutManager.scrollToPosition(itemsAdded);
-                if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Maintained generic LayoutManager position");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error maintaining scroll position: " + e.getMessage());
-        }
-    }
 
-    /**
-     * Get first visible position regardless of LayoutManager type.
-     *
-     * @return first visible position or NO_POSITION if not determinable
-     */
-    protected int getFirstVisiblePosition() {
-        final String mTAG = "getFirstVisiblePosition: ";
-
-        if (mRecyclerView == null) return RecyclerView.NO_POSITION;
-
-        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-        if (layoutManager == null) return RecyclerView.NO_POSITION;
-
-        try {
-            if (layoutManager instanceof LinearLayoutManager) {
-                return ((LinearLayoutManager) layoutManager).findFirstVisibleItemPosition();
-            } else if (layoutManager instanceof GridLayoutManager) {
-                return ((GridLayoutManager) layoutManager).findFirstVisibleItemPosition();
-            } else {
-                // Generic approach for other LayoutManager types
-                View firstChild = layoutManager.getChildAt(0);
-                if (firstChild != null) {
-                    return mRecyclerView.getChildAdapterPosition(firstChild);
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error getting first visible position: " + e.getMessage());
-        }
-
-        return RecyclerView.NO_POSITION;
-    }
-
-    /**
-     * Get last visible position regardless of LayoutManager type.
-     *
-     * @return last visible position or NO_POSITION if not determinable
-     */
-    protected int getLastVisiblePosition() {
-        final String mTAG = "getLastVisiblePosition: ";
-
-        if (mRecyclerView == null) return RecyclerView.NO_POSITION;
-
-        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-        if (layoutManager == null) return RecyclerView.NO_POSITION;
-
-        try {
-            if (layoutManager instanceof LinearLayoutManager) {
-                return ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
-            } else if (layoutManager instanceof GridLayoutManager) {
-                return ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
-            } else {
-                // Generic approach for other LayoutManager types
-                int childCount = layoutManager.getChildCount();
-                if (childCount > 0) {
-                    View lastChild = layoutManager.getChildAt(childCount - 1);
-                    if (lastChild != null) {
-                        return mRecyclerView.getChildAdapterPosition(lastChild);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error getting last visible position: " + e.getMessage());
-        }
-
-        return RecyclerView.NO_POSITION;
-    }
-
-    /**
-     * Safe scroll to position that works with any LayoutManager.
-     *
-     * @param position target position to scroll to
-     */
-    protected void scrollToPositionSafely(int position) {
-        final String METHOD_TAG = TAG + " scrollToPositionSafely";
-
-        if (position < 0 || position >= mItemsCache.size() || mRecyclerView == null) return;
-
-        RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
-        if (layoutManager == null) return;
-
-        try {
-            if (layoutManager instanceof LinearLayoutManager) {
-                ((LinearLayoutManager) layoutManager).scrollToPosition(position);
-                if (DEBUG_FRAGMENT)
-                    Log.d(METHOD_TAG, "LinearLayoutManager scrolled to: " + position);
-            } else if (layoutManager instanceof GridLayoutManager) {
-                ((GridLayoutManager) layoutManager).scrollToPosition(position);
-                if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "GridLayoutManager scrolled to: " + position);
-            } else {
-                // Generic approach
-                mRecyclerView.scrollToPosition(position);
-                if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Generic scroll to: " + position);
-            }
-        } catch (Exception e) {
-            Log.e(METHOD_TAG, "Error scrolling to position: " + e.getMessage());
-            // Fallback to generic RecyclerView method
-            try {
-                mRecyclerView.scrollToPosition(position);
-            } catch (Exception fallbackError) {
-                Log.e(METHOD_TAG, "Fallback scroll also failed: " + fallbackError.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Smooth scroll sicuro che funziona con qualsiasi LayoutManager.
-     */
-    protected void smoothScrollToPositionSafely(int position) {
-        if (position < 0 || position >= mItemsCache.size()) return;
-
-        mRecyclerView.smoothScrollToPosition(position);
-    }
 
     // =======================================================
     // === ABSTRACT METHODS THAT SUBCLASSES MUST IMPLEMENT ===

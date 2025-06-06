@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/column_header_padding"
-    android:layout_marginVertical="@dimen/screen_margin_vertical">
+    android:layout_marginVertical="@dimen/spacing_xs">
     <!-- 4 dp -->
 
     <!-- Titolo del mese -->
@@ -13,6 +13,10 @@
         android:id="@+id/tv_month_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Material3.LabelMedium.Emphasized"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:gravity="center"
+        android:alpha="0.6"
         android:text="@string/placeholder_calendar_month"
         android:paddingVertical="@dimen/item_padding_small" />
 
@@ -20,7 +24,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/divider_height"
-        android:background="?attr/colorOutline"
-        android:layout_marginTop="@dimen/fab_margin" />
+        android:background="?attr/colorOutlineVariant"
+        android:layout_marginTop="@dimen/spacing_xs" />
 
 </LinearLayout>
