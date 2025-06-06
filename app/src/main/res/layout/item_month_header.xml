@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/column_header_padding"
-    android:layout_marginVertical="@dimen/activity_vertical_margin">
+    android:layout_marginVertical="@dimen/screen_margin_vertical">
     <!-- 4 dp -->
 
     <!-- Titolo del mese -->
@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/placeholder_calendar_month"
-        android:paddingVertical="8dp" />
+        android:paddingVertical="@dimen/item_padding_small" />
 
     <!-- Separatore tra i mesi -->
     <View

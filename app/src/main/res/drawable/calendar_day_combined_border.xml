@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/calendar_day_combined_border.xml -->
+<!-- Special border for combined states (Today + User Shift, etc.) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Transparent fill to show underlying content -->
+    <solid android:color="@android:color/transparent" />
+
+    <!-- Prominent border for combined states -->
+    <stroke
+        android:width="2dp"
+        android:color="?attr/colorTodayUserBorder" />
+
+    <!-- Match card corner radius -->
+    <corners android:radius="8dp" />
+
+</shape>

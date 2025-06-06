@@ -28,11 +28,11 @@
         layout="@layout/item_calendar_column_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:maxWidth="@dimen/list_maxview"
+        android:maxWidth="@dimen/content_max_width"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="@dimen/list_maxview" />
+        app:layout_constraintWidth_max="@dimen/content_max_width" />
 
     <!-- Lista dei mesi con scrolling infinito -->
     <androidx.recyclerview.widget.RecyclerView
@@ -41,7 +41,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:maxWidth="@dimen/list_maxview"
+        android:maxWidth="@dimen/content_max_width"
         android:overScrollMode="never"
         android:paddingHorizontal="8dp"
         android:paddingBottom="16dp"
@@ -51,7 +51,7 @@
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@id/qdue_calendar_column_header"
-        app:layout_constraintWidth_max="@dimen/list_maxview"
+        app:layout_constraintWidth_max="@dimen/content_max_width"
         tools:listitem="@layout/item_calendar_month" />
 
     <!-- Floating Action Button per tornare a oggi -->

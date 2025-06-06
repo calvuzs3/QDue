@@ -1,109 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- res/layout/item_dayslist_column_header.xml -->
+<!-- OPTIMIZED: Consistent spacing and typography -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="@dimen/header_padding_top"
-    android:paddingBottom="@dimen/header_padding_bottom"
-    android:paddingHorizontal="@dimen/dayslist_row_item_padding">
+    android:background="?attr/colorSurface">
 
+    <!-- Header content -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:layout_height="@dimen/dayslist_header_height"
         android:orientation="horizontal"
-        android:layout_marginStart="6dp"
-        android:layout_marginLeft="@dimen/column_header_padding"
-        android:layout_marginRight="@dimen/column_header_padding"
-        android:layout_marginEnd="@dimen/column_header_padding"
-        android:padding="@dimen/column_header_padding"
-        android:paddingStart="@dimen/column_header_padding"
-        android:paddingEnd="@dimen/column_header_padding">
+        android:gravity="center_vertical"
+        android:background="?attr/colorPrimary"
+        android:paddingHorizontal="@dimen/dayslist_header_padding"
+        android:elevation="@dimen/elevation_card">
 
+        <!-- Day number header -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_day_column_width"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|start"
-            android:minWidth="@dimen/column_min_width_nr"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="center"
             android:text="@string/header_day"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
+        <!-- Weekday header -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_weekday_column_width"
             android:layout_height="wrap_content"
-            android:layout_weight="6"
-            android:gravity="center_vertical"
-            android:minWidth="@dimen/column_min_width_day"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="start|center_vertical"
             android:text="@string/header_weekday"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:paddingStart="@dimen/spacing_s"
+            android:paddingEnd="@dimen/spacing_s" />
 
+        <!-- Shift headers -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|center_horizontal"
-            android:minWidth="@dimen/column_min_width"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="center"
             android:text="@string/header_morning"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
             android:textStyle="bold" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|center_horizontal"
-            android:minWidth="@dimen/column_min_width"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="center"
             android:text="@string/header_afternoon"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginStart="@dimen/spacing_xs" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical|center_horizontal"
-            android:minWidth="@dimen/column_min_width"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="center"
             android:text="@string/header_night"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginStart="@dimen/spacing_xs" />
 
+        <!-- Rest header -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center_vertical|center_horizontal"
-            android:minWidth="@dimen/column_min_width"
-            android:paddingStart="@dimen/column_header_padding"
-            android:paddingEnd="@dimen/column_header_padding"
+            android:gravity="center"
             android:text="@string/header_off"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/header_text_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginStart="@dimen/spacing_s" />
 
     </LinearLayout>
 
+    <!-- Bottom divider -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="@dimen/divider_height"
-        android:background="?attr/colorOutline"
-        android:visibility="visible" />
+        android:layout_height="@dimen/divider_thick"
+        android:background="?attr/colorOutline" />
 
 </LinearLayout>

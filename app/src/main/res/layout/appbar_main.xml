@@ -14,22 +14,26 @@
     you can use android:layout_height="wrap_content" + android:minHeight="?attr/actionBarSize"
     on your MaterialToolbar
     -->
+    <!-- res/layout/appbar_main.xml -->
+    <!-- FIXED: AppBar visibility issue -->
     <com.google.android.material.appbar.AppBarLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        app:elevation="@dimen/elevation_card">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
-            android:backgroundTint="?attr/colorPrimary"
-            app:navigationIcon="@android:drawable/menu_frame"
-            app:menu="@menu/toolbar_menu"
+            android:layout_height="@dimen/toolbar_height"
+            android:background="?attr/colorPrimary"
             app:title="@string/app_name"
-            app:titleTextAppearance="@style/TextAppearance.Material3.HeadlineLarge"
-            app:titleTextColor="?attr/colorOnPrimary" />
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:menu="@menu/toolbar_menu"
+            app:navigationIconTint="?attr/colorOnPrimary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

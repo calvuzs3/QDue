@@ -1,78 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/layout/item_calendar_day.xml -->
-<!-- Enhanced calendar day cell with better visibility -->
+<!-- OPTIMIZED: Standardized dimensions and improved hierarchy -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="1dp"
+    android:layout_height="@dimen/calendar_day_size"
+    android:layout_margin="@dimen/calendar_day_margin"
+
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="6dp"
-    app:cardElevation="1dp"
+    app:cardCornerRadius="@dimen/calendar_day_corner_radius"
+    app:cardElevation="@dimen/elevation_none"
     app:strokeColor="?attr/colorOutlineVariant"
-    app:strokeWidth="0.8dp"
-    android:minHeight="48dp"
+    app:strokeWidth="0.5dp"
+
     app:rippleColor="?attr/colorPrimaryContainer"
-    tools:theme="@style/Theme.QDue">
+    android:clickable="true"
+    android:focusable="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="4dp">
+    <!-- Main content container -->
+<LinearLayout
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+android:gravity="center"
+android:padding="@dimen/calendar_day_padding">
 
-        <!-- Day Number - Made larger and more prominent -->
-        <TextView
-            android:id="@+id/tv_day_number"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:minHeight="28dp"
-            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="?attr/colorOnSurface"
-            android:text="@string/placeholder_calendar_day"
-            tools:text="15" />
+<!-- Day number with optimized typography -->
+<TextView
+    android:id="@+id/tv_day_number"
+    android:layout_width="wrap_content"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:gravity="center"
+    android:minHeight="@dimen/spacing_l"
 
-        <!-- Day Name (optional, for header days) -->
-        <TextView
-            android:id="@+id/tv_day_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-            android:textSize="10sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:visibility="gone"
-            android:text="@string/placeholder_calendar_day_n"
-            tools:text="MON"
-            tools:visibility="visible" />
+android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+android:textStyle="bold"
+android:textSize="14sp"
+android:textColor="?attr/colorOnSurface"
+android:fontFamily="@font/lato_bold"
 
-        <!-- Shift Indicator Bar - Made more prominent -->
-        <View
-            android:id="@+id/v_shift_indicator"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_marginTop="2dp"
-            android:background="?attr/colorPrimary"
-            android:visibility="invisible"
-            tools:visibility="visible"
-            tools:background="?attr/colorShiftFirst" />
+tools:text="15" />
 
-    </LinearLayout>
+<!-- Shift indicator with standardized dimensions -->
+<View
+    android:id="@+id/v_shift_indicator"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/shift_indicator_height"
+    android:layout_marginTop="@dimen/spacing_xs"
+    android:layout_marginHorizontal="@dimen/spacing_xs"
 
-    <!-- State overlay for today/selected states -->
-    <View
-        android:id="@+id/v_state_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorTodayBackground"
-        android:alpha="0.2"
-        android:visibility="gone" />
+android:background="@drawable/shift_indicator_rounded"
+android:visibility="invisible"
 
-</com.google.android.material.card.MaterialCardView>
+tools:visibility="visible"
+tools:background="?attr/colorShiftAfternoon" />
+
+</LinearLayout>
+
+    <!-- Hierarchical highlighting overlays -->
+
+    <!-- Today overlay (highest priority) -->
+<View
+android:id="@+id/v_today_overlay"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@drawable/today_overlay"
+android:visibility="gone"
+tools:visibility="visible" />
+
+    <!-- User shift overlay -->
+<View
+android:id="@+id/v_user_shift_overlay"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@drawable/user_shift_overlay"
+android:visibility="gone" />
+
+    <!-- Sunday overlay -->
+<View
+android:id="@+id/v_sunday_overlay"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@drawable/sunday_overlay"
+android:visibility="gone" />
+
+    <!-- Combined state border -->
+<View
+android:id="@+id/v_combined_border"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@drawable/combined_state_border"
+android:visibility="gone" />
+
+    </com.google.android.material.card.MaterialCardView>

@@ -1,44 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="nav_header_vertical_spacing">8dp</dimen>
-    <dimen name="nav_header_height">192dp</dimen>
-    <dimen name="app_buttons_width">56dp</dimen>
-    <dimen name="app_buttons_height">56dp</dimen>
-    <dimen name="dialog_padding">16dp</dimen>
+    <!-- ============================================ -->
+    <!-- STANDARDIZED SPACING SYSTEM -->
+    <!-- Material 3 compliant 8dp grid system -->
+    <!-- ============================================ -->
+
+    <!-- Base spacing units -->
+    <dimen name="spacing_xs">4dp</dimen>      <!-- Extra small -->
+    <dimen name="spacing_s">8dp</dimen>       <!-- Small -->
+    <dimen name="spacing_m">16dp</dimen>      <!-- Medium (standard) -->
+    <dimen name="spacing_l">24dp</dimen>      <!-- Large -->
+    <dimen name="spacing_xl">32dp</dimen>     <!-- Extra large -->
+    <dimen name="spacing_xxl">48dp</dimen>    <!-- Double extra large -->
+
+    <!-- ============================================ -->
+    <!-- CONTENT SPACING -->
+    <!-- ============================================ -->
+
+    <!-- Screen margins -->
+    <dimen name="screen_margin_horizontal">@dimen/spacing_m</dimen>
+    <dimen name="screen_margin_vertical">@dimen/spacing_m</dimen>
+
+    <!-- Content padding -->
+    <dimen name="content_padding">@dimen/spacing_m</dimen>
+    <dimen name="content_padding_large">@dimen/spacing_l</dimen>
+
+    <!-- Item spacing -->
+    <dimen name="item_margin">@dimen/spacing_s</dimen>
+    <dimen name="item_padding">@dimen/spacing_m</dimen>
+    <dimen name="item_padding_small">@dimen/spacing_s</dimen>
+
+    <!-- ============================================ -->
+    <!-- COMPONENT DIMENSIONS -->
+    <!-- ============================================ -->
+
+    <!-- Touch targets (Material Design guidelines) -->
+    <dimen name="touch_target_min">48dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="fab_margin">@dimen/spacing_m</dimen>
+
+    <!-- Toolbar and AppBar -->
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="appbar_elevation">4dp</dimen>
+
+    <!-- Card components -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="card_margin">@dimen/spacing_s</dimen>
+    <dimen name="card_padding">@dimen/spacing_m</dimen>
+
+    <!-- ============================================ -->
+    <!-- CALENDAR SPECIFIC -->
+    <!-- ============================================ -->
+
+    <!-- Calendar day cells -->
+    <dimen name="calendar_day_size">48dp</dimen>
+    <dimen name="calendar_day_margin">1dp</dimen>
+    <dimen name="calendar_day_padding">@dimen/spacing_xs</dimen>
+    <dimen name="calendar_day_corner_radius">8dp</dimen>
+
+    <!-- Shift indicators -->
+    <dimen name="shift_indicator_height">3dp</dimen>
+    <dimen name="shift_indicator_corner_radius">2dp</dimen>
+
+    <!-- Month headers -->
+    <dimen name="month_header_padding_vertical">@dimen/spacing_m</dimen>
+    <dimen name="month_header_padding_horizontal">@dimen/spacing_s</dimen>
+
+    <!-- ============================================ -->
+    <!-- DAYS LIST SPECIFIC -->
+    <!-- ============================================ -->
+
+    <!-- Row dimensions -->
+    <dimen name="dayslist_row_height">56dp</dimen>
+    <dimen name="dayslist_row_padding_vertical">@dimen/spacing_s</dimen>
+    <dimen name="dayslist_row_padding_horizontal">@dimen/spacing_m</dimen>
+
+    <!-- Column widths -->
+    <dimen name="dayslist_day_column_width">48dp</dimen>
+    <dimen name="dayslist_weekday_column_width">80dp</dimen>
+    <dimen name="dayslist_shift_column_width">40dp</dimen>
+
+    <!-- Header -->
+    <dimen name="dayslist_header_height">48dp</dimen>
+    <dimen name="dayslist_header_padding">@dimen/spacing_s</dimen>
+
+    <!-- Dividers -->
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="divider_thick">2dp</dimen>
+
+
+    <!-- ============================================ -->
+    <!-- DIALOG SPECIFIC -->
+    <!-- ============================================ -->
+
     <dimen name="legenda_text_size">14sp</dimen>
-    <dimen name="divider_height">2dp</dimen>
-    <dimen name="column_header_padding">2dp</dimen>
-    <dimen name="header_text_size">12sp</dimen>
-    <dimen name="column_min_width">40dp</dimen>
-    <dimen name="column_min_width_nr">20dp</dimen>
-    <dimen name="column_min_width_day">75dp</dimen>
-    <dimen name="dayslist_row_padding">2dp</dimen>
-    <dimen name="dayslist_row_item_padding">8dp</dimen>
-    <dimen name="dayslist_row_divider_height">1dp</dimen>
-    <dimen name="header_padding_top">8dp</dimen>
-    <dimen name="header_padding_bottom">6dp</dimen>
-    <dimen name="fab_elevation">6dp</dimen>
-    <dimen name="calendar_day_height">38dp</dimen>
-    <dimen name="calendar_day_margin">4dp</dimen>
-    <dimen name="calendar_day_padding">4dp</dimen>
+    <dimen name="dialog_padding">@dimen/spacing_l</dimen>
 
-    <!-- FAB -->
-    <dimen name="fab_margin">16dp</dimen>
+    <!-- ============================================ -->
+    <!-- COMMON SPECIFIC -->
+    <!-- ============================================ -->
 
-    <!-- Dimensioni specifiche per sidebar -->
+    <dimen name="column_header_padding">@dimen/spacing_s</dimen>
+
+    <!-- ============================================ -->
+    <!-- NAVIGATION COMPONENTS -->
+    <!-- ============================================ -->
+
+    <!-- Bottom Navigation -->
+    <dimen name="bottom_nav_height">80dp</dimen>
+    <dimen name="bottom_nav_icon_size">24dp</dimen>
+
+    <!-- Sidebar Navigation -->
     <dimen name="sidebar_width">320dp</dimen>
-    <dimen name="sidebar_header_height">96dp</dimen>
+    <dimen name="sidebar_header_height">72dp</dimen>
     <dimen name="sidebar_item_height">48dp</dimen>
-    <dimen name="sidebar_item_padding">16dp</dimen>
+    <dimen name="sidebar_item_padding_horizontal">@dimen/spacing_m</dimen>
+    <dimen name="sidebar_item_padding_vertical">12dp</dimen>
 
-    <!-- Navigation items -->
-    <dimen name="nav_item_icon_size">24dp</dimen>
-    <dimen name="nav_item_text_size">16sp</dimen>
+    <!-- Navigation icons -->
+    <dimen name="nav_icon_size">24dp</dimen>
+    <dimen name="nav_icon_size_small">20dp</dimen>
 
-    <!-- Spacing -->
-    <dimen name="content_margin_land">8dp</dimen>
-    <dimen name="list_maxview">500dp</dimen>
+    <!-- ============================================ -->
+    <!-- RESPONSIVE BREAKPOINTS -->
+    <!-- ============================================ -->
 
+    <!-- Content max width for readability -->
+    <dimen name="content_max_width">600dp</dimen>
+    <dimen name="list_max_width">500dp</dimen>
+
+    <!-- Tablet specific -->
+    <dimen name="tablet_margin">@dimen/spacing_xl</dimen>
+    <dimen name="tablet_sidebar_width">360dp</dimen>
+
+    <!-- ============================================ -->
+    <!-- TEXT AND TYPOGRAPHY -->
+    <!-- ============================================ -->
+
+    <!-- Line spacing -->
+    <dimen name="text_line_spacing">4dp</dimen>
+
+    <!-- Icon and text spacing -->
+    <dimen name="icon_text_spacing">@dimen/spacing_s</dimen>
+
+    <!-- ============================================ -->
+    <!-- ELEVATION LEVELS -->
+    <!-- Material Design elevation scale -->
+    <!-- ============================================ -->
+
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_card">2dp</dimen>
+    <dimen name="elevation_fab">6dp</dimen>
+    <dimen name="elevation_navbar">8dp</dimen>
+    <dimen name="elevation_sidebar">12dp</dimen>
+    <dimen name="elevation_dialog">24dp</dimen>
 </resources>

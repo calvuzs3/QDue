@@ -1,82 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- res/layout/item_dayslist_row.xml -->
+<!-- OPTIMIZED: Standardized spacing and improved readability -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingHorizontal="@dimen/dayslist_row_item_padding"
-    tools:ignore="RtlHardcoded">
+    android:layout_height="@dimen/dayslist_row_height"
+    android:orientation="vertical">
 
+    <!-- Main row content -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="horizontal"
-        android:padding="@dimen/dayslist_row_padding">
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/dayslist_row_padding_horizontal"
+        android:paddingVertical="@dimen/dayslist_row_padding_vertical"
+        android:background="?attr/selectableItemBackground">
 
+        <!-- Day number column -->
         <TextView
             android:id="@+id/tday"
-            android:layout_width="30dp"
+            android:layout_width="@dimen/dayslist_day_column_width"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:minWidth="18dp"
-            android:layout_weight="1"/>
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:fontFamily="@font/lato_bold"
+            tools:text="15" />
 
+        <!-- Weekday name column -->
         <TextView
             android:id="@+id/twday"
-            android:layout_width="80dp"
+            android:layout_width="@dimen/dayslist_weekday_column_width"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_weight="6"/>
+            android:gravity="start|center_vertical"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:paddingStart="@dimen/spacing_s"
+            tools:text="Lunedì" />
 
+        <!-- Shift columns with consistent width -->
         <TextView
             android:id="@+id/tt1"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:minWidth="35dp"
-            android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurface"
+            android:background="@drawable/shift_cell_background"
+            android:padding="@dimen/spacing_xs"
+            tools:text="A" />
 
         <TextView
             android:id="@+id/tt2"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:minWidth="35dp"
-            android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurface"
+            android:background="@drawable/shift_cell_background"
+            android:padding="@dimen/spacing_xs"
+            android:layout_marginStart="@dimen/spacing_xs"
+            tools:text="B" />
 
         <TextView
             android:id="@+id/tt3"
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"
-            android:minWidth="35dp"
-            android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurface"
+            android:background="@drawable/shift_cell_background"
+            android:padding="@dimen/spacing_xs"
+            android:layout_marginStart="@dimen/spacing_xs"
+            tools:text="C" />
 
+        <!-- Rest teams column -->
         <TextView
             android:id="@+id/ttR"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minWidth="35dp"
-            android:layout_gravity="end"
+            android:layout_weight="1"
             android:gravity="center"
-            android:layout_weight="1"/>
-
-<!--        <TextView-->
-<!--            android:id="@+id/ttE"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="0"-->
-<!--            android:visibility="gone" />-->
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:padding="@dimen/spacing_xs"
+            android:layout_marginStart="@dimen/spacing_s"
+            tools:text="D,E" />
 
     </LinearLayout>
 
+    <!-- Row divider -->
     <View
-        android:id="@+id/item_dayslist_row_separator"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dayslist_row_divider_height"
-        android:background="?attr/colorOutline" />
+        android:layout_height="@dimen/divider_height"
+        android:background="?attr/colorOutlineVariant"
+        android:layout_marginHorizontal="@dimen/spacing_m" />
 
 </LinearLayout>

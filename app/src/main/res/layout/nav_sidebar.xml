@@ -1,60 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/layout/nav_sidebar.xml -->
-<!-- Sidebar Navigation component for landscape mode -->
-<LinearLayout
+<!-- OPTIMIZED: Compact sidebar for smartphones, expandable for tablets -->
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/sidebar_container"
     android:layout_width="320dp"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:elevation="8dp">
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="0dp">
 
-    <!-- Sidebar Header with App Branding -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/sidebar_header_height"
-        android:orientation="vertical"
-        android:gravity="bottom|end"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:background="@drawable/side_nav_bar">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- App Name -->
+        <!-- COMPACT HEADER for smartphones -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/sidebar_header_gradient">
+
+            <!-- Compact App Icon -->
+<!--            <ImageView-->
+<!--                android:layout_width="32dp"-->
+<!--                android:layout_height="32dp"-->
+<!--                android:layout_marginEnd="12dp"-->
+<!--                android:src="@mipmap/ic_launcher"-->
+<!--                android:contentDescription="@string/app_name"-->
+<!--                app:tint="?attr/colorOnPrimary" />-->
+
+            <!-- Compact Text -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:fontFamily="@font/lato_bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_desc"
+                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:alpha="0.8" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- NAVIGATION MENU -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/sidebar_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="?attr/colorSurface"
+            android:paddingTop="8dp"
+            app:menu="@menu/sidebar_navigation_menu"
+
+            app:itemTextAppearance="@style/TextAppearance.Material3.LabelLarge"
+            app:itemTextColor="@color/nav_sidebar_item_color"
+            app:itemIconTint="@color/nav_sidebar_item_color"
+            app:itemIconSize="22dp"
+
+            app:itemShapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+            app:itemShapeFillColor="?attr/colorSecondaryContainer"
+            app:itemShapeInsetStart="12dp"
+            app:itemShapeInsetEnd="12dp"
+            app:itemShapeInsetTop="2dp"
+            app:itemShapeInsetBottom="2dp"
+
+            app:itemVerticalPadding="12dp"
+            app:itemHorizontalPadding="16dp"
+            app:itemMinHeight="48dp"
+
+            app:itemRippleColor="@color/navigation_ripple_color"
+            app:headerLayout="@null" />
+
+        <!-- MINIMAL FOOTER -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textAlignment="viewEnd"
-            android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
-            android:textColor="?attr/colorOnPrimary" />
-
-        <!-- App ID/Version -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:padding="12dp"
             android:text="@string/app_version"
-            android:textAlignment="viewEnd"
-            android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-            android:textColor="?attr/colorOnPrimary"
-            android:alpha="0.7" />
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAlignment="center"
+            android:alpha="0.5"
+            android:background="?attr/colorSurfaceVariant" />
 
     </LinearLayout>
 
-    <!-- Navigation Menu -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/sidebar_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurfaceVariant"
-        android:scrollbars="none"
-        app:menu="@menu/sidebar_navigation_menu"
-        app:itemTextColor="@color/nav_sidebar_item_color"
-        app:itemIconTint="@color/nav_sidebar_item_color"
-        app:itemShapeAppearance="@style/Widget.Material3.SideSheet"
-        app:itemShapeInsetStart="8dp"
-        app:itemShapeInsetEnd="8dp"
-        app:itemRippleColor="@color/navigation_ripple_color"
-        app:headerLayout="@null"
-        app:elevation="0dp" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

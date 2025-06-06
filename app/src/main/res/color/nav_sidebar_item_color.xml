@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/color/nav_sidebar_item_color.xml -->
-<!-- Enhanced selector for Sidebar Navigation with refined state management -->
+<!-- SIMPLIFIED: Navigation item color selector with Material 3 states -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Active/Selected state - Strong primary accent for current section -->
+    <!-- Active/Selected state - Primary color for current section -->
     <item android:color="?attr/colorPrimary" android:state_checked="true" />
 
-    <!-- Pressed state - Immediate feedback with container color -->
-    <item android:color="?attr/colorPrimaryContainer" android:state_pressed="true" />
+    <!-- Pressed state - Immediate feedback -->
+    <item android:color="?attr/colorOnSecondaryContainer" android:state_pressed="true" />
 
-    <!-- Focused state - Keyboard navigation accessibility -->
+    <!-- Focused state - Accessibility support -->
     <item android:color="?attr/colorPrimary" android:state_focused="true" />
 
-    <!-- Hovered state - Mouse interaction for tablets/chromebooks -->
+    <!-- Hovered state - Mouse/trackpad support -->
     <item android:color="?attr/colorOnSurface" android:state_hovered="true" />
 
-    <!-- Default inactive state - Readable but subtle -->
+    <!-- Default state - Subtle but readable -->
     <item android:color="?attr/colorOnSurfaceVariant" />
 
 </selector>

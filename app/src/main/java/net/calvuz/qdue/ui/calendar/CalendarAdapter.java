@@ -67,7 +67,7 @@ public class CalendarAdapter extends BaseAdapter {
         setupDayNumber(calendarHolder, day, dayItem);
 
         // Setup day name (hidden for calendar view)
-        calendarHolder.tvDayName.setVisibility(View.GONE);
+//        calendarHolder.tvDayName.setVisibility(View.GONE);
 
         // Setup background and highlighting
         setupCellBackground(calendarHolder, dayItem);
@@ -81,7 +81,7 @@ public class CalendarAdapter extends BaseAdapter {
      */
     private void setupEmptyCell(CalendarDayViewHolder holder) {
         holder.tvDayNumber.setText("");
-        holder.tvDayName.setText("");
+//        holder.tvDayName.setText("");
         holder.vShiftIndicator.setVisibility(View.INVISIBLE);
         holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         holder.itemView.setAlpha(0.3f); // Make empty cells less prominent
@@ -240,13 +240,13 @@ public class CalendarAdapter extends BaseAdapter {
      */
     public class CalendarDayViewHolder extends DayViewHolder {
         public final TextView tvDayNumber;
-        public final TextView tvDayName;
+//        public final TextView tvDayName;
         public final View vShiftIndicator;
 
         public CalendarDayViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDayNumber = itemView.findViewById(R.id.tv_day_number);
-            tvDayName = itemView.findViewById(R.id.tv_day_name);
+//            tvDayName = itemView.findViewById(R.id.tv_day_name);
             vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);
 
             // Ensure minimum touch target size for accessibility

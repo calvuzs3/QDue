@@ -34,3 +34,31 @@ Seleziona la tua squadra di appartenenza e QDue calcolerà automaticamente tutti
 QDue è lo strumento indispensabile per chiunque lavori con turni a ciclo continuo. Che tu sia un operatore, un supervisore o un coordinatore, avrai sempre sotto controllo l'organizzazione del lavoro della tua squadra e di tutto il team.
 
 Scarica QDue oggi e trasforma la gestione dei tuoi turni di lavoro in un'esperienza semplice ed efficiente.
+
+
+## 1.1.1 Grafica Migliorata
+
+#### ✅ Sistema Colori Semplificato
+
+Material You primario con fallback purple-blue del logo
+Combinazioni per stati sovrapposti
+
+#### ✅ Temi Ottimizzati
+
+Base theme unificato Material 3 + Dynamic Colors
+Attributi custom ridotti all'essenziale
+Supporto automatico light/dark theme
+
+#### ✅ Sidebar Migliorata
+
+Design Material 3 con gradient header
+Navigazione ottimizzata con stati chiari
+Pronta per tablet con layout adattivo
+
+1. Sistema dimensioni standardizzato
+2. Layout ottimizzati
+3. Spacing unificato
+4. Miglioramenti smartphone
+
+
+## 1.0.1 Primo rilascio beta
