@@ -2,6 +2,7 @@
 # **QDue**
 
 e-Shifts - calendarietto elettronico per i turni lavoro ciclo continuo 4-2
+[Sito web di riferimento in questo link](https://www.calvuz.net/work/qdue-gestione-turni-semplificata)
 
 ## Descrizione breve
 
