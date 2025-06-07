@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/navigation_rail_primary_menu.xml -->
+<!-- Primary NavigationRail menu for large landscape (main views only) -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <!-- Calendar View - Primary destination -->
+        <item
+            android:id="@+id/nav_calendar"
+            android:icon="@drawable/ic_view_calendar"
+            android:title="@string/menu_calendar"
+            android:contentDescription="@string/menu_calendar"
+            android:checked="true" />
+
+        <!-- Days List View - Secondary destination -->
+        <item
+            android:id="@+id/nav_dayslist"
+            android:icon="@drawable/ic_view_list"
+            android:title="@string/menu_dayslist"
+            android:contentDescription="@string/menu_dayslist" />
+
+        <!-- Drawer Toggle - Opens secondary drawer -->
+        <item
+            android:id="@+id/nav_drawer_toggle"
+            android:icon="@drawable/ic_menu"
+            android:title="@string/nav_header_other"
+            android:contentDescription="@string/navigation_drawer_open" />
+
+    </group>
+
+</menu>

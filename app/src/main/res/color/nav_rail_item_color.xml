@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/color/nav_rail_item_color.xml -->
+<!-- Color selector for NavigationRail items -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Active/Selected state -->
+    <item android:color="?attr/colorPrimary" android:state_checked="true" />
+
+    <!-- Pressed state -->
+    <item android:color="?attr/colorPrimaryContainer" android:state_pressed="true" />
+
+    <!-- Focused state -->
+    <item android:color="?attr/colorPrimary" android:state_focused="true" />
+
+    <!-- Hovered state -->
+    <item android:color="?attr/colorOnSurface" android:state_hovered="true" />
+
+    <!-- Default inactive state -->
+    <item android:color="?attr/colorOnSurfaceVariant" />
+
+</selector>

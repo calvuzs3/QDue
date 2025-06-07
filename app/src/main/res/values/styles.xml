@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/values/styles.xml -->
+<!-- Shape Appearances for NavigationRail -->
+
+<resources>
+
+    <!-- ============================================ -->
+    <!-- NAVIGATION RAIL -->
+    <!-- ============================================ -->
+
+    <style name="ShapeAppearance.QDue.SmallComponent" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
+
+    <style name="ShapeAppearance.QDue.MediumComponent" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.QDue.LargeComponent" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- NAVIGATION RAIL SYSTEM -->
+    <!-- ============================================ -->
+
+    <!-- NavigationRail Enhanced Styles -->
+    <style name="Widget.QDue.NavigationRail" parent="Widget.Material3.NavigationRailView">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="itemTextColor">@color/nav_rail_item_color</item>
+        <item name="itemIconTint">@color/nav_rail_item_color</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.QDue.NavigationRail.ActiveIndicator</item>
+        <item name="itemRippleColor">@color/navigation_ripple_color</item>
+        <item name="elevation">3dp</item>
+        <item name="android:minWidth">72dp</item>
+        <item name="menuGravity">center</item>
+        <item name="headerLayout">@null</item>
+    </style>
+
+    <!-- NavigationRail Active Indicator -->
+    <style name="Widget.QDue.NavigationRail.ActiveIndicator" parent="Widget.Material3.NavigationRailView.ActiveIndicator">
+        <item name="android:color">?attr/colorSecondaryContainer</item>
+        <item name="android:width">56dp</item>
+        <item name="android:height">32dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
+        <item name="marginHorizontal">4dp</item>
+    </style>
+
+    <!-- NavigationRail Expanded (for landscape small) -->
+    <style name="Widget.QDue.NavigationRail.Expanded" parent="Widget.QDue.NavigationRail">
+        <item name="android:minWidth">120dp</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemPaddingTop">12dp</item>
+        <item name="itemPaddingBottom">12dp</item>
+    </style>
+
+    <!-- Extended FAB for landscape -->
+    <style name="Widget.QDue.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
+        <item name="iconTint">?attr/colorOnPrimaryContainer</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
+        <item name="elevation">3dp</item>
+    </style>
+
+    <!-- Night mode variants -->
+    <style name="Widget.QDue.NavigationRail.Dark" parent="Widget.QDue.NavigationRail">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="elevation">6dp</item>
+    </style>
+</resources>

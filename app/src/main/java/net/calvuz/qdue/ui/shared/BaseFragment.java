@@ -9,7 +9,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -20,6 +24,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.QDueMainActivity;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
@@ -75,7 +81,6 @@ public abstract class BaseFragment extends Fragment {
      */
     protected LinearLayoutManager mLayoutManager;
     protected GridLayoutManager mGridLayoutManager;
-
 
     /**
      * Floating Action Button for "go to today" functionality
@@ -302,12 +307,11 @@ public abstract class BaseFragment extends Fragment {
      * This unifies scroll handling, infinite loading, and sticky header logic.
      */
     protected void setupRecyclerView() {
-
         final String mTAG = "setupRecyclerView: ";
         Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
-            Log.e(TAG, mTAG+"RecyclerView is null - subclass must implement findViews()");
+            Log.e(TAG, mTAG + "RecyclerView is null - subclass must implement findViews()");
             return;
         }
 
@@ -346,7 +350,7 @@ public abstract class BaseFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
 
-            Log.d(mTAG, mTAG+"Configured GridLayoutManager with " + columnCount + " columns");
+        Log.d(mTAG, mTAG + "Configured GridLayoutManager with " + columnCount + " columns");
     }
 
     /**
@@ -354,7 +358,6 @@ public abstract class BaseFragment extends Fragment {
      * DayslistViewFragment returns 1, CalendarViewFragment returns 7.
      */
     protected abstract int getGridColumnCount();
-
 
     // ======================================================================
 
@@ -426,6 +429,7 @@ public abstract class BaseFragment extends Fragment {
      */
     private void handleUnifiedScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
         final String mTAG = "handleUnifiedScrollBasedLoading: ";
+        Log.v(TAG, mTAG + "called.");
 
         // Conservative trigger zones
         int loadTriggerZone = getLoadTriggerZone();
@@ -433,10 +437,7 @@ public abstract class BaseFragment extends Fragment {
         // Load upward (previous months) when near top
         if (firstVisible <= loadTriggerZone && scrollDirection <= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
-
-            if (DEBUG_FRAGMENT) {
-                Log.d(TAG, mTAG + "Triggering top load at position: " + firstVisible);
-            }
+            Log.v(TAG, mTAG + "Triggering top load at position: " + firstVisible);
 
             mMainHandler.postDelayed(() -> {
                 if (!mIsUpdatingCache.get() && !mIsPendingTopLoad.get()) {
@@ -448,10 +449,7 @@ public abstract class BaseFragment extends Fragment {
         // Load downward (next months) when near bottom
         if (lastVisible >= mItemsCache.size() - loadTriggerZone && scrollDirection >= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
-
-            if (DEBUG_FRAGMENT) {
-                Log.d(TAG, mTAG + "Triggering bottom load at position: " + lastVisible);
-            }
+            Log.v(TAG, mTAG + "Triggering bottom load at position: " + lastVisible);
 
             mMainHandler.postDelayed(() -> {
                 if (!mIsUpdatingCache.get() && !mIsPendingBottomLoad.get()) {
@@ -517,6 +515,9 @@ public abstract class BaseFragment extends Fragment {
      * Shows only month name for current year, "Month Year" for other years.
      */
     private void updateToolbarTitle(LocalDate monthDate) {
+        final String mTAG = "updateToolbarTitle: ";
+        Log.v(TAG, mTAG + "called.");
+
         if (getActivity() == null) return;
 
         try {
@@ -539,7 +540,7 @@ public abstract class BaseFragment extends Fragment {
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "updateToolbarTitle: Error updating toolbar title: " + e.getMessage());
+            Log.e(TAG, mTAG + "updateToolbarTitle: Error updating toolbar title: " + e.getMessage());
         }
     }
 
@@ -577,21 +578,22 @@ public abstract class BaseFragment extends Fragment {
      * Updated scroll methods for GridLayoutManager.
      */
     protected void scrollToInitialPosition() {
+        final String mTAG = "scrollToInitialPosition: ";
+        Log.v(TAG, mTAG + "called.");
+
         if (mGridLayoutManager == null) return;
 
         int targetPosition = mTodayPosition >= 0 ? mTodayPosition : mCurrentCenterPosition;
 
         try {
             mGridLayoutManager.scrollToPositionWithOffset(targetPosition, 0);
-            if (DEBUG_FRAGMENT) {
-                Log.d(TAG, "GridLayoutManager scrolled to position: " + targetPosition);
-            }
+            Log.v(TAG, mTAG + "GridLayoutManager scrolled to position: " + targetPosition);
         } catch (Exception e) {
-            Log.e(TAG, "Error in scrollToInitialPosition: " + e.getMessage());
+            Log.e(TAG, mTAG + "Error in scrollToInitialPosition: " + e.getMessage());
             try {
                 mGridLayoutManager.scrollToPosition(targetPosition);
             } catch (Exception fallbackError) {
-                Log.e(TAG, "Fallback scroll also failed: " + fallbackError.getMessage());
+                Log.e(TAG, mTAG + "Fallback scroll also failed: " + fallbackError.getMessage());
             }
         }
     }
@@ -600,20 +602,19 @@ public abstract class BaseFragment extends Fragment {
         final String mTAG = "scrollToToday: ";
 
         if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
+            Log.v(TAG, mTAG + "Scrolling to today, position: " + mTodayPosition);
             if (mGridLayoutManager != null) {
                 mRecyclerView.smoothScrollToPosition(mTodayPosition);
             }
-            Log.v(TAG, mTAG+"Scrolling to today, position: " + mTodayPosition);
         } else {
             // Rebuild cache centered on today
-            Log.d(TAG, mTAG + "Today not in cache, rebuilding");
+            Log.v(TAG, mTAG + "Today not in cache, rebuilding");
             mCurrentDate = LocalDate.now().withDayOfMonth(1);
             setupInfiniteScrolling();
         }
     }
 
-
-     /**
+    /**
      * Maintain scroll position for GridLayoutManager.
      *
      * @param itemsAdded number of items added at the beginning
@@ -637,25 +638,79 @@ public abstract class BaseFragment extends Fragment {
     // ================================= UI =================================
 
     /**
-     * Configure the common Floating Action Button behavior.
-     * Sets up click listener for "go to today" functionality.
+     * Enhanced FAB setup that works with both integrated and separate FAB modes.
+     * Add this method to BaseFragment.java
      */
     protected void setupFAB() {
         final String mTAG = "setupFAB: ";
+        Log.v(TAG, mTAG + "called.");
 
-        if (mFabGoToToday != null) {
-            mFabGoToToday.setOnClickListener(v -> scrollToToday());
-//            mFabGoToToday.hide(); // Initially hidden
-            Log.d(TAG, mTAG + "FAB configured and (not)hidden");
+        // Check if activity uses integrated FAB
+        boolean isIntegratedFab = false;
+        if (getActivity() instanceof QDueMainActivity) {
+            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
+        }
+
+        if (isIntegratedFab) {
+            // FAB is integrated in NavigationRail - get reference from activity
+            if (getActivity() instanceof QDueMainActivity) {
+                mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
+            }
+
+            if (mFabGoToToday != null) {
+                // FAB is always visible when integrated, just set click listener
+                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+                Log.d(TAG, mTAG + "Using integrated FAB from NavigationRail");
+            }
         } else {
-            Log.d(TAG, mTAG + "FAB not found in layout");
+            // Traditional separate FAB - fragment controls visibility
+            if (mFabGoToToday != null) {
+                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+                mFabGoToToday.hide(); // Initially hidden, updateFabVisibility will control it
+                Log.d(TAG, mTAG + "Using separate FAB with fragment control");
+            } else {
+                Log.d(TAG, mTAG + "FAB not found in layout");
+            }
         }
     }
 
+    /**
+     * Enhanced FAB visibility update that respects integrated mode.
+     * Update this method in BaseFragment.java
+     */
+    protected void updateFabVisibility(int firstVisible, int lastVisible) {
+        final String mTAG = "setupFAB: ";
+        Log.v(TAG, mTAG + "called.");
+
+        if (mFabGoToToday == null) return;
+
+        // Check if FAB is integrated (always visible)
+        boolean isIntegratedFab = false;
+        if (getActivity() instanceof QDueMainActivity) {
+            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
+        }
+
+        if (isIntegratedFab) {
+            // FAB is integrated - always keep it visible, no fragment control
+            return;
+        }
+
+        // Traditional separate FAB logic
+        boolean showFab = true;
+        if (mTodayPosition >= 0) {
+            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
+        }
+
+        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
+            mFabGoToToday.show();
+        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
+            mFabGoToToday.hide();
+        }
+    }
 
     /**
      * TODO eliminare
-     *
+     * <p>
      * Setup infinite scrolling with configurable LayoutManager usage.
      *
      * @param useLayoutManager whether to use LayoutManager for initial scrolling
@@ -1493,10 +1548,6 @@ public abstract class BaseFragment extends Fragment {
         return RecyclerView.NO_POSITION;
     }
 
-
-
-
-
     /**
      * NEW: Load months around today when it's not in cache
      */
@@ -2112,13 +2163,9 @@ public abstract class BaseFragment extends Fragment {
         }
     }
 
-
-
-
-
-
     // =======================================================
     // === ABSTRACT METHODS THAT SUBCLASSES MUST IMPLEMENT ===
+    // =======================================================
 
     /**
      * Find and setup views.
@@ -2141,9 +2188,4 @@ public abstract class BaseFragment extends Fragment {
      * Get the current adapter.
      */
     protected abstract RecyclerView.Adapter<?> getAdapter();
-
-    /**
-     * Update FAB visibility based on the scroll position.
-     */
-    protected abstract void updateFabVisibility(int firstVisible, int lastVisible);
 }

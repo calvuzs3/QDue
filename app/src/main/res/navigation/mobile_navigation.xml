@@ -3,18 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_dayslist">
+    app:startDestination="@+id/nav_calendar">
 
-    <fragment
-        android:id="@+id/nav_dayslist"
-        android:label="@string/menu_dayslist"
-        android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragment"
-        tools:layout="@layout/fragment_dayslist_view" >
-        <action
-            android:id="@+id/action_nav_dayslist_to_nav_settings"
-            app:destination="@id/nav_settings" />
-    </fragment>
-
+    <!-- Calendar View Fragment - NOW DEFAULT START DESTINATION -->
     <fragment
         android:id="@+id/nav_calendar"
         android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragment"
@@ -23,14 +14,33 @@
         <action
             android:id="@+id/action_nav_calendar_to_nav_settings"
             app:destination="@id/nav_settings" />
+        <action
+            android:id="@+id/action_nav_calendar_to_nav_dayslist"
+            app:destination="@id/nav_dayslist" />
     </fragment>
 
+    <!-- Days List Fragment - Secondary destination -->
+    <fragment
+        android:id="@+id/nav_dayslist"
+        android:label="@string/menu_dayslist"
+        android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragment"
+        tools:layout="@layout/fragment_dayslist_view" >
+        <action
+            android:id="@+id/action_nav_dayslist_to_nav_settings"
+            app:destination="@id/nav_settings" />
+        <action
+            android:id="@+id/action_nav_dayslist_to_nav_calendar"
+            app:destination="@id/nav_calendar" />
+    </fragment>
+
+    <!-- About Dialog -->
     <dialog
         android:id="@+id/nav_about"
         android:name="net.calvuz.qdue.ui.other.AboutDialogFragment"
         android:label="@string/menu_title_about"
         tools:layout="@layout/fragment_dialog_about" />
 
+    <!-- Settings Activity -->
     <activity
         android:id="@+id/nav_settings"
         android:name="net.calvuz.qdue.QDueSettingsActivity"

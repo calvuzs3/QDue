@@ -91,6 +91,8 @@
         <item name="bottomNavigationStyle">@style/Widget.QDue.BottomNavigationView</item>
         <item name="navigationViewStyle">@style/Widget.QDue.NavigationView</item>
 
+        <!-- NavigationRail styles -->
+        <item name="navigationRailStyle">@style/Widget.QDue.NavigationRail</item>
     </style>
 
     <!-- ============================================ -->
@@ -148,5 +150,7 @@
     <style name="Theme.QDue.NoActionBar" parent="Theme.QDue">
         <!-- For activities that need explicit NoActionBar -->
     </style>
+
+
 
 </resources>

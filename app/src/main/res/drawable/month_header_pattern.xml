@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/month_header_pattern.xml -->
+<!-- Subtle decorative pattern for month headers -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="0"
+        android:startColor="?attr/colorTertiary"
+        android:centerColor="?attr/colorPrimary"
+        android:endColor="?attr/colorSecondary"
+        android:type="linear" />
+    <corners
+        android:bottomLeftRadius="16dp"
+        android:bottomRightRadius="16dp" />
+</shape>

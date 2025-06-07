@@ -1,24 +1,40 @@
-<?xml version="1.0" encoding="utf-8"?><!-- res/layout/activity_qdue_main.xml -->
-<!-- FIXED: Main activity layout with unified toolbar for navigation -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/activity_qdue_main.xml -->
+<!-- Phone Portrait: BottomNavigation + FAB separato -->
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".QDueMainActivity">
 
-    <!-- Content Area - Fragment Container -->
-    <include
-        layout="@layout/content_main"
+    <!-- Main Content for Phone Portrait -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
 
-    <!-- Bottom Navigation -->
-    <include
-        layout="@layout/nav_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom" />
+        <!-- Content Area - Fragment Container -->
+        <include
+            layout="@layout/content_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <!-- Bottom Navigation for Phone Portrait -->
+        <include
+            layout="@layout/nav_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- Drawer placeholder (invisible for phone) -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="end"
+        android:visibility="gone" />
+
+</androidx.drawerlayout.widget.DrawerLayout>
