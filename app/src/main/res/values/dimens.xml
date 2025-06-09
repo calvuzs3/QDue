@@ -39,9 +39,10 @@
     <dimen name="button_height">48dp</dimen>
     <dimen name="fab_size">56dp</dimen>
     <dimen name="fab_margin">@dimen/spacing_m</dimen>
+    <dimen name="fab_elevation">@dimen/spacing_s</dimen>
 
     <!-- Toolbar and AppBar -->
-    <dimen name="toolbar_height">56dp</dimen>
+<!--    <dimen name="toolbar_height">56dp</dimen>  defined at bottom -->
     <dimen name="appbar_elevation">4dp</dimen>
 
     <!-- Card components -->
@@ -81,6 +82,7 @@
     <dimen name="dayslist_day_column_width">48dp</dimen>
     <dimen name="dayslist_weekday_column_width">80dp</dimen>
     <dimen name="dayslist_shift_column_width">40dp</dimen>
+    <dimen name="column_min_width">20dp</dimen>
 
     <!-- Header -->
     <dimen name="dayslist_header_height">48dp</dimen>
@@ -156,4 +158,45 @@
     <dimen name="elevation_navbar">8dp</dimen>
     <dimen name="elevation_sidebar">12dp</dimen>
     <dimen name="elevation_dialog">24dp</dimen>
+
+
+
+    <!-- ============================================ -->
+    <!-- APPBAR DIMENSIONS -->
+    <!-- ============================================ -->
+
+    <!-- Toolbar sizing -->
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="toolbar_corner_radius">0dp</dimen>
+
+    <!-- Logo/branding sizing -->
+    <dimen name="toolbar_logo_size">32dp</dimen>
+    <dimen name="toolbar_logo_padding">6dp</dimen>
+    <dimen name="toolbar_logo_margin">8dp</dimen>
+
+    <!-- Content insets -->
+    <dimen name="toolbar_content_inset_start">72dp</dimen>
+    <dimen name="toolbar_content_inset_start_with_nav">16dp</dimen>
+    <dimen name="toolbar_content_inset_end">16dp</dimen>
+
+    <!-- Typography spacing -->
+    <dimen name="toolbar_title_margin_start">12dp</dimen>
+    <dimen name="toolbar_subtitle_margin_top">-2dp</dimen>
+
+
+
+    <!-- ============================================ -->
+    <!-- DRAWER DIMENSIONS -->
+    <!-- ============================================ -->
+
+    <!-- Drawer sizing -->
+    <dimen name="nav_drawer_width">320dp</dimen>
+    <dimen name="drawer_header_height">140dp</dimen>
+
+    <!-- Header icon -->
+    <dimen name="drawer_header_icon_size">48dp</dimen>
+    <dimen name="drawer_header_icon_margin">12dp</dimen>
+    <dimen name="drawer_header_icon_padding">8dp</dimen>
+
 </resources>

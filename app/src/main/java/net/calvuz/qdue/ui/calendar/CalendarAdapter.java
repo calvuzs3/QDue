@@ -321,7 +321,7 @@ public class CalendarAdapter extends BaseAdapter {
         cardView.setCardElevation(0f);
         cardView.setRadius(8f);
         cardView.setRippleColor(
-                ColorStateList.valueOf(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface & 0x20FFFFFF))); // 12% alpha
+                ColorStateList.valueOf(androidx.appcompat.R.attr.colorPrimary & 0x20FFFFFF)); // 12% alpha
     }
 
     /**

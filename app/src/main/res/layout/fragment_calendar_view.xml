@@ -39,16 +39,4 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_calendar_month" />
 
-    <!-- Floating Action Button per tornare a oggi -->
-    <!-- FAB - will be hidden when using integrated NavigationRail FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_go_to_today"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:contentDescription="@string/go_to_today"
-        android:src="@drawable/ic_today"
-        android:visibility="gone"
-        android:layout_margin="@dimen/fab_margin" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

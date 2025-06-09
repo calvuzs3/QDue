@@ -35,14 +35,13 @@
             <!-- Integrated FAB for Tablet -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab_go_to_today"
+                style="@style/Widget.QDue.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center_horizontal"
                 android:layout_marginTop="16dp"
                 android:contentDescription="@string/go_to_today"
-                android:src="@drawable/ic_today"
-                app:fabSize="normal"
-                style="@style/Widget.QDue.FloatingActionButton" />
+                android:visibility="invisible"/>
 
         </com.google.android.material.navigationrail.NavigationRailView>
 

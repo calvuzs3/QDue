@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/values/styles.xml -->
-<!-- Shape Appearances for NavigationRail -->
-
+<?xml version="1.0" encoding="utf-8"?><!-- res/values/styles.xml -->
 <resources>
 
     <!-- ============================================ -->
@@ -63,12 +60,211 @@
         <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
         <item name="iconTint">?attr/colorOnPrimaryContainer</item>
         <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
-        <item name="elevation">3dp</item>
+        <item name="elevation">6dp</item>
+        <item name="android:layout_gravity">top|center_horizontal</item>
+        <item name="android:text">@string/go_to_today</item>
     </style>
 
     <!-- Night mode variants -->
     <style name="Widget.QDue.NavigationRail.Dark" parent="Widget.QDue.NavigationRail">
         <item name="android:background">?attr/colorSurface</item>
         <item name="elevation">6dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- TOOLBAR TYPOGRAPHY STYLES -->
+    <!-- ============================================ -->
+
+    <!--    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.Material3.HeadlineSmall">-->
+    <!--        <item name="android:textSize">20sp</item>-->
+    <!--        <item name="android:textStyle">bold</item>-->
+    <!--        <item name="android:letterSpacing">0.02</item>-->
+    <!--        <item name="fontFamily">@font/lato_bold</item>-->
+    <!--        <item name="android:textColor">?attr/colorOnPrimary</item>-->
+    <!--    </style>-->
+
+    <!--    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.Material3.BodyMedium">-->
+    <!--        <item name="android:textSize">14sp</item>-->
+    <!--        <item name="android:textStyle">normal</item>-->
+    <!--        <item name="android:alpha">0.87</item>-->
+    <!--        <item name="fontFamily">@font/figtree</item>-->
+    <!--        <item name="android:textColor">?attr/colorOnPrimary</item>-->
+    <!--    </style>-->
+
+    <!-- ============================================ -->
+    <!-- TOOLBAR THEME OVERLAYS -->
+    <!-- ============================================ -->
+
+    <style name="ThemeOverlay.QDue.Toolbar" parent="ThemeOverlay.Material3.Toolbar.Surface">
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="actionMenuTextColor">?attr/colorOnPrimary</item>
+        <item name="colorControlNormal">?attr/colorOnPrimary</item>
+        <item name="colorOnSurface">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="ThemeOverlay.QDue.Toolbar.Popup" parent="ThemeOverlay.Material3.Light">
+        <item name="android:colorBackground">?attr/colorSurface</item>
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+        <item name="android:textColorSecondary">?attr/colorOnSurfaceVariant</item>
+        <item name="colorControlNormal">?attr/colorOnSurfaceVariant</item>
+        <item name="elevation">8dp</item>
+        <item name="android:windowElevation">8dp</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- ENHANCED TOOLBAR WIDGET STYLE -->
+    <!-- ============================================ -->
+
+    <style name="Widget.QDue.Toolbar.Enhanced" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@drawable/appbar_gradient_background</item>
+        <item name="titleTextAppearance">@style/TextAppearance.QDue.Toolbar.Title</item>
+        <item name="subtitleTextAppearance">@style/TextAppearance.QDue.Toolbar.Subtitle</item>
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+        <item name="subtitleTextColor">?attr/colorOnPrimary</item>
+        <item name="navigationIconTint">?attr/colorOnPrimary</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+        <item name="contentInsetStart">72dp</item>
+        <item name="contentInsetStartWithNavigation">16dp</item>
+        <item name="popupTheme">@style/ThemeOverlay.QDue.Toolbar.Popup</item>
+        <item name="theme">@style/ThemeOverlay.QDue.Toolbar</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- ENHANCED TYPOGRAPHY WITH LATO FAMILY -->
+    <!-- ============================================ -->
+
+    <!-- Display styles (Bold) -->
+    <style name="TextAppearance.QDue.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Headline styles (Bold) -->
+    <style name="TextAppearance.QDue.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Title styles (Bold for Large, Regular for Medium/Small) -->
+    <style name="TextAppearance.QDue.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TextAppearance.QDue.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- Body styles (Regular) -->
+    <style name="TextAppearance.QDue.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Label styles (Regular) -->
+    <style name="TextAppearance.QDue.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="TextAppearance.QDue.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="TextAppearance.QDue.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- TOOLBAR TYPOGRAPHY WITH CORRECT FONTS -->
+    <!-- ============================================ -->
+
+    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="fontFamily">@font/figtree_black</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:alpha">0.87</item>
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <!-- ============================================ -->
+    <!-- COMPONENT STYLES WITH CORRECT FONTS -->
+    <!-- ============================================ -->
+
+    <style name="Widget.QDue.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textAppearance">@style/TextAppearance.QDue.LabelLarge</item>
+    </style>
+
+    <style name="Widget.QDue.TextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textAppearance">@style/TextAppearance.QDue.BodyMedium</item>
+        <item name="fontFamily">@font/figtree</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:minWidth">@dimen/column_min_width</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingHorizontal">8dp</item>
+    </style>
+
+
+    <!-- ============================================ -->
+    <!-- DRAWER HEADER THEME -->
+    <!-- ============================================ -->
+
+    <style name="ThemeOverlay.QDue.Drawer.Header" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="colorOnSurface">?attr/colorOnPrimary</item>
+        <item name="colorSurface">@android:color/transparent</item>
     </style>
 </resources>

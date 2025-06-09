@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/drawable/user_shift_overlay.xml -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- Optional: Background overlay for user shifts (if needed) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
     <solid android:color="?attr/colorUserShiftBackground" />
-    <corners android:radius="@dimen/calendar_day_corner_radius" />
-    <stroke
-        android:width="1dp"
-        android:color="?attr/colorUserShiftBorder" />
+    <corners android:radius="8dp" />
 </shape>
+
+
+<!--&lt;!&ndash; res/drawable/user_shift_overlay.xml &ndash;&gt;-->
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android">-->
+<!--    <solid android:color="?attr/colorUserShiftBackground" />-->
+<!--    <corners android:radius="@dimen/calendar_day_corner_radius" />-->
+<!--    <stroke-->
+<!--        android:width="1dp"-->
+<!--        android:color="?attr/colorUserShiftBorder" />-->
+<!--</shape>-->

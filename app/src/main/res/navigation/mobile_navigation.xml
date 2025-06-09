@@ -43,6 +43,6 @@
     <!-- Settings Activity -->
     <activity
         android:id="@+id/nav_settings"
-        android:name="net.calvuz.qdue.QDueSettingsActivity"
+        android:name="net.calvuz.qdue.ui.settings.QDueSettingsActivity"
         android:label="Settings" />
 </navigation>

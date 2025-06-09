@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/appbar_gradient_background.xml -->
+<!-- Subtle gradient background for modern AppBar following Material Design 3 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Primary gradient from purple to blue, matching app theme -->
+    <gradient
+        android:type="linear"
+        android:angle="135"
+        android:startColor="?attr/colorPrimary"
+        android:centerColor="@color/appbar_gradient_center"
+        android:endColor="@color/appbar_gradient_end"
+        android:useLevel="false" />
+
+    <!-- Subtle corner radius for modern look -->
+    <corners android:bottomLeftRadius="0dp"
+        android:bottomRightRadius="0dp"
+        android:topLeftRadius="0dp"
+        android:topRightRadius="0dp" />
+
+</shape>
+
+    <!-- Add these colors to res/values/colors.xml -->
+    <!--
+    <color name="appbar_gradient_center">#7C4DFF</color>  Purple A200
+    <color name="appbar_gradient_end">#536DFE</color>     Indigo A200
+    -->

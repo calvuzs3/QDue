@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.ui.dayslist.DayslistViewFragment;
+import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.FragmentCommunicationInterface;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
@@ -66,6 +69,7 @@ public class QDueMainActivity extends AppCompatActivity
     private NavigationRailView navigationRail;
     private NavigationView drawerNavigation;
     private DrawerLayout drawerLayout;
+    private NavigationView sidebarNavigation;
 
     // FAB Management
     private FloatingActionButton fabGoToToday;
@@ -130,7 +134,14 @@ public class QDueMainActivity extends AppCompatActivity
         bottomNavigation = findViewById(R.id.bottom_navigation);
         navigationRail = findViewById(R.id.navigation_rail);
         drawerNavigation = findViewById(R.id.nav_drawer_secondary);
+        sidebarNavigation = findViewById(R.id.sidebar_navigation);
         fabGoToToday = findViewById(R.id.fab_go_to_today);
+
+        // NEW: Extended drawer for phone portrait
+        NavigationView extendedDrawer = findViewById(R.id.nav_drawer_extended);
+        if (extendedDrawer != null) {
+            drawerNavigation = extendedDrawer; // Use extended drawer as primary drawer
+        }
 
         // Determine current navigation mode based on available components
         currentNavigationMode = determineNavigationMode();
@@ -141,6 +152,8 @@ public class QDueMainActivity extends AppCompatActivity
         Log.v(TAG, mTAG + "  - BottomNavigation: " + (bottomNavigation != null));
         Log.v(TAG, mTAG + "  - NavigationRail: " + (navigationRail != null));
         Log.v(TAG, mTAG + "  - DrawerNavigation: " + (drawerNavigation != null));
+        Log.v(TAG, mTAG + "  - ExtendedDrawer: " + (extendedDrawer != null));
+        Log.v(TAG, mTAG + "  - SidebarNavigation: " + (sidebarNavigation != null));
         Log.v(TAG, mTAG + "  - FAB: " + (fabGoToToday != null));
     }
 
@@ -153,20 +166,28 @@ public class QDueMainActivity extends AppCompatActivity
         int smallestScreenWidthDp = config.smallestScreenWidthDp;
         boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 
-        if (bottomNavigation != null) {
+        if (bottomNavigation != null && drawerLayout != null && !isLandscape) {
+            // Phone portrait with BottomNavigation + DrawerLayout
             return NavigationMode.PHONE_PORTRAIT;
-        } else if (navigationRail != null) {
-            if (isLandscape && screenWidthDp >= 840 && drawerNavigation != null) {
+        } else if (bottomNavigation != null) {
+            // Fallback phone portrait
+            return NavigationMode.PHONE_PORTRAIT;
+        } else if (navigationRail != null && drawerLayout != null && !isLandscape) {
+            // Tablet portrait with NavigationRail + DrawerLayout
+            return NavigationMode.TABLET_PORTRAIT;
+        } else if (sidebarNavigation != null) {
+            // Landscape with fixed sidebar
+            if (isLandscape && screenWidthDp >= 840) {
                 return NavigationMode.LANDSCAPE_LARGE;
-            } else if (isLandscape && screenWidthDp >= 600) {
-                return NavigationMode.LANDSCAPE_SMALL;
-            } else if (smallestScreenWidthDp >= 600) {
-                return NavigationMode.TABLET_PORTRAIT;
             } else {
-                return NavigationMode.LANDSCAPE_SMALL; // Fallback
+                return NavigationMode.LANDSCAPE_SMALL;
             }
+        } else if (navigationRail != null) {
+            // NavigationRail without drawer (landscape small)
+            return NavigationMode.LANDSCAPE_SMALL;
         } else {
-            return NavigationMode.PHONE_PORTRAIT; // Fallback
+            // Fallback
+            return NavigationMode.PHONE_PORTRAIT;
         }
     }
 
@@ -177,6 +198,9 @@ public class QDueMainActivity extends AppCompatActivity
         try {
             // Setup NavController first
             setupNavController();
+
+            // Setup AppBar and Toolbar
+            setupAppBarSafe();
 
             // Configure navigation based on current mode
             switch (currentNavigationMode) {
@@ -200,6 +224,64 @@ public class QDueMainActivity extends AppCompatActivity
         } catch (Exception e) {
             Log.e(TAG, "setupNavigationSafely: Error setting up navigation: " + e.getMessage());
         }
+    }
+
+    /**
+     * NUOVO: Setup AppBar with safe binding access
+     */
+    private void setupAppBarSafe() {
+        final String mTAG = "setupAppBarSafe: ";
+        Log.v(TAG, mTAG + "called.");
+
+        try {
+            com.google.android.material.appbar.MaterialToolbar toolbar = getToolbar();
+            com.google.android.material.appbar.AppBarLayout appBarLayout = getAppBarLayout();
+
+            if (toolbar != null) {
+                // Set toolbar as ActionBar
+                setSupportActionBar(toolbar);
+
+                // Configure ActionBar
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setDisplayShowTitleEnabled(true);
+                    getSupportActionBar().setTitle(getString(R.string.app_name));
+
+                    // IMPORTANTE: Setup menu button per aprire sidebar
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(shouldShowMenuButton());
+                    getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
+                }
+
+                // Configure AppBar visibility
+                if (appBarLayout != null) {
+                    boolean shouldShow = shouldShowAppBar();
+                    appBarLayout.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
+                    Log.d(TAG, mTAG + "AppBar visibility: " + (shouldShow ? "VISIBLE" : "GONE"));
+                }
+
+                Log.d(TAG, mTAG + "Toolbar configured successfully");
+            } else {
+                Log.d(TAG, mTAG + "Toolbar not found in current layout");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error setting up AppBar: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check if menu button should be shown
+     */
+    private boolean shouldShowMenuButton() {
+        Configuration config = getResources().getConfiguration();
+        boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+        // Show menu button in portrait when we have sidebar available
+        // or when we want to toggle sidebar visibility
+//        return !isLandscape && (findViewById(R.id.sidebar_navigation) != null ||
+//                currentNavigationMode == NavigationMode.PHONE_PORTRAIT);
+
+        // Show menu button when we have a drawer available
+        return drawerLayout != null && drawerNavigation != null && !isLandscape;
     }
 
     /**
@@ -245,20 +327,34 @@ public class QDueMainActivity extends AppCompatActivity
         final String mTAG = "setupPhonePortraitNavigation: ";
         Log.v(TAG, mTAG + "called.");
 
+        // Setup BottomNavigation for primary navigation
         if (bottomNavigation != null && navController != null) {
             NavigationUI.setupWithNavController(bottomNavigation, navController);
 
             bottomNavigation.setOnItemSelectedListener(item -> {
                 return handleNavigationItemSelected(item.getItemId());
             });
+        }
 
-            // Disable drawer for phone portrait
+        // Setup DrawerNavigation for extended menu
+        if (drawerNavigation != null) {
+            drawerNavigation.setNavigationItemSelectedListener(item -> {
+                boolean handled = handleExtendedDrawerItemSelected(item.getItemId());
+                if (handled && drawerLayout != null) {
+                    drawerLayout.closeDrawer(drawerNavigation);
+                }
+                return handled;
+            });
+
+            // Enable drawer
             if (drawerLayout != null) {
-                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             }
         }
 
-        isFabIntegrated = false; // FAB is separate in phone portrait
+
+//        isFabIntegrated = false; // FAB is separate in phone portrait
+        isFabIntegrated = true; // FAB is separate in phone portrait
     }
 
     /**
@@ -390,6 +486,45 @@ public class QDueMainActivity extends AppCompatActivity
             return false;
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error during navigation: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Enhanced drawer item selection handler for extended menu (phone portrait).
+     */
+    private boolean handleExtendedDrawerItemSelected(int itemId) {
+        final String mTAG = "handleExtendedDrawerItemSelected: ";
+        Log.v(TAG, mTAG + "called with itemId: " + itemId);
+
+        try {
+            if (itemId == R.id.nav_user_profile) {
+                // TODO: Replace with your actual User Profile Activity
+//                Intent userIntent = new Intent(this, UserProfileActivity.class);
+//                startActivity(userIntent);
+                return true;
+
+            } else if (itemId == R.id.nav_eventi) {
+                // TODO: Replace with your actual Eventi Activity
+//                Intent eventiIntent = new Intent(this, EventiActivity.class);
+//                startActivity(eventiIntent);
+                return true;
+
+            } else if (itemId == R.id.nav_settings) {
+                Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
+
+            } else if (itemId == R.id.nav_about) {
+                if (navController != null) {
+                    navController.navigate(R.id.nav_about);
+                }
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error handling extended drawer item: " + e.getMessage());
             return false;
         }
     }
@@ -654,14 +789,12 @@ public class QDueMainActivity extends AppCompatActivity
         Log.v(TAG, mTAG + "called.");
 
         try {
-            // Handle toolbar visibility for different orientations
-            boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+            com.google.android.material.appbar.AppBarLayout appBarLayout = getAppBarLayout();
 
-//            if (!isLandscape && binding.appBarLayout != null) {
-//                // Only affect toolbar in portrait mode
-//                binding.appBarLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
-//                Log.d(METHOD_TAG, "Set toolbar visibility: " + visible);
-//            }
+            if (appBarLayout != null && shouldShowAppBar()) {
+                appBarLayout.setVisibility(visible ? View.VISIBLE : View.GONE);
+                Log.d(TAG, mTAG + "Set toolbar visibility: " + visible);
+            }
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error changing toolbar visibility: " + e.getMessage());
         }
@@ -762,6 +895,180 @@ public class QDueMainActivity extends AppCompatActivity
         Log.v(TAG, mTAG + "called.");
 
         Log.d(TAG, mTAG + "FAB visibility coordination: " + visible);
+    }
+
+    // ==================== 1. FIX BINDING APPBAR ====================
+
+/**
+ * AGGIUNGERE: Safe AppBar access methods
+ * Aggiungi questi metodi alla classe QDueMainActivity
+ */
+
+    /**
+     * Safe access to AppBar components that may not exist in all layouts
+     */
+    private com.google.android.material.appbar.AppBarLayout getAppBarLayout() {
+        // Try direct binding first
+        if (binding != null) {
+            try {
+                // AppBar could be in binding if moved back to fragments
+                return (com.google.android.material.appbar.AppBarLayout) binding.getRoot()
+                        .findViewById(R.id.appbar);
+            } catch (Exception e) {
+                // AppBar not in binding, try activity findViewById
+            }
+        }
+
+        // Fallback to activity findViewById (for AppBar in activity layout)
+        return findViewById(R.id.appbar);
+    }
+
+    /**
+     * Safe access to Toolbar
+     */
+    private com.google.android.material.appbar.MaterialToolbar getToolbar() {
+        // Try direct binding first
+        if (binding != null) {
+            try {
+                return (com.google.android.material.appbar.MaterialToolbar) binding.getRoot()
+                        .findViewById(R.id.toolbar);
+            } catch (Exception e) {
+                // Toolbar not in binding, try activity findViewById
+            }
+        }
+
+        // Fallback to activity findViewById
+        return findViewById(R.id.toolbar);
+    }
+
+    /**
+     * Check if AppBar should be visible based on orientation and layout
+     */
+    private boolean shouldShowAppBar() {
+        Configuration config = getResources().getConfiguration();
+        boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
+
+        // Show AppBar only in portrait mode
+        return !isLandscape;
+    }
+
+    // ==================== 3. AGGIUNGERE MENU HANDLING ====================
+
+    /**
+     * AGGIUNGERE: Menu creation and handling
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        final String mTAG = "onCreateOptionsMenu: ";
+
+        try {
+            boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
+            boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
+
+            if (shouldShowMenu && !hasExtendedDrawer) {
+                // Show toolbar menu only if we don't have extended drawer
+                getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+                Log.d(TAG, mTAG + "Menu created for mode without drawer");
+                return true;
+            }
+
+            // No menu when drawer is available (drawer replaces toolbar menu)
+            Log.d(TAG, mTAG + "Menu not created - drawer handles extended options");
+            return super.onCreateOptionsMenu(menu);
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error creating menu: " + e.getMessage());
+            return super.onCreateOptionsMenu(menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        final String mTAG = "onOptionsItemSelected: ";
+
+        try {
+            int id = item.getItemId();
+
+            // Handle home/up button (menu button)
+            if (id == android.R.id.home) {
+                Log.d(TAG, mTAG + "Menu button clicked");
+                toggleSidebar();
+                return true;
+            }
+
+            // Handle other menu items
+            if (id == R.id.action_settings) {
+                Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
+            }
+
+            if (id == R.id.action_about) {
+                if (navController != null) {
+                    navController.navigate(R.id.nav_about);
+                }
+                return true;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error handling menu selection: " + e.getMessage());
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * FIX IMMEDIATO: DrawerLayout Error - No Left Drawer
+     *
+     * Sostituire il metodo toggleSidebar() in QDueMainActivity.java
+     */
+
+    /**
+     * SOSTITUIRE: toggleSidebar method
+     */
+    private void toggleSidebar() {
+        final String mTAG = "toggleSidebar: ";
+        Log.v(TAG, mTAG + "called.");
+
+        try {
+            if (drawerLayout != null && drawerNavigation != null) {
+                // CORREZIONE: Apri/chiudi effettivamente il drawer
+                if (drawerLayout.isDrawerOpen(drawerNavigation)) {
+                    drawerLayout.closeDrawer(drawerNavigation);
+                } else {
+                    drawerLayout.openDrawer(drawerNavigation);
+                }
+                return;
+            }
+
+            // Fallback se non c'è drawer
+            showPortraitMenu();
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error toggling sidebar: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NUOVO: Show alternative menu for portrait mode
+     */
+    private void showPortraitMenu() {
+        final String mTAG = "showPortraitMenu: ";
+
+        try {
+            // Opzione 1: Mostra messaggio informativo
+            onFragmentStatusMessage("Use bottom navigation to switch views", false);
+
+            // Opzione 2: Naviga direttamente ai settings (se preferisci)
+            // Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
+            // startActivity(settingsIntent);
+
+            // Opzione 3: Mostra dialogo con opzioni rapide (se implementi in futuro)
+//             showQuickOptionsDialog();
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error showing portrait menu: " + e.getMessage());
+        }
     }
 
     // === PUBLIC METHODS FOR FRAGMENT INTERACTION ===

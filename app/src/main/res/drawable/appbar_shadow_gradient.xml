@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/appbar_shadow_gradient.xml -->
+<!-- Subtle shadow gradient for modern look -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:type="linear"
+        android:angle="90"
+        android:startColor="@color/appbar_shadow"
+        android:centerColor="#10000000"
+        android:endColor="@android:color/transparent"
+        android:useLevel="false" />
+</shape>

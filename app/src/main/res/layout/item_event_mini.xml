@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/item_event_mini.xml -->
+<!-- Minimal localEvent layout for embedding in day rows -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="4dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical">
+
+    <!-- LocalEvent type indicator (colored dot) -->
+    <View
+        android:id="@+id/v_event_indicator"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:background="@drawable/event_indicator_dot"
+        android:layout_marginEnd="8dp"
+        tools:backgroundTint="?attr/colorPrimary" />
+
+    <!-- LocalEvent content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- LocalEvent title -->
+        <TextView
+            android:id="@+id/tv_event_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Evento importante" />
+
+        <!-- LocalEvent time (optional) -->
+        <TextView
+            android:id="@+id/tv_event_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:maxLines="1"
+            android:visibility="gone"
+            tools:text="09:00 - 17:00"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- LocalEvent priority/status indicator (optional) -->
+    <ImageView
+        android:id="@+id/iv_event_status"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/ic_event_priority"
+        android:visibility="gone"
+        android:contentDescription="@string/event_priority"
+        tools:visibility="visible"
+        tools:tint="?attr/colorError" />
+
+</LinearLayout>

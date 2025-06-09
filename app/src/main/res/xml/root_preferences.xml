@@ -36,6 +36,14 @@
 
     </PreferenceCategory>
 
+    <!-- Eventi Category in main settings -->
+    <Preference
+        app:key="events_settings"
+        app:title="@string/settings_events_title"
+        app:summary="@string/settings_events_main_summary"
+        app:icon="@drawable/ic_event"
+        app:fragment="net.calvuz.qdue.ui.settings.EventsPreferenceFragment" />
+
     <!-- Scegli cosa mostrare -->
 <!--    <PreferenceCategory app:title="@string/settings_show">-->
 

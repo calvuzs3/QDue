@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/drawable/shift_indicator_rounded.xml -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
+<!-- Rounded background for calendar shift indicators -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
     <solid android:color="?attr/colorPrimary" />
-    <corners android:radius="@dimen/shift_indicator_corner_radius" />
+    <corners android:radius="2dp" />
 </shape>

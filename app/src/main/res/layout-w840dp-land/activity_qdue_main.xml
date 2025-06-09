@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout-land-w840dp/activity_qdue_main.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout-land-w840dp/activity_qdue_main.xml -->
 <!-- Landscape Large: NavigationRail + Drawer (setup esistente migliorato) -->
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
@@ -20,29 +18,22 @@
         <!-- Primary NavigationRail -->
         <com.google.android.material.navigationrail.NavigationRailView
             android:id="@+id/navigation_rail"
+            style="@style/Widget.QDue.NavigationRail"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
-            app:elevation="3dp"
-            app:menu="@menu/navigation_rail_primary_menu"
-            app:itemIconTint="@color/nav_rail_item_color"
-            app:itemTextColor="@color/nav_rail_item_color"
-            app:itemRippleColor="@color/navigation_ripple_color"
-            app:itemActiveIndicatorStyle="@style/Widget.QDue.NavigationRail.ActiveIndicator"
-            app:menuGravity="center"
-            app:headerLayout="@layout/nav_rail_header_minimal">
+            app:headerLayout="@layout/nav_rail_header_minimal"
+            app:menu="@menu/navigation_rail_primary_menu">
 
             <!-- Integrated FAB -->
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab_go_to_today"
+                style="@style/Widget.QDue.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center_horizontal"
                 android:layout_marginTop="16dp"
                 android:contentDescription="@string/go_to_today"
-                android:src="@drawable/ic_today"
-                app:fabSize="normal"
-                style="@style/Widget.QDue.FloatingActionButton" />
+                android:src="@drawable/ic_today" />
 
         </com.google.android.material.navigationrail.NavigationRailView>
 
@@ -64,12 +55,12 @@
     <!-- Secondary Navigation Drawer (for advanced features) -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_drawer_secondary"
+        style="@style/Widget.QDue.NavigationView"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="?attr/colorSurfaceVariant"
-        app:menu="@menu/drawer_secondary_menu"
         app:headerLayout="@layout/nav_drawer_header_secondary"
-        style="@style/Widget.QDue.NavigationView" />
+        app:menu="@menu/drawer_secondary_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

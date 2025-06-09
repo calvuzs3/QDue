@@ -1,18 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?><!-- res/layout/item_calendar_day.xml -->
-<!-- OPTIMIZED: Standardized dimensions and improved hierarchy -->
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/item_calendar_day.xml -->
+<!-- SIMPLIFIED: Removed unused overlay layers, optimized for performance -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/calendar_day_size"
     android:layout_margin="@dimen/calendar_day_margin"
-
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="@dimen/calendar_day_corner_radius"
     app:cardElevation="@dimen/elevation_none"
-
     app:rippleColor="?attr/colorPrimaryContainer"
     app:strokeColor="?attr/colorOutlineVariant"
     app:strokeWidth="0.5dp">
@@ -31,15 +31,13 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:fontFamily="@font/lato_bold"
+            android:fontFamily="@font/lato_black"
             android:gravity="center"
-
             android:minHeight="@dimen/spacing_l"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
             android:textStyle="bold"
-
             tools:text="15" />
 
         <!-- Shift indicator with standardized dimensions -->
@@ -49,48 +47,11 @@
             android:layout_height="@dimen/shift_indicator_height"
             android:layout_marginHorizontal="@dimen/spacing_xs"
             android:layout_marginTop="@dimen/spacing_xs"
-
             android:background="@drawable/shift_indicator_rounded"
             android:visibility="invisible"
-
             tools:background="?attr/colorShiftAfternoon"
             tools:visibility="visible" />
 
     </LinearLayout>
-
-    <!-- Hierarchical highlighting overlays -->
-
-    <!-- Today overlay (highest priority) -->
-    <View
-        android:id="@+id/v_today_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/today_overlay"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-    <!-- User shift overlay -->
-    <View
-        android:id="@+id/v_user_shift_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/user_shift_overlay"
-        android:visibility="gone" />
-
-    <!-- Sunday overlay -->
-    <View
-        android:id="@+id/v_sunday_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/sunday_overlay"
-        android:visibility="gone" />
-
-    <!-- Combined state border -->
-    <View
-        android:id="@+id/v_combined_border"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/combined_state_border"
-        android:visibility="gone" />
 
 </com.google.android.material.card.MaterialCardView>

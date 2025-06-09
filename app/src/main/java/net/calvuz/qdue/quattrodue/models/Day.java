@@ -36,6 +36,10 @@ public class Day implements Cloneable {
     // Day of week formatter
     private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("EEEE");
 
+    public LocalDate getLocalDate() {
+        return localDate;
+    }
+
     // Core data
     private LocalDate localDate;  // Not final to allow modification
     private boolean isToday;

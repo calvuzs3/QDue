@@ -163,7 +163,7 @@ public class CalendarViewFragment extends BaseFragment {
         final String mTAG = "setupToolbar: ";
 
         if (mToolbar == null) {
-            Log.e(TAG, mTAG + "Toolbar not found in fragment layout");
+            Log.i(TAG, mTAG + "Toolbar not found in fragment layout");
             return;
         }
 

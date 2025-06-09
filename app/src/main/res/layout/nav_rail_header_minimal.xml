@@ -9,11 +9,11 @@
     android:gravity="center">
 
     <!-- App Icon (minimal) -->
-    <ImageView
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:src="@mipmap/ic_launcher"
-        android:contentDescription="@string/app_name"
-        android:layout_marginBottom="8dp" />
+<!--    <ImageView-->
+<!--        android:layout_width="28dp"-->
+<!--        android:layout_height="28dp"-->
+<!--        android:src="@mipmap/ic_launcher"-->
+<!--        android:contentDescription="@string/app_name"-->
+<!--        android:layout_marginBottom="8dp" />-->
 
 </LinearLayout>

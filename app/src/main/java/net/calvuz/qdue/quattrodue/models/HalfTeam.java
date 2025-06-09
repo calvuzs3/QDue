@@ -87,4 +87,8 @@ public class HalfTeam implements Cloneable, Comparable<HalfTeam> {
     public int compareTo(HalfTeam other) {
         return this.name.compareTo(other.name);
     }
+
+    public String getShortName() {
+        return getName();
+    }
 }

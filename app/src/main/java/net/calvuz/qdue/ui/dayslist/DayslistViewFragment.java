@@ -31,7 +31,9 @@ public class DayslistViewFragment extends BaseFragment {
     private final String TAG = "DayslistViewFragment";
 
     // Dayslist adapter
-    private DaysListAdapter mAdapter;
+    SimpleEnhancedDaysListAdapter mAdapter;
+//    private EnhancedDaysListAdapter mAdapter;
+//    private DaysListAdapter mAdapter;
     private Toolbar mToolbar;
 
     @Nullable
@@ -80,12 +82,22 @@ public class DayslistViewFragment extends BaseFragment {
     protected void setupAdapter() {
         Log.v(TAG, "setupAdapter: called.");
 
-        mAdapter = new DaysListAdapter(
+        mAdapter = new SimpleEnhancedDaysListAdapter(
                 getContext(),
                 mItemsCache,
-                mQD.getUserHalfTeam(),
-                3 // numero turni
+                mQD.getUserHalfTeam(), 3
         );
+//        mAdapter = new EnhancedDaysListAdapter(
+//                getContext(),
+//                mItemsCache,
+//                mQD.getUserHalfTeam()
+//        );
+//        mAdapter = new DaysListAdapter(
+//                getContext(),
+//                mItemsCache,
+//                mQD.getUserHalfTeam(),
+//                3 // numero turni
+//        );
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -130,7 +142,7 @@ public class DayslistViewFragment extends BaseFragment {
         final String mTAG = "setupToolbar: ";
 
         if (mToolbar == null) {
-            Log.e(TAG, mTAG + "Toolbar not found in fragment layout");
+            Log.i(TAG, mTAG + "Toolbar not found in fragment layout");
             return;
         }
 

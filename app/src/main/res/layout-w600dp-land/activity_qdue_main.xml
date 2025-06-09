@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout-land-w600dp/activity_qdue_main.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout-land-w600dp/activity_qdue_main.xml -->
 <!-- Landscape Small: NavigationRail espanso + FAB integrato -->
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
@@ -20,31 +18,23 @@
         <!-- NavigationRail Expanded for Small Landscape -->
         <com.google.android.material.navigationrail.NavigationRailView
             android:id="@+id/navigation_rail"
+            style="@style/Widget.QDue.NavigationRail"
             android:layout_width="120dp"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
-            app:elevation="3dp"
-            app:menu="@menu/navigation_rail_menu"
-            app:itemIconTint="@color/nav_rail_item_color"
-            app:itemTextColor="@color/nav_rail_item_color"
-            app:itemRippleColor="@color/navigation_ripple_color"
-            app:itemActiveIndicatorStyle="@style/Widget.QDue.NavigationRail.ActiveIndicator"
-            app:menuGravity="center"
+            app:headerLayout="@layout/nav_rail_header_landscape"
             app:labelVisibilityMode="labeled"
-            app:headerLayout="@layout/nav_rail_header_landscape">
+            app:menu="@menu/navigation_rail_menu">
 
             <!-- Integrated FAB for Landscape -->
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fab_go_to_today"
+                style="@style/Widget.QDue.FloatingActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top|center_horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginHorizontal="8dp"
-                android:text="@string/go_to_today"
+                android:layout_marginHorizontal="@dimen/spacing_s"
+                android:layout_marginTop="@dimen/fab_margin"
                 android:contentDescription="@string/go_to_today"
-                app:icon="@drawable/ic_today"
-                style="@style/Widget.Material3.ExtendedFloatingActionButton.Primary" />
+                android:text="@string/go_to_today" />
 
         </com.google.android.material.navigationrail.NavigationRailView>
 

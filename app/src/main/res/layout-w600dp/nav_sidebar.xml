@@ -75,12 +75,12 @@
             android:paddingTop="8dp"
             app:menu="@menu/sidebar_navigation_menu"
 
-        app:itemTextAppearance="@style/TextAppearance.Material3.LabelLarge"
+        app:itemTextAppearance="@style/TextAppearance.QDue.LabelLarge"
         app:itemTextColor="@color/nav_sidebar_item_color"
         app:itemIconTint="@color/nav_sidebar_item_color"
         app:itemIconSize="24dp"
 
-        app:itemShapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
+        app:itemShapeAppearance="@style/ShapeAppearance.QDue.MediumComponent"
         app:itemShapeFillColor="?attr/colorSecondaryContainer"
         app:itemShapeInsetStart="12dp"
         app:itemShapeInsetEnd="12dp"

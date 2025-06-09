@@ -1,4 +1,4 @@
-package net.calvuz.qdue;
+package net.calvuz.qdue.ui.settings;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -6,7 +6,7 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
-import net.calvuz.qdue.ui.settings.SettingsFragment;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.utils.Log;
 
 /**

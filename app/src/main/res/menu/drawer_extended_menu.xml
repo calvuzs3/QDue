@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/drawer_extended_menu.xml -->
+<!-- Extended drawer menu with grouped sections for phone portrait -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <!-- ACCOUNT GROUP -->
+    <group
+        android:id="@+id/group_account"
+        android:checkableBehavior="none">
+
+        <item
+            android:id="@+id/nav_user_profile"
+            android:icon="@drawable/ic_person"
+            android:title="User"
+            android:contentDescription="User" />
+
+    </group>
+
+    <!-- CONTENT GROUP -->
+    <group
+        android:id="@+id/group_content"
+        android:checkableBehavior="none">
+
+        <item
+            android:id="@+id/nav_eventi"
+            android:icon="@drawable/ic_event"
+            android:title="Events"
+            android:contentDescription="Events" />
+
+    </group>
+
+    <!-- SETTINGS GROUP -->
+    <group
+        android:id="@+id/group_settings"
+        android:checkableBehavior="none">
+
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/menu_title_settings"
+            android:contentDescription="@string/menu_title_settings" />
+
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_info"
+            android:title="@string/menu_title_about"
+            android:contentDescription="@string/menu_title_about" />
+
+    </group>
+
+</menu>

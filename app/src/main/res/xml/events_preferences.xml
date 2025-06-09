@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- res/xml/events_preferences.xml -->
+    <!-- Separate localEvents preferences screen -->
+
+    <!-- Eventi Header -->
+    <PreferenceCategory app:title="@string/settings_events_header">
+
+        <!-- Enable Events -->
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:icon="@drawable/ic_event"
+            app:key="events_enabled"
+            app:summary="@string/settings_events_enable_summary"
+            app:title="@string/settings_events_enable_title" />
+
+        <!-- Show Events in Calendar -->
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:dependency="events_enabled"
+            app:icon="@drawable/ic_view_calendar"
+            app:key="events_show_in_calendar"
+            app:summary="@string/settings_events_show_calendar_summary"
+            app:title="@string/settings_events_show_calendar_title" />
+
+        <!-- Show Events in DaysList -->
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:dependency="events_enabled"
+            app:icon="@drawable/ic_view_list"
+            app:key="events_show_in_dayslist"
+            app:summary="@string/settings_events_show_dayslist_summary"
+            app:title="@string/settings_events_show_dayslist_title" />
+
+    </PreferenceCategory>
+
+    <!-- External Sources -->
+    <PreferenceCategory app:title="@string/settings_events_external_header">
+
+        <!-- External URL -->
+        <EditTextPreference
+            app:dependency="events_enabled"
+            app:dialogMessage="@string/settings_events_url_dialog_message"
+            app:dialogTitle="@string/settings_events_url_dialog_title"
+            app:icon="@drawable/ic_link"
+            app:key="events_external_url"
+            app:summary="@string/settings_events_url_summary"
+            app:title="@string/settings_events_url_title"
+            app:useSimpleSummaryProvider="false" />
+
+        <!-- Package ID for tracking -->
+        <EditTextPreference
+            app:dependency="events_external_url"
+            app:dialogTitle="@string/settings_events_package_id_dialog_title"
+            app:icon="@drawable/ic_package"
+            app:key="events_package_id"
+            app:summary="@string/settings_events_package_id_summary"
+            app:title="@string/settings_events_package_id_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <!-- SSL Validation -->
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:dependency="events_external_url"
+            app:icon="@drawable/ic_security"
+            app:key="events_ssl_validation"
+            app:summary="@string/settings_events_ssl_summary"
+            app:title="@string/settings_events_ssl_title" />
+
+        <!-- Manual Update Button -->
+        <Preference
+            app:dependency="events_external_url"
+            app:icon="@drawable/ic_refresh"
+            app:key="events_manual_update"
+            app:summary="@string/settings_events_update_summary"
+            app:title="@string/settings_events_update_title" />
+
+        <!-- Last Update Info -->
+        <Preference
+            app:dependency="events_external_url"
+            app:icon="@drawable/ic_info"
+            app:key="events_last_update_info"
+            app:selectable="false"
+            app:summary="@string/settings_events_last_update_summary"
+            app:title="@string/settings_events_last_update_title" />
+
+    </PreferenceCategory>
+
+    <!-- Google Calendar Integration (Future) -->
+    <PreferenceCategory app:title="@string/settings_events_google_header">
+
+        <!-- Google Calendar Enable -->
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:dependency="events_enabled"
+            app:icon="@drawable/ic_google"
+            app:key="events_google_calendar_enabled"
+            app:summary="@string/settings_events_google_summary"
+            app:title="@string/settings_events_google_title" />
+
+        <!-- Google Account -->
+        <Preference
+            app:dependency="events_google_calendar_enabled"
+            app:icon="@drawable/ic_account"
+            app:key="events_google_account"
+            app:summary="@string/settings_events_google_account_summary"
+            app:title="@string/settings_events_google_account_title" />
+
+        <!-- Calendar Selection -->
+        <MultiSelectListPreference
+            app:dependency="events_google_calendar_enabled"
+            app:icon="@drawable/ic_calendar_multiple"
+            app:key="events_google_calendars"
+            app:summary="@string/settings_events_google_calendars_summary"
+            app:title="@string/settings_events_google_calendars_title" />
+
+    </PreferenceCategory>
+
+    <!-- LocalEvent Types Configuration -->
+    <PreferenceCategory app:title="@string/settings_events_types_header">
+
+        <!-- Show Production Stops -->
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:dependency="events_enabled"
+            app:icon="@drawable/ic_stop"
+            app:key="events_show_production_stops"
+            app:summary="@string/settings_events_production_stops_summary"
+            app:title="@string/settings_events_production_stops_title" />
+
+        <!-- LocalEvent Types Configuration -->
+        <Preference
+            app:dependency="events_enabled"
+            app:icon="@drawable/ic_palette"
+            app:key="events_configure_types"
+            app:summary="@string/settings_events_configure_types_summary"
+            app:title="@string/settings_events_configure_types_title" />
+
+    </PreferenceCategory>
+
+    <!-- Local Events Management -->
+    <PreferenceCategory app:title="@string/settings_events_local_header">
+
+        <!-- Clear Local Events -->
+        <Preference
+            app:icon="@drawable/ic_delete"
+            app:key="events_clear_local"
+            app:summary="@string/settings_events_clear_local_summary"
+            app:title="@string/settings_events_clear_local_title" />
+
+        <!-- Export Events -->
+        <Preference
+            app:icon="@drawable/ic_export"
+            app:key="events_export"
+            app:summary="@string/settings_events_export_summary"
+            app:title="@string/settings_events_export_title" />
+
+        <!-- Import Events -->
+        <Preference
+            app:icon="@drawable/ic_import"
+            app:key="events_import"
+            app:summary="@string/settings_events_import_summary"
+            app:title="@string/settings_events_import_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -268,6 +268,7 @@
     <!-- Date Format -->
     <string name="date_format_display">dd/MM/yyyy</string>
 
+
     // ========================================
     // Additional strings for integration
     // ========================================
@@ -277,4 +278,98 @@
     <string name="complete_profile_message">Per utilizzare al meglio l\'app, completa le informazioni del tuo profilo.</string>
     <string name="complete_now">Completa Ora</string>
     <string name="later">Più Tardi</string>
+
+
+    // ========================================
+    // Additional strings for Events
+    // ========================================
+
+    <!-- Events Settings Main -->
+    <string name="settings_events_title">Eventi</string>
+    <string name="settings_events_main_summary">Gestisci eventi, fonti esterne e Google Calendar</string>
+
+    <!-- Events Header -->
+    <string name="settings_events_header">Configurazione Eventi</string>
+    <string name="settings_events_enable_title">Abilita Eventi</string>
+    <string name="settings_events_enable_summary">Mostra eventi nel calendario e nella lista turni</string>
+    <string name="settings_events_show_calendar_title">Mostra nel Calendario</string>
+    <string name="settings_events_show_calendar_summary">Visualizza eventi nella vista calendario</string>
+    <string name="settings_events_show_dayslist_title">Mostra nella Lista</string>
+    <string name="settings_events_show_dayslist_summary">Visualizza eventi nella lista turni giornaliera</string>
+
+    <!-- External Sources -->
+    <string name="settings_events_external_header">Fonti Esterne</string>
+    <string name="settings_events_url_title">URL Pacchetto Eventi</string>
+    <string name="settings_events_url_summary">Inserisci l\'URL per scaricare pacchetti di eventi</string>
+    <string name="settings_events_url_dialog_title">URL Pacchetto Eventi</string>
+    <string name="settings_events_url_dialog_message">Inserisci l\'URL HTTPS del pacchetto eventi in formato JSON</string>
+
+    <string name="settings_events_package_id_title">ID Pacchetto</string>
+    <string name="settings_events_package_id_summary">Identificativo univoco per il tracking degli aggiornamenti</string>
+    <string name="settings_events_package_id_dialog_title">ID Pacchetto</string>
+
+    <string name="settings_events_ssl_title">Validazione SSL</string>
+    <string name="settings_events_ssl_summary">Verifica certificati SSL per connessioni sicure</string>
+
+    <string name="settings_events_update_title">Aggiorna Manualmente</string>
+    <string name="settings_events_update_summary">Scarica ora gli aggiornamenti dal server</string>
+
+    <string name="settings_events_last_update_title">Ultimo Aggiornamento</string>
+    <string name="settings_events_last_update_summary">Nessun aggiornamento effettuato</string>
+
+    <!-- Google Calendar -->
+    <string name="settings_events_google_header">Google Calendar</string>
+    <string name="settings_events_google_title">Integrazione Google Calendar</string>
+    <string name="settings_events_google_summary">Importa eventi dai tuoi calendari Google</string>
+    <string name="settings_events_google_account_title">Account Google</string>
+    <string name="settings_events_google_account_summary">Seleziona l\'account per l\'integrazione</string>
+    <string name="settings_events_google_calendars_title">Calendari</string>
+    <string name="settings_events_google_calendars_summary">Scegli quali calendari importare</string>
+
+    <!-- LocalEvent Types -->
+    <string name="settings_events_types_header">Tipologie Eventi</string>
+    <string name="settings_events_production_stops_title">Fermate Produzione</string>
+    <string name="settings_events_production_stops_summary">Mostra eventi di fermata programmata e carenza ordini</string>
+    <string name="settings_events_configure_types_title">Configura Tipologie</string>
+    <string name="settings_events_configure_types_summary">Personalizza colori e priorità delle tipologie eventi</string>
+
+    <!-- Local Events -->
+    <string name="settings_events_local_header">Eventi Locali</string>
+    <string name="settings_events_clear_local_title">Cancella Eventi Locali</string>
+    <string name="settings_events_clear_local_summary">Rimuovi tutti gli eventi salvati localmente</string>
+    <string name="settings_events_export_title">Esporta Eventi</string>
+    <string name="settings_events_export_summary">Salva eventi in formato JSON</string>
+    <string name="settings_events_import_title">Importa Eventi</string>
+    <string name="settings_events_import_summary">Carica eventi da file JSON</string>
+
+    <!-- LocalEvent Priority String -->
+    <string name="event_priority">Priorità evento</string>
+
+    <!-- Update Messages -->
+    <string name="events_update_success">Aggiornamento completato</string>
+    <string name="events_update_error">Errore durante l\'aggiornamento</string>
+    <string name="events_update_in_progress">Aggiornamento in corso…</string>
+    <string name="events_url_invalid">URL non valido</string>
+    <string name="events_ssl_error">Errore certificato SSL</string>
+    <string name="events_network_error">Errore di connessione</string>
+    <string name="events_parse_error">Errore formato dati</string>
+
+    <!-- ============================================ -->
+
+
+    <!-- ============================================ -->
+    <!-- DRAWER EXTENDED MENU STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Navigation items -->
+    <string name="nav_user_profile">Profilo Utente</string>
+    <string name="nav_eventi">Eventi</string>
+
+    <!-- Header text -->
+    <string name="nav_header_menu_extended">Menu principale</string>
+
+    <!-- Accessibility descriptions -->
+    <string name="drawer_open_extended">Apri menu esteso</string>
+    <string name="drawer_close_extended">Chiudi menu esteso</string>
+
 </resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/animator/appbar_elevation_animator.xml -->
+<!-- Smooth elevation changes for AppBar -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="200"
+    android:interpolator="@android:interpolator/fast_out_slow_in">
+
+    <objectAnimator
+        android:propertyName="elevation"
+        android:duration="200"
+        android:valueFrom="0dp"
+        android:valueTo="4dp"
+        android:valueType="floatType" />
+
+</set>

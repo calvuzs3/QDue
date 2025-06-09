@@ -191,4 +191,46 @@
         <color name="error_legacy">#BA1A1A</color>
         -->
 
+
+
+
+
+        <!--
+        Add these colors to res/values/colors.xml
+        For appbar modify
+        -->
+
+        <!-- ============================================ -->
+        <!-- APPBAR GRADIENT COLORS -->
+        <!-- ============================================ -->
+
+        <!-- Gradient colors for modern AppBar -->
+        <color name="appbar_gradient_center">#7C4DFF</color>     <!-- Purple A200 -->
+        <color name="appbar_gradient_end">#536DFE</color>        <!-- Indigo A200 -->
+
+        <!-- Enhanced primary variants for deeper gradient -->
+        <color name="appbar_primary_variant">#5E35B1</color>     <!-- Deep Purple 600 -->
+        <color name="appbar_primary_dark">#4527A0</color>        <!-- Deep Purple 700 -->
+
+        <!-- ============================================ -->
+        <!-- TOOLBAR BRANDING COLORS -->
+        <!-- ============================================ -->
+
+        <!-- Logo/badge background colors -->
+        <color name="toolbar_logo_background">#20FFFFFF</color>   <!-- 20% white overlay -->
+        <color name="toolbar_logo_border">#40FFFFFF</color>       <!-- 40% white border -->
+        <color name="toolbar_accent_light">#30FFFFFF</color>      <!-- 30% white accent -->
+
+        <!-- ============================================ -->
+        <!-- APPBAR STATE COLORS -->
+        <!-- ============================================ -->
+
+        <!-- Elevation and scroll states -->
+        <color name="appbar_elevated_background">#6750A4</color>  <!-- Solid primary when elevated -->
+        <color name="appbar_shadow">#1A000000</color>            <!-- 10% black shadow -->
+        <color name="appbar_divider">#20FFFFFF</color>           <!-- Subtle white divider -->
+
+        <!-- Add these dimensions to res/values/dimens.xml -->
+
+
 </resources>

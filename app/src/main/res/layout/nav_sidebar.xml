@@ -19,8 +19,9 @@
         <!-- COMPACT HEADER for smartphones -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="72dp"
+            android:layout_height="82dp"
             android:orientation="horizontal"
+            android:elevation="@dimen/spacing_s"
             android:padding="16dp"
             android:gravity="center_vertical"
             android:background="@drawable/sidebar_header_gradient">
@@ -45,16 +46,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:fontFamily="@font/lato_bold" />
+                    android:textAppearance="@style/TextAppearance.QDue.HeadlineMedium"
+                     />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/app_desc"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textAppearance="@style/TextAppearance.QDue.BodyMedium"
                     android:alpha="0.8" />
 
             </LinearLayout>
@@ -64,30 +63,23 @@
         <!-- NAVIGATION MENU -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/sidebar_navigation"
+            style="@style/Widget.QDue.BottomNavigationView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="?attr/colorSurface"
             android:paddingTop="8dp"
             app:menu="@menu/sidebar_navigation_menu"
-
-            app:itemTextAppearance="@style/TextAppearance.Material3.LabelLarge"
-            app:itemTextColor="@color/nav_sidebar_item_color"
-            app:itemIconTint="@color/nav_sidebar_item_color"
+            app:itemTextAppearance="@style/TextAppearance.QDue.LabelLarge"
             app:itemIconSize="22dp"
-
             app:itemShapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
             app:itemShapeFillColor="?attr/colorSecondaryContainer"
             app:itemShapeInsetStart="12dp"
             app:itemShapeInsetEnd="12dp"
             app:itemShapeInsetTop="2dp"
             app:itemShapeInsetBottom="2dp"
-
             app:itemVerticalPadding="12dp"
             app:itemHorizontalPadding="16dp"
             app:itemMinHeight="48dp"
-
-            app:itemRippleColor="@color/navigation_ripple_color"
             app:headerLayout="@null" />
 
         <!-- MINIMAL FOOTER -->
@@ -96,8 +88,7 @@
             android:layout_height="wrap_content"
             android:padding="12dp"
             android:text="@string/app_version"
-            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textAppearance="@style/TextAppearance.QDue.BodySmall"
             android:textAlignment="center"
             android:alpha="0.5"
             android:background="?attr/colorSurfaceVariant" />

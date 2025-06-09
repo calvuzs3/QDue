@@ -110,6 +110,7 @@
         <item name="backgroundTint">?attr/colorPrimaryContainer</item>
         <item name="tint">?attr/colorOnPrimaryContainer</item>
         <item name="android:elevation">@dimen/elevation_fab</item>
+        <item name="android:src">@android:drawable/ic_menu_today</item>
     </style>
 
     <style name="Widget.QDue.CardView" parent="Widget.Material3.CardView.Elevated">
