@@ -85,8 +85,9 @@
         <item name="windowNoTitle">true</item>
 
         <!-- Component Style Applications -->
-        <item name="toolbarStyle">@style/Widget.QDue.Toolbar</item>
+<!--        <item name="toolbarStyle">@style/Widget.QDue.Toolbar</item>-->
         <item name="floatingActionButtonStyle">@style/Widget.QDue.FloatingActionButton</item>
+        <item name="toolbarStyle">@style/Widget.QDue.Toolbar.Enhanced</item>
         <item name="materialCardViewStyle">@style/Widget.QDue.CardView</item>
         <item name="bottomNavigationStyle">@style/Widget.QDue.BottomNavigationView</item>
         <item name="navigationViewStyle">@style/Widget.QDue.NavigationView</item>
@@ -95,50 +96,6 @@
         <item name="navigationRailStyle">@style/Widget.QDue.NavigationRail</item>
     </style>
 
-    <!-- ============================================ -->
-    <!-- ESSENTIAL COMPONENT STYLES -->
-    <!-- ============================================ -->
-
-    <style name="Widget.QDue.Toolbar" parent="Widget.Material3.Toolbar">
-        <item name="android:background">?attr/colorSurface</item>
-        <item name="titleTextColor">?attr/colorOnSurface</item>
-        <item name="android:elevation">@dimen/elevation_none</item>
-        <item name="navigationIconTint">?attr/colorOnSurface</item>
-    </style>
-
-    <style name="Widget.QDue.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
-        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
-        <item name="tint">?attr/colorOnPrimaryContainer</item>
-        <item name="android:elevation">@dimen/elevation_fab</item>
-        <item name="android:src">@android:drawable/ic_menu_today</item>
-    </style>
-
-    <style name="Widget.QDue.CardView" parent="Widget.Material3.CardView.Elevated">
-        <item name="cardBackgroundColor">?attr/colorCardBackground</item>
-        <item name="strokeColor">?attr/colorCardBorder</item>
-        <item name="strokeWidth">0.5dp</item>
-        <item name="cardElevation">@dimen/elevation_card</item>
-        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
-    </style>
-
-    <style name="Widget.QDue.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
-        <item name="android:background">?attr/colorSurface</item>
-        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
-        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
-        <item name="itemRippleColor">@color/navigation_ripple_color</item>
-        <item name="labelVisibilityMode">selected</item>
-        <item name="android:elevation">@dimen/elevation_navbar</item>
-    </style>
-
-    <style name="Widget.QDue.NavigationView" parent="Widget.Material3.NavigationView">
-        <item name="android:background">?attr/colorSurface</item>
-        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
-        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
-        <item name="itemRippleColor">@color/navigation_ripple_color</item>
-        <item name="itemShapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
-        <item name="itemShapeFillColor">?attr/colorSecondaryContainer</item>
-        <item name="android:elevation">@dimen/elevation_sidebar</item>
-    </style>
 
     <!-- ============================================ -->
     <!-- SPECIALIZED ACTIVITY THEMES -->

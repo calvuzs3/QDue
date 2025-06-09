@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -51,53 +52,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author calvuzs3
  */
-public abstract class BaseFragment extends Fragment {
+public abstract class BaseFragment extends Fragment
+implements NotifyUpdatesInterface {
 
     private static final String TAG = "BaseFragment";
 
     // === COMMON COMPONENTS ===
 
-    /**
-     * Core QuattroDue instance for shift data
-     */
     protected QuattroDue mQD;
-
-    /**
-     * Centralized data manager for calendar operations
-     */
     protected CalendarDataManager mDataManager;
 
-    /**
-     * Main RecyclerView component
-     */
     protected RecyclerView mRecyclerView;
-
-    /**
-     * LinearLayoutManager reference (null for GridLayoutManager)
-     */
     protected LinearLayoutManager mLayoutManager;
     protected GridLayoutManager mGridLayoutManager;
 
-    /**
-     * Floating Action Button for "go to today" functionality
-     */
     protected FloatingActionButton mFabGoToToday;
 
     // === INFINITE SCROLLING CACHE ===
 
-    /**
-     * Cache of view items for infinite scrolling
-     */
+    // Cache of view items for infinite scrolling
     protected List<SharedViewModels.ViewItem> mItemsCache;
 
-    /**
-     * Current center position in cache
-     */
+    // Current center position in cache
     protected int mCurrentCenterPosition;
 
-    /**
-     * Current date cursor
-     */
+     // Current date cursor
     protected LocalDate mCurrentDate;
 
     // === CONCURRENCY CONTROL ===
@@ -542,14 +521,182 @@ public abstract class BaseFragment extends Fragment {
 
     /**
      * Override setupInfiniteScrolling to use unified approach.
-     */
+     *
+//    protected void setupInfiniteScrolling() {
+//        setupInfiniteScrolling(false); // Don't use base LinearLayoutManager approach
+//
+//        // Clear existing listeners and add unified listener
+//        if (mRecyclerView != null) {
+//            mRecyclerView.clearOnScrollListeners();
+//            mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
+//        }
+//    }
+     * FIXED: Setup infinite scrolling with proper initial positioning
+ */
     protected void setupInfiniteScrolling() {
-        setupInfiniteScrolling(false); // Don't use base LinearLayoutManager approach
+        final String mTAG = "setupInfiniteScrolling: ";
+        Log.v(TAG, mTAG + "called for " + getClass().getSimpleName());
 
-        // Clear existing listeners and add unified listener
+        if (mQD == null || mDataManager == null) {
+            Log.e(TAG, "Components not initialized, cannot setup infinite scrolling");
+            return;
+        }
+
+        try {
+            // Reset all control flags
+            resetControlFlags();
+
+            // Initialize cache
+            mCurrentDate = mQD.getCursorDate();
+            mItemsCache = new ArrayList<>();
+
+            // Pre-load months in cache around current date
+            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_SIZE);
+
+            // Generate initial months for display
+            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
+                LocalDate monthDate = mCurrentDate.plusMonths(i);
+                addMonthToCache(monthDate);
+            }
+
+            // Find today's position in cache
+            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+            Log.d(TAG, mTAG + "Today position calculated: " + mTodayPosition);
+
+            // Set central position in cache
+            mCurrentCenterPosition = mItemsCache.size() / 2;
+
+            // Setup adapter (implemented by subclasses)
+            setupAdapter();
+
+            // Setup optimized scroll listener
+            setupScrollListeners();
+
+            // CRITICAL: Schedule initial scroll after adapter is set and views are measured
+            scheduleInitialScrollToToday();
+
+            Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
+                    " elements, today at position: " + mTodayPosition);
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Schedule initial scroll to today with proper timing
+     */
+    private void scheduleInitialScrollToToday() {
+        final String mTAG = "scheduleInitialScrollToToday: ";
+        Log.v(TAG, mTAG + "called");
+
+        if (mTodayPosition < 0) {
+            Log.w(TAG, mTAG + "Today position not found, using center position");
+            return;
+        }
+
+        // Wait for RecyclerView to be measured and laid out
         if (mRecyclerView != null) {
+            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            // Remove listener to avoid multiple calls
+                            mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                            Log.d(TAG, mTAG + "RecyclerView layout complete, scrolling to today");
+
+                            // Post to next frame to ensure everything is ready
+                            mRecyclerView.post(() -> {
+                                performInitialScrollToToday();
+                            });
+                        }
+                    });
+        }
+    }
+
+    /**
+     * NEW: Perform the actual scroll to today with proper positioning
+     */
+    private void performInitialScrollToToday() {
+        final String mTAG = "performInitialScrollToToday: ";
+
+        if (mTodayPosition < 0 || mTodayPosition >= mItemsCache.size()) {
+            Log.w(TAG, mTAG + "Invalid today position: " + mTodayPosition);
+            return;
+        }
+
+        try {
+            if (mGridLayoutManager != null) {
+                // For CalendarViewFragment - use grid-specific positioning
+                Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition);
+
+                // Position today with some context (show ~2 weeks before)
+                int targetPosition = Math.max(0, mTodayPosition - 14);
+                mGridLayoutManager.scrollToPositionWithOffset(targetPosition, 0);
+
+                // Then fine-tune to show today properly
+                mRecyclerView.postDelayed(() -> {
+                    try {
+                        mGridLayoutManager.scrollToPositionWithOffset(mTodayPosition, 100);
+                        Log.d(TAG, mTAG + "Initial scroll to today completed");
+                    } catch (Exception e) {
+                        Log.e(TAG, mTAG + "Error in fine-tune scroll: " + e.getMessage());
+                    }
+                }, 100);
+
+            } else if (mLayoutManager != null) {
+                // For DaysListViewFragment - use linear positioning
+                Log.d(TAG, mTAG + "Using LinearLayoutManager positioning for today: " + mTodayPosition);
+                mLayoutManager.scrollToPositionWithOffset(mTodayPosition, 0);
+
+            } else {
+                // Fallback - use RecyclerView direct scroll
+                Log.d(TAG, mTAG + "Using RecyclerView fallback positioning");
+                mRecyclerView.scrollToPosition(mTodayPosition);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error in initial scroll to today: " + e.getMessage());
+        }
+    }
+
+    /**
+     * NEW: Setup scroll listeners separately for better organization
+     */
+    private void setupScrollListeners() {
+        if (mRecyclerView != null) {
+            mRecyclerView.addOnScrollListener(new DebuggingScrollListener());
             mRecyclerView.clearOnScrollListeners();
             mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
+        }
+    }
+// ===================================================================
+// DEBUGGING: IDENTIFICARE IL COLPEVOLE
+// ===================================================================
+
+    /**
+     * DEBUG: Add logging to identify what's causing the scroll reset
+     */
+    public class DebuggingScrollListener extends RecyclerView.OnScrollListener {
+
+        private int mLastPosition = -1;
+
+        @Override
+        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            int currentPosition = getCurrentVisiblePosition();
+
+            if (currentPosition != mLastPosition && currentPosition != RecyclerView.NO_POSITION) {
+                Log.w("SCROLL_DEBUG", "Position changed from " + mLastPosition + " to " + currentPosition +
+                        " dx=" + dx + " dy=" + dy + " thread=" + Thread.currentThread().getName());
+
+                // Print stack trace to see who triggered the scroll
+                Log.w("SCROLL_DEBUG", "Stack trace:"+ new Exception("Scroll trigger"));
+
+                mLastPosition = currentPosition;
+            }
         }
     }
 
@@ -641,68 +788,100 @@ public abstract class BaseFragment extends Fragment {
         final String mTAG = "setupFAB: ";
         Log.v(TAG, mTAG + "called.");
 
-        // Check if activity uses integrated FAB
-        boolean isIntegratedFab = false;
+        // Sempre ottieni FAB dall'Activity (NavigationRail)
         if (getActivity() instanceof QDueMainActivity) {
-            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
-        }
-
-        if (isIntegratedFab) {
-            // FAB is integrated in NavigationRail - get reference from activity
-            if (getActivity() instanceof QDueMainActivity) {
-                mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
-            }
+            mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
 
             if (mFabGoToToday != null) {
-                // FAB is always visible when integrated, just set click listener
                 mFabGoToToday.setOnClickListener(v -> scrollToToday());
-                Log.d(TAG, mTAG + "Using integrated FAB from NavigationRail");
-            }
-        } else {
-            // Traditional separate FAB - fragment controls visibility
-            if (mFabGoToToday != null) {
-                mFabGoToToday.setOnClickListener(v -> scrollToToday());
-                mFabGoToToday.hide(); // Initially hidden, updateFabVisibility will control it
-                Log.d(TAG, mTAG + "Using separate FAB with fragment control");
-            } else {
-                Log.d(TAG, mTAG + "FAB not found in layout");
+                // FAB sempre visibile quando integrato
             }
         }
     }
+
+        // Check if activity uses integrated FAB
+//        boolean isIntegratedFab = false;
+//        if (getActivity() instanceof QDueMainActivity) {
+//            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
+//        }
+//
+//        if (isIntegratedFab) {
+//            // FAB is integrated in NavigationRail - get reference from activity
+//            if (getActivity() instanceof QDueMainActivity) {
+//                mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
+//            }
+//
+//            if (mFabGoToToday != null) {
+//                // FAB is always visible when integrated, just set click listener
+//                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+//                Log.d(TAG, mTAG + "Using integrated FAB from NavigationRail");
+//            }
+//        } else {
+//            // Traditional separate FAB - fragment controls visibility
+//            if (mFabGoToToday != null) {
+//                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+//                mFabGoToToday.hide(); // Initially hidden, updateFabVisibility will control it
+//                Log.d(TAG, mTAG + "Using separate FAB with fragment control");
+//            } else {
+//                Log.d(TAG, mTAG + "FAB not found in layout");
+//            }
+//        }
+//    }
 
     /**
      * Enhanced FAB visibility update that respects integrated mode.
      * Update this method in BaseFragment.java
      */
     protected void updateFabVisibility(int firstVisible, int lastVisible) {
-        final String mTAG = "setupFAB: ";
-        Log.v(TAG, mTAG + "called.");
-
-        if (mFabGoToToday == null) return;
-
-        // Check if FAB is integrated (always visible)
-        boolean isIntegratedFab = false;
-        if (getActivity() instanceof QDueMainActivity) {
-            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
-        }
-
-        if (isIntegratedFab) {
-            // FAB is integrated - always keep it visible, no fragment control
+        if (mFabGoToToday == null) {
+            Log.v(TAG, "updateFabVisibility: FAB is null, skipping");
             return;
         }
 
-        // Traditional separate FAB logic
+        // Logica di visibilità standard
         boolean showFab = true;
         if (mTodayPosition >= 0) {
             showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
         }
 
+        // Applica visibilità
         if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
             mFabGoToToday.show();
+            Log.v(TAG, "updateFabVisibility: Showing FAB");
         } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
             mFabGoToToday.hide();
+            Log.v(TAG, "updateFabVisibility: Hiding FAB");
         }
     }
+//    protected void updateFabVisibility(int firstVisible, int lastVisible) {
+//        final String mTAG = "setupFAB: ";
+//        Log.v(TAG, mTAG + "called.");
+//
+//        if (mFabGoToToday == null) return;
+//
+//        // Check if FAB is integrated (always visible)
+//        boolean isIntegratedFab = false;
+//        if (getActivity() instanceof QDueMainActivity) {
+//            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
+//        }
+//
+//        if (isIntegratedFab) {
+//            // FAB is integrated - always keep it visible, no fragment control
+//            return;
+//        }
+//
+//        // Traditional separate FAB logic
+//        boolean showFab = true;
+//        if (mTodayPosition >= 0) {
+//            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
+//        }
+//
+//        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
+//            mFabGoToToday.show();
+//        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
+//            mFabGoToToday.hide();
+//        }
+//    }
 
     /**
      * TODO eliminare
@@ -712,55 +891,55 @@ public abstract class BaseFragment extends Fragment {
      * @param useLayoutManager whether to use LayoutManager for initial scrolling
      *                         or let subclass handle it (e.g., CalendarViewFragment)
      */
-    protected void setupInfiniteScrolling(boolean useLayoutManager) {
-        final String mTAG = "setupInfiniteScrolling: ";
-
-        if (mQD == null || mDataManager == null) {
-            Log.e(TAG, "Components not initialized, cannot setup infinite scrolling");
-            return;
-        }
-
-        try {
-            // Reset all control flags
-            resetControlFlags();
-
-            // Initialize cache
-            mCurrentDate = mQD.getCursorDate();
-            mItemsCache = new ArrayList<>();
-
-            // Pre-load months in cache around current date
-            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_SIZE);
-
-            // Generate initial months for display
-            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
-                LocalDate monthDate = mCurrentDate.plusMonths(i);
-                addMonthToCache(monthDate);
-            }
-
-            // Find today's position in cache
-            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-
-            // Set central position in cache
-            mCurrentCenterPosition = mItemsCache.size() / 2;
-
-            // Setup adapter (implemented by subclasses)
-            setupAdapter();
-
-            // Setup optimized scroll listener
-            mRecyclerView.addOnScrollListener(new OptimizedInfiniteScrollListener());
-
-            // Scroll to appropriate position if requested
-            if (useLayoutManager) {
-                scrollToInitialPosition();
-            }
-
-            Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
-                    " elements, today at position: " + mTodayPosition);
-
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
-        }
-    }
+//    protected void setupInfiniteScrolling(boolean useLayoutManager) {
+//        final String mTAG = "setupInfiniteScrolling: ";
+//
+//        if (mQD == null || mDataManager == null) {
+//            Log.e(TAG, "Components not initialized, cannot setup infinite scrolling");
+//            return;
+//        }
+//
+//        try {
+//            // Reset all control flags
+//            resetControlFlags();
+//
+//            // Initialize cache
+//            mCurrentDate = mQD.getCursorDate();
+//            mItemsCache = new ArrayList<>();
+//
+//            // Pre-load months in cache around current date
+//            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_SIZE);
+//
+//            // Generate initial months for display
+//            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
+//                LocalDate monthDate = mCurrentDate.plusMonths(i);
+//                addMonthToCache(monthDate);
+//            }
+//
+//            // Find today's position in cache
+//            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+//
+//            // Set central position in cache
+//            mCurrentCenterPosition = mItemsCache.size() / 2;
+//
+//            // Setup adapter (implemented by subclasses)
+//            setupAdapter();
+//
+//            // Setup optimized scroll listener
+//            mRecyclerView.addOnScrollListener(new OptimizedInfiniteScrollListener());
+//
+//            // Scroll to appropriate position if requested
+//            if (useLayoutManager) {
+//                scrollToInitialPosition();
+//            }
+//
+//            Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
+//                    " elements, today at position: " + mTodayPosition);
+//
+//        } catch (Exception e) {
+//            Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
+//        }
+//    }
 
     /**
      * Optimized scroll listener that prevents adapter modifications during scroll callbacks.
@@ -2113,6 +2292,7 @@ public abstract class BaseFragment extends Fragment {
      * Notify updates from external sources.
      * Updates user team and refreshes adapter.
      */
+    @SuppressLint("NotifyDataSetChanged")
     public void notifyUpdates() {
         final String mTAG = "notifyUpdates: ";
         Log.v(TAG, mTAG + "called.");

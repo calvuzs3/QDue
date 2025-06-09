@@ -38,6 +38,7 @@ import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
  */
 public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 
+    // TAG
     private static final String TAG = "SimpleEnhancedDaysListAdapter";
 
     // Simple events tracking (just count for now)
@@ -76,9 +77,9 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 
         if (dayItem.isToday()) {
             // Today: Material primary container
-            rootView.setBackgroundColor(getColorByThemeAttr(mContext,
-                    com.google.android.material.R.attr.colorPrimaryContainer));
-
+            rootView.setBackgroundColor(getColorByThemeAttr(mContext, R.attr.colorTodayUserBackground ));
+//            rootView.setBackgroundColor(getColorByThemeAttr(mContext,
+//                    com.google.android.material.R.attr.colorPrimaryContainer));
         } else if (dayItem.isSunday()) {
             // Sunday: Material surface variant
             rootView.setBackgroundColor(getColorByThemeAttr(mContext,
@@ -88,7 +89,8 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
             // User shift day: Subtle tint
             rootView.setBackgroundColor(getColorByThemeAttr(mContext,
                     com.google.android.material.R.attr.colorSurfaceContainerLow));
-
+//            rootView.setBackgroundColor(getColorByThemeAttr(mContext,
+//                    com.google.android.material.R.attr.colorSurfaceContainerLow));
         } else {
             // Regular day: Default surface
             rootView.setBackgroundColor(getColorByThemeAttr(mContext,

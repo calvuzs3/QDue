@@ -1,0 +1,101 @@
+---------------------------- PROCESS STARTED (24390) for package net.calvuz.qdue.kaze ----------------------------
+16:20:48.624  D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+16:20:48.624  D  Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+16:20:48.824  D  Configuring clns-9 for other apk /data/app/~~j2FCOPN_aLSIZ6DeFOhr9w==/net.calvuz.qdue.kaze-hvS0TnDGjTlPpPZc7VTUbA==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~j2FCOPN_aLSIZ6DeFOhr9w==/net.calvuz.qdue.kaze-hvS0TnDGjTlPpPZc7VTUbA==/lib/x86_64:/data/app/~~j2FCOPN_aLSIZ6DeFOhr9w==/net.calvuz.qdue.kaze-hvS0TnDGjTlPpPZc7VTUbA==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/net.calvuz.qdue.kaze
+16:20:48.826  D  Compat change id reported: 202956589; UID 10229; state: ENABLED
+16:20:48.830  I  AssetManager2(0x7fe77325c4f8) locale list changing from [] to [it-IT]
+16:20:48.831  I  AssetManager2(0x7fe77325b558) locale list changing from [] to [it-IT]
+16:20:48.838  W  Application net.calvuz.qdue.kaze is suspending. Debugger needs to resume to continue.
+16:20:48.838  I  Sending WAIT chunk
+16:20:48.838  I  Waiting for debugger first packet
+16:20:48.858  D  Load libjdwp.so using system ns (caller=<unknown>): ok
+16:20:48.939  I  Debug.suspendAllAndSentVmStart
+16:20:49.246  I  Debug.suspendAllAndSendVmStart, resumed
+16:20:49.285  D  Compat change id reported: 279646685; UID 10229; state: ENABLED
+16:20:49.291  D  === SystemLocale initialized
+16:20:49.292  I  Material You dynamic colors enabled
+16:20:49.292  D  === enableDynamicColors initialized
+16:20:49.417  D  === QuattroDue initialized
+16:20:49.418  D  === InitializeUserDatabase initialized
+16:20:49.436  I  User database initialized
+16:20:49.441  I  Choreographer implicitly registered for the refresh rate.
+16:20:49.447  I  AssetManager2(0x7fe7732657d8) locale list changing from [] to [it-IT]
+16:20:49.484  D  Checking for metadata for AppLocalesMetadataHolderService : Service not found
+16:20:49.494  I  AssetManager2(0x7fe773266db8) locale list changing from [] to [it-IT]
+16:20:49.496  I  Opening libGLESv1_CM_emulation.so
+16:20:49.496  I  Opening libGLESv2_emulation.so
+16:20:49.507  E  Pinning is deprecated since Android Q. Please use trim or other methods.
+16:20:49.516  W  Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+16:20:49.516  W  Failed to initialize 101010-2 format, error = EGL_SUCCESS
+16:20:49.598  I  app:theme is now deprecated. Please move to using android:theme instead.
+16:20:49.605  D  Compat change id reported: 63938206; UID 10229; state: ENABLED
+16:20:49.614  W  Image decoding logging dropped!
+16:20:49.785  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:20:49.786  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:20:49.788  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:20:49.802  D  setupRecyclerView: Configured GridLayoutManager with 7 columns
+16:22:08.160  D  setupInfiniteScrolling: Today position calculated: 233
+16:22:08.162  D  setupInfiniteScrolling: Infinite scroll setup completed: 483 elements, today at position: 233
+16:22:08.381  W  Image decoding logging dropped!
+16:22:08.423  D  Compat change id reported: 309578419; UID 10229; state: ENABLED
+16:22:08.425  D  Toggle override initialized to: OVERRIDE_UNSET
+16:22:08.429  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:22:08.431  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:22:08.432  W  Got a deoptimization request on un-deoptimizable method java.lang.Class java.lang.Class.classForName(java.lang.String, boolean, java.lang.ClassLoader)
+16:22:08.442  I  hiddenapi: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (runtime_flags=0, domain=platform, api=unsupported) from Landroidx/appcompat/widget/ViewUtils; (domain=app) using reflection: allowed
+16:22:08.446  D  setupNavController: NavController found via NavHostFragment
+16:22:08.451  D  setupAppBarSafe: getSupportActionBar != null
+16:22:08.451  D  shouldShowAppBar: true
+16:22:08.451  D  setupAppBarSafe: AppBar visibility: VISIBLE
+16:22:08.451  D  setupAppBarSafe: Toolbar configured successfully
+16:22:08.451  D  setupAppBarSafe: Toolbar menu items count: 2
+16:22:08.509  E  notifyUpdates: Fragment not found
+16:22:08.519  D  Compat change id reported: 352594277; UID 10229; state: ENABLED
+16:22:08.534  D  Compat change id reported: 349153669; UID 10229; state: ENABLED
+16:22:08.537  W  Unknown dataspace 0
+16:22:08.558  D  Installing profile for net.calvuz.qdue.kaze
+16:22:08.560  W  Got a deoptimization request on un-deoptimizable method android.os.ParcelFileDescriptor android.content.res.AssetManager.nativeOpenAssetFd(long, java.lang.String, long[])
+16:22:08.565  W  Got a deoptimization request on un-deoptimizable method android.os.ParcelFileDescriptor android.content.res.AssetManager.nativeOpenAssetFd(long, java.lang.String, long[])
+16:22:10.573  W  requestLayout() improperly called by androidx.appcompat.widget.AppCompatTextView{6458a88 V.ED..... ......ID 189,48-345,119} during layout: running second layout pass
+16:22:10.578  D  scheduleInitialScrollToToday: RecyclerView layout complete, scrolling to today
+16:22:11.258  D  shouldShowAppBar: true
+16:22:11.260  D  onCreateOptionsMenu: Menu created for mode without drawer
+16:22:11.260  I  Skipped 160 frames!  The application may be doing too much work on its main thread.
+16:22:11.288  I  Davey! duration=2717ms; Flags=1, FrameTimelineVsyncId=8822802, IntendedVsync=54599935512742, Vsync=54599935512742, InputEventId=0, HandleInputStart=54599945221450, AnimationStart=54599945241058, PerformTraversalsStart=54599945259869, DrawStart=54601970224185, FrameDeadline=54599952179408, FrameStartTime=54599945139738, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54602607644084, SyncStart=54602608094985, IssueDrawCommandsStart=54602608448697, SwapBuffers=54602641436906, FrameCompleted=54602653711554, DequeueBufferDuration=2807, QueueBufferDuration=88153, GpuCompleted=54602653711554, SwapBuffersCompleted=54602642601085, DisplayPresentTime=140620451422252, CommandSubmissionCompleted=54602641436906,
+16:22:11.353  D  performInitialScrollToToday: Using GridLayoutManager positioning for today: 233
+16:22:11.368  I  Davey! duration=2772ms; Flags=0, FrameTimelineVsyncId=8822821, IntendedVsync=54599968846074, Vsync=54602635512634, InputEventId=0, HandleInputStart=54602648106842, AnimationStart=54602648117312, PerformTraversalsStart=54602664086202, DrawStart=54602669618289, FrameDeadline=54602685512632, FrameStartTime=54602647751494, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54602715054462, SyncStart=54602715074413, IssueDrawCommandsStart=54602715329157, SwapBuffers=54602716852713, FrameCompleted=54602741210026, DequeueBufferDuration=6931, QueueBufferDuration=22095495, GpuCompleted=54602740655499, SwapBuffersCompleted=54602741210026, DisplayPresentTime=140620451474508, CommandSubmissionCompleted=54602716852713,
+16:22:15.067  W  requestLayout() improperly called by androidx.appcompat.widget.AppCompatTextView{6458a88 V.ED..... ......ID 189,51-584,117} during layout: running second layout pass
+16:22:15.683  I  Davey! duration=4388ms; Flags=0, FrameTimelineVsyncId=8822883, IntendedVsync=54602668845966, Vsync=54602735512630, InputEventId=0, HandleInputStart=54602741654657, AnimationStart=54602741664057, PerformTraversalsStart=54602772902087, DrawStart=54606459951012, FrameDeadline=54602768845962, FrameStartTime=54602741567884, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54607043883356, SyncStart=54607043944943, IssueDrawCommandsStart=54607044508286, SwapBuffers=54607051109478, FrameCompleted=54607057409713, DequeueBufferDuration=2806, QueueBufferDuration=105064, GpuCompleted=54607057409713, SwapBuffersCompleted=54607051837280, DisplayPresentTime=1877726244, CommandSubmissionCompleted=54607051109478,
+16:22:15.724  I  Skipped 259 frames!  The application may be doing too much work on its main thread.
+16:22:15.806  D  triggerTopLoad: Triggering top load
+16:22:15.807  W  showTopLoader: Added top loader - cache size now: 484
+16:22:15.807  D  performInitialScrollToToday: Initial scroll to today completed
+16:22:15.816  I  Davey! duration=4416ms; Flags=0, FrameTimelineVsyncId=8822946, IntendedVsync=54602785512628, Vsync=54607102179122, InputEventId=0, HandleInputStart=54607111984382, AnimationStart=54607111992894, PerformTraversalsStart=54607114079692, DrawStart=54607115197554, FrameDeadline=54607085512456, FrameStartTime=54607111492034, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54607192864748, SyncStart=54607192888441, IssueDrawCommandsStart=54607193131422, SwapBuffers=54607194832088, FrameCompleted=54607202239386, DequeueBufferDuration=3411, QueueBufferDuration=86842, GpuCompleted=54607202239386, SwapBuffersCompleted=54607196143276, DisplayPresentTime=1868135224, CommandSubmissionCompleted=54607194832088,
+16:22:15.834  D  hide(ime(), fromIme=false)
+16:22:15.834  I  net.calvuz.qdue.kaze:bbf5c979: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+16:22:16.415  W  requestLayout() improperly called by androidx.appcompat.widget.AppCompatTextView{6458a88 V.ED..... ......ID 189,51-369,117} during layout: running second layout pass
+16:22:16.750  W  showTopLoader: Notified adapter of top loader insertion
+16:22:16.766  I  Davey! duration=1033ms; Flags=0, FrameTimelineVsyncId=8823220, IntendedVsync=54607118845788, Vsync=54607218845784, InputEventId=0, HandleInputStart=54607223047107, AnimationStart=54607223056627, PerformTraversalsStart=54607239578112, DrawStart=54607807848320, FrameDeadline=54607235512450, FrameStartTime=54607222660282, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54608133471582, SyncStart=54608133535964, IssueDrawCommandsStart=54608133919000, SwapBuffers=54608139532719, FrameCompleted=54608152220546, DequeueBufferDuration=3114, QueueBufferDuration=66816, GpuCompleted=54608152220546, SwapBuffersCompleted=54608140352021, DisplayPresentTime=140620452161484, CommandSubmissionCompleted=54608139532719,
+16:22:16.779  I  Skipped 54 frames!  The application may be doing too much work on its main thread.
+16:22:17.541  D  triggerTopLoad: Executing delayed top load
+16:22:17.541  D  Starting multi-month top load execution
+16:22:17.541  D  executeTopLoad: Loading previous month 1: 2024-11-01
+16:22:17.567  I  Davey! duration=1684ms; Flags=0, FrameTimelineVsyncId=8823252, IntendedVsync=54607252179116, Vsync=54608152179080, InputEventId=0, HandleInputStart=54608166164072, AnimationStart=54608166172489, PerformTraversalsStart=54608632543317, DrawStart=54608640157780, FrameDeadline=54608185512412, FrameStartTime=54608165850621, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54608927205440, SyncStart=54608927291499, IssueDrawCommandsStart=54608927683794, SwapBuffers=54608931936226, FrameCompleted=54608936441602, DequeueBufferDuration=2886, QueueBufferDuration=94011, GpuCompleted=54608936441602, SwapBuffersCompleted=54608932534621, DisplayPresentTime=1868134440, CommandSubmissionCompleted=54608931936226,
+16:22:17.579  D  executeTopLoad: Loading previous month 2: 2024-10-01
+16:22:17.617  D  executeTopLoad: Loading previous month 3: 2024-09-01
+16:22:17.654  D  executeTopLoad: Generated 112 items for 3 previous months
+16:22:17.657  I  Skipped 50 frames!  The application may be doing too much work on its main thread.
+16:22:17.698  D  executeTopLoad: Added items to cache. New size: 596
+16:22:17.698  D  Maintained GridLayoutManager position
+16:22:17.716  I  Davey! duration=900ms; Flags=0, FrameTimelineVsyncId=8823268, IntendedVsync=54608202179078, Vsync=54609035512378, InputEventId=0, HandleInputStart=54609044343348, AnimationStart=54609044352082, PerformTraversalsStart=54609050477515, DrawStart=54609051386157, FrameDeadline=54608968845714, FrameStartTime=54609044075647, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54609083190245, SyncStart=54609083253927, IssueDrawCommandsStart=54609083483098, SwapBuffers=54609085407537, FrameCompleted=54609102274063, DequeueBufferDuration=4245, QueueBufferDuration=72743, GpuCompleted=54609102274063, SwapBuffersCompleted=54609086504546, DisplayPresentTime=140620450961244, CommandSubmissionCompleted=54609085407537,
+16:22:17.750  D  Binding loading item: TOP
+16:22:19.407  W  requestLayout() improperly called by androidx.appcompat.widget.AppCompatTextView{6458a88 V.ED..... ......ID 189,51-369,117} during layout: running second layout pass
+16:22:19.941  D  executeTopLoad: Notified adapter of 112 inserted items
+16:22:19.941  I  Skipped 133 frames!  The application may be doing too much work on its main thread.
+16:22:19.966  I  Davey! duration=2300ms; Flags=0, FrameTimelineVsyncId=8823285, IntendedVsync=54609052179044, Vsync=54609085512376, InputEventId=0, HandleInputStart=54609086082292, AnimationStart=54609086090491, PerformTraversalsStart=54609087814678, DrawStart=54610799913622, FrameDeadline=54609135512374, FrameStartTime=54609085998346, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54611327103279, SyncStart=54611327133528, IssueDrawCommandsStart=54611327799019, SwapBuffers=54611339454498, FrameCompleted=54611352268367, DequeueBufferDuration=2581, QueueBufferDuration=64079, GpuCompleted=54611352268367, SwapBuffersCompleted=54611340179944, DisplayPresentTime=1868147804, CommandSubmissionCompleted=54611339454498,
+16:22:20.580  D  hideTopLoader: Removed top loader from position 112
+16:22:20.581  D  executeTopLoad: Multi-month top load completed successfully
+16:22:20.592  I  Skipped 37 frames!  The application may be doing too much work on its main thread.
+16:22:20.599  I  Davey! duration=2883ms; Flags=0, FrameTimelineVsyncId=8823294, IntendedVsync=54609102179042, Vsync=54611318845620, InputEventId=0, HandleInputStart=54611329103008, AnimationStart=54611329111117, PerformTraversalsStart=54611791347194, DrawStart=54611799144889, FrameDeadline=54611385512284, FrameStartTime=54611328734344, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54611966125278, SyncStart=54611966192042, IssueDrawCommandsStart=54611966489456, SwapBuffers=54611969921698, FrameCompleted=54611985572792, DequeueBufferDuration=2787, QueueBufferDuration=72896, GpuCompleted=54611985572792, SwapBuffersCompleted=54611970867755, DisplayPresentTime=140620452033228, CommandSubmissionCompleted=54611969921698,
+16:22:20.660  D  hideTopLoader: Notified adapter of top loader removal
+16:22:20.666  I  Davey! duration=700ms; Flags=0, FrameTimelineVsyncId=8823310, IntendedVsync=54611352178952, Vsync=54611968845594, InputEventId=0, HandleInputStart=54611979834665, AnimationStart=54611979843098, PerformTraversalsStart=54611998367778, DrawStart=54611999287927, FrameDeadline=54612018845592, FrameStartTime=54611979556075, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=54612044276011, SyncStart=54612044344954, IssueDrawCommandsStart=54612044592837, SwapBuffers=54612046172050, FrameCompleted=54612052273427, DequeueBufferDuration=3817, QueueBufferDuration=119763, GpuCompleted=54612052273427, SwapBuffersCompleted=54612046942044, DisplayPresentTime=140620452034300, CommandSubmissionCompleted=54612046172050,

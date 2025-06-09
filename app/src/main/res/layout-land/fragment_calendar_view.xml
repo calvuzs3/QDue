@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!-- res/layout/fragment_calendar_view.xml - Aggiornato -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,51 +8,88 @@
     android:fitsSystemWindows="false"
     tools:context=".ui.calendar.CalendarViewFragment">
 
-    <!-- Guideline per centrare il calendario -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_start"
-        android:layout_width="wrap_content"
+    <!-- AppBarLayout con ConstraintLayout interno -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_header"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.15" />
+        android:background="@android:color/transparent"
+        app:elevation="6dp">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.85" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_scrollFlags="scroll|enterAlways">
 
-    <!-- Header con le intestazioni delle colonne -->
-    <include
-        android:id="@+id/qdue_calendar_column_header"
-        layout="@layout/item_calendar_column_header"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:maxWidth="@dimen/content_max_width"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="@dimen/content_max_width" />
+            <!-- Guidelines per centrare -->
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.15" />
 
-    <!-- Lista dei mesi con scrolling infinito -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_calendar"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:maxWidth="@dimen/content_max_width"
-        android:overScrollMode="never"
-        android:paddingHorizontal="8dp"
-        android:paddingBottom="16dp"
-        android:scrollbars="none"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@id/qdue_calendar_column_header"
-        app:layout_constraintWidth_max="@dimen/content_max_width"
-        tools:listitem="@layout/item_calendar_month" />
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.85" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <include
+                android:id="@+id/qdue_calendar_column_header"
+                layout="@layout/item_calendar_column_header"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:maxWidth="@dimen/content_max_width"
+                app:layout_constraintEnd_toEndOf="@id/guideline_end"
+                app:layout_constraintStart_toStartOf="@id/guideline_start"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/content_max_width" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ConstraintLayout per il RecyclerView -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Guidelines per centrare -->
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_start_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.15" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_end_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.85" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_calendar"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:maxWidth="@dimen/content_max_width"
+            android:overScrollMode="never"
+            android:paddingHorizontal="8dp"
+            android:paddingBottom="16dp"
+            android:scrollbars="none"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_end_content"
+            app:layout_constraintStart_toStartOf="@id/guideline_start_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="@dimen/content_max_width"
+            tools:listitem="@layout/item_calendar_month" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -17,6 +17,8 @@ import net.calvuz.qdue.quattrodue.models.Day;
  * by providing unified data access with intelligent caching and preloading.
  * Thread-safe implementation with performance optimizations.
  *
+ * It uniquely make use of quattroDue.getShiftsForMonth(normalizedDate);
+ *
  * @author Updated 21/05/2025
  */
 public class CalendarDataManager {
@@ -33,6 +35,7 @@ public class CalendarDataManager {
     private static final int MAX_CACHED_MONTHS = 24;
     private static final long CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
+    // Singleton
     private CalendarDataManager() {}
 
     /**
@@ -48,7 +51,6 @@ public class CalendarDataManager {
                 }
             }
         }
-        Log.d(TAG, "getInstance()");
         return instance;
     }
 

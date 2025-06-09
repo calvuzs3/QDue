@@ -2,6 +2,113 @@
 <resources>
 
     <!-- ============================================ -->
+    <!-- ESSENTIAL COMPONENT STYLES -->
+    <!-- ============================================ -->
+
+    <style name="Widget.QDue.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="android:elevation">@dimen/elevation_none</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Toolbar unificata per Activity -->
+    <style name="Widget.QDue.Toolbar.Main" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@drawable/appbar_gradient_background</item>
+        <item name="titleTextAppearance">@style/TextAppearance.QDue.Toolbar.Title</item>
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+        <item name="navigationIconTint">?attr/colorOnPrimary</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+        <item name="contentInsetStartWithNavigation">72dp</item>
+        <item name="popupTheme">@style/ThemeOverlay.QDue.Toolbar.Popup</item>
+        <item name="theme">@style/ThemeOverlay.QDue.Toolbar</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+
+    <!--    <style name="Widget.QDue.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">-->
+    <!--        <item name="backgroundTint">?attr/colorPrimaryContainer</item>-->
+    <!--        <item name="tint">?attr/colorOnPrimaryContainer</item>-->
+    <!--        <item name="android:elevation">@dimen/elevation_fab</item>-->
+    <!--        <item name="android:src">@android:drawable/ic_menu_today</item>-->
+    <!--    </style>-->
+
+    <!-- Standard FAB for Portrait Mode -->
+    <style name="Widget.QDue.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Surface">
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="tint">?attr/colorOnPrimaryContainer</item>
+        <item name="android:elevation">6dp</item>
+        <item name="android:src">@drawable/ic_today</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
+        <item name="android:layout_marginStart">@dimen/spacing_s</item>
+        <item name="android:layout_marginEnd">@dimen/spacing_s</item>
+        <item name="android:layout_marginTop">@dimen/spacing_s</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_s</item> <!-- layout_margin sovrascrive tutti i margins -->
+    </style>
+
+    <style name="Widget.QDue.FloatingActionButton.Portrait" parent="Widget.QDue.FloatingActionButton">
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_marginBottom">@dimen/fab_margin_bottom</item>
+    </style>
+
+    <!-- FAB Behavior for CoordinatorLayout (Portrait) -->
+    <style name="Widget.QDue.FloatingActionButton.Behavior">
+        <item name="layout_behavior">com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior</item>
+    </style>
+3
+    !-- Extended FAB for Landscape Mode (NavigationRail) -->
+    <style name="Widget.QDue.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
+        <item name="iconTint">?attr/colorOnPrimaryContainer</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.QDue.MediumComponent</item>
+        <item name="elevation">6dp</item>
+        <item name="android:layout_gravity">top|center_horizontal</item>
+        <item name="android:text">@string/go_to_today</item>
+        <item name="icon">@drawable/ic_today</item>
+        <item name="android:layout_marginTop">@dimen/spacing_m</item>
+        <item name="android:layout_marginHorizontal">@dimen/spacing_s</item>
+    </style>
+
+<!--    &lt;!&ndash; Extended FAB for landscape &ndash;&gt;-->
+<!--    <style name="Widget.QDue.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">-->
+<!--        <item name="backgroundTint">?attr/colorPrimaryContainer</item>-->
+<!--        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>-->
+<!--        <item name="iconTint">?attr/colorOnPrimaryContainer</item>-->
+<!--        <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>-->
+<!--        <item name="elevation">6dp</item>-->
+<!--        <item name="android:layout_gravity">top|center_horizontal</item>-->
+<!--        <item name="android:text">@string/go_to_today</item>-->
+<!--    </style>-->
+<!--    -->
+    <style name="Widget.QDue.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">?attr/colorCardBackground</item>
+        <item name="strokeColor">?attr/colorCardBorder</item>
+        <item name="strokeWidth">0.5dp</item>
+        <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+    </style>
+
+    <style name="Widget.QDue.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
+        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
+        <item name="itemRippleColor">@color/navigation_ripple_color</item>
+        <item name="labelVisibilityMode">selected</item>
+        <item name="android:elevation">@dimen/elevation_navbar</item>
+    </style>
+
+    <style name="Widget.QDue.NavigationView" parent="Widget.Material3.NavigationView">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
+        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
+        <item name="itemRippleColor">@color/navigation_ripple_color</item>
+        <item name="itemShapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
+        <item name="itemShapeFillColor">?attr/colorSecondaryContainer</item>
+        <item name="android:elevation">@dimen/elevation_sidebar</item>
+    </style>
+
+    <!-- ============================================ -->
     <!-- NAVIGATION RAIL -->
     <!-- ============================================ -->
 
@@ -54,42 +161,11 @@
         <item name="itemPaddingBottom">12dp</item>
     </style>
 
-    <!-- Extended FAB for landscape -->
-    <style name="Widget.QDue.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
-        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
-        <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
-        <item name="iconTint">?attr/colorOnPrimaryContainer</item>
-        <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
-        <item name="elevation">6dp</item>
-        <item name="android:layout_gravity">top|center_horizontal</item>
-        <item name="android:text">@string/go_to_today</item>
-    </style>
-
     <!-- Night mode variants -->
     <style name="Widget.QDue.NavigationRail.Dark" parent="Widget.QDue.NavigationRail">
         <item name="android:background">?attr/colorSurface</item>
         <item name="elevation">6dp</item>
     </style>
-
-    <!-- ============================================ -->
-    <!-- TOOLBAR TYPOGRAPHY STYLES -->
-    <!-- ============================================ -->
-
-    <!--    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.Material3.HeadlineSmall">-->
-    <!--        <item name="android:textSize">20sp</item>-->
-    <!--        <item name="android:textStyle">bold</item>-->
-    <!--        <item name="android:letterSpacing">0.02</item>-->
-    <!--        <item name="fontFamily">@font/lato_bold</item>-->
-    <!--        <item name="android:textColor">?attr/colorOnPrimary</item>-->
-    <!--    </style>-->
-
-    <!--    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.Material3.BodyMedium">-->
-    <!--        <item name="android:textSize">14sp</item>-->
-    <!--        <item name="android:textStyle">normal</item>-->
-    <!--        <item name="android:alpha">0.87</item>-->
-    <!--        <item name="fontFamily">@font/figtree</item>-->
-    <!--        <item name="android:textColor">?attr/colorOnPrimary</item>-->
-    <!--    </style>-->
 
     <!-- ============================================ -->
     <!-- TOOLBAR THEME OVERLAYS -->
@@ -108,9 +184,8 @@
         <item name="colorSurface">?attr/colorSurface</item>
         <item name="colorOnSurface">?attr/colorOnSurface</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
-        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+        <item name="android:textColorPrimary">?attr/colorOnSurfaceVariant</item>
         <item name="android:textColorSecondary">?attr/colorOnSurfaceVariant</item>
-        <item name="colorControlNormal">?attr/colorOnSurfaceVariant</item>
         <item name="elevation">8dp</item>
         <item name="android:windowElevation">8dp</item>
     </style>
@@ -127,7 +202,7 @@
         <item name="subtitleTextColor">?attr/colorOnPrimary</item>
         <item name="navigationIconTint">?attr/colorOnPrimary</item>
         <item name="android:minHeight">?attr/actionBarSize</item>
-        <item name="contentInsetStart">72dp</item>
+        <item name="contentInsetStart">@dimen/spacing_m</item>
         <item name="contentInsetStartWithNavigation">16dp</item>
         <item name="popupTheme">@style/ThemeOverlay.QDue.Toolbar.Popup</item>
         <item name="theme">@style/ThemeOverlay.QDue.Toolbar</item>
@@ -218,7 +293,7 @@
     <!-- TOOLBAR TYPOGRAPHY WITH CORRECT FONTS -->
     <!-- ============================================ -->
 
-    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.Material3.HeadlineSmall">
+    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.QDue.HeadlineSmall">
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:letterSpacing">0.02</item>
@@ -226,7 +301,7 @@
         <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 
-    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.Material3.BodyMedium">
+    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.QDue.BodyMedium">
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:alpha">0.87</item>
@@ -267,4 +342,5 @@
         <item name="colorOnSurface">?attr/colorOnPrimary</item>
         <item name="colorSurface">@android:color/transparent</item>
     </style>
+
 </resources>

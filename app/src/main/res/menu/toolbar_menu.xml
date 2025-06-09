@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- res/menu/toolbar_menu.xml -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_today"
-        android:title="@string/go_to_today"
-        android:icon="@drawable/ic_today"
-        app:showAsAction="ifRoom"
-        android:contentDescription="@string/go_to_today" />
+
 
     <item
         android:id="@+id/action_settings"

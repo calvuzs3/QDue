@@ -23,6 +23,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -32,9 +34,14 @@ import com.google.android.material.snackbar.Snackbar;
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.ui.dayslist.DayslistViewFragment;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
+import net.calvuz.qdue.ui.shared.BaseActivity;
+import net.calvuz.qdue.ui.shared.BaseFragment;
 import net.calvuz.qdue.ui.shared.FragmentCommunicationInterface;
+import net.calvuz.qdue.ui.shared.NotifyUpdatesInterface;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
+
+import java.util.List;
 
 /**
  * Enhanced Main Activity with hybrid NavigationRail system.
@@ -51,40 +58,22 @@ import net.calvuz.qdue.utils.TimeChangeReceiver;
  * - Material 3 compliant navigation patterns
  * - Unified FAB management across all configurations
  */
-public class QDueMainActivity extends AppCompatActivity
-        implements
-        FragmentCommunicationInterface,
-        TimeChangeReceiver.TimeChangeListener,
-        SharedPreferences.OnSharedPreferenceChangeListener {
-
+public class QDueMainActivity extends BaseActivity {
+    //TAG
     private static final String TAG = "QDueMainActivity";
 
-    // UI related
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityQdueMainBinding binding;
-    private NavController navController;
-
-    // Navigation Components (only one will be active based on layout)
-    private BottomNavigationView bottomNavigation;
-    private NavigationRailView navigationRail;
-    private NavigationView drawerNavigation;
-    private DrawerLayout drawerLayout;
-    private NavigationView sidebarNavigation;
+    // UI
+    protected ActivityQdueMainBinding binding;
 
     // FAB Management
     private FloatingActionButton fabGoToToday;
-    private boolean isFabIntegrated = false; // Whether FAB is integrated in NavigationRail
 
     // Navigation State
     private NavigationMode currentNavigationMode;
     private int currentDestination = R.id.nav_calendar; // Default to calendar
 
-    // Time Change Receiver
-    private TimeChangeReceiver timeChangeReceiver;
-    private boolean receiverRegistered = false;
-
-    // Shared Preferences
-    private SharedPreferences sharedPreferences;
+    // Toolbar
+    private MaterialToolbar toolbar;
 
     /**
      * Enum to track current navigation mode for proper handling
@@ -101,15 +90,9 @@ public class QDueMainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         final String mTAG = "onCreate: ";
         Log.v(TAG, mTAG + "called.");
-
-        // Initialize time change receiver
-        timeChangeReceiver = new TimeChangeReceiver(this);
-
-        // Register preference listener
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         // NORMAL: Use binding
         binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
@@ -124,7 +107,8 @@ public class QDueMainActivity extends AppCompatActivity
      * Detect which navigation components are available in current layout.
      * This allows the same activity to work with different layout configurations.
      */
-    private void detectNavigationComponents() {
+    @Override
+    protected void detectNavigationComponents() {
         final String mTAG = "detectNavigationComponents: ";
 
         // Always present in all layouts
@@ -136,6 +120,7 @@ public class QDueMainActivity extends AppCompatActivity
         drawerNavigation = findViewById(R.id.nav_drawer_secondary);
         sidebarNavigation = findViewById(R.id.sidebar_navigation);
         fabGoToToday = findViewById(R.id.fab_go_to_today);
+        toolbar = findViewById(R.id.toolbar);
 
         // NEW: Extended drawer for phone portrait
         NavigationView extendedDrawer = findViewById(R.id.nav_drawer_extended);
@@ -149,6 +134,7 @@ public class QDueMainActivity extends AppCompatActivity
         // LOGGING
         Log.v(TAG, mTAG + "Navigation mode: " + currentNavigationMode);
         Log.v(TAG, mTAG + "Available components:");
+        Log.v(TAG, mTAG + "  - Toolbar: " + (toolbar != null));
         Log.v(TAG, mTAG + "  - BottomNavigation: " + (bottomNavigation != null));
         Log.v(TAG, mTAG + "  - NavigationRail: " + (navigationRail != null));
         Log.v(TAG, mTAG + "  - DrawerNavigation: " + (drawerNavigation != null));
@@ -218,8 +204,8 @@ public class QDueMainActivity extends AppCompatActivity
                     break;
             }
 
-            // Setup FAB based on integration mode
-            setupFAB();
+            // Setup FAB based on integration mode - fragments should do it
+//            setupFAB();
 
         } catch (Exception e) {
             Log.e(TAG, "setupNavigationSafely: Error setting up navigation: " + e.getMessage());
@@ -234,8 +220,8 @@ public class QDueMainActivity extends AppCompatActivity
         Log.v(TAG, mTAG + "called.");
 
         try {
-            com.google.android.material.appbar.MaterialToolbar toolbar = getToolbar();
-            com.google.android.material.appbar.AppBarLayout appBarLayout = getAppBarLayout();
+            AppBarLayout appBarLayout = getAppBarLayout();
+            MaterialToolbar toolbar = getToolbar();
 
             if (toolbar != null) {
                 // Set toolbar as ActionBar
@@ -247,18 +233,25 @@ public class QDueMainActivity extends AppCompatActivity
                     getSupportActionBar().setTitle(getString(R.string.app_name));
 
                     // IMPORTANTE: Setup menu button per aprire sidebar
-                    getSupportActionBar().setDisplayHomeAsUpEnabled(shouldShowMenuButton());
+//                    getSupportActionBar().setDisplayHomeAsUpEnabled(shouldShowMenuButton());
                     getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu);
+
+                    Log.d(TAG, mTAG + "getSupportActionBar != null");
                 }
 
                 // Configure AppBar visibility
                 if (appBarLayout != null) {
                     boolean shouldShow = shouldShowAppBar();
                     appBarLayout.setVisibility(shouldShow ? View.VISIBLE : View.GONE);
+
                     Log.d(TAG, mTAG + "AppBar visibility: " + (shouldShow ? "VISIBLE" : "GONE"));
                 }
 
                 Log.d(TAG, mTAG + "Toolbar configured successfully");
+
+                // Debug: Verifica che il menu sia inflated
+                Log.d(TAG, mTAG + "Toolbar menu items count: " + toolbar.getMenu().size());
+
             } else {
                 Log.d(TAG, mTAG + "Toolbar not found in current layout");
             }
@@ -269,25 +262,10 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     /**
-     * Check if menu button should be shown
-     */
-    private boolean shouldShowMenuButton() {
-        Configuration config = getResources().getConfiguration();
-        boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
-
-        // Show menu button in portrait when we have sidebar available
-        // or when we want to toggle sidebar visibility
-//        return !isLandscape && (findViewById(R.id.sidebar_navigation) != null ||
-//                currentNavigationMode == NavigationMode.PHONE_PORTRAIT);
-
-        // Show menu button when we have a drawer available
-        return drawerLayout != null && drawerNavigation != null && !isLandscape;
-    }
-
-    /**
      * Setup NavController with fallback error handling.
      */
-    private void setupNavController() {
+    @Override
+    protected void setupNavController() {
         final String mTAG = "setupNavController: ";
         Log.v(TAG, mTAG + "called.");
 
@@ -320,138 +298,13 @@ public class QDueMainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Setup Phone Portrait navigation (BottomNavigation + separate FAB).
-     */
-    private void setupPhonePortraitNavigation() {
-        final String mTAG = "setupPhonePortraitNavigation: ";
-        Log.v(TAG, mTAG + "called.");
 
-        // Setup BottomNavigation for primary navigation
-        if (bottomNavigation != null && navController != null) {
-            NavigationUI.setupWithNavController(bottomNavigation, navController);
-
-            bottomNavigation.setOnItemSelectedListener(item -> {
-                return handleNavigationItemSelected(item.getItemId());
-            });
-        }
-
-        // Setup DrawerNavigation for extended menu
-        if (drawerNavigation != null) {
-            drawerNavigation.setNavigationItemSelectedListener(item -> {
-                boolean handled = handleExtendedDrawerItemSelected(item.getItemId());
-                if (handled && drawerLayout != null) {
-                    drawerLayout.closeDrawer(drawerNavigation);
-                }
-                return handled;
-            });
-
-            // Enable drawer
-            if (drawerLayout != null) {
-                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            }
-        }
-
-
-//        isFabIntegrated = false; // FAB is separate in phone portrait
-        isFabIntegrated = true; // FAB is separate in phone portrait
-    }
-
-    /**
-     * Setup Tablet Portrait navigation (NavigationRail + integrated FAB).
-     */
-    private void setupTabletPortraitNavigation() {
-        final String mTAG = "setupTabletPortraitNavigation: ";
-        Log.v(TAG, mTAG + "called.");
-
-        if (navigationRail != null && navController != null) {
-            NavigationUI.setupWithNavController(navigationRail, navController);
-
-            navigationRail.setOnItemSelectedListener(item -> {
-                return handleNavigationItemSelected(item.getItemId());
-            });
-
-            // Disable drawer for tablet portrait
-            if (drawerLayout != null) {
-                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            }
-        }
-
-        isFabIntegrated = true; // FAB is integrated in NavigationRail
-    }
-
-    /**
-     * Setup Landscape Small navigation (NavigationRail expanded + Extended FAB).
-     */
-    private void setupLandscapeSmallNavigation() {
-        final String mTAG = "setupLandscapeSmallNavigation: ";
-        Log.v(TAG, mTAG + "called.");
-
-        if (navigationRail != null && navController != null) {
-            NavigationUI.setupWithNavController(navigationRail, navController);
-
-            navigationRail.setOnItemSelectedListener(item -> {
-                return handleNavigationItemSelected(item.getItemId());
-            });
-
-            // Disable drawer for small landscape
-            if (drawerLayout != null) {
-                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            }
-        }
-
-        isFabIntegrated = true; // Extended FAB is integrated in NavigationRail
-    }
-
-    /**
-     * Setup Landscape Large navigation (NavigationRail + secondary Drawer).
-     */
-    private void setupLandscapeLargeNavigation() {
-        final String mTAG = "setupLandscapeLargeNavigation: ";
-        Log.v(TAG, mTAG + "called.");
-
-        // Setup primary NavigationRail
-        if (navigationRail != null && navController != null) {
-            NavigationUI.setupWithNavController(navigationRail, navController);
-
-            navigationRail.setOnItemSelectedListener(item -> {
-                if (item.getItemId() == R.id.nav_drawer_toggle) {
-                    // Open secondary drawer
-                    if (drawerLayout != null && drawerNavigation != null) {
-                        drawerLayout.open();
-                    }
-                    return true;
-                } else {
-                    return handleNavigationItemSelected(item.getItemId());
-                }
-            });
-        }
-
-        // Setup secondary drawer
-        if (drawerNavigation != null && navController != null) {
-            NavigationUI.setupWithNavController(drawerNavigation, navController);
-
-            drawerNavigation.setNavigationItemSelectedListener(item -> {
-                boolean handled = handleNavigationItemSelected(item.getItemId());
-                if (handled && drawerLayout != null) {
-                    drawerLayout.close(); // Close drawer after navigation
-                }
-                return handled;
-            });
-
-            // Enable drawer for large landscape
-            if (drawerLayout != null) {
-                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            }
-        }
-
-        isFabIntegrated = true; // FAB is integrated in NavigationRail
-    }
 
     /**
      * Unified navigation item selection handler for all navigation modes.
      */
-    private boolean handleNavigationItemSelected(int itemId) {
+    @Override
+    protected boolean handleNavigationItemSelected(int itemId) {
         final String mTAG = "handleNavigationItemSelected: ";
         Log.v(TAG, mTAG + "called.");
 
@@ -493,7 +346,8 @@ public class QDueMainActivity extends AppCompatActivity
     /**
      * Enhanced drawer item selection handler for extended menu (phone portrait).
      */
-    private boolean handleExtendedDrawerItemSelected(int itemId) {
+    @Override
+    protected boolean handleExtendedDrawerItemSelected(int itemId) {
         final String mTAG = "handleExtendedDrawerItemSelected: ";
         Log.v(TAG, mTAG + "called with itemId: " + itemId);
 
@@ -529,190 +383,48 @@ public class QDueMainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Setup FAB based on integration mode and current navigation configuration.
-     */
-    private void setupFAB() {
-        final String mTAG = "setupFAB: ";
-        Log.v(TAG, mTAG + "called.");
+//    /**
+//     * Setup FAB based on integration mode and current navigation configuration.
+//     * Fragments set it up
+//     */
+//    private void setupFAB() {
+//        final String mTAG = "setupFAB: ";
+//        Log.v(TAG, mTAG + "called.");
+//
+//        if (fabGoToToday == null) {
+//            Log.d(TAG, mTAG + "FAB not found in current layout");
+//            return;
+//        }
+//
+//        // Configure FAB click listener
+//        fabGoToToday.setOnClickListener(v -> {
+//            try {
+//                // Communicate with current fragment to scroll to today
+//                Fragment currentFragment = getCurrentFragment();
+//                if (currentFragment != null) {
+//                    if (currentFragment instanceof DayslistViewFragment) {
+//                        ((DayslistViewFragment) currentFragment).scrollToToday();
+//                    } else if (currentFragment instanceof net.calvuz.qdue.ui.calendar.CalendarViewFragment) {
+//                        ((net.calvuz.qdue.ui.calendar.CalendarViewFragment) currentFragment).scrollToToday();
+//                    }
+//                }
+//            } catch (Exception e) {
+//                Log.e(TAG, mTAG + "Error handling FAB click: " + e.getMessage());
+//            }
+//        });
+//
+//        // Configure FAB visibility based on integration mode
+//        if (isFabIntegrated) {
+//            // FAB is integrated in NavigationRail - always visible
+//            fabGoToToday.show();
+//            Log.d(TAG, mTAG + "FAB configured as integrated (always visible)");
+//        } else {
+//            // FAB is separate - managed by fragments
+//            fabGoToToday.hide(); // Start hidden, fragments will control visibility
+//            Log.d(TAG, mTAG + "FAB configured as separate (fragment-controlled)");
+//        }
+//    }
 
-        if (fabGoToToday == null) {
-            Log.d(TAG, mTAG + "FAB not found in current layout");
-            return;
-        }
-
-        // Configure FAB click listener
-        fabGoToToday.setOnClickListener(v -> {
-            try {
-                // Communicate with current fragment to scroll to today
-                Fragment currentFragment = getCurrentFragment();
-                if (currentFragment != null) {
-                    if (currentFragment instanceof DayslistViewFragment) {
-                        ((DayslistViewFragment) currentFragment).scrollToToday();
-                    } else if (currentFragment instanceof net.calvuz.qdue.ui.calendar.CalendarViewFragment) {
-                        ((net.calvuz.qdue.ui.calendar.CalendarViewFragment) currentFragment).scrollToToday();
-                    }
-                }
-            } catch (Exception e) {
-                Log.e(TAG, mTAG + "Error handling FAB click: " + e.getMessage());
-            }
-        });
-
-        // Configure FAB visibility based on integration mode
-        if (isFabIntegrated) {
-            // FAB is integrated in NavigationRail - always visible
-            fabGoToToday.show();
-            Log.d(TAG, mTAG + "FAB configured as integrated (always visible)");
-        } else {
-            // FAB is separate - managed by fragments
-            fabGoToToday.hide(); // Start hidden, fragments will control visibility
-            Log.d(TAG, mTAG + "FAB configured as separate (fragment-controlled)");
-        }
-    }
-
-    /**
-     * Get current fragment from NavHostFragment.
-     */
-    private Fragment getCurrentFragment() {
-        final String mTAG = "getCurrentFragment: ";
-        Log.v(TAG, mTAG + "called.");
-
-        try {
-            NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.nav_host_fragment_content_main);
-            if (navHostFragment != null) {
-                return navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
-            }
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error getting current fragment: " + e.getMessage());
-        }
-        return null;
-    }
-
-    /**
-     * Handle configuration changes (orientation, screen size).
-     */
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        final String mTAG = "onConfigurationChanged: ";
-        Log.v(TAG, mTAG + "called.");
-
-        Log.d(TAG, mTAG + "Configuration changed - orientation: " + (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Landscape" : "Portrait"));
-
-        // Note: Navigation components will be automatically reconfigured
-        // when the activity recreates with the new layout
-    }
-
-    /**
-     * Notify fragments to update data.
-     */
-    private void notifyUpdates() {
-        final String mTAG = "notifyUpdates: ";
-        Log.v(TAG, mTAG + "called.");
-
-        try {
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment_content_main);
-            if (fragment != null) {
-                if (fragment instanceof NavHostFragment) {
-                    Fragment childFragment = fragment.getChildFragmentManager().getPrimaryNavigationFragment();
-
-                    if (childFragment instanceof DayslistViewFragment) {
-                        ((DayslistViewFragment) childFragment).notifyUpdates();
-                    }
-                }
-            } else {
-                Log.e(TAG, mTAG + "Fragment not found");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error during notifyUpdates: " + e.getMessage());
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.v(TAG, "onResume: called.");
-
-        registerTimeChangeReceiver();
-        notifyUpdates();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.v(TAG, "onPause: called.");
-
-        unregisterTimeChangeReceiver();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.v(TAG, "onDestroy: called.");
-
-        unregisterTimeChangeReceiver();
-        if (sharedPreferences != null) {
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
-        }
-    }
-
-    @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    private void registerTimeChangeReceiver() {
-        if (!receiverRegistered && timeChangeReceiver != null) {
-            try {
-                IntentFilter filter = TimeChangeReceiver.createCriticalIntentFilter();
-                registerReceiver(timeChangeReceiver, filter);
-                receiverRegistered = true;
-            } catch (Exception e) {
-                Log.e(TAG, "registerTimeChangeReceiver: Error registering TimeChangeReceiver: " + e.getMessage());
-            }
-        }
-    }
-
-    private void unregisterTimeChangeReceiver() {
-        if (receiverRegistered && timeChangeReceiver != null) {
-            try {
-                unregisterReceiver(timeChangeReceiver);
-                receiverRegistered = false;
-            } catch (Exception e) {
-                Log.e(TAG, "unregisterTimeChangeReceiver: Error unregistering TimeChangeReceiver: " + e.getMessage());
-            }
-        }
-    }
-
-    // TimeChangeListener implementation
-    @Override
-    public void onTimeChanged() {
-        Log.d(TAG, "onTimeChanged - updating interface");
-        runOnUiThread(() -> {
-            notifyUpdates();
-            Toast.makeText(this, "System time updated", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    @Override
-    public void onDateChanged() {
-        Log.d(TAG, "onDateChanged - updating interface");
-        runOnUiThread(() -> {
-            notifyUpdates();
-            Toast.makeText(this, "System date updated", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    @Override
-    public void onTimezoneChanged() {
-        Log.d(TAG, "onTimezoneChanged - updating interface");
-        runOnUiThread(() -> {
-            notifyUpdates();
-            Toast.makeText(this, "Timezone updated", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String key) {
-        Log.d(TAG, "onSharedPreferenceChanged: " + key);
-    }
 
     // ========== COMMUNICATION INTERFACE IMPLEMENTATION ==========
 
@@ -801,7 +513,8 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFragmentOperationComplete(String operationType, boolean success, Bundle resultData) {
+    public void onFragmentOperationComplete(String operationType, boolean success, Bundle
+            resultData) {
         final String mTAG = "onFragmentOperationComplete: ";
         Log.v(TAG, mTAG + "called.");
 
@@ -876,10 +589,10 @@ public class QDueMainActivity extends AppCompatActivity
 
         try {
             // Example implementation - adjust based on your actual UI
-//            View loadingOverlay = findViewById(R.id.loading_overlay);
-//            if (loadingOverlay != null) {
-//                loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
-//            }
+            View loadingOverlay = findViewById(R.id.loading_overlay);
+            if (loadingOverlay != null) {
+                loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+            }
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error controlling loading indicator: " + e.getMessage());
         }
@@ -949,6 +662,7 @@ public class QDueMainActivity extends AppCompatActivity
         boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 
         // Show AppBar only in portrait mode
+        Log.d(TAG, "shouldShowAppBar: " + !isLandscape);
         return !isLandscape;
     }
 
@@ -965,7 +679,8 @@ public class QDueMainActivity extends AppCompatActivity
             boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
             boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
 
-            if (shouldShowMenu && !hasExtendedDrawer) {
+//            if (shouldShowMenu && !hasExtendedDrawer) {
+            if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer
                 getMenuInflater().inflate(R.menu.toolbar_menu, menu);
                 Log.d(TAG, mTAG + "Menu created for mode without drawer");
@@ -1018,13 +733,7 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     /**
-     * FIX IMMEDIATO: DrawerLayout Error - No Left Drawer
-     *
-     * Sostituire il metodo toggleSidebar() in QDueMainActivity.java
-     */
-
-    /**
-     * SOSTITUIRE: toggleSidebar method
+     * Drawer toggle
      */
     private void toggleSidebar() {
         final String mTAG = "toggleSidebar: ";
@@ -1050,7 +759,7 @@ public class QDueMainActivity extends AppCompatActivity
     }
 
     /**
-     * NUOVO: Show alternative menu for portrait mode
+     * Show alternative menu for portrait mode
      */
     private void showPortraitMenu() {
         final String mTAG = "showPortraitMenu: ";
@@ -1064,7 +773,7 @@ public class QDueMainActivity extends AppCompatActivity
             // startActivity(settingsIntent);
 
             // Opzione 3: Mostra dialogo con opzioni rapide (se implementi in futuro)
-//             showQuickOptionsDialog();
+            // showQuickOptionsDialog();
 
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error showing portrait menu: " + e.getMessage());
@@ -1078,13 +787,6 @@ public class QDueMainActivity extends AppCompatActivity
      */
     public NavigationMode getCurrentNavigationMode() {
         return currentNavigationMode;
-    }
-
-    /**
-     * Check if FAB is integrated in NavigationRail or separate.
-     */
-    public boolean isFabIntegrated() {
-        return isFabIntegrated;
     }
 
     /**

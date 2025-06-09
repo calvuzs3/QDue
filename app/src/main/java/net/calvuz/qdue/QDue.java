@@ -16,6 +16,10 @@ import java.util.Locale;
 
 public class QDue extends Application {
 
+
+    // TAG
+    static String TAG ="QDUE";
+
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
@@ -27,24 +31,25 @@ public class QDue extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // TAG
-        String TAG ="QDue";
-
         // MEMBERS
         context = this;
         locale = getSystemLocale();
+        Log.d(TAG, "=== SystemLocale initialized");
 
         // 0. Enable Material You Dynamic Colors (Android 12+)
         enableDynamicColors();
+        Log.d(TAG, "=== enableDynamicColors initialized");
 
         // 1. Initialize ShiftTypeFactory
-        Log.v(TAG, "ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
+//        Log.d(TAG, "=== ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
 
         // 2. Initialize QuattroDue
         quattrodue = QuattroDue.getInstance(this);
+        Log.d(TAG, "=== QuattroDue initialized");
 
         // 3. Initialize User database
         initializeUserDatabase();
+        Log.d(TAG, "=== InitializeUserDatabase initialized");
     }
 
     /* ===== GETTERS ===== */
@@ -90,12 +95,12 @@ public class QDue extends Application {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Enable dynamic colors for all activities
                 DynamicColors.applyToActivitiesIfAvailable(this);
-                Log.d("QDue", "Material You dynamic colors enabled");
+                Log.i(TAG, "Material You dynamic colors enabled");
             } else {
-                Log.d("QDue", "Using fallback purple-blue theme (Android < 12)");
+                Log.i(TAG, "Using fallback purple-blue theme (Android < 12)");
             }
         } catch (Exception e) {
-            Log.e("QDue", "Error enabling dynamic colors: " + e.getMessage());
+            Log.e(TAG, "Error enabling dynamic colors: " + e.getMessage());
             // Gracefully fallback to static theme
         }
     }
@@ -105,10 +110,10 @@ public class QDue extends Application {
             // Initialize user database in background
             new Thread(() -> {
                 UserDatabase.getInstance(this);
-                Log.v("QDue", "User database initialized");
+                Log.i(TAG, "User database initialized");
             }).start();
         } catch (Exception e) {
-            Log.e("QDue", "Error initializing user database: " + e.getMessage());
+            Log.e(TAG, "Error initializing user database: " + e.getMessage());
         }
     }
 }

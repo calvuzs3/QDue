@@ -247,14 +247,6 @@ public class CalendarAdapter extends BaseAdapter {
      * with MaterialCardView-compatible versions optimized for API 29+ and performance
      */
 
-    /**
-     * FIXED: Setup cell background for MaterialCardView compatibility
-     * Resolves "Setting a custom background is not supported" error
-     */
-    /**
-     * FIXED: Setup cell background for MaterialCardView compatibility
-     * Resolves "Setting a custom background is not supported" error
-     */
     private void setupCellBackground(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (!(holder.itemView instanceof com.google.android.material.card.MaterialCardView)) {
             // Fallback for non-MaterialCardView (shouldn't happen with current layout)

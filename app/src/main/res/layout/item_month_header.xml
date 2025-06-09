@@ -7,8 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="12dp"
-    android:paddingVertical="8dp">
+    android:layout_marginTop="@dimen/spacing_m"
+    android:paddingVertical="@dimen/spacing_s">
 
     <!-- Month Header Card with Gradient Background -->
     <com.google.android.material.card.MaterialCardView
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="16dp"
+            android:paddingHorizontal="@dimen/spacing_m"
             android:minHeight="64dp">
 
             <!-- Month Icon -->
@@ -42,9 +42,9 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_calendar"
-                android:tint="?attr/colorOnPrimaryContainer"
                 android:contentDescription="@string/placeholder_calendar_month"
-                android:layout_marginEnd="12dp" />
+                android:layout_marginEnd="12dp"
+                app:tint="?attr/colorOnPrimaryContainer" />
 
             <!-- Month Information -->
             <LinearLayout
@@ -58,7 +58,7 @@
                     android:id="@+id/tv_month_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                    android:textAppearance="@style/TextAppearance.QDue.HeadlineSmall"
                     android:textColor="?attr/colorOnPrimaryContainer"
                     android:textStyle="bold"
                     android:gravity="start"
@@ -69,7 +69,7 @@
                     android:id="@+id/tv_year"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textAppearance="@style/TextAppearance.QDue.BodyMedium"
                     android:textColor="?attr/colorOnPrimaryContainer"
                     android:alpha="0.8"
                     android:gravity="start"
@@ -90,16 +90,15 @@
                     android:id="@+id/tv_days_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                    android:textAppearance="@style/TextAppearance.QDue.TitleMedium"
                     android:textColor="?attr/colorOnPrimaryContainer"
-                    android:textStyle="bold"
-                    tools:text="31" />
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="giorni"
-                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                    android:text="@string/days"
+                    android:textAppearance="@style/TextAppearance.QDue.LabelSmall"
                     android:textColor="?attr/colorOnPrimaryContainer"
                     android:alpha="0.7" />
 

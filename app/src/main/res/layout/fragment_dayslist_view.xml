@@ -14,20 +14,28 @@
         android:layout_height="wrap_content" />-->
 
     <!-- Header con le intestazioni delle colonne (margin-top for shared toolbar) -->
-    <include
-        android:id="@+id/qdue_dayslist_column_header"
-        layout="@layout/item_dayslist_column_header"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:maxWidth="600dp" />
+        android:background="@android:color/transparent"
+        app:elevation="6dp">
+
+        <include
+            android:id="@+id/qdue_dayslist_column_header"
+            layout="@layout/item_dayslist_column_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxWidth="600dp"
+            app:layout_scrollFlags="scroll|enterAlways" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!-- RecyclerView per la lista giorni -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_dayslist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="60dp"
         android:clipToPadding="false"
         android:maxWidth="600dp"
         android:overScrollMode="never"

@@ -371,5 +371,6 @@
     <!-- Accessibility descriptions -->
     <string name="drawer_open_extended">Apri menu esteso</string>
     <string name="drawer_close_extended">Chiudi menu esteso</string>
+    <string name="days">giorni</string>
 
 </resources>
