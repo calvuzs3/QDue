@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.shared;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_BASEADAPTER;
 import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
 import android.annotation.SuppressLint;
@@ -51,88 +52,28 @@ import java.util.List;
  */
 public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    // ==================== CONSTANTS AND VIEW TYPES ====================
-
-    /**
-     * Tag for logging purposes
-     */
+    // TAG
     protected static final String TAG = "BaseAdapter";
 
-    /**
-     * View type constant for month header items
-     */
+    // CONSTANTS
     protected static final int VIEW_TYPE_MONTH_HEADER = 0;
-
-    /**
-     * View type constant for day items
-     */
     protected static final int VIEW_TYPE_DAY = 1;
-
-    /**
-     * View type constant for loading indicators
-     */
     protected static final int VIEW_TYPE_LOADING = 2;
-
-    /**
-     * View type constant for empty placeholder items
-     */
     protected static final int VIEW_TYPE_EMPTY = 3;
-
-    /**
-     * Starting value for custom view types that subclasses can use
-     */
     protected static final int VIEW_TYPE_CUSTOM_START = 100;
 
-    // ==================== CORE MEMBER VARIABLES ====================
-
-    /**
-     * Application context for resource access
-     */
+    // MEMBERS
     protected final Context mContext;
-
-    /**
-     * List of view items to display in the adapter
-     */
     protected List<SharedViewModels.ViewItem> mItems;
-
-    /**
-     * Current user's half team for highlighting purposes
-     */
     protected HalfTeam mUserHalfTeam;
-
-    /**
-     * Number of shifts to display per day
-     */
     protected final int mNumShifts;
 
-    // ==================== CACHED THEME COLORS ====================
-
-    /**
-     * Cached normal text color to avoid repeated theme lookups
-     */
+    // CACHED THEME COLORS
     protected int mCachedNormalTextColor = 0;
-
-    /**
-     * Cached Sunday text color for weekend highlighting
-     */
     protected int mCachedSundayTextColor = 0;
-
-    /**
-     * Cached today background color for current day highlighting
-     */
     protected int mCachedTodayBackgroundColor = 0;
-
-    /**
-     * Cached user shift background color for team highlighting
-     */
     protected int mCachedUserShiftBackgroundColor = 0;
-
-    /**
-     * Cached user shift text color for team highlighting
-     */
     protected int mCachedUserShiftTextColor = 0;
-
-    // ==================== CONSTRUCTOR ====================
 
     /**
      * Constructs a new BaseAdapter with the specified parameters.
@@ -150,8 +91,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.mNumShifts = numShifts;
         initializeColorCache();
     }
-
-// ==================== PUBLIC COMMON METHODS ====================
 
     /**
      * Updates the adapter's data set and refreshes the display.
@@ -249,6 +188,10 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (position >= mItems.size()) return;
 
+        if (DEBUG_BASEADAPTER) {
+            Log.d("DEBUG", "ViewHolder: " + holder.getClass().getSimpleName() + " Expected: CalendarDayViewHolder");
+        }
+
         SharedViewModels.ViewItem item = mItems.get(position);
 
         if (holder instanceof MonthHeaderViewHolder) {
@@ -268,6 +211,12 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         } else {
             bindCustomViewHolder(holder, item, position);
+        }
+
+        if (DEBUG_BASEADAPTER) {
+            Log.d("DEBUG", "mItems.size(): " + mItems.size());
+            Log.d("DEBUG", "position: " + position);
+            Log.d("DEBUG", "item type: " + item.getClass().getSimpleName());
         }
     }
 
@@ -329,10 +278,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         return new DayViewHolder(view);
     }
 
-    // ==================== BINDING METHODS (CAN BE OVERRIDDEN) ====================
-
     // ===========================================================
-    // ======================== MONTH HEADER =====================
 
     /**
      * Binds data to a month header ViewHolder.
@@ -397,8 +343,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             enhancedHolder.stopAnimation();
         }
     }
-
-
 
 // ===========================================================
 
@@ -467,9 +411,20 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         // Apply special day colors (today and Sunday)
         applySpecialDayColors(holder, isToday, isSunday);
+
+        if (DEBUG_BASEADAPTER) {
+            Log.d("DEBUG", "DayItem.day is null: " + (dayItem.day == null));
+            if (dayItem.day != null) {
+                Log.d("DEBUG", "Day date: " + dayItem.day.getDate());
+                Log.d("DEBUG", "Day number: " + dayItem.day.getDayOfMonth());
+            }
+
+            Log.d("DEBUG", "ItemView type: " + holder.itemView.getClass().getSimpleName());
+            Log.d("DEBUG", "ItemView child count: " + ((ViewGroup) holder.itemView).getChildCount());
+        }
     }
 
-    // ==================== HELPER METHODS FOR BINDING ====================
+// ==================== HELPER METHODS FOR BINDING ====================
 
     /**
      * Binds shift team information to the day ViewHolder.
@@ -495,7 +450,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    // ===========================================================
+// ===========================================================
 
     /**
      * Get seasonal or month-appropriate icon with fallback.
@@ -504,13 +459,21 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     private int getSeasonalIcon(int month) {
         try {
             switch (month) {
-                case 12: case 1: case 2: // Winter
+                case 12:
+                case 1:
+                case 2: // Winter
                     return getDrawableResourceSafely("ic_calendar_winter", R.drawable.ic_calendar);
-                case 3: case 4: case 5: // Spring
+                case 3:
+                case 4:
+                case 5: // Spring
                     return getDrawableResourceSafely("ic_calendar_spring", R.drawable.ic_calendar);
-                case 6: case 7: case 8: // Summer
+                case 6:
+                case 7:
+                case 8: // Summer
                     return getDrawableResourceSafely("ic_calendar_summer", R.drawable.ic_calendar);
-                case 9: case 10: case 11: // Autumn
+                case 9:
+                case 10:
+                case 11: // Autumn
                     return getDrawableResourceSafely("ic_calendar_autumn", R.drawable.ic_calendar);
                 default:
                     return R.drawable.ic_calendar; // Default calendar icon
@@ -648,8 +611,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    // ===========================================================
-
+// ===========================================================
 
     /**
      * Highlights the user's shift with special background and text colors.
@@ -727,7 +689,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    // ==================== ABSTRACT/VIRTUAL METHODS FOR EXTENSIBILITY ====================
+// ==================== ABSTRACT/VIRTUAL METHODS FOR EXTENSIBILITY ====================
 
     /**
      * Allows subclasses to override for custom view types.
@@ -764,7 +726,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         // Default: no custom binding
     }
 
-    // ==================== UTILITY METHODS ====================
+// ==================== UTILITY METHODS ====================
 
     /**
      * Initializes the color cache by retrieving theme colors.
@@ -802,7 +764,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         return -1;
     }
 
-    // ==================== INNER VIEW HOLDER CLASSES ====================
+// ==================== INNER VIEW HOLDER CLASSES ====================
 
     /**
      * ViewHolder for month header items.

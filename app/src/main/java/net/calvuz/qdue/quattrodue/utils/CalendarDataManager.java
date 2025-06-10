@@ -35,8 +35,8 @@ public class CalendarDataManager {
     private static final int MAX_CACHED_MONTHS = 24;
     private static final long CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
-    // Singleton
-    private CalendarDataManager() {}
+    // Singleton - PROTO made protected
+    protected CalendarDataManager() {}
 
     /**
      * Gets the singleton instance.
@@ -57,8 +57,9 @@ public class CalendarDataManager {
 
     /**
      * Initializes the data manager with QuattroDue instance.
+     * PROTO made protected
      */
-    private void initialize() {
+    protected void initialize() {
         if (LOG_ENABLED) Log.d(TAG, "CalendarDataManager initialized");
     }
 
@@ -180,8 +181,9 @@ public class CalendarDataManager {
 
     /**
      * Cleans up cache if it exceeds maximum size.
+     * PROTO it was private
      */
-    private void cleanupCacheIfNeeded() {
+    public void cleanupCacheIfNeeded() {
         if (monthsCache.size() <= MAX_CACHED_MONTHS) return;
 
         // Remove expired entries

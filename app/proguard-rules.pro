@@ -19,3 +19,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+# PROTO ######################################################
+
+# Keep virtual scrolling classes
+-keep class net.calvuz.qdue.ui.shared.proto.** { *; }
+
+# Keep CompletableFuture for async operations
+-keep class java.util.concurrent.CompletableFuture { *; }
+-keep class java.util.concurrent.CompletionStage { *; }
+
+# Keep data callback interfaces
+-keep interface net.calvuz.qdue.ui.proto.VirtualCalendarDataManager$DataAvailabilityCallback { *; }
+
+# Prevent obfuscation of animation-related classes
+-keep class androidx.dynamicanimation.** { *; }
+
+# ############################################################

@@ -41,7 +41,7 @@
         android:clipToPadding="false"
         android:maxWidth="600dp"
         android:overScrollMode="never"
-        android:paddingHorizontal="4dp"
+        android:paddingHorizontal="2dp"
         android:paddingBottom="120dp"
         android:scrollbars="none"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

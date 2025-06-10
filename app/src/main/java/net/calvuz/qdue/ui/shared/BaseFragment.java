@@ -1,6 +1,6 @@
 package net.calvuz.qdue.ui.shared;
 
-import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
+import static net.calvuz.qdue.QDue.Debug.DEBUG_BASEFRAGMENT;
 import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
 import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_RADIUS;
 
@@ -55,11 +55,10 @@ public abstract class BaseFragment extends Fragment
     // TAG
     private static final String TAG = "BaseFragment";
 
-    // DEBUG
-    protected boolean DEBUG_CALENDAR_VIEW = true;
+    // DEBUG it is for initial scrolling bug. now resolved
     protected boolean mIsInitialScrolling = false;
 
-    // Nenbres
+    // Members
     protected CalendarDataManager mDataManager;
     protected RecyclerView mRecyclerView;
     protected GridLayoutManager mGridLayoutManager;
@@ -203,7 +202,7 @@ public abstract class BaseFragment extends Fragment
             communicationInterface = (FragmentCommunicationInterface) context;
             Log.v(TAG, mTAG + "Communication interface attached");
         } catch (ClassCastException e) {
-            Log.e(TAG, mTAG + "Error in attacching Comunication Interface");
+            Log.e(TAG, mTAG + "Error in attaching Communication Interface");
             throw new ClassCastException(context.toString()
                     + " must implement FragmentCommunicationInterface");
         }
@@ -245,7 +244,7 @@ public abstract class BaseFragment extends Fragment
      * This unifies scroll handling, infinite loading, and sticky header logic.
      */
     protected void setupRecyclerView() {
-        final String mTAG = ":setupRecyclerView: ";
+        final String mTAG = "setupRecyclerView: ";
         Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
@@ -306,9 +305,6 @@ public abstract class BaseFragment extends Fragment
      * Handles infinite scrolling and sticky header updates.
      */
     private class UnifiedGridScrollListener extends RecyclerView.OnScrollListener {
-
-        private static final String LISTENER_TAG = "UnifiedGridScrollListener";
-
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
@@ -527,7 +523,7 @@ public abstract class BaseFragment extends Fragment
             // 1. Calcola la posizione di today
             mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
 
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Today position calculated: " + mTodayPosition);
                 Log.d(TAG, mTAG + "Cache size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
                 Log.d(TAG, mTAG + "Adapter items: " + (getFragmentAdapter() != null ? getFragmentAdapter().getItemCount() : "null"));
@@ -542,19 +538,19 @@ public abstract class BaseFragment extends Fragment
             // 4. Setup infinite scroll listeners
             setupScrollListeners();
 
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
                         " elements, today at position: " + mTodayPosition);
             }
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in setupInfiniteScrolling: " + e.getMessage());
+            Log.e("TAG", mTAG + "Error in setupInfiniteScrolling: " + e.getMessage());
         }
     }
 
     // ===== 2. NUOVO: Verifica Prerequisites =====
     private boolean areComponentsReady() {
-        String mTAG = ":areComponentsReady: ";
+        String mTAG = "areComponentsReady: ";
 
         // Here every fragment implements its own adapter, so we ask for it
         if (getFragmentAdapter() == null) {
@@ -582,7 +578,7 @@ public abstract class BaseFragment extends Fragment
 
     // ===== NUOVO METODO: Sincronizzazione Forzata =====
     private void ensureAdapterSyncWithCache() {
-        final String mTAG = ":ensureAdapterSyncWithCache: ";
+        final String mTAG = "ensureAdapterSyncWithCache: ";
 
         try {
             // NULL CHECKS aggiunti
@@ -599,31 +595,31 @@ public abstract class BaseFragment extends Fragment
             // Verifica se adapter è vuoto ma cache ha dati
             if (getFragmentAdapter().getItemCount() == 0 && !mItemsCache.isEmpty()) {
 
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Adapter empty but cache has " + mItemsCache.size() +
                             " items. Forcing sync...");
                 }
 
-                // Popola immediatamente l'adapter con tutti i dati della cache
+                // Popola immediatamente the adapter con tutti i dati della cache
                 getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
                 getFragmentAdapter().notifyDataSetChanged();
 
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Adapter populated: " + getFragmentAdapter().getItemCount() + " items");
                 }
 
             } else if (getFragmentAdapter().getItemCount() != mItemsCache.size()) {
 
                 // Cache e adapter non sincronizzati - forza riallineamento
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.w(TAG, mTAG + "Cache-Adapter mismatch. Cache: " + mItemsCache.size() +
-                            ", Adapter: " + getFragmentAdapter().getItemCount() + ". Resyncing...");
+                            ", Adapter: " + getFragmentAdapter().getItemCount() + ". Re-syncing...");
                 }
 
                 getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
                 getFragmentAdapter().notifyDataSetChanged();
             } else {
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Cache and adapter already in sync: " + mItemsCache.size() + " items");
                 }
             }
@@ -635,7 +631,7 @@ public abstract class BaseFragment extends Fragment
 
     // ===== 3. NUOVO: Setup Ritardato =====
     private void scheduleInfiniteScrollingSetup() {
-        final String mTAG = ":scheduleInfiniteScrollingSetup: ";
+        final String mTAG = "scheduleInfiniteScrollingSetup: ";
 
         // Retry ogni 100ms fino a quando i componenti sono pronti
         mRecyclerView.postDelayed(new Runnable() {
@@ -647,12 +643,12 @@ public abstract class BaseFragment extends Fragment
                 attempts++;
 
                 if (areComponentsReady()) {
-                    if (DEBUG_CALENDAR_VIEW) {
+                    if (DEBUG_BASEFRAGMENT) {
                         Log.d(TAG, mTAG + "Components ready after " + attempts + " attempts");
                     }
                     setupInfiniteScrolling();
                 } else if (attempts < MAX_ATTEMPTS) {
-                    if (DEBUG_CALENDAR_VIEW) {
+                    if (DEBUG_BASEFRAGMENT) {
                         Log.d(TAG, mTAG + "Retry " + attempts + "/" + MAX_ATTEMPTS);
                     }
                     mRecyclerView.postDelayed(this, 100);
@@ -665,10 +661,10 @@ public abstract class BaseFragment extends Fragment
 
     // ===== METODO MODIFICATO: Scroll con Verifica =====
     private void scheduleVerifiedScrollToToday() {
-        final String mTAG = ":scheduleVerifiedScrollToToday: -";
+        final String mTAG = "scheduleVerifiedScrollToToday: -";
 
         if (mTodayPosition < 0) {
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.w(TAG, mTAG + "Today position not found (" + mTodayPosition + ")");
                 // DEBUG: Prova a forzare il caricamento del mese corrente
                 tryLoadCurrentMonth();
@@ -682,7 +678,7 @@ public abstract class BaseFragment extends Fragment
             return;
         }
 
-        // Verifica che l'adapter abbia abbastanza elementi
+        // Verifica che the adapter abbia abbastanza elementi
         if (getFragmentAdapter().getItemCount() > mTodayPosition) {
             // Dati pronti - scroll immediato ma con un piccolo delay per layout
             mRecyclerView.postDelayed(new Runnable() {
@@ -700,10 +696,10 @@ public abstract class BaseFragment extends Fragment
 
     // ===== 6. NUOVO: Tentativo di Caricamento Mese Corrente =====
     private void tryLoadCurrentMonth() {
-        final String mTAG = ":tryLoadCurrentMonth: ";
+        final String mTAG = "tryLoadCurrentMonth: ";
 
         try {
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Attempting to load current month to find today");
             }
 
@@ -735,7 +731,7 @@ public abstract class BaseFragment extends Fragment
 
     // ===== 7. NUOVO: Ricontrolla Posizione Today =====
     private void recheckTodayPosition() {
-        final String mTAG = ":recheckTodayPosition: ";
+        final String mTAG = "recheckTodayPosition: ";
 
         try {
             // Aggiorna la cache
@@ -746,7 +742,7 @@ public abstract class BaseFragment extends Fragment
                 // Ricalcola posizione today
                 mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
 
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Rechecked today position: " + mTodayPosition +
                             " (cache size: " + mItemsCache.size() + ")");
                 }
@@ -767,7 +763,7 @@ public abstract class BaseFragment extends Fragment
 
     // ===== NUOVO METODO: Retry con Timeout =====
     private void scheduleRetryScrollToToday(int attemptCount) {
-        final String mTAG = ":scheduleRetryScrollToToday: ";
+        final String mTAG = "scheduleRetryScrollToToday: ";
         final int MAX_ATTEMPTS = 20; // 20 * 50ms = 1 secondo max
 
         if (attemptCount >= MAX_ATTEMPTS) {
@@ -779,12 +775,12 @@ public abstract class BaseFragment extends Fragment
             @Override
             public void run() {
                 if (getFragmentAdapter().getItemCount() > mTodayPosition) {
-                    if (DEBUG_CALENDAR_VIEW) {
+                    if (DEBUG_BASEFRAGMENT) {
                         Log.d(TAG, mTAG + "Adapter ready after " + (attemptCount + 1) + " attempts");
                     }
                     performVerifiedScrollToToday();
                 } else {
-                    if (DEBUG_CALENDAR_VIEW) {
+                    if (DEBUG_BASEFRAGMENT) {
                         Log.d(TAG, mTAG + "Retry " + (attemptCount + 1) + "/" + MAX_ATTEMPTS +
                                 " - Adapter: " + getFragmentAdapter().getItemCount() + ", Need: " + (mTodayPosition + 1));
                     }
@@ -796,7 +792,7 @@ public abstract class BaseFragment extends Fragment
 
     // ===== METODO MODIFICATO: Scroll Verificato =====
     private void performVerifiedScrollToToday() {
-        final String mTAG = ":performVerifiedScrollToToday: ";
+        final String mTAG = "performVerifiedScrollToToday: ";
 
         try {
             // Verifica finale prima dello scroll
@@ -806,7 +802,7 @@ public abstract class BaseFragment extends Fragment
                 return;
             }
 
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Performing verified scroll to position: " + mTodayPosition);
             }
 
@@ -820,7 +816,7 @@ public abstract class BaseFragment extends Fragment
                 int optimalPosition = Math.max(0, mTodayPosition - ( 4 * getGridColumnCount() )); // 4 righe sopra
                 gridManager.scrollToPositionWithOffset(optimalPosition, 20);
 
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition +
                             " (scroll to: " + optimalPosition + ")");
                 }
@@ -829,7 +825,7 @@ public abstract class BaseFragment extends Fragment
                 // Fallback per LinearLayoutManager
                 mRecyclerView.scrollToPosition(Math.max(0, mTodayPosition - 3));
 
-                if (DEBUG_CALENDAR_VIEW) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.e(TAG, mTAG + "Using fallback mRecyclerView positioning for today: " + mTodayPosition);
                 }
             }
@@ -839,7 +835,7 @@ public abstract class BaseFragment extends Fragment
                 @Override
                 public void run() {
                     mIsInitialScrolling = false;
-                    if (DEBUG_CALENDAR_VIEW) {
+                    if (DEBUG_BASEFRAGMENT) {
                         Log.d(TAG, mTAG + "Initial scroll completed, infinite loading re-enabled");
                     }
                 }
@@ -937,7 +933,7 @@ public abstract class BaseFragment extends Fragment
         if (mGridLayoutManager != null) {
             try {
                 mGridLayoutManager.scrollToPositionWithOffset(itemsAdded, 0);
-                if (DEBUG_FRAGMENT) {
+                if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, "Maintained GridLayoutManager position");
                 }
             } catch (Exception e) {
@@ -1446,7 +1442,7 @@ public abstract class BaseFragment extends Fragment
         final String mTAG = ":triggerTopLoad: ";
 
         if (mIsInitialScrolling) {
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Skipping top load during initial scroll");
             }
             return; // SKIP durante scroll iniziale
@@ -1494,7 +1490,7 @@ public abstract class BaseFragment extends Fragment
         final String mTAG = "triggerBottomLoad: ";
 
         if (mIsInitialScrolling) {
-            if (DEBUG_CALENDAR_VIEW) {
+            if (DEBUG_BASEFRAGMENT) {
                 Log.d(TAG, mTAG + "Skipping bottom load during initial scroll");
             }
             return; // SKIP durante scroll iniziale
@@ -1563,11 +1559,11 @@ public abstract class BaseFragment extends Fragment
         final String mTAG = "processPendingOperations: ";
 
         if (mIsPendingTopLoad.get() && !mIsUpdatingCache.get()) {
-            if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Processing pending top load");
+            if (DEBUG_BASEFRAGMENT) Log.d(TAG, mTAG + "Processing pending top load");
             executeTopLoad();
         }
         if (mIsPendingBottomLoad.get() && !mIsUpdatingCache.get()) {
-            if (DEBUG_FRAGMENT) Log.d(TAG, mTAG + "Processing pending bottom load");
+            if (DEBUG_BASEFRAGMENT) Log.d(TAG, mTAG + "Processing pending bottom load");
             executeBottomLoad();
         }
     }
@@ -1581,7 +1577,7 @@ public abstract class BaseFragment extends Fragment
 
         int maxElements = QD_MAX_CACHE_SIZE * 35; // ~35 elements per month
         if (mItemsCache.size() > maxElements) {
-            if (DEBUG_FRAGMENT)
+            if (DEBUG_BASEFRAGMENT)
                 Log.d(TAG, mTAG + "Scheduling cache cleanup, current size: " + mItemsCache.size());
 
             mBackgroundHandler.postDelayed(() -> {
@@ -1610,7 +1606,7 @@ public abstract class BaseFragment extends Fragment
                 // If we can't determine position, use a safe fallback
                 if (currentPos == RecyclerView.NO_POSITION) {
                     currentPos = mItemsCache.size() / 2; // Use middle as fallback
-                    if (DEBUG_FRAGMENT) Log.w(TAG, mTAG + "Using fallback position for cleanup");
+                    if (DEBUG_BASEFRAGMENT) Log.w(TAG, mTAG + "Using fallback position for cleanup");
                 }
 
                 // Remove from start if necessary
@@ -1643,7 +1639,7 @@ public abstract class BaseFragment extends Fragment
                     });
                 }
 
-                if (DEBUG_FRAGMENT)
+                if (DEBUG_BASEFRAGMENT)
                     Log.d(TAG, mTAG + "Cache cleaned, new size: " + mItemsCache.size());
             } finally {
                 mIsUpdatingCache.set(false);
@@ -1976,7 +1972,7 @@ public abstract class BaseFragment extends Fragment
             mRecyclerView.clearOnScrollListeners();
         }
 
-        if (DEBUG_FRAGMENT)
+        if (DEBUG_BASEFRAGMENT)
             Log.d(TAG, mTAG + "Fragment view destroyed: " + getClass().getSimpleName());
     }
 
@@ -2037,8 +2033,8 @@ public abstract class BaseFragment extends Fragment
 
     /**
      * Fragment specific adapter setup.
-     * Subclasse create a specific Adapter instance
-     * wich is given to the RecyclerView with mRecyclerView,setAdapter( adapter )
+     * Subclass create a specific Adapter instance
+     * which is given to the RecyclerView with mRecyclerView,setAdapter( adapter )
      */
     protected abstract void setupAdapter();
 
