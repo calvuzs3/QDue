@@ -159,7 +159,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param newItems New list of view items to display
      */
     @SuppressLint("NotifyDataSetChanged")
-    public void updateData(List<SharedViewModels.ViewItem> newItems) {
+    public void setItems(List<SharedViewModels.ViewItem> newItems) {
         this.mItems = newItems;
         notifyDataSetChanged();
     }

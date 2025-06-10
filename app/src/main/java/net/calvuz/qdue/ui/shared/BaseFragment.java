@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.shared;
 
 import static net.calvuz.qdue.QDue.Debug.DEBUG_FRAGMENT;
 import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
-import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_SIZE;
+import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_RADIUS;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,8 +21,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
-import net.calvuz.qdue.R;
-import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.utils.Log;
@@ -53,22 +50,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author calvuzs3
  */
 public abstract class BaseFragment extends Fragment
-implements NotifyUpdatesInterface {
+        implements NotifyUpdatesInterface {
 
+    // TAG
     private static final String TAG = "BaseFragment";
 
-    // === COMMON COMPONENTS ===
+    // DEBUG
+    protected boolean DEBUG_CALENDAR_VIEW = true;
+    protected boolean mIsInitialScrolling = false;
 
-    protected QuattroDue mQD;
+    // Nenbres
     protected CalendarDataManager mDataManager;
-
     protected RecyclerView mRecyclerView;
-    protected LinearLayoutManager mLayoutManager;
     protected GridLayoutManager mGridLayoutManager;
-
     protected FloatingActionButton mFabGoToToday;
 
-    // === INFINITE SCROLLING CACHE ===
+    // ==================== INFINITE SCROLLING CACHE ==============
 
     // Cache of view items for infinite scrolling
     protected List<SharedViewModels.ViewItem> mItemsCache;
@@ -76,154 +73,72 @@ implements NotifyUpdatesInterface {
     // Current center position in cache
     protected int mCurrentCenterPosition;
 
-     // Current date cursor
+    // Current date cursor
     protected LocalDate mCurrentDate;
 
-    // === CONCURRENCY CONTROL ===
+    // ==================== CONCURRENCY CONTROL ===================
 
-    /**
-     * Atomic flag to prevent concurrent cache updates
-     */
+    // Atomic flag to prevent concurrent cache updates
     protected final AtomicBoolean mIsUpdatingCache = new AtomicBoolean(false);
 
-    /**
-     * Atomic flag for pending top load operations
-     */
+    // Atomic flag for pending top load operations
     protected final AtomicBoolean mIsPendingTopLoad = new AtomicBoolean(false);
 
-    /**
-     * Atomic flag for pending bottom load operations
-     */
+    // Atomic flag for pending bottom load operations
     protected final AtomicBoolean mIsPendingBottomLoad = new AtomicBoolean(false);
 
-    // === ASYNC OPERATION HANDLERS ===
+    // ==================== ASYNC OPERATION HANDLERS ==============
 
-    /**
-     * Main thread handler for UI operations
-     */
+    // Main thread handler for UI operations
     protected Handler mMainHandler;
 
-    /**
-     * Background handler for data operations
-     */
+    // Background handler for data operations
     protected Handler mBackgroundHandler;
 
-    // === POSITION TRACKING ===
+    // ==================== POSITION TRACKING =====================
 
-    /**
-     * Position of today in the cache (-1 if not found)
-     */
+    // Position of today in the cache (-1 if not found)
     protected int mTodayPosition = -1;
 
-    // === LOADING INDICATORS ===
+    // ==================== LOADING INDICATORS ====================
 
-    /**
-     * Flag indicating top loader is currently showing
-     */
+    // Flag indicating top loader is currently showing
     protected boolean mShowingTopLoader = false;
 
-    /**
-     * Flag indicating bottom loader is currently showing
-     */
+    // Flag indicating bottom loader is currently showing
     protected boolean mShowingBottomLoader = false;
 
-    // === SCROLL VELOCITY CONTROL ===
+    // ==================== SCROLL VELOCITY CONTROL ===============
 
-    /**
-     * Last scroll timestamp for throttling
-     */
+    // Last scroll timestamp for throttling
     protected long mLastScrollTime = 0;
 
-    /**
-     * Current scroll velocity for performance optimization
-     */
+    // Current scroll velocity for performance optimization
     protected int mScrollVelocity = 0;
 
-    /**
-     * Maximum scroll velocity before ignoring updates
-     */
+    // Maximum scroll velocity before ignoring updates
     protected static final int MAX_SCROLL_VELOCITY = 25;
 
-    /**
-     * Delay before processing operations after scroll settles
-     */
+    // Delay before processing operations after scroll settles
     protected static final long SCROLL_SETTLE_DELAY = 150;
 
     // ==================== ENHANCED CONSTANTS ====================
 
-    /**
-     * Number of months to load in a single operation
-     */
+    // Number of months to load in a single operation
     private static final int MONTHS_PER_LOAD = 3;
 
-    /**
-     * Preload trigger zone (in calendar weeks)
-     */
+    // Preload trigger zone (in calendar weeks)
     private static final int PRELOAD_TRIGGER_WEEKS = 6; // ~1.5 months
 
-    /**
-     * Maximum number of months to keep in cache
-     */
+    // Maximum number of months to keep in cache
     private static final int MAX_CACHED_MONTHS = 18; // ~1.5 years
 
     // ==================== INTERFACES INTERACTION ================
 
-    /**
-     * Reference to the communication interface
-     */
+    //Reference to the communication interface
     protected FragmentCommunicationInterface communicationInterface;
 
-    // ==================== COMMUNICATION INTERFACE ===============
-
-    /**
-     * Get reference to communication interface during attachment.
-     */
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        final String mTAG = "onAttach: ";
-
-        try {
-            // Get reference to activity's communication interface
-            communicationInterface = (FragmentCommunicationInterface) context;
-            Log.v(TAG, mTAG + "Communication interface attached");
-        } catch (ClassCastException e) {
-            Log.e(TAG, mTAG + "Error in attacching Comunication Interface");
-            throw new ClassCastException(context.toString()
-                    + " must implement FragmentCommunicationInterface");
-        }
-    }
-
-    /**
-     * Clear reference when fragment is detached.
-     */
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        communicationInterface = null;
-        Log.v(TAG, "onDetach: Communication interface detached");
-    }
-
-    // ==================== COMMUNICATION HELPER METHODS ====================
-
-    /**
-     * Request navigation to another destination.
-     */
-    protected void navigateTo(int destinationId) {
-        navigateTo(destinationId, null);
-    }
-
-    /**
-     * Request navigation with data bundle.
-     */
-    protected void navigateTo(int destinationId, Bundle data) {
-        if (communicationInterface != null) {
-            communicationInterface.onFragmentNavigationRequested(destinationId, data);
-        }
-    }
-
-    // ==================== USUAL METHODS ===================================
+    // ============================================================
 
     /**
      * Initialize fragment components and handlers.
@@ -258,13 +173,11 @@ implements NotifyUpdatesInterface {
         // Subclasses must implement findViews() to initialize their specific views
         findViews(view);
 
-        // Configure the RecyclerView with appropriate LayoutManager
+        // Configure the RecyclerView
         setupRecyclerView();
 
-        // Initialize QuattroDue and setup infinite scrolling
+        // Initialize infinite scrolling
         if (getActivity() != null) {
-            mQD = QDue.getQuattrodue();
-            mDataManager.initialize(mQD);
             setupInfiniteScrolling();
         } else {
             Log.e(TAG, mTAG + "Activity is null, cannot initialize infinite scrolling");
@@ -272,6 +185,56 @@ implements NotifyUpdatesInterface {
 
         // Configure the Floating Action Button
         setupFAB();
+    }
+
+    // ==================== COMMUNICATION INTERFACE ===============
+
+    /**
+     * Get reference to communication interface during attachment.
+     */
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        final String mTAG = "onAttach: ";
+
+        try {
+            // Get reference to activity's communication interface
+            communicationInterface = (FragmentCommunicationInterface) context;
+            Log.v(TAG, mTAG + "Communication interface attached");
+        } catch (ClassCastException e) {
+            Log.e(TAG, mTAG + "Error in attacching Comunication Interface");
+            throw new ClassCastException(context.toString()
+                    + " must implement FragmentCommunicationInterface");
+        }
+    }
+
+    /**
+     * Clear reference when fragment is detached.
+     */
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        communicationInterface = null;
+        Log.v(TAG, "onDetach: Communication interface detached");
+    }
+
+    // ==================== COMMUNICATION HELPER METHODS ==========
+
+    /**
+     * Request navigation to another destination.
+     */
+    protected void navigateTo(int destinationId) {
+        navigateTo(destinationId, null);
+    }
+
+    /**
+     * Request navigation with data bundle.
+     */
+    protected void navigateTo(int destinationId, Bundle data) {
+        if (communicationInterface != null) {
+            communicationInterface.onFragmentNavigationRequested(destinationId, data);
+        }
     }
 
     // ==================== RECYCLER ===========================
@@ -282,7 +245,7 @@ implements NotifyUpdatesInterface {
      * This unifies scroll handling, infinite loading, and sticky header logic.
      */
     protected void setupRecyclerView() {
-        final String mTAG = "setupRecyclerView: ";
+        final String mTAG = ":setupRecyclerView: ";
         Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
@@ -301,7 +264,9 @@ implements NotifyUpdatesInterface {
             @Override
             public int getSpanSize(int position) {
                 if (position < mItemsCache.size()) {
+
                     SharedViewModels.ViewItem item = mItemsCache.get(position);
+                    Log.v(TAG, mTAG + "called mItemsCache.get( " + position + " )");
 
                     // Headers and loading items always span full width
                     if (item instanceof SharedViewModels.MonthHeader ||
@@ -319,13 +284,13 @@ implements NotifyUpdatesInterface {
         mGridLayoutManager = gridLayoutManager;
 
         // Set mLayoutManager to null since we're using GridLayoutManager
-        mLayoutManager = null;
+//        mLayoutManager = null;
 
         // Apply common optimizations
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
 
-        Log.d(mTAG, mTAG + "Configured GridLayoutManager with " + columnCount + " columns");
+        Log.d(TAG, mTAG + "Configured GridLayoutManager with " + columnCount + " columns");
     }
 
     /**
@@ -334,7 +299,7 @@ implements NotifyUpdatesInterface {
      */
     protected abstract int getGridColumnCount();
 
-    // ======================================================================
+    // ============================================================
 
     /**
      * Unified scroll listener for both fragment types.
@@ -520,157 +485,386 @@ implements NotifyUpdatesInterface {
     }
 
     /**
-     * Override setupInfiniteScrolling to use unified approach.
-     *
-//    protected void setupInfiniteScrolling() {
-//        setupInfiniteScrolling(false); // Don't use base LinearLayoutManager approach
-//
-//        // Clear existing listeners and add unified listener
-//        if (mRecyclerView != null) {
-//            mRecyclerView.clearOnScrollListeners();
-//            mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
-//        }
-//    }
+     * Infinite scrolling
      * FIXED: Setup infinite scrolling with proper initial positioning
- */
+     */
     protected void setupInfiniteScrolling() {
-        final String mTAG = "setupInfiniteScrolling: ";
-        Log.v(TAG, mTAG + "called for " + getClass().getSimpleName());
-
-        if (mQD == null || mDataManager == null) {
-            Log.e(TAG, "Components not initialized, cannot setup infinite scrolling");
-            return;
-        }
+        final String mTAG = ":setupInfiniteScrolling: ";
+        Log.v(TAG, mTAG + "called.");
 
         try {
             // Reset all control flags
             resetControlFlags();
 
             // Initialize cache
-            mCurrentDate = mQD.getCursorDate();
+            mCurrentDate = QDue.getQuattrodue().getCursorDate();
             mItemsCache = new ArrayList<>();
 
             // Pre-load months in cache around current date
-            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_SIZE);
+            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_RADIUS);
 
             // Generate initial months for display
-            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
+            // Here the items are added to mItemsCache
+            for (int i = -QD_MONTHS_CACHE_RADIUS; i <= QD_MONTHS_CACHE_RADIUS; i++) {
                 LocalDate monthDate = mCurrentDate.plusMonths(i);
                 addMonthToCache(monthDate);
             }
 
-            // Find today's position in cache
-            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-            Log.d(TAG, mTAG + "Today position calculated: " + mTodayPosition);
-
-            // Set central position in cache
-            mCurrentCenterPosition = mItemsCache.size() / 2;
-
-            // Setup adapter (implemented by subclasses)
             setupAdapter();
-
-            // Setup optimized scroll listener
-            setupScrollListeners();
-
-            // CRITICAL: Schedule initial scroll after adapter is set and views are measured
-            scheduleInitialScrollToToday();
-
-            Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
-                    " elements, today at position: " + mTodayPosition);
 
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
         }
-    }
-
-    /**
-     * NEW: Schedule initial scroll to today with proper timing
-     */
-    private void scheduleInitialScrollToToday() {
-        final String mTAG = "scheduleInitialScrollToToday: ";
-        Log.v(TAG, mTAG + "called");
-
-        if (mTodayPosition < 0) {
-            Log.w(TAG, mTAG + "Today position not found, using center position");
-            return;
-        }
-
-        // Wait for RecyclerView to be measured and laid out
-        if (mRecyclerView != null) {
-            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
-                    new ViewTreeObserver.OnGlobalLayoutListener() {
-                        @Override
-                        public void onGlobalLayout() {
-                            // Remove listener to avoid multiple calls
-                            mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                            Log.d(TAG, mTAG + "RecyclerView layout complete, scrolling to today");
-
-                            // Post to next frame to ensure everything is ready
-                            mRecyclerView.post(() -> {
-                                performInitialScrollToToday();
-                            });
-                        }
-                    });
-        }
-    }
-
-    /**
-     * NEW: Perform the actual scroll to today with proper positioning
-     */
-    private void performInitialScrollToToday() {
-        final String mTAG = "performInitialScrollToToday: ";
-
-        if (mTodayPosition < 0 || mTodayPosition >= mItemsCache.size()) {
-            Log.w(TAG, mTAG + "Invalid today position: " + mTodayPosition);
-            return;
-        }
 
         try {
-            if (mGridLayoutManager != null) {
-                // For CalendarViewFragment - use grid-specific positioning
-                Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition);
+            // NUOVO: Verifica prerequisites
+            if (!areComponentsReady()) {
+                Log.w(TAG, mTAG + "Components not ready, deferring infinite scroll setup");
+                scheduleInfiniteScrollingSetup();
+                return;
+            }
 
-                // Position today with some context (show ~2 weeks before)
-                int targetPosition = Math.max(0, mTodayPosition - 14);
-                mGridLayoutManager.scrollToPositionWithOffset(targetPosition, 0);
+            // 1. Calcola la posizione di today
+            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
 
-                // Then fine-tune to show today properly
-                mRecyclerView.postDelayed(() -> {
-                    try {
-                        mGridLayoutManager.scrollToPositionWithOffset(mTodayPosition, 100);
-                        Log.d(TAG, mTAG + "Initial scroll to today completed");
-                    } catch (Exception e) {
-                        Log.e(TAG, mTAG + "Error in fine-tune scroll: " + e.getMessage());
-                    }
-                }, 100);
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Today position calculated: " + mTodayPosition);
+                Log.d(TAG, mTAG + "Cache size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
+                Log.d(TAG, mTAG + "Adapter items: " + (getFragmentAdapter() != null ? getFragmentAdapter().getItemCount() : "null"));
+            }
 
-            } else if (mLayoutManager != null) {
-                // For DaysListViewFragment - use linear positioning
-                Log.d(TAG, mTAG + "Using LinearLayoutManager positioning for today: " + mTodayPosition);
-                mLayoutManager.scrollToPositionWithOffset(mTodayPosition, 0);
+            // 2. Forza sincronizzazione cache-adapter
+            ensureAdapterSyncWithCache();
 
-            } else {
-                // Fallback - use RecyclerView direct scroll
-                Log.d(TAG, mTAG + "Using RecyclerView fallback positioning");
-                mRecyclerView.scrollToPosition(mTodayPosition);
+            // 3. Scroll ritardato con verifica
+            scheduleVerifiedScrollToToday();
+
+            // 4. Setup infinite scroll listeners
+            setupScrollListeners();
+
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
+                        " elements, today at position: " + mTodayPosition);
             }
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in initial scroll to today: " + e.getMessage());
+            Log.e(TAG, mTAG + "Error in setupInfiniteScrolling: " + e.getMessage());
         }
     }
 
+    // ===== 2. NUOVO: Verifica Prerequisites =====
+    private boolean areComponentsReady() {
+        String mTAG = ":areComponentsReady: ";
+
+        // Here every fragment implements its own adapter, so we ask for it
+        if (getFragmentAdapter() == null) {
+            Log.w(TAG, mTAG + "getFragmentAdapter() is null");
+            return false;
+        }
+
+        if (mItemsCache == null) {
+            Log.w(TAG, mTAG + "mmItemsCache is null");
+            return false;
+        }
+
+        if (mRecyclerView == null) {
+            Log.w(TAG, mTAG + "mRecyclerView is null");
+            return false;
+        }
+
+        if (mGridLayoutManager == null) {
+            Log.w(TAG, mTAG + "mGridLayoutManager is null");
+            return false;
+        }
+
+        return true;
+    }
+
+    // ===== NUOVO METODO: Sincronizzazione Forzata =====
+    private void ensureAdapterSyncWithCache() {
+        final String mTAG = ":ensureAdapterSyncWithCache: ";
+
+        try {
+            // NULL CHECKS aggiunti
+            if (getFragmentAdapter() == null) {
+                Log.e(TAG, mTAG + "getFragmentAdapter() is null, cannot sync");
+                return;
+            }
+
+            if (mItemsCache == null) {
+                Log.e(TAG, mTAG + "mCachedItems is null, cannot sync");
+                return;
+            }
+
+            // Verifica se adapter è vuoto ma cache ha dati
+            if (getFragmentAdapter().getItemCount() == 0 && !mItemsCache.isEmpty()) {
+
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.d(TAG, mTAG + "Adapter empty but cache has " + mItemsCache.size() +
+                            " items. Forcing sync...");
+                }
+
+                // Popola immediatamente l'adapter con tutti i dati della cache
+                getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
+                getFragmentAdapter().notifyDataSetChanged();
+
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.d(TAG, mTAG + "Adapter populated: " + getFragmentAdapter().getItemCount() + " items");
+                }
+
+            } else if (getFragmentAdapter().getItemCount() != mItemsCache.size()) {
+
+                // Cache e adapter non sincronizzati - forza riallineamento
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.w(TAG, mTAG + "Cache-Adapter mismatch. Cache: " + mItemsCache.size() +
+                            ", Adapter: " + getFragmentAdapter().getItemCount() + ". Resyncing...");
+                }
+
+                getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
+                getFragmentAdapter().notifyDataSetChanged();
+            } else {
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.d(TAG, mTAG + "Cache and adapter already in sync: " + mItemsCache.size() + " items");
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error in cache synchronization: " + e.getMessage());
+        }
+    }
+
+    // ===== 3. NUOVO: Setup Ritardato =====
+    private void scheduleInfiniteScrollingSetup() {
+        final String mTAG = ":scheduleInfiniteScrollingSetup: ";
+
+        // Retry ogni 100ms fino a quando i componenti sono pronti
+        mRecyclerView.postDelayed(new Runnable() {
+            private int attempts = 0;
+            private final int MAX_ATTEMPTS = 50; // 5 secondi max
+
+            @Override
+            public void run() {
+                attempts++;
+
+                if (areComponentsReady()) {
+                    if (DEBUG_CALENDAR_VIEW) {
+                        Log.d(TAG, mTAG + "Components ready after " + attempts + " attempts");
+                    }
+                    setupInfiniteScrolling();
+                } else if (attempts < MAX_ATTEMPTS) {
+                    if (DEBUG_CALENDAR_VIEW) {
+                        Log.d(TAG, mTAG + "Retry " + attempts + "/" + MAX_ATTEMPTS);
+                    }
+                    mRecyclerView.postDelayed(this, 100);
+                } else {
+                    Log.e(TAG, mTAG + "Failed to setup infinite scrolling after " + MAX_ATTEMPTS + " attempts");
+                }
+            }
+        }, 100);
+    }
+
+    // ===== METODO MODIFICATO: Scroll con Verifica =====
+    private void scheduleVerifiedScrollToToday() {
+        final String mTAG = ":scheduleVerifiedScrollToToday: -";
+
+        if (mTodayPosition < 0) {
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.w(TAG, mTAG + "Today position not found (" + mTodayPosition + ")");
+                // DEBUG: Prova a forzare il caricamento del mese corrente
+                tryLoadCurrentMonth();
+            }
+            return;
+        }
+
+        // NULL CHECK aggiunto
+        if (mRecyclerView == null) {
+            Log.e(TAG, mTAG + "mRecyclerView is null, cannot schedule scroll");
+            return;
+        }
+
+        // Verifica che l'adapter abbia abbastanza elementi
+        if (getFragmentAdapter().getItemCount() > mTodayPosition) {
+            // Dati pronti - scroll immediato ma con un piccolo delay per layout
+            mRecyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    performVerifiedScrollToToday();
+                }
+            }, 100);
+
+        } else {
+            // Adapter non ancora pronto - usa retry con timeout
+            scheduleRetryScrollToToday(0);
+        }
+    }
+
+    // ===== 6. NUOVO: Tentativo di Caricamento Mese Corrente =====
+    private void tryLoadCurrentMonth() {
+        final String mTAG = ":tryLoadCurrentMonth: ";
+
+        try {
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Attempting to load current month to find today");
+            }
+
+            // Forza il caricamento del mese corrente se non è in cache
+            LocalDate today = LocalDate.now();
+            LocalDate currentMonth = today.withDayOfMonth(1);
+
+            // Chiama il metodo che carica un mese specifico
+            // NOTA: Questo metodo potrebbe variare nel tuo DataManager
+            if (mDataManager != null) {
+
+                // Sostituisci questo con il metodo corretto del tuo DataManager
+                // mDataManager.ensureMonthLoaded(currentMonth);
+                mDataManager.getMonthDays(currentMonth);
+
+                // Dopo il caricamento, riprova a trovare today
+                mRecyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        recheckTodayPosition();
+                    }
+                }, 200);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error trying to load current month: " + e.getMessage());
+        }
+    }
+
+    // ===== 7. NUOVO: Ricontrolla Posizione Today =====
+    private void recheckTodayPosition() {
+        final String mTAG = ":recheckTodayPosition: ";
+
+        try {
+            // Aggiorna la cache
+            // but it's a pain in the ass
+            //mItemsCache = mDataManager.getCachedItems();
+
+            if (mItemsCache != null && !mItemsCache.isEmpty()) {
+                // Ricalcola posizione today
+                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.d(TAG, mTAG + "Rechecked today position: " + mTodayPosition +
+                            " (cache size: " + mItemsCache.size() + ")");
+                }
+
+                if (mTodayPosition >= 0) {
+                    // Today trovato - riprova il setup
+                    ensureAdapterSyncWithCache();
+                    scheduleVerifiedScrollToToday();
+                }
+            } else {
+                Log.e(TAG, mTAG + "Error in mItemsCache");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error rechecking today position: " + e.getMessage());
+        }
+    }
+
+    // ===== NUOVO METODO: Retry con Timeout =====
+    private void scheduleRetryScrollToToday(int attemptCount) {
+        final String mTAG = ":scheduleRetryScrollToToday: ";
+        final int MAX_ATTEMPTS = 20; // 20 * 50ms = 1 secondo max
+
+        if (attemptCount >= MAX_ATTEMPTS) {
+            Log.e(TAG, mTAG + "Failed to scroll to today after " + MAX_ATTEMPTS + " attempts");
+            return;
+        }
+
+        mRecyclerView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getFragmentAdapter().getItemCount() > mTodayPosition) {
+                    if (DEBUG_CALENDAR_VIEW) {
+                        Log.d(TAG, mTAG + "Adapter ready after " + (attemptCount + 1) + " attempts");
+                    }
+                    performVerifiedScrollToToday();
+                } else {
+                    if (DEBUG_CALENDAR_VIEW) {
+                        Log.d(TAG, mTAG + "Retry " + (attemptCount + 1) + "/" + MAX_ATTEMPTS +
+                                " - Adapter: " + getFragmentAdapter().getItemCount() + ", Need: " + (mTodayPosition + 1));
+                    }
+                    scheduleRetryScrollToToday(attemptCount + 1);
+                }
+            }
+        }, 50); // Retry ogni 50ms
+    }
+
+    // ===== METODO MODIFICATO: Scroll Verificato =====
+    private void performVerifiedScrollToToday() {
+        final String mTAG = ":performVerifiedScrollToToday: ";
+
+        try {
+            // Verifica finale prima dello scroll
+            if (mTodayPosition < 0 || mTodayPosition >= getFragmentAdapter().getItemCount()) {
+                Log.e(TAG, mTAG + "Invalid today position: " + mTodayPosition +
+                        " (adapter size: " + getFragmentAdapter().getItemCount() + ")");
+                return;
+            }
+
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Performing verified scroll to position: " + mTodayPosition);
+            }
+
+            // AGGIUNTO: Flag per disabilitare temporaneamente infinite loading
+            mIsInitialScrolling = true;
+
+            if (mGridLayoutManager instanceof GridLayoutManager) {
+                GridLayoutManager gridManager = (GridLayoutManager) mGridLayoutManager;
+
+                // Calcola posizione ottimale per centrare today
+                int optimalPosition = Math.max(0, mTodayPosition - ( 4 * getGridColumnCount() )); // 4 righe sopra
+                gridManager.scrollToPositionWithOffset(optimalPosition, 20);
+
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition +
+                            " (scroll to: " + optimalPosition + ")");
+                }
+
+            } else {
+                // Fallback per LinearLayoutManager
+                mRecyclerView.scrollToPosition(Math.max(0, mTodayPosition - 3));
+
+                if (DEBUG_CALENDAR_VIEW) {
+                    Log.e(TAG, mTAG + "Using fallback mRecyclerView positioning for today: " + mTodayPosition);
+                }
+            }
+
+            // Riabilita infinite loading dopo un delay
+            mRecyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mIsInitialScrolling = false;
+                    if (DEBUG_CALENDAR_VIEW) {
+                        Log.d(TAG, mTAG + "Initial scroll completed, infinite loading re-enabled");
+                    }
+                }
+            }, 500); // 500ms di "grazia"
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error performing verified scroll: " + e.getMessage());
+            mIsInitialScrolling = false; // Assicurati di riabilitare anche in caso di errore
+        }
+    }
+
+    // ============================================================
+
     /**
      * NEW: Setup scroll listeners separately for better organization
+     * DEBUG: set to protected instead of private
      */
-    private void setupScrollListeners() {
+    protected void setupScrollListeners() {
         if (mRecyclerView != null) {
             mRecyclerView.addOnScrollListener(new DebuggingScrollListener());
             mRecyclerView.clearOnScrollListeners();
             mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
         }
     }
+
 // ===================================================================
 // DEBUGGING: IDENTIFICARE IL COLPEVOLE
 // ===================================================================
@@ -693,7 +887,7 @@ implements NotifyUpdatesInterface {
                         " dx=" + dx + " dy=" + dy + " thread=" + Thread.currentThread().getName());
 
                 // Print stack trace to see who triggered the scroll
-                Log.w("SCROLL_DEBUG", "Stack trace:"+ new Exception("Scroll trigger"));
+                Log.w("SCROLL_DEBUG", "Stack trace:" + new Exception("Scroll trigger"));
 
                 mLastPosition = currentPosition;
             }
@@ -715,30 +909,6 @@ implements NotifyUpdatesInterface {
             return mGridLayoutManager.findLastVisibleItemPosition();
         }
         return RecyclerView.NO_POSITION;
-    }
-
-    /**
-     * Updated scroll methods for GridLayoutManager.
-     */
-    protected void scrollToInitialPosition() {
-        final String mTAG = "scrollToInitialPosition: ";
-        Log.v(TAG, mTAG + "called.");
-
-        if (mGridLayoutManager == null) return;
-
-        int targetPosition = mTodayPosition >= 0 ? mTodayPosition : mCurrentCenterPosition;
-
-        try {
-            mGridLayoutManager.scrollToPositionWithOffset(targetPosition, 0);
-            Log.v(TAG, mTAG + "GridLayoutManager scrolled to position: " + targetPosition);
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in scrollToInitialPosition: " + e.getMessage());
-            try {
-                mGridLayoutManager.scrollToPosition(targetPosition);
-            } catch (Exception fallbackError) {
-                Log.e(TAG, mTAG + "Fallback scroll also failed: " + fallbackError.getMessage());
-            }
-        }
     }
 
     public void scrollToToday() {
@@ -785,48 +955,26 @@ implements NotifyUpdatesInterface {
      * Add this method to BaseFragment.java
      */
     protected void setupFAB() {
-        final String mTAG = "setupFAB: ";
-        Log.v(TAG, mTAG + "called.");
-
-        // Sempre ottieni FAB dall'Activity (NavigationRail)
         if (getActivity() instanceof QDueMainActivity) {
             mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
 
             if (mFabGoToToday != null) {
                 mFabGoToToday.setOnClickListener(v -> scrollToToday());
-                // FAB sempre visibile quando integrato
+            } else {
+                // Riprova dopo che l'Activity ha finito l'inizializzazione
+                mRecyclerView.post(() -> retrySetupFAB());
             }
         }
     }
 
-        // Check if activity uses integrated FAB
-//        boolean isIntegratedFab = false;
-//        if (getActivity() instanceof QDueMainActivity) {
-//            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
-//        }
-//
-//        if (isIntegratedFab) {
-//            // FAB is integrated in NavigationRail - get reference from activity
-//            if (getActivity() instanceof QDueMainActivity) {
-//                mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
-//            }
-//
-//            if (mFabGoToToday != null) {
-//                // FAB is always visible when integrated, just set click listener
-//                mFabGoToToday.setOnClickListener(v -> scrollToToday());
-//                Log.d(TAG, mTAG + "Using integrated FAB from NavigationRail");
-//            }
-//        } else {
-//            // Traditional separate FAB - fragment controls visibility
-//            if (mFabGoToToday != null) {
-//                mFabGoToToday.setOnClickListener(v -> scrollToToday());
-//                mFabGoToToday.hide(); // Initially hidden, updateFabVisibility will control it
-//                Log.d(TAG, mTAG + "Using separate FAB with fragment control");
-//            } else {
-//                Log.d(TAG, mTAG + "FAB not found in layout");
-//            }
-//        }
-//    }
+    private void retrySetupFAB() {
+        if (mFabGoToToday == null && getActivity() instanceof QDueMainActivity) {
+            mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
+            if (mFabGoToToday != null) {
+                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+            }
+        }
+    }
 
     /**
      * Enhanced FAB visibility update that respects integrated mode.
@@ -851,169 +999,6 @@ implements NotifyUpdatesInterface {
         } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
             mFabGoToToday.hide();
             Log.v(TAG, "updateFabVisibility: Hiding FAB");
-        }
-    }
-//    protected void updateFabVisibility(int firstVisible, int lastVisible) {
-//        final String mTAG = "setupFAB: ";
-//        Log.v(TAG, mTAG + "called.");
-//
-//        if (mFabGoToToday == null) return;
-//
-//        // Check if FAB is integrated (always visible)
-//        boolean isIntegratedFab = false;
-//        if (getActivity() instanceof QDueMainActivity) {
-//            isIntegratedFab = ((QDueMainActivity) getActivity()).isFabIntegrated();
-//        }
-//
-//        if (isIntegratedFab) {
-//            // FAB is integrated - always keep it visible, no fragment control
-//            return;
-//        }
-//
-//        // Traditional separate FAB logic
-//        boolean showFab = true;
-//        if (mTodayPosition >= 0) {
-//            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
-//        }
-//
-//        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
-//            mFabGoToToday.show();
-//        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
-//            mFabGoToToday.hide();
-//        }
-//    }
-
-    /**
-     * TODO eliminare
-     * <p>
-     * Setup infinite scrolling with configurable LayoutManager usage.
-     *
-     * @param useLayoutManager whether to use LayoutManager for initial scrolling
-     *                         or let subclass handle it (e.g., CalendarViewFragment)
-     */
-//    protected void setupInfiniteScrolling(boolean useLayoutManager) {
-//        final String mTAG = "setupInfiniteScrolling: ";
-//
-//        if (mQD == null || mDataManager == null) {
-//            Log.e(TAG, "Components not initialized, cannot setup infinite scrolling");
-//            return;
-//        }
-//
-//        try {
-//            // Reset all control flags
-//            resetControlFlags();
-//
-//            // Initialize cache
-//            mCurrentDate = mQD.getCursorDate();
-//            mItemsCache = new ArrayList<>();
-//
-//            // Pre-load months in cache around current date
-//            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_SIZE);
-//
-//            // Generate initial months for display
-//            for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
-//                LocalDate monthDate = mCurrentDate.plusMonths(i);
-//                addMonthToCache(monthDate);
-//            }
-//
-//            // Find today's position in cache
-//            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-//
-//            // Set central position in cache
-//            mCurrentCenterPosition = mItemsCache.size() / 2;
-//
-//            // Setup adapter (implemented by subclasses)
-//            setupAdapter();
-//
-//            // Setup optimized scroll listener
-//            mRecyclerView.addOnScrollListener(new OptimizedInfiniteScrollListener());
-//
-//            // Scroll to appropriate position if requested
-//            if (useLayoutManager) {
-//                scrollToInitialPosition();
-//            }
-//
-//            Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
-//                    " elements, today at position: " + mTodayPosition);
-//
-//        } catch (Exception e) {
-//            Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
-//        }
-//    }
-
-    /**
-     * Optimized scroll listener that prevents adapter modifications during scroll callbacks.
-     * <p>
-     * This listener implements:
-     * - Velocity-based throttling to improve performance
-     * - Deferred adapter operations to avoid scroll callback conflicts
-     * - Automatic cleanup scheduling when scroll settles
-     */
-    private class OptimizedInfiniteScrollListener extends RecyclerView.OnScrollListener {
-
-        private static final String mTAG = "OptimizedInfiniteScrollListener: ";
-
-        /**
-         * Handle scroll events with velocity calculation and throttling.
-         */
-        @Override
-        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-
-            long currentTime = System.currentTimeMillis();
-
-            // Calculate scroll velocity for performance optimization
-            if (mLastScrollTime > 0) {
-                long timeDiff = currentTime - mLastScrollTime;
-                if (timeDiff > 0) {
-                    mScrollVelocity = (int) (Math.abs(dy) / timeDiff * 16); // Normalized to 60fps
-                }
-            }
-
-            // Throttling to avoid too frequent updates (100ms = ~10fps)
-            if (currentTime - mLastScrollTime < 100) return;
-            mLastScrollTime = currentTime;
-
-            // Skip updates if scrolling too fast
-            if (mScrollVelocity > MAX_SCROLL_VELOCITY) return;
-
-            // Get visible positions safely
-            int firstVisible = getFirstVisiblePosition();
-            int lastVisible = getLastVisiblePosition();
-
-            if (firstVisible == RecyclerView.NO_POSITION) return;
-
-            // Handle loading based on scroll - POST TO NEXT FRAME to avoid scroll callback issues
-            mMainHandler.post(() -> handleScrollBasedLoading(firstVisible, lastVisible, dy));
-
-            // Update FAB visibility
-            updateFabVisibility(firstVisible, lastVisible);
-        }
-
-        /**
-         * Handle scroll state changes and trigger cleanup when scroll settles.
-         */
-        @Override
-        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-
-            if (DEBUG_FRAGMENT) {
-                String stateStr = newState == RecyclerView.SCROLL_STATE_IDLE ? "IDLE" :
-                        newState == RecyclerView.SCROLL_STATE_DRAGGING ? "DRAGGING" : "SETTLING";
-                Log.v(TAG + " onScrollStateChanged", "Scroll state: " + stateStr + ", velocity: " + mScrollVelocity);
-            }
-
-            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                mScrollVelocity = 0;
-
-                // Process pending operations after scroll stops
-                mMainHandler.postDelayed(() -> {
-                    if (mScrollVelocity == 0) {
-                        processPendingOperations();
-                        scheduleCleanupIfNeeded();
-                    }
-                }, SCROLL_SETTLE_DELAY);
-            }
         }
     }
 
@@ -1096,8 +1081,8 @@ implements NotifyUpdatesInterface {
 
                     mMainHandler.post(() -> {
                         try {
-                            if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(0, allNewItems.size());
+                            if (getFragmentAdapter() != null) {
+                                getFragmentAdapter().notifyItemRangeInserted(0, allNewItems.size());
                                 Log.d(TAG, mTAG + "Notified adapter of " + allNewItems.size() + " inserted items");
                             }
                         } catch (Exception e) {
@@ -1204,8 +1189,8 @@ implements NotifyUpdatesInterface {
 
                     mMainHandler.post(() -> {
                         try {
-                            if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                            if (getFragmentAdapter() != null) {
+                                getFragmentAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
                                 Log.d(TAG, "Notified adapter of " + allNewItems.size() + " inserted items at position " + insertPos);
                             }
                         } catch (Exception e) {
@@ -1367,8 +1352,8 @@ implements NotifyUpdatesInterface {
                         mCurrentCenterPosition += allNewItems.size();
 
                         mMainHandler.post(() -> {
-                            if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(0, allNewItems.size());
+                            if (getFragmentAdapter() != null) {
+                                getFragmentAdapter().notifyItemRangeInserted(0, allNewItems.size());
                             }
                         });
 
@@ -1433,8 +1418,8 @@ implements NotifyUpdatesInterface {
                         }
 
                         mMainHandler.post(() -> {
-                            if (getAdapter() != null) {
-                                getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                            if (getFragmentAdapter() != null) {
+                                getFragmentAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
                             }
                         });
 
@@ -1453,42 +1438,24 @@ implements NotifyUpdatesInterface {
     }
 
     /**
-     * Handle loading based on scroll position.
-     * Triggers top or bottom load when user scrolls near the edges.
-     *
-     * @param firstVisible    first visible item position
-     * @param lastVisible     last visible item position
-     * @param scrollDirection scroll direction (negative = up, positive = down)
-     */
-    private void handleScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
-        final String mTAG = "handleScrollBasedLoading: ";
-
-        // Load upward (previous months) when near top
-        if (firstVisible <= 10 && scrollDirection <= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
-
-            if (DEBUG_FRAGMENT)
-                Log.d(TAG, mTAG + "Triggering top load at position: " + firstVisible);
-            triggerTopLoad();
-        }
-
-        // Load downward (next months) when near bottom
-        if (lastVisible >= mItemsCache.size() - 10 && scrollDirection >= 0 &&
-                !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
-
-            if (DEBUG_FRAGMENT)
-                Log.d(TAG, mTAG + "Triggering bottom load at position: " + lastVisible);
-            triggerBottomLoad();
-        }
-    }
-
-    /**
      * Trigger top load operation (previous months).
      * Sets up loading state and schedules execution.
      * FIXED: Trigger top load with better state management
      */
     protected void triggerTopLoad() {
-        final String mTAG = "triggerTopLoad: ";
+        final String mTAG = ":triggerTopLoad: ";
+
+        if (mIsInitialScrolling) {
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Skipping top load during initial scroll");
+            }
+            return; // SKIP durante scroll iniziale
+        }
+        // NULL CHECK aggiunto
+        if (mDataManager == null) {
+            Log.e(TAG, mTAG + "mDataManager is null");
+            return;
+        }
 
         // Check if already loading or pending
         if (mIsUpdatingCache.get()) {
@@ -1526,6 +1493,18 @@ implements NotifyUpdatesInterface {
     protected void triggerBottomLoad() {
         final String mTAG = "triggerBottomLoad: ";
 
+        if (mIsInitialScrolling) {
+            if (DEBUG_CALENDAR_VIEW) {
+                Log.d(TAG, mTAG + "Skipping bottom load during initial scroll");
+            }
+            return; // SKIP durante scroll iniziale
+        }
+        // NULL CHECK aggiunto
+        if (mDataManager == null) {
+            Log.e(TAG, mTAG + "mDataManager is null");
+            return;
+        }
+
         // Check if already loading or pending
         if (mIsUpdatingCache.get()) {
             Log.w(TAG, mTAG + "Cache update in progress - ignoring trigger");
@@ -1556,10 +1535,11 @@ implements NotifyUpdatesInterface {
 
     /**
      * Add a month to the cache by generating its view items.
+     * DEBUG: made protected insteadof private
      *
      * @param monthDate the month to add
      */
-    private void addMonthToCache(LocalDate monthDate) {
+    protected void addMonthToCache(LocalDate monthDate) {
         List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
         mItemsCache.addAll(monthItems);
     }
@@ -1625,7 +1605,7 @@ implements NotifyUpdatesInterface {
             try {
                 // Get current position safely for any LayoutManager type
                 int currentPos = getCurrentVisiblePosition();
-                int targetSize = QD_MONTHS_CACHE_SIZE * 35;
+                int targetSize = QD_MONTHS_CACHE_RADIUS * 35;
 
                 // If we can't determine position, use a safe fallback
                 if (currentPos == RecyclerView.NO_POSITION) {
@@ -1642,8 +1622,8 @@ implements NotifyUpdatesInterface {
 
                     // POST adapter notification to next frame
                     mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRemoved(0);
+                        if (getFragmentAdapter() != null) {
+                            getFragmentAdapter().notifyItemRemoved(0);
                         }
                     });
                 }
@@ -1657,8 +1637,8 @@ implements NotifyUpdatesInterface {
                     // POST adapter notification to next frame
                     final int finalLastIndex = lastIndex;
                     mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRemoved(finalLastIndex);
+                        if (getFragmentAdapter() != null) {
+                            getFragmentAdapter().notifyItemRemoved(finalLastIndex);
                         }
                     });
                 }
@@ -1723,281 +1703,7 @@ implements NotifyUpdatesInterface {
         return RecyclerView.NO_POSITION;
     }
 
-    /**
-     * NEW: Load months around today when it's not in cache
-     */
-    private void loadMonthsAroundToday() {
-        final String METHOD_TAG = TAG + " loadMonthsAroundToday";
-
-        if (mIsUpdatingCache.get()) {
-            Log.w(METHOD_TAG, "Cache update in progress, cannot load today");
-            return;
-        }
-
-        // Show loading indicator
-        showTodayLoadingIndicator();
-
-        mBackgroundHandler.post(() -> {
-            if (!mIsUpdatingCache.compareAndSet(false, true)) {
-                hideTodayLoadingIndicator();
-                return;
-            }
-
-            try {
-                LocalDate today = LocalDate.now();
-                LocalDate todayMonth = today.withDayOfMonth(1);
-
-                // Determine if we need to add months before or after current cache
-                LocalDate firstCachedMonth = findFirstMonthInCache();
-                LocalDate lastCachedMonth = findLastMonthInCache();
-
-                if (firstCachedMonth == null || lastCachedMonth == null) {
-                    // Cache is empty or corrupted - rebuild around today
-                    Log.w(METHOD_TAG, "Cache appears corrupted, rebuilding around today");
-                    rebuildCacheAroundToday();
-                    return;
-                }
-
-                // Calculate what months we need to load
-                List<LocalDate> monthsToLoad = new ArrayList<>();
-
-                if (todayMonth.isBefore(firstCachedMonth)) {
-                    // Today is before cache - load months from today to cache start
-                    LocalDate month = todayMonth;
-                    while (month.isBefore(firstCachedMonth)) {
-                        monthsToLoad.add(month);
-                        month = month.plusMonths(1);
-                    }
-                    // Also load a few months around today for better UX
-                    for (int i = 1; i <= 2; i++) {
-                        monthsToLoad.add(0, todayMonth.minusMonths(i));
-                    }
-
-                    loadMonthsAtBeginning(monthsToLoad);
-
-                } else if (todayMonth.isAfter(lastCachedMonth)) {
-                    // Today is after cache - load months from cache end to today
-                    LocalDate month = lastCachedMonth.plusMonths(1);
-                    while (!month.isAfter(todayMonth)) {
-                        monthsToLoad.add(month);
-                        month = month.plusMonths(1);
-                    }
-                    // Also load a few months around today for better UX
-                    for (int i = 1; i <= 2; i++) {
-                        monthsToLoad.add(todayMonth.plusMonths(i));
-                    }
-
-                    loadMonthsAtEnd(monthsToLoad);
-
-                } else {
-                    // Today should be in cache but we couldn't find it
-                    // This might be a calculation error - refresh the cache
-                    Log.w(METHOD_TAG, "Today should be in cache but not found - refreshing today position");
-                    refreshTodayPosition();
-                }
-
-            } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error loading months around today: " + e.getMessage());
-                hideTodayLoadingIndicator();
-                mIsUpdatingCache.set(false);
-            }
-        });
-    }
-
-    /**
-     * NEW: Load months at the beginning of cache
-     */
-    private void loadMonthsAtBeginning(List<LocalDate> monthsToLoad) {
-        final String mTAG = "loadMonthsAtBeginning: ";
-        Log.v(TAG, mTAG + "called");
-
-        List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
-
-        for (LocalDate month : monthsToLoad) {
-            List<SharedViewModels.ViewItem> monthItems = generateMonthItems(month);
-            allNewItems.addAll(monthItems);
-        }
-
-        if (!allNewItems.isEmpty()) {
-            mMainHandler.post(() -> {
-                try {
-                    mItemsCache.addAll(0, allNewItems);
-
-                    // Update positions
-                    if (mTodayPosition >= 0) mTodayPosition += allNewItems.size();
-                    mCurrentCenterPosition += allNewItems.size();
-
-                    // Find today's new position
-                    mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-
-                    mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRangeInserted(0, allNewItems.size());
-                        }
-                    });
-
-                    // Scroll to today
-                    scrollToTodayAfterLoad();
-
-                } finally {
-                    mIsUpdatingCache.set(false);
-                    hideTodayLoadingIndicator();
-                }
-            });
-        } else {
-            mIsUpdatingCache.set(false);
-            hideTodayLoadingIndicator();
-        }
-    }
-
-    /**
-     * NEW: Load months at the end of cache
-     */
-    private void loadMonthsAtEnd(List<LocalDate> monthsToLoad) {
-        final String mTAG = "loadMonthsAtEnd: ";
-        Log.v(TAG, mTAG + "called");
-
-        List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
-
-        for (LocalDate month : monthsToLoad) {
-            List<SharedViewModels.ViewItem> monthItems = generateMonthItems(month);
-            allNewItems.addAll(monthItems);
-        }
-
-        if (!allNewItems.isEmpty()) {
-            mMainHandler.post(() -> {
-                try {
-                    int insertPos = mItemsCache.size();
-                    mItemsCache.addAll(allNewItems);
-
-                    // Find today's position in the expanded cache
-                    mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-
-                    mMainHandler.post(() -> {
-                        if (getAdapter() != null) {
-                            getAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
-                        }
-                    });
-
-                    // Scroll to today
-                    scrollToTodayAfterLoad();
-
-                } finally {
-                    mIsUpdatingCache.set(false);
-                    hideTodayLoadingIndicator();
-                }
-            });
-        } else {
-            mIsUpdatingCache.set(false);
-            hideTodayLoadingIndicator();
-        }
-    }
-
-    /**
-     * NEW: Rebuild entire cache around today (fallback option)
-     */
-    @SuppressLint("NotifyDataSetChanged")
-    private void rebuildCacheAroundToday() {
-        final String mTAG = "rebuildCacheAroundToday: ";
-        Log.v(TAG, mTAG + "called");
-
-        mMainHandler.post(() -> {
-            try {
-                // Clear current cache
-                int oldSize = mItemsCache.size();
-                mItemsCache.clear();
-
-                if (getAdapter() != null) {
-                    getAdapter().notifyItemRangeRemoved(0, oldSize);
-                }
-
-                // Rebuild around today
-                LocalDate today = LocalDate.now();
-                LocalDate todayMonth = today.withDayOfMonth(1);
-
-                for (int i = -QD_MONTHS_CACHE_SIZE; i <= QD_MONTHS_CACHE_SIZE; i++) {
-                    LocalDate monthDate = todayMonth.plusMonths(i);
-                    addMonthToCache(monthDate);
-                }
-
-                // Find today's position
-                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-                mCurrentCenterPosition = mTodayPosition >= 0 ? mTodayPosition : mItemsCache.size() / 2;
-
-                if (getAdapter() != null) {
-                    getAdapter().notifyDataSetChanged();
-                }
-
-                // Scroll to today
-                scrollToTodayAfterLoad();
-
-            } finally {
-                mIsUpdatingCache.set(false);
-                hideTodayLoadingIndicator();
-            }
-        });
-    }
-
-    /**
-     * NEW: Refresh today position in current cache
-     */
-    private void refreshTodayPosition() {
-        final String mTAG = "refreshTodayPosition: ";
-
-        mMainHandler.post(() -> {
-            try {
-                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-                Log.d(TAG, mTAG + "Refreshed today position: " + mTodayPosition);
-
-                if (mTodayPosition >= 0) {
-                    scrollToTodayAfterLoad();
-                } else {
-                    Log.w(TAG, mTAG + "Today still not found after refresh");
-                }
-
-            } finally {
-                mIsUpdatingCache.set(false);
-                hideTodayLoadingIndicator();
-            }
-        });
-    }
-
-    /**
-     * NEW: Scroll to today after loading is complete
-     */
-    private void scrollToTodayAfterLoad() {
-        final String mTAG = "scrollToTodayAfterLoad: ";
-
-        // Small delay to ensure adapter updates are complete
-        mMainHandler.postDelayed(() -> {
-            if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
-                Log.d(TAG, mTAG + "Scrolling to today at position: " + mTodayPosition);
-                mRecyclerView.smoothScrollToPosition(mTodayPosition);
-            } else {
-                Log.w(TAG, mTAG + "Cannot scroll to today - invalid position: " + mTodayPosition);
-            }
-        }, 100);
-    }
-
-    // ==================== LOADING INDICATOR HELPERS ====================
-
-    /**
-     * NEW: Show loading indicator for "go to today" operation
-     */
-    private void showTodayLoadingIndicator() {
-        // This could be a toast, progress dialog, or FAB animation
-        // For now, just log - can be enhanced with actual UI
-        Log.d(TAG, "Loading months around today...");
-    }
-
-    /**
-     * NEW: Hide loading indicator for "go to today" operation
-     */
-    private void hideTodayLoadingIndicator() {
-        Log.d(TAG, "Finished loading months around today");
-    }
-
-    // === LOADING INDICATOR MANAGEMENT ===
+    // =============== LOADING INDICATOR MANAGEMENT ===============
 
     /**
      * Show top loading indicator.
@@ -2025,8 +1731,8 @@ implements NotifyUpdatesInterface {
 
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
         mMainHandler.post(() -> {
-            if (getAdapter() != null) {
-                getAdapter().notifyItemInserted(0);
+            if (getFragmentAdapter() != null) {
+                getFragmentAdapter().notifyItemInserted(0);
                 Log.w(TAG, mTAG + "Notified adapter of top loader insertion");
             }
         });
@@ -2055,8 +1761,8 @@ implements NotifyUpdatesInterface {
 
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
         mMainHandler.post(() -> {
-            if (getAdapter() != null) {
-                getAdapter().notifyItemInserted(mItemsCache.size() - 1);
+            if (getFragmentAdapter() != null) {
+                getFragmentAdapter().notifyItemInserted(mItemsCache.size() - 1);
                 Log.w(TAG, mTAG + "Notified adapter of bottom loader insertion");
             }
         });
@@ -2089,8 +1795,8 @@ implements NotifyUpdatesInterface {
                         final int finalI = i;
                         mMainHandler.post(() -> {
                             try {
-                                if (getAdapter() != null) {
-                                    getAdapter().notifyItemRemoved(finalI);
+                                if (getFragmentAdapter() != null) {
+                                    getFragmentAdapter().notifyItemRemoved(finalI);
                                     Log.d(TAG, mTAG + "Notified adapter of top loader removal");
                                 }
                             } catch (Exception e) {
@@ -2135,8 +1841,8 @@ implements NotifyUpdatesInterface {
                         final int finalI = i;
                         mMainHandler.post(() -> {
                             try {
-                                if (getAdapter() != null) {
-                                    getAdapter().notifyItemRemoved(finalI);
+                                if (getFragmentAdapter() != null) {
+                                    getFragmentAdapter().notifyItemRemoved(finalI);
                                     Log.d(TAG, mTAG + "Notified adapter of bottom loader removal");
                                 }
                             } catch (Exception e) {
@@ -2159,8 +1865,9 @@ implements NotifyUpdatesInterface {
     /**
      * Reset all control flags to initial state.
      * Used during initialization and cleanup.
+     * DEBUG: made protected insteadof private
      */
-    private void resetControlFlags() {
+    protected void resetControlFlags() {
         mIsUpdatingCache.set(false);
         mIsPendingTopLoad.set(false);
         mIsPendingBottomLoad.set(false);
@@ -2217,10 +1924,10 @@ implements NotifyUpdatesInterface {
         final String mTAG = "onStart: ";
         Log.v(TAG, mTAG + "called.");
 
-        if (mQD != null) {
-            mQD.updatePreferences(getActivity());
-            if (mQD.isRefresh()) {
-                mQD.setRefresh(false);
+        if (QDue.getQuattrodue() != null) {
+            QDue.getQuattrodue().updatePreferences(getActivity());
+            if (QDue.getQuattrodue().isRefresh()) {
+                QDue.getQuattrodue().setRefresh(false);
                 refreshData();
             }
         }
@@ -2238,8 +1945,8 @@ implements NotifyUpdatesInterface {
 
         // Update today's position in case date changed
         mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-        if (getAdapter() != null) {
-            getAdapter().notifyDataSetChanged();
+        if (getFragmentAdapter() != null) {
+            getFragmentAdapter().notifyDataSetChanged();
         }
     }
 
@@ -2300,8 +2007,8 @@ implements NotifyUpdatesInterface {
         // Update user team if necessary
         onUserTeamChanged();
 
-        if (getAdapter() != null) {
-            getAdapter().notifyDataSetChanged();
+        if (getFragmentAdapter() != null) {
+            getFragmentAdapter().notifyDataSetChanged();
         }
     }
 
@@ -2312,31 +2019,6 @@ implements NotifyUpdatesInterface {
     protected void onUserTeamChanged() {
         final String mTAG = "onUserTeamChanged: ";
         Log.v(TAG, mTAG + "User team changed");
-    }
-
-    // === LAYOUT MANAGER UTILITIES ===
-
-    /**
-     * Allow subclasses to set custom LayoutManager.
-     * Maintains reference for LinearLayoutManager, sets null for others.
-     *
-     * @param layoutManager the LayoutManager to set
-     */
-    protected void setCustomLayoutManager(RecyclerView.LayoutManager layoutManager) {
-        final String METHOD_TAG = TAG + " setCustomLayoutManager";
-
-        if (mRecyclerView != null) {
-            mRecyclerView.setLayoutManager(layoutManager);
-            if (layoutManager instanceof LinearLayoutManager) {
-                mLayoutManager = (LinearLayoutManager) layoutManager;
-                if (DEBUG_FRAGMENT) Log.d(METHOD_TAG, "Set LinearLayoutManager");
-            } else {
-                // For GridLayoutManager or others, maintain null reference for compatibility
-                mLayoutManager = null;
-                if (DEBUG_FRAGMENT)
-                    Log.d(METHOD_TAG, "Set non-LinearLayoutManager, mLayoutManager = null");
-            }
-        }
     }
 
     // =======================================================
@@ -2363,5 +2045,10 @@ implements NotifyUpdatesInterface {
     /**
      * Get the current adapter.
      */
-    protected abstract RecyclerView.Adapter<?> getAdapter();
+    protected abstract BaseAdapter getFragmentAdapter();
+
+    /**
+     * Set adapter, an extension of BaseAdapter
+     */
+    protected abstract void setFragmentAdapter(BaseAdapter adapter);
 }

@@ -19,7 +19,7 @@ public final class Costants {
     public final static int QD_TEAMS_PER_SHIFT = 2;
 
     // Numero di mesi da mantenere in cache (prima e dopo il mese corrente)
-    public static final int QD_MONTHS_CACHE_SIZE = 6;
+    public static final int QD_MONTHS_CACHE_RADIUS = 6;
 
     // Numero massimo di mesi in memoria per evitare memory leak
     public static final int QD_MAX_CACHE_SIZE = 24;

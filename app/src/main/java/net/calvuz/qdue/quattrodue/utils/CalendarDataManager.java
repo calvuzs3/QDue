@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
 
@@ -28,7 +29,6 @@ public class CalendarDataManager {
 
     private static volatile CalendarDataManager instance;
     private final Map<String, MonthCache> monthsCache = new ConcurrentHashMap<>();
-    private QuattroDue quattroDue;
     private final AtomicBoolean isUpdating = new AtomicBoolean(false);
 
     // Cache configuration
@@ -50,17 +50,15 @@ public class CalendarDataManager {
                     instance = new CalendarDataManager();
                 }
             }
+            instance.initialize();
         }
         return instance;
     }
 
     /**
      * Initializes the data manager with QuattroDue instance.
-     *
-     * @param qd QuattroDue instance
      */
-    public void initialize(QuattroDue qd) {
-        this.quattroDue = qd;
+    private void initialize() {
         if (LOG_ENABLED) Log.d(TAG, "CalendarDataManager initialized");
     }
 
@@ -71,7 +69,7 @@ public class CalendarDataManager {
      * @return List of days for the month
      */
     public List<Day> getMonthDays(LocalDate monthDate) {
-        if (quattroDue == null) return new ArrayList<>();
+        if (QDue.getQuattrodue() == null) return new ArrayList<>();
 
         LocalDate normalizedDate = monthDate.withDayOfMonth(1);
         String cacheKey = getCacheKey(normalizedDate);
@@ -89,7 +87,7 @@ public class CalendarDataManager {
         if (LOG_ENABLED) Log.d(TAG, "Cache miss: " + normalizedDate);
 
         try {
-            List<Day> days = quattroDue.getShiftsForMonth(normalizedDate);
+            List<Day> days = QDue.getQuattrodue().getShiftsForMonth(normalizedDate);
             updateTodayFlags(days);
 
             // Save to cache

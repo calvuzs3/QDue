@@ -13,11 +13,11 @@ import net.calvuz.qdue.utils.Log;
 
 /**
  * Unified data models shared between fragments.
- *
+ * <p>
  * This class provides a common data structure and conversion utilities
  * for both DayslistViewFragment and CalendarViewFragment, ensuring
  * consistent data handling across different UI representations.
- *
+ * <p>
  * Key components:
  * - ViewItem: Base class for all adapter items with type identification
  * - MonthHeader: Represents month title headers in the list/grid
@@ -34,7 +34,7 @@ public class SharedViewModels {
 
     /**
      * Base class for all view items displayed in the RecyclerView adapter.
-     *
+     * <p>
      * Provides type identification system to allow the adapter to handle
      * different types of content (headers, days, loading indicators, etc.)
      * in a unified manner.
@@ -46,13 +46,21 @@ public class SharedViewModels {
          * Used by adapters to determine how to display each item.
          */
         public enum Type {
-            /** Month header with title */
+            /**
+             * Month header with title
+             */
             HEADER,
-            /** Day with shift data */
+            /**
+             * Day with shift data
+             */
             DAY,
-            /** Empty placeholder cell */
+            /**
+             * Empty placeholder cell
+             */
             EMPTY,
-            /** Loading indicator */
+            /**
+             * Loading indicator
+             */
             LOADING
         }
 
@@ -67,16 +75,20 @@ public class SharedViewModels {
 
     /**
      * Represents a month header in the list/grid.
-     *
+     * <p>
      * Contains the formatted month title and the normalized month date.
      * Handles automatic formatting based on current year for better UX.
      */
     public static class MonthHeader extends ViewItem {
 
-        /** Formatted title string for display */
+        /**
+         * Formatted title string for display
+         */
         public final String title;
 
-        /** Normalized month date (always first day of month) */
+        /**
+         * Normalized month date (always first day of month)
+         */
         public final LocalDate monthDate;
 
         /**
@@ -107,7 +119,7 @@ public class SharedViewModels {
 
         /**
          * Format the month title based on current year.
-         *
+         * <p>
          * If the month is in the current year, shows only month name.
          * If different year, shows "Month Year" format.
          * Uses application locale for proper localization.
@@ -140,22 +152,26 @@ public class SharedViewModels {
 
     /**
      * Represents a single day with its shift data.
-     *
+     * <p>
      * Contains the Day model object and additional metadata
      * for proper display and positioning within the month context.
      */
     public static class DayItem extends ViewItem {
 
-        /** The Day model containing shift information */
+        /**
+         * The Day model containing shift information
+         */
         public final Day day;
 
-        /** Normalized month date for this day */
+        /**
+         * Normalized month date for this day
+         */
         public final LocalDate monthDate;
 
         /**
          * Create a day item for the specified day and month context.
          *
-         * @param day the Day model with shift data
+         * @param day       the Day model with shift data
          * @param monthDate the month this day belongs to
          */
         public DayItem(Day day, LocalDate monthDate) {
@@ -189,7 +205,7 @@ public class SharedViewModels {
 
         /**
          * Check if this day is a Sunday.
-         *
+         * <p>
          * Uses ISO-8601 standard where Sunday = 7.
          *
          * @return true if this day is a Sunday
@@ -201,7 +217,7 @@ public class SharedViewModels {
 
     /**
      * Represents an empty placeholder cell.
-     *
+     * <p>
      * Used in calendar grid layout to fill empty spaces
      * and maintain proper week alignment (7-day grid).
      */
@@ -220,7 +236,7 @@ public class SharedViewModels {
 
     /**
      * Represents a loading indicator for infinite scroll.
-     *
+     * <p>
      * Shows progress indicators when loading additional months
      * during infinite scroll operations.
      */
@@ -230,16 +246,24 @@ public class SharedViewModels {
          * Enumeration of loading indicator positions.
          */
         public enum LoadingType {
-            /** Loading indicator at top (loading previous months) */
+            /**
+             * Loading indicator at top (loading previous months)
+             */
             TOP,
-            /** Loading indicator at bottom (loading next months) */
+            /**
+             * Loading indicator at bottom (loading next months)
+             */
             BOTTOM
         }
 
-        /** The position type of this loading indicator */
+        /**
+         * The position type of this loading indicator
+         */
         public final LoadingType loadingType;
 
-        /** Localized message to display */
+        /**
+         * Localized message to display
+         */
         public final String message;
 
         /**
@@ -271,7 +295,7 @@ public class SharedViewModels {
 
     /**
      * Utility class for converting raw data to view items.
-     *
+     * <p>
      * Provides static methods to transform Day objects into properly
      * structured ViewItem lists for different display formats
      * (linear list vs. calendar grid).
@@ -282,12 +306,12 @@ public class SharedViewModels {
 
         /**
          * Convert day data for linear list display (DayslistViewFragment).
-         *
+         * <p>
          * Creates a simple linear structure with:
          * - Month header at the beginning
          * - All days in chronological order
          *
-         * @param days list of days in the month
+         * @param days      list of days in the month
          * @param monthDate the month these days belong to
          * @return list of view items for linear display
          */
@@ -317,14 +341,14 @@ public class SharedViewModels {
 
         /**
          * Convert day data for calendar grid display (CalendarViewFragment).
-         *
+         * <p>
          * Creates a grid-aligned structure with:
          * - Month header spanning full width
          * - Empty cells to align first day with correct weekday
          * - All days in grid positions
          * - Empty cells to complete final week (multiple of 7)
          *
-         * @param days list of days in the month
+         * @param days      list of days in the month
          * @param monthDate the month these days belong to
          * @return list of view items for calendar grid display
          */
@@ -382,12 +406,12 @@ public class SharedViewModels {
 
         /**
          * Add empty cells at the beginning to align the first day with correct weekday.
-         *
+         * <p>
          * Uses ISO-8601 standard where Monday = 1, Sunday = 7.
          * For calendar display, we need to align the first day of the month
          * with its correct weekday position.
          *
-         * @param items the list to add empty cells to
+         * @param items    the list to add empty cells to
          * @param firstDay the first day of the month
          */
         private static void addEmptyCellsForWeekStart(List<ViewItem> items, LocalDate firstDay) {
@@ -414,7 +438,7 @@ public class SharedViewModels {
 
         /**
          * Find the position of today's date in the view items list.
-         *
+         * <p>
          * Searches through all DayItem instances to find the one
          * that represents today's date.
          *
@@ -422,10 +446,10 @@ public class SharedViewModels {
          * @return index of today's position, or -1 if not found
          */
         public static int findTodayPosition(List<ViewItem> items) {
-            final String METHOD_TAG = CONVERTER_TAG + ":findTodayPosition";
+            final String mTAG = ":findTodayPosition: ";
 
             if (items == null || items.isEmpty()) {
-                if (DEBUG_SHARED_VIEW_MODELS) Log.d(METHOD_TAG, "Items list is null or empty");
+                if (DEBUG_SHARED_VIEW_MODELS) Log.d(TAG, mTAG + "Items list is null or empty");
                 return -1;
             }
 
@@ -437,7 +461,7 @@ public class SharedViewModels {
                         DayItem dayItem = (DayItem) items.get(i);
                         if (dayItem.day != null && dayItem.day.getDate().equals(today)) {
                             if (DEBUG_SHARED_VIEW_MODELS) {
-                                Log.d(METHOD_TAG, "Found today at position: " + i);
+                                Log.d(TAG, mTAG + "Found today at position: " + i);
                             }
                             return i;
                         }
@@ -445,10 +469,10 @@ public class SharedViewModels {
                 }
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Today not found in " + items.size() + " items");
+                    Log.d(TAG, mTAG + "Today not found in " + items.size() + " items");
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error finding today position: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error finding today position: " + e.getMessage());
             }
 
             return -1;
@@ -456,7 +480,7 @@ public class SharedViewModels {
 
         /**
          * Count the number of day items in the list.
-         *
+         * <p>
          * Utility method for DEBUG_SHARED_VIEW_MODELSging and validation.
          *
          * @param items list of view items
@@ -487,7 +511,7 @@ public class SharedViewModels {
 
         /**
          * Get statistics about the view items list.
-         *
+         * <p>
          * Utility method for DEBUG_SHARED_VIEW_MODELSging and monitoring.
          *
          * @param items list of view items to analyze
@@ -535,7 +559,7 @@ public class SharedViewModels {
 
         /**
          * Validate the structure of a calendar grid.
-         *
+         * <p>
          * Checks if the items form a valid calendar grid structure
          * with proper week alignment.
          *
