@@ -3,6 +3,8 @@
 
 e-Shifts - calendarietto elettronico per i turni lavoro ciclo continuo 4-2
 
+[Sito web di riferimento in questo link](https://www.calvuz.net/work/qdue-gestione-turni-semplificata)
+
 ## Descrizione breve
 
 QDue è l'applicazione essenziale per gestire e visualizzare i turni di lavoro secondo il sistema "quattro-due": quattro giorni consecutivi di lavoro seguiti da due giorni di riposo. Progettata specificamente per lavoratori e team che operano con turni a ciclo continuo, QDue semplifica la pianificazione e il monitoraggio dei turni di squadra.
