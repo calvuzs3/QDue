@@ -1,9 +1,6 @@
 package net.calvuz.qdue;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,36 +9,21 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-import androidx.preference.PreferenceManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.navigationrail.NavigationRailView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
-import net.calvuz.qdue.ui.dayslist.DayslistViewFragment;
+import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
+import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
-import net.calvuz.qdue.ui.shared.BaseFragment;
-import net.calvuz.qdue.ui.shared.FragmentCommunicationInterface;
-import net.calvuz.qdue.ui.shared.NotifyUpdatesInterface;
 import net.calvuz.qdue.utils.Log;
-import net.calvuz.qdue.utils.TimeChangeReceiver;
-
-import java.util.List;
 
 /**
  * Enhanced Main Activity with hybrid NavigationRail system.
@@ -87,12 +69,25 @@ public class QDueMainActivity extends BaseActivity {
 
     // ======================= METHODS ============================
 
+    private CalendarDataManagerEnhanced enhancedDataManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         final String mTAG = "onCreate: ";
         Log.v(TAG, mTAG + "called.");
+
+        // Initialize enhanced data manager if virtual scrolling is enabled
+        if (MigrationHelper.shouldUseVirtualScrolling()) {
+            enhancedDataManager = CalendarDataManagerEnhanced.getEnhancedInstance();
+            Log.d(TAG, "Virtual scrolling enabled for this session");
+        } else {
+            Log.d(TAG, "Using legacy scrolling for this session");
+        }
+
+        // Log device capabilities for monitoring
+        logDeviceCapabilities();
 
         // NORMAL: Use binding
         binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
@@ -103,7 +98,39 @@ public class QDueMainActivity extends BaseActivity {
         setupNavigationSafely();
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Cleanup enhanced data manager
+        if (enhancedDataManager != null) {
+            enhancedDataManager.shutdown();
+        }
+    }
+
     /**
+     * Log device capabilities for analytics
+     */
+    private void logDeviceCapabilities() {
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            long maxMemory = runtime.maxMemory() / (1024 * 1024); // MB
+            int apiLevel = android.os.Build.VERSION.SDK_INT;
+
+            Log.d(TAG, "Device info - Max Memory: " + maxMemory + "MB, API Level: " + apiLevel);
+
+            // Send to analytics if you have it
+            // Analytics.setProperty("max_memory_mb", String.valueOf(maxMemory));
+            // Analytics.setProperty("api_level", String.valueOf(apiLevel));
+
+        } catch (Exception e) {
+            Log.w(TAG, "Error logging device capabilities: " + e.getMessage());
+        }
+    }
+
+
+/**
      * Detect which navigation components are available in current layout.
      * This allows the same activity to work with different layout configurations.
      */

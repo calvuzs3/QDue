@@ -373,4 +373,8 @@
     <string name="drawer_close_extended">Chiudi menu esteso</string>
     <string name="days">giorni</string>
 
+
+    <!-- Strings for proto -->
+    <string name="error_loading_data">Errore caricamento dati (proto)</string>
+
 </resources>

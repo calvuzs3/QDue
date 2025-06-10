@@ -8,7 +8,6 @@ import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 
 import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.quattrodue.utils.ShiftTypeFactory;
 import net.calvuz.qdue.user.data.database.UserDatabase;
 import net.calvuz.qdue.utils.Log;
 
@@ -16,9 +15,8 @@ import java.util.Locale;
 
 public class QDue extends Application {
 
-
     // TAG
-    static String TAG ="QDUE";
+    static String TAG = "QDUE";
 
     @SuppressLint("StaticFieldLeak")
     private static Context context;
@@ -78,12 +76,67 @@ public class QDue extends Application {
         }
     }
 
-    public static class Debug {
-        public static boolean DEBUG_ACTIVITY = true;
-        public static boolean DEBUG_FRAGMENT = true;
-        public static boolean DEBUG_COLORS = false;
-        public static boolean DEBUG_SHARED_VIEW_MODELS = false;
+    public static final class Debug {
+        public static final boolean DEBUG_ACTIVITY = false;
+        public static final boolean DEBUG_FRAGMENT = false;
+        public static final boolean DEBUG_COLORS = false;
+        public static final boolean DEBUG_SHARED_VIEW_MODELS = false;
+        // Base
+        public static final boolean DEBUG_BASEFRAGMENT = false;
+        public static final boolean DEBUG_BASEADAPTER = false;
 
+    }
+
+    public static final class VirtualScrollingSettings {
+
+        // HelperMethod
+        public static final boolean isVirtualScrollingEnabled = false;
+
+        // EnhancedBaseFragmentBridge
+        public static final boolean ENABLE_VIRTUAL_SCROLLING = false;
+
+        // AdapterBridge // EnhancedBaseFragmentBridge // CalendarViewFragmentEnhanced
+        public static final boolean USE_VIRTUAL_SCROLLING = false;
+    }
+
+    /**
+     * Debug settings for virtual scrolling
+     */
+    public class VirtualScrollingDebugSettings {
+
+        // Enable/disable debug logging
+        public static final boolean DEBUG_VIRTUAL_SCROLLING = true;
+
+        // Enable/disable performance logging
+        public static final boolean DEBUG_PERFORMANCE = true;
+
+        // Enable/disable memory monitoring
+        public static final boolean DEBUG_MEMORY = true;
+
+        // Enable/disable cache statistics
+        public static final boolean DEBUG_CACHE_STATS = true;
+
+        // Simulate slow network for testing
+        public static final boolean SIMULATE_SLOW_LOADING = false;
+        public static final int SIMULATED_DELAY_MS = 500;
+
+        /**
+         * Log debug message if enabled
+         */
+        public void logDebug(String tag, String message) {
+            if (DEBUG_VIRTUAL_SCROLLING) {
+                android.util.Log.d(tag, message);
+            }
+        }
+
+        /**
+         * Log performance metric if enabled
+         */
+        public void logPerformance(String tag, String metric, long value) {
+            if (DEBUG_PERFORMANCE) {
+                android.util.Log.d(tag, "PERF: " + metric + " = " + value + "ms");
+            }
+        }
     }
 
     /**

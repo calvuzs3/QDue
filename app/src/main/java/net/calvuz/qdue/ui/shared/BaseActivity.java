@@ -1,7 +1,6 @@
 package net.calvuz.qdue.ui.shared;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -15,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
-import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 
@@ -24,7 +22,6 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.navigationrail.NavigationRailView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
 
@@ -75,9 +72,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
      */
     protected abstract void setupNavController();
 
-
-
-
     /**
      * Enum to track current navigation mode for proper handling
      */
@@ -87,6 +81,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
         LANDSCAPE_SMALL,     // NavigationRail espanso + Extended FAB
         LANDSCAPE_LARGE      // NavigationRail + Drawer
     }
+
+    // ===========================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +98,35 @@ public abstract class BaseActivity extends AppCompatActivity implements
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.v(TAG, "onResume: called.");
+
+        registerTimeChangeReceiver();
+        notifyUpdates();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v(TAG, "onPause: called.");
+
+        unregisterTimeChangeReceiver();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.v(TAG, "onDestroy: called.");
+
+        unregisterTimeChangeReceiver();
+        if (sharedPreferences != null) {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+        }
+    }
+
+    // ===========================================================
 
     /**
      * Setup Phone Portrait navigation (BottomNavigation + separate FAB).
@@ -222,20 +247,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Handle configuration changes (orientation, screen size).
-     */
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        final String mTAG = "onConfigurationChanged: ";
-        Log.v(TAG, mTAG + "called.");
-
-        Log.d(TAG, mTAG + "Configuration changed - orientation: " + (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Landscape" : "Portrait"));
-
-        // Note: Navigation components will be automatically reconfigured
-        // when the activity recreates with the new layout
-    }
+    // ===========================================================
 
     /**
      * Notify fragments to update data.
@@ -284,33 +296,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.v(TAG, "onResume: called.");
-
-        registerTimeChangeReceiver();
-        notifyUpdates();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.v(TAG, "onPause: called.");
-
-        unregisterTimeChangeReceiver();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.v(TAG, "onDestroy: called.");
-
-        unregisterTimeChangeReceiver();
-        if (sharedPreferences != null) {
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
-        }
-    }
+    // ===========================================================
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerTimeChangeReceiver() {
@@ -363,6 +349,26 @@ public abstract class BaseActivity extends AppCompatActivity implements
             Toast.makeText(this, "Timezone updated", Toast.LENGTH_SHORT).show();
         });
     }
+
+    // ===========================================================
+
+
+    /**
+     * Handle configuration changes (orientation, screen size).
+     */
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        final String mTAG = "onConfigurationChanged: ";
+        Log.v(TAG, mTAG + "called.");
+
+        Log.d(TAG, mTAG + "Configuration changed - orientation: " + (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Landscape" : "Portrait"));
+
+        // Note: Navigation components will be automatically reconfigured
+        // when the activity recreates with the new layout
+    }
+
+    // ===========================================================
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String

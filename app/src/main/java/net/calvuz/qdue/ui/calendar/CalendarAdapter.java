@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.calendar;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_BASEADAPTER;
 import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
 import android.content.Context;
@@ -44,13 +45,14 @@ public class CalendarAdapter extends BaseAdapter {
     @Override
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
         // Use calendar-specific layout
-        View view = inflater.inflate(R.layout.item_calendar_day, parent, false);
+        View view = inflater.inflate(R.layout.item_calendar_day_original, parent, false);
         return new CalendarDayViewHolder(view);
     }
 
     @Override
     protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
         if (!(holder instanceof CalendarDayViewHolder)) {
+            Log.d("DEBUG", "Wrong ViewHolder, calling super");
             super.bindDay(holder, dayItem, position);
             return;
         }
@@ -75,6 +77,14 @@ public class CalendarAdapter extends BaseAdapter {
 
         // Setup shift indicator
         setupShiftIndicator(calendarHolder, day);
+
+        if (DEBUG_BASEADAPTER) {
+            // PROTO debugging
+            TextView dayNumberView = holder.itemView.findViewById(R.id.tv_day_number);
+            Log.d("DEBUG", "TextView found: " + (dayNumberView != null));
+            Log.d("DEBUG", "TextView text set to: " + dayNumberView.getText());
+            Log.d("DEBUG", "TextView visibility: " + dayNumberView.getVisibility());
+        }
     }
 
 
