@@ -375,5 +375,6 @@
 
     <!-- Strings for proto -->
     <string name="error_loading_data">Errore caricamento dati (proto)</string>
+    <string name="nav_header_about">About</string>
 
 </resources>

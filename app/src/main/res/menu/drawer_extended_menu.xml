@@ -6,7 +6,7 @@
     tools:showIn="navigation_view">
 
     <!-- ACCOUNT GROUP -->
-    <group
+<!--    <group
         android:id="@+id/group_account"
         android:checkableBehavior="none">
 
@@ -16,10 +16,10 @@
             android:title="User"
             android:contentDescription="User" />
 
-    </group>
+    </group>-->
 
     <!-- CONTENT GROUP -->
-    <group
+<!--    <group
         android:id="@+id/group_content"
         android:checkableBehavior="none">
 
@@ -29,7 +29,7 @@
             android:title="Events"
             android:contentDescription="Events" />
 
-    </group>
+    </group>-->
 
     <!-- SETTINGS GROUP -->
     <group
@@ -41,7 +41,10 @@
             android:icon="@drawable/ic_settings"
             android:title="@string/menu_title_settings"
             android:contentDescription="@string/menu_title_settings" />
-
+    </group>
+    <group
+        android:id="@+id/group_about"
+        android:checkableBehavior="none">
         <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_info"

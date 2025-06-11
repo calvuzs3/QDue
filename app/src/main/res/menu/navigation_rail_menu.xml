@@ -21,11 +21,11 @@
             android:contentDescription="@string/menu_dayslist" />
 
         <!-- Settings - Tertiary destination -->
-        <item
+        <!--<item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings"
             android:title="@string/menu_title_settings"
-            android:contentDescription="@string/menu_title_settings" />
+            android:contentDescription="@string/menu_title_settings" />-->
 
     </group>
 

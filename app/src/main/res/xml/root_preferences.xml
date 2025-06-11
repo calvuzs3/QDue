@@ -17,7 +17,7 @@
     <!-- Categoria Aspetto e Tema -->
     <PreferenceCategory app:title="@string/settings_appearance_header">
 
-        <!-- Modalità tema -->
+<!--        &lt;!&ndash; Modalità tema &ndash;&gt;
         <ListPreference
             app:key="theme_mode"
             app:title="@string/settings_theme_title"
@@ -25,7 +25,7 @@
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"
             app:defaultValue="0"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true" />-->
 
         <!-- Colori dinamici (solo per Android 12+) -->
         <SwitchPreferenceCompat
@@ -37,13 +37,13 @@
     </PreferenceCategory>
 
     <!-- Eventi Category in main settings -->
-    <Preference
+<!--    <Preference
         app:key="events_settings"
         app:title="@string/settings_events_title"
         app:summary="@string/settings_events_main_summary"
         app:icon="@drawable/ic_event"
         app:fragment="net.calvuz.qdue.ui.settings.EventsPreferenceFragment" />
-
+-->
     <!-- Scegli cosa mostrare -->
 <!--    <PreferenceCategory app:title="@string/settings_show">-->
 

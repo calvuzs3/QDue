@@ -355,12 +355,12 @@ public class QDueMainActivity extends BaseActivity {
             } else if (itemId == R.id.nav_about) {
                 navController.navigate(R.id.nav_about);
                 return true;
-            } else if (itemId == R.id.nav_user_profile) {
+            } /*else if (itemId == R.id.nav_user_profile) {
                 Log.d(TAG, "nav_user_profile");
                 startActivity(new Intent(this, UserProfileActivity.class));
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
-            }
+            }*/
 
             return false;
         } catch (Exception e) {
@@ -378,7 +378,7 @@ public class QDueMainActivity extends BaseActivity {
         Log.v(TAG, mTAG + "called with itemId: " + itemId);
 
         try {
-            if (itemId == R.id.nav_user_profile) {
+            /*if (itemId == R.id.nav_user_profile) {
                 Log.d(TAG, mTAG + "UserProfile");
                 Intent userIntent = new Intent(this, UserProfileActivity.class);
                 startActivity(userIntent);
@@ -386,11 +386,11 @@ public class QDueMainActivity extends BaseActivity {
 
             } else if (itemId == R.id.nav_eventi) {
                 // TODO: Replace with your actual Eventi Activity
-//                Intent eventiIntent = new Intent(this, EventiActivity.class);
-//                startActivity(eventiIntent);
+                Intent eventiIntent = new Intent(this, EventiActivity.class);
+                startActivity(eventiIntent);
                 return true;
 
-            } else if (itemId == R.id.nav_settings) {
+            } else*/ if (itemId == R.id.nav_settings) {
                 Log.d(TAG, mTAG + "Settings");
                 Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
                 startActivity(settingsIntent);
@@ -410,48 +410,6 @@ public class QDueMainActivity extends BaseActivity {
             return false;
         }
     }
-
-//    /**
-//     * Setup FAB based on integration mode and current navigation configuration.
-//     * Fragments set it up
-//     */
-//    private void setupFAB() {
-//        final String mTAG = "setupFAB: ";
-//        Log.v(TAG, mTAG + "called.");
-//
-//        if (fabGoToToday == null) {
-//            Log.d(TAG, mTAG + "FAB not found in current layout");
-//            return;
-//        }
-//
-//        // Configure FAB click listener
-//        fabGoToToday.setOnClickListener(v -> {
-//            try {
-//                // Communicate with current fragment to scroll to today
-//                Fragment currentFragment = getCurrentFragment();
-//                if (currentFragment != null) {
-//                    if (currentFragment instanceof DayslistViewFragment) {
-//                        ((DayslistViewFragment) currentFragment).scrollToToday();
-//                    } else if (currentFragment instanceof net.calvuz.qdue.ui.calendar.CalendarViewFragment) {
-//                        ((net.calvuz.qdue.ui.calendar.CalendarViewFragment) currentFragment).scrollToToday();
-//                    }
-//                }
-//            } catch (Exception e) {
-//                Log.e(TAG, mTAG + "Error handling FAB click: " + e.getMessage());
-//            }
-//        });
-//
-//        // Configure FAB visibility based on integration mode
-//        if (isFabIntegrated) {
-//            // FAB is integrated in NavigationRail - always visible
-//            fabGoToToday.show();
-//            Log.d(TAG, mTAG + "FAB configured as integrated (always visible)");
-//        } else {
-//            // FAB is separate - managed by fragments
-//            fabGoToToday.hide(); // Start hidden, fragments will control visibility
-//            Log.d(TAG, mTAG + "FAB configured as separate (fragment-controlled)");
-//        }
-//    }
 
     // ========== COMMUNICATION INTERFACE IMPLEMENTATION ==========
 
@@ -737,7 +695,7 @@ public class QDueMainActivity extends BaseActivity {
                 toggleSidebar();
                 return true;
             }
-
+/*
             // Handle home/up button (menu button)
             if (id == android.R.id.home) {
                 Log.d(TAG, mTAG + "UserProfile selected");
@@ -745,7 +703,7 @@ public class QDueMainActivity extends BaseActivity {
                     navController.navigate(R.id.nav_user_profile);
                 }
                 return true;
-            }
+            }*/
 
             // Handle other menu items
             if (id == R.id.action_settings) {
