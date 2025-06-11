@@ -51,8 +51,4 @@
         tools:layout="@layout/fragment_dialog_about" />
 
     <!-- Settings Activity -->
-    <activity
-        android:id="@+id/nav_settings"
-        android:name="net.calvuz.qdue.ui.settings.QDueSettingsActivity"
-        android:label="Settings" />
 </navigation>

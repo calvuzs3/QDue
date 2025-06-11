@@ -62,10 +62,10 @@
             <!-- Toolbar -->
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
+                android:background="@android:color/transparent"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
                 app:title="@string/user_profile" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -150,7 +150,37 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="32dp">
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_profile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/save_profile"
+                    android:textAllCaps="false"
+                    app:icon="@drawable/ic_save"
+                    style="@style/Widget.Material3.Button" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_reset_profile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/reset_changes"
+                    android:textAllCaps="false"
+                    app:icon="@drawable/ic_refresh"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
             <!-- Personal Information Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -523,37 +553,7 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="32dp">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_save_profile"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/save_profile"
-                    android:textAllCaps="false"
-                    app:icon="@drawable/ic_save"
-                    style="@style/Widget.Material3.Button" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_reset_profile"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/reset_changes"
-                    android:textAllCaps="false"
-                    app:icon="@drawable/ic_refresh"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
-
-            </LinearLayout>
 
         </LinearLayout>
 
@@ -570,5 +570,29 @@
         app:layout_anchor="@id/app_bar_layout"
         app:layout_anchorGravity="bottom|end"
         app:tint="@android:color/white" />
+
+<!--    &lt;!&ndash; Floating Action Button for Profile SAVE &ndash;&gt;-->
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fab_save_profile"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:src="@drawable/ic_save"-->
+<!--        android:contentDescription="@string/save_profile"-->
+<!--        app:layout_anchor="@id/toolbar"-->
+<!--        app:layout_anchorGravity="bottom|end"-->
+<!--        app:tint="@android:color/white" />-->
+
+<!--    &lt;!&ndash; Floating Action Button for Profile RESET &ndash;&gt;-->
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fab_reset_profile"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:src="@drawable/ic_refresh"-->
+<!--        android:contentDescription="@string/reset_changes"-->
+<!--        app:layout_anchor="@id/toolbar"-->
+<!--        app:layout_anchorGravity="bottom|end"-->
+<!--        app:tint="@android:color/white" />-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

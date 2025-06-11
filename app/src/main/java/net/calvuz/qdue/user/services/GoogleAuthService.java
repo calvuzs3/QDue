@@ -11,7 +11,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-import net.calvuz.qdue.R;
+import net.calvuz.qdue.BuildConfig;
 import net.calvuz.qdue.user.data.models.GoogleAuthData;
 import net.calvuz.qdue.utils.Log;
 
@@ -35,7 +35,7 @@ public class GoogleAuthService {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestProfile()
-                .requestIdToken(context.getString(R.string.google_web_client_id)) // Add to strings.xml
+                .requestIdToken(BuildConfig.GOOGLE_CLIENT_ID) // Add to strings.xml
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(context, gso);

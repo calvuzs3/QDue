@@ -91,6 +91,7 @@ public class UserManager {
     public void updateUserProfile(User user, OnProfileUpdateListener listener) {
         // Check if profile is now complete
         boolean isComplete = isProfileComplete(user);
+        user.markProfileCompleted(); // Try do it anyway
         if (isComplete && !user.isProfileCompleted()) {
             user.markProfileCompleted();
         }
