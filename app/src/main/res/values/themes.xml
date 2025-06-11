@@ -68,6 +68,8 @@
         <item name="colorShiftSeventh">@color/shift_seventh</item>
         <item name="colorShiftEighth">@color/shift_eighth</item>
 
+        <!-- ATTR -->
+
         <!-- Essential UI Colors -->
         <item name="colorCardBackground">?attr/colorSurface</item>
         <item name="colorCardBorder">?attr/colorOutlineVariant</item>
@@ -101,14 +103,14 @@
     <!-- SPECIALIZED ACTIVITY THEMES -->
     <!-- ============================================ -->
 
+    <!-- For activities Settings like -->
     <style name="Theme.QDue.Settings" parent="Theme.QDue">
         <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 
+    <!-- For activities that need explicit NoActionBar -->
     <style name="Theme.QDue.NoActionBar" parent="Theme.QDue">
-        <!-- For activities that need explicit NoActionBar -->
+        <item name="android:windowActionBar">false</item>
     </style>
-
-
 
 </resources>

@@ -505,7 +505,20 @@ public class UserProfileActivity extends AppCompatActivity {
         // Clear previous errors
         clearFieldErrors();
 
-        // Required fields validation
+        // Date validation
+        String hireDateText = getTextFromField(binding.etHireDate);
+        if (!hireDateText.isEmpty()) {
+            try {
+                LocalDate.parse(hireDateText, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } catch (DateTimeParseException e) {
+                setFieldError(binding.tilHireDate, R.string.error_date_invalid);
+                isValid = false;
+            }
+        }
+
+        return isValid;
+
+        /*// Required fields validation
         if (isEmpty(binding.etFirstName)) {
             setFieldError(binding.tilFirstName, R.string.error_first_name_required);
             isValid = false;
@@ -534,18 +547,9 @@ public class UserProfileActivity extends AppCompatActivity {
             isValid = false;
         }
 
-        // Date validation
-        String hireDateText = getTextFromField(binding.etHireDate);
-        if (!hireDateText.isEmpty()) {
-            try {
-                LocalDate.parse(hireDateText, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            } catch (DateTimeParseException e) {
-                setFieldError(binding.tilHireDate, R.string.error_date_invalid);
-                isValid = false;
-            }
-        }
 
-        return isValid;
+
+        return isValid;*/
     }
 
     /**

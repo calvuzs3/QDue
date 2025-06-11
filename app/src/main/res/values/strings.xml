@@ -4,7 +4,6 @@
     <!-- App info -->
     <string name="app_id" translatable="false">net.calvuz.qdue</string>
     <string name="app_name" translatable="false">Q-Due</string>
-    <string name="app_version" translatable="false">Ver. 2.0 - latest 2025</string>
 
     <!-- Dialog -->
     <string name="ok">OK</string>
@@ -151,7 +150,7 @@
     <string name="theme_sys">Sistema</string>
 
     <!-- User Profile Activity -->
-    <string name="user_profile">Profilo Utente</string>
+    <string name="user_profile">Utente</string>
     <string name="user_name_placeholder">Nome Utente</string>
 
     <!-- Authentication Section -->
@@ -194,9 +193,9 @@
     <string name="personal_phone_optional">Telefono Personale (opzionale)</string>
 
     <!-- Action Buttons -->
-    <string name="save_profile">Salva Profilo</string>
-    <string name="reset_changes">Ripristina Modifiche</string>
-    <string name="change_profile_image">Cambia Immagine Profilo</string>
+    <string name="save_profile">Salva</string>
+    <string name="reset_changes">Ripristina</string>
+    <string name="change_profile_image">Scegli Immagine Profilo</string>
     <string name="choose_from_gallery">Scegli dalla Galleria</string>
     <string name="remove_image">Rimuovi Immagine</string>
 
@@ -362,7 +361,7 @@
     <!-- ============================================ -->
 
     <!-- Navigation items -->
-    <string name="nav_user_profile">Profilo Utente</string>
+    <string name="nav_user_profile">Utente</string>
     <string name="nav_eventi">Eventi</string>
 
     <!-- Header text -->

@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -23,6 +24,7 @@ import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
+import net.calvuz.qdue.user.ui.UserProfileActivity;
 import net.calvuz.qdue.utils.Log;
 
 /**
@@ -98,7 +100,6 @@ public class QDueMainActivity extends BaseActivity {
         setupNavigationSafely();
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -129,8 +130,7 @@ public class QDueMainActivity extends BaseActivity {
         }
     }
 
-
-/**
+    /**
      * Detect which navigation components are available in current layout.
      * This allows the same activity to work with different layout configurations.
      */
@@ -325,8 +325,6 @@ public class QDueMainActivity extends BaseActivity {
         }
     }
 
-
-
     /**
      * Unified navigation item selection handler for all navigation modes.
      */
@@ -358,8 +356,9 @@ public class QDueMainActivity extends BaseActivity {
                 navController.navigate(R.id.nav_about);
                 return true;
             } else if (itemId == R.id.nav_user_profile) {
-                // Navigate to user profile if implemented
-                // navController.navigate(R.id.nav_user_profile);
+                Log.d(TAG, "nav_user_profile");
+                startActivity(new Intent(this, UserProfileActivity.class));
+                drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             }
 
@@ -380,9 +379,9 @@ public class QDueMainActivity extends BaseActivity {
 
         try {
             if (itemId == R.id.nav_user_profile) {
-                // TODO: Replace with your actual User Profile Activity
-//                Intent userIntent = new Intent(this, UserProfileActivity.class);
-//                startActivity(userIntent);
+                Log.d(TAG, mTAG + "UserProfile");
+                Intent userIntent = new Intent(this, UserProfileActivity.class);
+                startActivity(userIntent);
                 return true;
 
             } else if (itemId == R.id.nav_eventi) {
@@ -392,11 +391,13 @@ public class QDueMainActivity extends BaseActivity {
                 return true;
 
             } else if (itemId == R.id.nav_settings) {
+                Log.d(TAG, mTAG + "Settings");
                 Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
 
             } else if (itemId == R.id.nav_about) {
+                Log.d(TAG, mTAG + "About");
                 if (navController != null) {
                     navController.navigate(R.id.nav_about);
                 }
@@ -451,7 +452,6 @@ public class QDueMainActivity extends BaseActivity {
 //            Log.d(TAG, mTAG + "FAB configured as separate (fragment-controlled)");
 //        }
 //    }
-
 
     // ========== COMMUNICATION INTERFACE IMPLEMENTATION ==========
 
@@ -733,19 +733,30 @@ public class QDueMainActivity extends BaseActivity {
 
             // Handle home/up button (menu button)
             if (id == android.R.id.home) {
-                Log.d(TAG, mTAG + "Menu button clicked");
+                Log.d(TAG, mTAG + "Home selected");
                 toggleSidebar();
+                return true;
+            }
+
+            // Handle home/up button (menu button)
+            if (id == android.R.id.home) {
+                Log.d(TAG, mTAG + "UserProfile selected");
+                if (navController != null) {
+                    navController.navigate(R.id.nav_user_profile);
+                }
                 return true;
             }
 
             // Handle other menu items
             if (id == R.id.action_settings) {
+                Log.d(TAG, mTAG + "Settings selected");
                 Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             }
 
             if (id == R.id.action_about) {
+                Log.d(TAG, mTAG + "About selected");
                 if (navController != null) {
                     navController.navigate(R.id.nav_about);
                 }
