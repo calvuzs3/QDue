@@ -115,7 +115,7 @@
         <color name="on_today_dark">#FFFFFF</color>
 
         <!-- USER SHIFT - High Priority (Emerald Green) -->
-        <color name="user_shift_background_light">#E8F5E8</color>   <!-- Green 50 -->
+        <color name="user_shift_background_light">#E8F5E9</color>   <!-- Green 50 -->
         <color name="user_shift_background_dark">#2E7D32</color>    <!-- Green 700 -->
         <color name="user_shift_border">#4CAF50</color>             <!-- Green 500 -->
         <color name="on_user_shift_light">#1B5E20</color>           <!-- Green 900 -->

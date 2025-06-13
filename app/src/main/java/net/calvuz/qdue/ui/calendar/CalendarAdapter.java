@@ -132,9 +132,11 @@ public class CalendarAdapter extends BaseAdapter {
 
             int shiftColor = getShiftColor(day, userShiftPosition);
             if (shiftColor != 0) {
+                Log.d("DEBUG", "Color: userShifPosition - " + userShiftPosition);
                 holder.vShiftIndicator.setBackgroundColor(shiftColor);
             } else {
                 // Fallback to user shift color
+                Log.d("DEBUG",  "Color fallback: mCachedUserShiftBackgroundColor - " + mCachedUserShiftBackgroundColor);
                 holder.vShiftIndicator.setBackgroundColor(mCachedUserShiftBackgroundColor);
             }
 
@@ -277,7 +279,7 @@ public class CalendarAdapter extends BaseAdapter {
         }
 
         // Apply user shift highlighting as overlay (if applicable)
-        applyUserShiftHighlight(cardView, dayItem);
+//        applyUserShiftHighlight(cardView, dayItem); // TODO: optimize blending color, 'cause it's strange
     }
 
     /**
