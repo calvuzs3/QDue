@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.calendar;
 
+import static net.calvuz.qdue.QDue.Debug.DEBUG_ADAPTER;
 import static net.calvuz.qdue.QDue.Debug.DEBUG_BASEADAPTER;
 import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
@@ -51,8 +52,10 @@ public class CalendarAdapter extends BaseAdapter {
 
     @Override
     protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
+        String mTAG = "bindDay";
+
         if (!(holder instanceof CalendarDayViewHolder)) {
-            Log.d("DEBUG", "Wrong ViewHolder, calling super");
+            if (DEBUG_ADAPTER) Log.d(TAG, "bindDay: Wrong ViewHolder, calling super");
             super.bindDay(holder, dayItem, position);
             return;
         }
@@ -81,9 +84,11 @@ public class CalendarAdapter extends BaseAdapter {
         if (DEBUG_BASEADAPTER) {
             // PROTO debugging
             TextView dayNumberView = holder.itemView.findViewById(R.id.tv_day_number);
-            Log.d("DEBUG", "TextView found: " + (dayNumberView != null));
-            Log.d("DEBUG", "TextView text set to: " + dayNumberView.getText());
-            Log.d("DEBUG", "TextView visibility: " + dayNumberView.getVisibility());
+            if (DEBUG_ADAPTER) {
+                Log.d(TAG, mTAG + "TextView found: " + (dayNumberView != null));
+                Log.d(TAG, mTAG + "TextView text set to: " + dayNumberView.getText());
+                Log.d(TAG, mTAG + "TextView visibility: " + dayNumberView.getVisibility());
+            }
         }
     }
 
@@ -132,11 +137,9 @@ public class CalendarAdapter extends BaseAdapter {
 
             int shiftColor = getShiftColor(day, userShiftPosition);
             if (shiftColor != 0) {
-                Log.d("DEBUG", "Color: userShifPosition - " + userShiftPosition);
                 holder.vShiftIndicator.setBackgroundColor(shiftColor);
             } else {
                 // Fallback to user shift color
-                Log.d("DEBUG",  "Color fallback: mCachedUserShiftBackgroundColor - " + mCachedUserShiftBackgroundColor);
                 holder.vShiftIndicator.setBackgroundColor(mCachedUserShiftBackgroundColor);
             }
 

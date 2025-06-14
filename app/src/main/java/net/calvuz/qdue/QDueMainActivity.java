@@ -20,6 +20,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
+import net.calvuz.qdue.ui.events.EventsActivity;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
@@ -347,6 +348,11 @@ public class QDueMainActivity extends BaseActivity {
             } else if (itemId == R.id.nav_dayslist) {
                 navController.navigate(R.id.nav_dayslist);
                 return true;
+            } else if (itemId == R.id.nav_events) {
+                // Use Intent for settings to maintain existing behavior
+                Intent eventsIntent = new Intent(this, EventsActivity.class);
+                startActivity(eventsIntent);
+                return true;
             } else if (itemId == R.id.nav_settings) {
                 // Use Intent for settings to maintain existing behavior
                 Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
@@ -390,7 +396,8 @@ public class QDueMainActivity extends BaseActivity {
                 startActivity(eventiIntent);
                 return true;
 
-            } else*/ if (itemId == R.id.nav_settings) {
+            } else*/
+            if (itemId == R.id.nav_settings) {
                 Log.d(TAG, mTAG + "Settings");
                 Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
                 startActivity(settingsIntent);
@@ -401,6 +408,11 @@ public class QDueMainActivity extends BaseActivity {
                 if (navController != null) {
                     navController.navigate(R.id.nav_about);
                 }
+                return true;
+            } else if (itemId == R.id.nav_events) {
+                // Use Intent for settings to maintain existing behavior
+                Intent eventsIntent = new Intent(this, EventsActivity.class);
+                startActivity(eventsIntent);
                 return true;
             }
 

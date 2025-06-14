@@ -21,10 +21,12 @@ public enum EventType {
     STOP_PLANNED("Fermata Programmata", Color.parseColor("#FF6B35"), "⏸️"),
     STOP_ORDERS("Fermata Carenza Ordini", Color.parseColor("#FF8C42"), "📦"),
     STOP_CASSA("Fermata Cassa Integrazione", Color.parseColor("#FFA62B"), "💼"),
+    STOP_UNPLANNED( "Non programmata", Color.parseColor("#D32F2F"), "\uD83D\uDEA8"),
+    STOP_SHORTAGE( "Carenza Ordini", Color.parseColor("#FF6B35"), "📦❌"),
 
     // Shift-related events
     SHIFT_CHANGE("Cambio Turno", Color.parseColor("#4ECDC4"), "🔄"),
-    OVERTIME("Straordinario", Color.parseColor("#45B7D1"), "⏰"),
+    OVERTIME("Straordinario", Color.parseColor("#7B1FA2"), "⏰"),
 
     // Safety and compliance
     SAFETY_DRILL("Prova Sicurezza", Color.parseColor("#96CEB4"), "🛡️"),
