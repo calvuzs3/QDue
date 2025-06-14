@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="Backup Settings"
+        android:icon="@drawable/ic_backup">
+
+        <SwitchPreferenceCompat
+            android:key="auto_backup_enabled"
+            android:title="Auto Backup"
+            android:summary="Automatically backup events when modified"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_backup_create" />
+
+        <Preference
+            android:key="backup_location"
+            android:title="Backup Location"
+            android:summary="App private storage"
+            android:enabled="false"
+            android:icon="@drawable/ic_folder" />
+
+        <Preference
+            android:key="backup_frequency"
+            android:title="Backup Frequency"
+            android:summary="After every change"
+            android:enabled="false"
+            android:icon="@drawable/ic_schedule" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Backup Management"
+        android:icon="@drawable/ic_settings_backup">
+
+        <Preference
+            android:key="backup_status"
+            android:title="Backup Status"
+            android:summary="View backup information and statistics"
+            android:icon="@drawable/ic_info_outline" />
+
+        <Preference
+            android:key="manual_backup"
+            android:title="Create Backup Now"
+            android:summary="Manually create a backup of current events"
+            android:icon="@drawable/ic_backup_create" />
+
+        <Preference
+            android:key="restore_backup"
+            android:title="Restore from Backup"
+            android:summary="Restore events from a previous backup"
+            android:icon="@drawable/ic_restore" />
+
+        <Preference
+            android:key="clean_backups"
+            android:title="Clean Old Backups"
+            android:summary="Remove all backup files"
+            android:icon="@drawable/ic_delete" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

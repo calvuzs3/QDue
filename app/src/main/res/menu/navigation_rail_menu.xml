@@ -1,24 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/menu/navigation_rail_menu.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/menu/navigation_rail_menu.xml -->
 <!-- Main NavigationRail menu for tablet and small landscape -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_events"
+            android:checked="false"
+            android:contentDescription="@string/nav_eventi"
+            android:icon="@drawable/ic_event"
+            android:title="@string/nav_eventi" />
+    </group>
 
     <group android:checkableBehavior="single">
 
         <!-- Calendar View - Primary destination -->
         <item
             android:id="@+id/nav_calendar"
-            android:icon="@drawable/ic_view_calendar"
-            android:title="@string/menu_calendar"
+            android:checked="true"
             android:contentDescription="@string/menu_calendar"
-            android:checked="true" />
+            android:icon="@drawable/ic_view_calendar"
+            android:title="@string/menu_calendar" />
 
         <!-- Days List View - Secondary destination -->
         <item
             android:id="@+id/nav_dayslist"
+            android:contentDescription="@string/menu_dayslist"
             android:icon="@drawable/ic_view_list"
-            android:title="@string/menu_dayslist"
-            android:contentDescription="@string/menu_dayslist" />
+            android:title="@string/menu_dayslist" />
 
         <!-- Settings - Tertiary destination -->
         <!--<item

@@ -19,17 +19,17 @@
     </group>-->
 
     <!-- CONTENT GROUP -->
-<!--    <group
-        android:id="@+id/group_content"
+    <group
+        android:id="@+id/group_events"
         android:checkableBehavior="none">
 
         <item
-            android:id="@+id/nav_eventi"
+            android:id="@+id/nav_events"
             android:icon="@drawable/ic_event"
-            android:title="Events"
-            android:contentDescription="Events" />
+            android:title="@string/nav_eventi"
+            android:contentDescription="@string/nav_eventi" />
 
-    </group>-->
+    </group>
 
     <!-- SETTINGS GROUP -->
     <group

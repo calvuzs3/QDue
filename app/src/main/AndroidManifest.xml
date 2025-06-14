@@ -47,6 +47,36 @@
         </activity>
 <!--        android:theme="@style/Theme.QDue.Settings"-->
 
+        <activity
+            android:name=".ui.events.EventsActivity"
+            android:label="@string/nav_eventi"
+            android:theme="@style/Theme.QDue"
+            android:exported="true">
+
+            <!-- Standard activity launch -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+
+            <!-- JSON file handling -->
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+
+            <!-- Alternative JSON handling by extension -->
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="file" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+        </activity>
+
         <!-- UserProfileActivity -->
         <activity
             android:name=".user.ui.UserProfileActivity"

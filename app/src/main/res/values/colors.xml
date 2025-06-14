@@ -1,236 +1,262 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-        <!-- ============================================ -->
-        <!-- MATERIAL YOU + FALLBACK COLOR SYSTEM -->
-        <!-- Optimized for Dynamic Colors with Purple-Blue Fallback -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- MATERIAL YOU + FALLBACK COLOR SYSTEM -->
+    <!-- Optimized for Dynamic Colors with Purple-Blue Fallback -->
+    <!-- ============================================ -->
 
-        <!-- PRIMARY PALETTE - Purple-Blue Gradient (Logo Colors) -->
-        <!-- These will be overridden by Material You on Android 12+ -->
-        <color name="md_theme_light_primary">#6750A4</color>
-        <color name="md_theme_light_onPrimary">#FFFFFF</color>
-        <color name="md_theme_light_primaryContainer">#EADDFF</color>
-        <color name="md_theme_light_onPrimaryContainer">#21005D</color>
+    <!-- PRIMARY PALETTE - Purple-Blue Gradient (Logo Colors) -->
+    <!-- These will be overridden by Material You on Android 12+ -->
+    <color name="md_theme_light_primary">#6750A4</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#EADDFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#21005D</color>
 
-        <color name="md_theme_dark_primary">#D0BCFF</color>
-        <color name="md_theme_dark_onPrimary">#381E72</color>
-        <color name="md_theme_dark_primaryContainer">#4F378B</color>
-        <color name="md_theme_dark_onPrimaryContainer">#EADDFF</color>
+    <color name="md_theme_dark_primary">#D0BCFF</color>
+    <color name="md_theme_dark_onPrimary">#381E72</color>
+    <color name="md_theme_dark_primaryContainer">#4F378B</color>
+    <color name="md_theme_dark_onPrimaryContainer">#EADDFF</color>
 
-        <!-- SECONDARY PALETTE - Complementary Blue-Teal -->
-        <color name="md_theme_light_secondary">#625B71</color>
-        <color name="md_theme_light_onSecondary">#FFFFFF</color>
-        <color name="md_theme_light_secondaryContainer">#E8DEF8</color>
-        <color name="md_theme_light_onSecondaryContainer">#1D192B</color>
+    <!-- SECONDARY PALETTE - Complementary Blue-Teal -->
+    <color name="md_theme_light_secondary">#625B71</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#E8DEF8</color>
+    <color name="md_theme_light_onSecondaryContainer">#1D192B</color>
 
-        <color name="md_theme_dark_secondary">#CCC2DC</color>
-        <color name="md_theme_dark_onSecondary">#332D41</color>
-        <color name="md_theme_dark_secondaryContainer">#4A4458</color>
-        <color name="md_theme_dark_onSecondaryContainer">#E8DEF8</color>
+    <color name="md_theme_dark_secondary">#CCC2DC</color>
+    <color name="md_theme_dark_onSecondary">#332D41</color>
+    <color name="md_theme_dark_secondaryContainer">#4A4458</color>
+    <color name="md_theme_dark_onSecondaryContainer">#E8DEF8</color>
 
-        <!-- TERTIARY PALETTE - Accent Colors -->
-        <color name="md_theme_light_tertiary">#7D5260</color>
-        <color name="md_theme_light_onTertiary">#FFFFFF</color>
-        <color name="md_theme_light_tertiaryContainer">#FFD8E4</color>
-        <color name="md_theme_light_onTertiaryContainer">#31111D</color>
+    <!-- TERTIARY PALETTE - Accent Colors -->
+    <color name="md_theme_light_tertiary">#7D5260</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFD8E4</color>
+    <color name="md_theme_light_onTertiaryContainer">#31111D</color>
 
-        <color name="md_theme_dark_tertiary">#F2B8C5</color>
-        <color name="md_theme_dark_onTertiary">#4A2532</color>
-        <color name="md_theme_dark_tertiaryContainer">#633B48</color>
-        <color name="md_theme_dark_onTertiaryContainer">#FFD8E4</color>
+    <color name="md_theme_dark_tertiary">#F2B8C5</color>
+    <color name="md_theme_dark_onTertiary">#4A2532</color>
+    <color name="md_theme_dark_tertiaryContainer">#633B48</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFD8E4</color>
 
-        <!-- ERROR PALETTE -->
-        <color name="md_theme_light_error">#BA1A1A</color>
-        <color name="md_theme_light_errorContainer">#FFDAD6</color>
-        <color name="md_theme_light_onError">#FFFFFF</color>
-        <color name="md_theme_light_onErrorContainer">#410002</color>
+    <!-- ERROR PALETTE -->
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
 
-        <color name="md_theme_dark_error">#FFB4AB</color>
-        <color name="md_theme_dark_errorContainer">#93000A</color>
-        <color name="md_theme_dark_onError">#690005</color>
-        <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
 
-        <!-- NEUTRAL SURFACES -->
-        <color name="md_theme_light_background">#FFFBFE</color>
-        <color name="md_theme_light_onBackground">#1C1B1F</color>
-        <color name="md_theme_light_surface">#FFFBFE</color>
-        <color name="md_theme_light_onSurface">#1C1B1F</color>
-        <color name="md_theme_light_surfaceVariant">#E7E0EC</color>
-        <color name="md_theme_light_onSurfaceVariant">#49454F</color>
-        <color name="md_theme_light_outline">#79747E</color>
-        <color name="md_theme_light_outlineVariant">#CAC4D0</color>
+    <!-- NEUTRAL SURFACES -->
+    <color name="md_theme_light_background">#FFFBFE</color>
+    <color name="md_theme_light_onBackground">#1C1B1F</color>
+    <color name="md_theme_light_surface">#FFFBFE</color>
+    <color name="md_theme_light_onSurface">#1C1B1F</color>
+    <color name="md_theme_light_surfaceVariant">#E7E0EC</color>
+    <color name="md_theme_light_onSurfaceVariant">#49454F</color>
+    <color name="md_theme_light_outline">#79747E</color>
+    <color name="md_theme_light_outlineVariant">#CAC4D0</color>
 
-        <color name="md_theme_dark_background">#1C1B1F</color>
-        <color name="md_theme_dark_onBackground">#E6E1E5</color>
-        <color name="md_theme_dark_surface">#1C1B1F</color>
-        <color name="md_theme_dark_onSurface">#E6E1E5</color>
-        <color name="md_theme_dark_surfaceVariant">#49454F</color>
-        <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
-        <color name="md_theme_dark_outline">#938F99</color>
-        <color name="md_theme_dark_outlineVariant">#49454F</color>
+    <color name="md_theme_dark_background">#1C1B1F</color>
+    <color name="md_theme_dark_onBackground">#E6E1E5</color>
+    <color name="md_theme_dark_surface">#1C1B1F</color>
+    <color name="md_theme_dark_onSurface">#E6E1E5</color>
+    <color name="md_theme_dark_surfaceVariant">#49454F</color>
+    <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
+    <color name="md_theme_dark_outline">#938F99</color>
+    <color name="md_theme_dark_outlineVariant">#49454F</color>
 
-        <!-- ============================================ -->
-        <!-- SHIFT COLORS - FIXED FOR CONSISTENCY -->
-        <!-- These stay constant regardless of Material You -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- SHIFT COLORS - FIXED FOR CONSISTENCY -->
+    <!-- These stay constant regardless of Material You -->
+    <!-- ============================================ -->
 
-        <!-- PRIMARY SHIFTS (Most Important) -->
-        <!-- Morning Shift - Warm Orange/Amber -->
-        <color name="shift_morning">#FF8F00</color>           <!-- Deep Orange 600 -->
-        <color name="shift_morning_light">#FFCC02</color>     <!-- Amber 600 -->
-        <color name="shift_morning_dark">#E65100</color>      <!-- Deep Orange 900 -->
+    <!-- PRIMARY SHIFTS (Most Important) -->
+    <!-- Morning Shift - Warm Orange/Amber -->
+    <color name="shift_morning">#FF8F00</color>           <!-- Deep Orange 600 -->
+    <color name="shift_morning_light">#FFCC02</color>     <!-- Amber 600 -->
+    <color name="shift_morning_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
-        <!-- Afternoon Shift - Forest Green -->
-        <color name="shift_afternoon">#388E3C</color>         <!-- Green 600 -->
-        <color name="shift_afternoon_light">#66BB6A</color>   <!-- Green 400 -->
-        <color name="shift_afternoon_dark">#1B5E20</color>    <!-- Green 900 -->
+    <!-- Afternoon Shift - Forest Green -->
+    <color name="shift_afternoon">#388E3C</color>         <!-- Green 600 -->
+    <color name="shift_afternoon_light">#66BB6A</color>   <!-- Green 400 -->
+    <color name="shift_afternoon_dark">#1B5E20</color>    <!-- Green 900 -->
 
-        <!-- Night Shift - Deep Blue -->
-        <color name="shift_night">#1976D2</color>             <!-- Blue 600 -->
-        <color name="shift_night_light">#42A5F5</color>       <!-- Blue 400 -->
-        <color name="shift_night_dark">#0D47A1</color>        <!-- Blue 900 -->
+    <!-- Night Shift - Deep Blue -->
+    <color name="shift_night">#1976D2</color>             <!-- Blue 600 -->
+    <color name="shift_night_light">#42A5F5</color>       <!-- Blue 400 -->
+    <color name="shift_night_dark">#0D47A1</color>        <!-- Blue 900 -->
 
-        <!-- SECONDARY SHIFTS -->
-        <!-- Rest/Off - Neutral Gray -->
-        <color name="shift_rest">#757575</color>              <!-- Gray 600 -->
-        <color name="shift_rest_light">#BDBDBD</color>        <!-- Gray 400 -->
-        <color name="shift_rest_dark">#424242</color>         <!-- Gray 800 -->
+    <!-- SECONDARY SHIFTS -->
+    <!-- Rest/Off - Neutral Gray -->
+    <color name="shift_rest">#757575</color>              <!-- Gray 600 -->
+    <color name="shift_rest_light">#BDBDBD</color>        <!-- Gray 400 -->
+    <color name="shift_rest_dark">#424242</color>         <!-- Gray 800 -->
 
-        <!-- Extended Shifts (5-8) -->
-        <color name="shift_fifth">#7B1FA2</color>             <!-- Purple 600 -->
-        <color name="shift_sixth">#D32F2F</color>             <!-- Red 600 -->
-        <color name="shift_seventh">#00796B</color>           <!-- Teal 600 -->
-        <color name="shift_eighth">#F57C00</color>            <!-- Orange 600 -->
+    <!-- Extended Shifts (5-8) -->
+    <color name="shift_fifth">#7B1FA2</color>             <!-- Purple 600 -->
+    <color name="shift_sixth">#D32F2F</color>             <!-- Red 600 -->
+    <color name="shift_seventh">#00796B</color>           <!-- Teal 600 -->
+    <color name="shift_eighth">#F57C00</color>            <!-- Orange 600 -->
 
-        <!-- ============================================ -->
-        <!-- SPECIAL HIGHLIGHTING - HIERARCHICAL -->
-        <!-- Priority: Today > User Shift > Sunday -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- SPECIAL HIGHLIGHTING - HIERARCHICAL -->
+    <!-- Priority: Today > User Shift > Sunday -->
+    <!-- ============================================ -->
 
-        <!-- TODAY - Highest Priority (Golden Yellow) -->
-        <color name="today_background_light">#FFF8E1</color>  <!-- Amber 50 -->
-        <color name="today_background_dark">#FF8F00</color>   <!-- Amber 600 -->
-        <color name="today_border">#FFC107</color>            <!-- Amber 500 -->
-        <color name="on_today_light">#FF6F00</color>          <!-- Amber 700 -->
-        <color name="on_today_dark">#FFFFFF</color>
+    <!-- TODAY - Highest Priority (Golden Yellow) -->
+    <color name="today_background_light">#FFF8E1</color>  <!-- Amber 50 -->
+    <color name="today_background_dark">#FF8F00</color>   <!-- Amber 600 -->
+    <color name="today_border">#FFC107</color>            <!-- Amber 500 -->
+    <color name="on_today_light">#FF6F00</color>          <!-- Amber 700 -->
+    <color name="on_today_dark">#FFFFFF</color>
 
-        <!-- USER SHIFT - High Priority (Emerald Green) -->
-        <color name="user_shift_background_light">#E8F5E9</color>   <!-- Green 50 -->
-        <color name="user_shift_background_dark">#2E7D32</color>    <!-- Green 700 -->
-        <color name="user_shift_border">#4CAF50</color>             <!-- Green 500 -->
-        <color name="on_user_shift_light">#1B5E20</color>           <!-- Green 900 -->
-        <color name="on_user_shift_dark">#C8E6C9</color>            <!-- Green 100 -->
+    <!-- USER SHIFT - High Priority (Emerald Green) -->
+    <color name="user_shift_background_light">#E8F5E9</color>   <!-- Green 50 -->
+    <color name="user_shift_background_dark">#2E7D32</color>    <!-- Green 700 -->
+    <color name="user_shift_border">#4CAF50</color>             <!-- Green 500 -->
+    <color name="on_user_shift_light">#1B5E20</color>           <!-- Green 900 -->
+    <color name="on_user_shift_dark">#C8E6C9</color>            <!-- Green 100 -->
 
-        <!-- SUNDAY - Medium Priority (Soft Red) -->
-        <color name="sunday_background_light">#FFEBEE</color>       <!-- Red 50 -->
-        <color name="sunday_background_dark">#C62828</color>        <!-- Red 700 -->
-        <color name="sunday_border">#F44336</color>                 <!-- Red 500 -->
-        <color name="on_sunday_light">#B71C1C</color>               <!-- Red 900 -->
-        <color name="on_sunday_dark">#FFCDD2</color>                <!-- Red 100 -->
+    <!-- SUNDAY - Medium Priority (Soft Red) -->
+    <color name="sunday_background_light">#FFEBEE</color>       <!-- Red 50 -->
+    <color name="sunday_background_dark">#C62828</color>        <!-- Red 700 -->
+    <color name="sunday_border">#F44336</color>                 <!-- Red 500 -->
+    <color name="on_sunday_light">#B71C1C</color>               <!-- Red 900 -->
+    <color name="on_sunday_dark">#FFCDD2</color>                <!-- Red 100 -->
 
-        <!-- ============================================ -->
-        <!-- COMBINED HIGHLIGHTING COLORS -->
-        <!-- For overlapping states (Today + User Shift, etc.) -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- COMBINED HIGHLIGHTING COLORS -->
+    <!-- For overlapping states (Today + User Shift, etc.) -->
+    <!-- ============================================ -->
 
-        <!-- Today + User Shift (Most Important Combination) -->
-        <color name="today_user_background_light">#FFF3C4</color>   <!-- Mix of amber and green -->
-        <color name="today_user_background_dark">#FF8F00</color>    <!-- Amber dominant -->
-        <color name="today_user_border">#FF9800</color>             <!-- Orange 500 -->
+    <!-- Today + User Shift (Most Important Combination) -->
+    <color name="today_user_background_light">#FFF3C4</color>   <!-- Mix of amber and green -->
+    <color name="today_user_background_dark">#FF8F00</color>    <!-- Amber dominant -->
+    <color name="today_user_border">#FF9800</color>             <!-- Orange 500 -->
 
-        <!-- Today + Sunday -->
-        <color name="today_sunday_background_light">#FFF0E1</color> <!-- Mix of amber and red -->
-        <color name="today_sunday_background_dark">#F57C00</color>  <!-- Orange 600 -->
+    <!-- Today + Sunday -->
+    <color name="today_sunday_background_light">#FFF0E1</color> <!-- Mix of amber and red -->
+    <color name="today_sunday_background_dark">#F57C00</color>  <!-- Orange 600 -->
 
-        <!-- User Shift + Sunday -->
-        <color name="user_sunday_background_light">#F1F8E9</color>  <!-- Light green-red mix -->
-        <color name="user_sunday_background_dark">#689F38</color>   <!-- Light green 700 -->
+    <!-- User Shift + Sunday -->
+    <color name="user_sunday_background_light">#F1F8E9</color>  <!-- Light green-red mix -->
+    <color name="user_sunday_background_dark">#689F38</color>   <!-- Light green 700 -->
 
-        <!-- ============================================ -->
-        <!-- DYNAMIC COLOR ALIASES -->
-        <!-- These will be replaced by Material You when available -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- DYNAMIC COLOR ALIASES -->
+    <!-- These will be replaced by Material You when available -->
+    <!-- ============================================ -->
 
-        <!-- System Color Aliases (for Material You) -->
-        <color name="system_primary">@color/md_theme_light_primary</color>
-        <color name="system_on_primary">@color/md_theme_light_onPrimary</color>
-        <color name="system_surface">@color/md_theme_light_surface</color>
-        <color name="system_on_surface">@color/md_theme_light_onSurface</color>
+    <!-- System Color Aliases (for Material You) -->
+    <color name="system_primary">@color/md_theme_light_primary</color>
+    <color name="system_on_primary">@color/md_theme_light_onPrimary</color>
+    <color name="system_surface">@color/md_theme_light_surface</color>
+    <color name="system_on_surface">@color/md_theme_light_onSurface</color>
 
-        <!-- ============================================ -->
-        <!-- SIMPLIFIED UI COLORS -->
-        <!-- Reduced to essential elements only -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- SIMPLIFIED UI COLORS -->
+    <!-- Reduced to essential elements only -->
+    <!-- ============================================ -->
 
-        <!-- Card and Container Colors -->
-        <color name="card_background">@color/md_theme_light_surface</color>
-        <color name="card_border">@color/md_theme_light_outline</color>
-        <color name="card_elevation">#1A000000</color>              <!-- 10% black for shadow -->
+    <!-- Card and Container Colors -->
+    <color name="card_background">@color/md_theme_light_surface</color>
+    <color name="card_border">@color/md_theme_light_outline</color>
+    <color name="card_elevation">#1A000000</color>              <!-- 10% black for shadow -->
 
-        <!-- Loading and Progress -->
-        <color name="loading_background">@color/md_theme_light_surfaceVariant</color>
-        <color name="loading_progress">@color/md_theme_light_primary</color>
+    <!-- Loading and Progress -->
+    <color name="loading_background">@color/md_theme_light_surfaceVariant</color>
+    <color name="loading_progress">@color/md_theme_light_primary</color>
 
-        <!-- Navigation -->
-        <color name="nav_background">@color/md_theme_light_surface</color>
-        <color name="nav_selected">@color/md_theme_light_primaryContainer</color>
-        <color name="nav_unselected">@color/md_theme_light_onSurfaceVariant</color>
+    <!-- Navigation -->
+    <color name="nav_background">@color/md_theme_light_surface</color>
+    <color name="nav_selected">@color/md_theme_light_primaryContainer</color>
+    <color name="nav_unselected">@color/md_theme_light_onSurfaceVariant</color>
 
-        <!-- ============================================ -->
-        <!-- LEGACY SUPPORT COLORS -->
-        <!-- Kept for backward compatibility, commented for future removal -->
-        <!-- ============================================ -->
+    <!-- ============================================ -->
+    <!-- LEGACY SUPPORT COLORS -->
+    <!-- Kept for backward compatibility, commented for future removal -->
+    <!-- ============================================ -->
 
-        <!-- TODO: Remove these in future versions when Material You is widespread -->
-        <!--
-        <color name="primary_legacy">#6750A4</color>
-        <color name="primary_variant_legacy">#4F378B</color>
-        <color name="secondary_legacy">#625B71</color>
-        <color name="background_legacy">#FFFBFE</color>
-        <color name="surface_legacy">#FFFBFE</color>
-        <color name="error_legacy">#BA1A1A</color>
-        -->
-
-
+    <!-- TODO: Remove these in future versions when Material You is widespread -->
+    <!--
+    <color name="primary_legacy">#6750A4</color>
+    <color name="primary_variant_legacy">#4F378B</color>
+    <color name="secondary_legacy">#625B71</color>
+    <color name="background_legacy">#FFFBFE</color>
+    <color name="surface_legacy">#FFFBFE</color>
+    <color name="error_legacy">#BA1A1A</color>
+    -->
 
 
+    <!--
+    Add these colors to res/values/colors.xml
+    For appbar modify
+    -->
 
-        <!--
-        Add these colors to res/values/colors.xml
-        For appbar modify
-        -->
+    <!-- ============================================ -->
+    <!-- APPBAR GRADIENT COLORS -->
+    <!-- ============================================ -->
 
-        <!-- ============================================ -->
-        <!-- APPBAR GRADIENT COLORS -->
-        <!-- ============================================ -->
+    <!-- Gradient colors for modern AppBar -->
+    <color name="appbar_gradient_center">#7C4DFF</color>     <!-- Purple A200 -->
+    <color name="appbar_gradient_end">#536DFE</color>        <!-- Indigo A200 -->
 
-        <!-- Gradient colors for modern AppBar -->
-        <color name="appbar_gradient_center">#7C4DFF</color>     <!-- Purple A200 -->
-        <color name="appbar_gradient_end">#536DFE</color>        <!-- Indigo A200 -->
+    <!-- Enhanced primary variants for deeper gradient -->
+    <color name="appbar_primary_variant">#5E35B1</color>     <!-- Deep Purple 600 -->
+    <color name="appbar_primary_dark">#4527A0</color>        <!-- Deep Purple 700 -->
 
-        <!-- Enhanced primary variants for deeper gradient -->
-        <color name="appbar_primary_variant">#5E35B1</color>     <!-- Deep Purple 600 -->
-        <color name="appbar_primary_dark">#4527A0</color>        <!-- Deep Purple 700 -->
+    <!-- ============================================ -->
+    <!-- TOOLBAR BRANDING COLORS -->
+    <!-- ============================================ -->
 
-        <!-- ============================================ -->
-        <!-- TOOLBAR BRANDING COLORS -->
-        <!-- ============================================ -->
+    <!-- Logo/badge background colors -->
+    <color name="toolbar_logo_background">#20FFFFFF</color>   <!-- 20% white overlay -->
+    <color name="toolbar_logo_border">#40FFFFFF</color>       <!-- 40% white border -->
+    <color name="toolbar_accent_light">#30FFFFFF</color>      <!-- 30% white accent -->
 
-        <!-- Logo/badge background colors -->
-        <color name="toolbar_logo_background">#20FFFFFF</color>   <!-- 20% white overlay -->
-        <color name="toolbar_logo_border">#40FFFFFF</color>       <!-- 40% white border -->
-        <color name="toolbar_accent_light">#30FFFFFF</color>      <!-- 30% white accent -->
+    <!-- ============================================ -->
+    <!-- APPBAR STATE COLORS -->
+    <!-- ============================================ -->
 
-        <!-- ============================================ -->
-        <!-- APPBAR STATE COLORS -->
-        <!-- ============================================ -->
+    <!-- Elevation and scroll states -->
+    <color name="appbar_elevated_background">#6750A4</color>  <!-- Solid primary when elevated -->
+    <color name="appbar_shadow">#1A000000</color>            <!-- 10% black shadow -->
+    <color name="appbar_divider">#20FFFFFF</color>           <!-- Subtle white divider -->
 
-        <!-- Elevation and scroll states -->
-        <color name="appbar_elevated_background">#6750A4</color>  <!-- Solid primary when elevated -->
-        <color name="appbar_shadow">#1A000000</color>            <!-- 10% black shadow -->
-        <color name="appbar_divider">#20FFFFFF</color>           <!-- Subtle white divider -->
+    <!-- Calendar EVENTS -->
 
-        <!-- Add these dimensions to res/values/dimens.xml -->
+    <!-- Event Type Colors (for left indicator) -->
+    <color name="event_type_general">#2196F3</color>           <!-- Blue -->
+    <color name="event_type_stop_planned">#FF9800</color>      <!-- Orange -->
+    <color name="event_type_stop_unplanned">#F44336</color>    <!-- Red -->
+    <color name="event_type_stop_shortage">#9C27B0</color>     <!-- Purple -->
+    <color name="event_type_maintenance">#4CAF50</color>       <!-- Green -->
+    <color name="event_type_meeting">#00BCD4</color>           <!-- Cyan -->
+    <color name="event_type_training">#FF5722</color>          <!-- Deep Orange -->
 
+    <!-- Priority Colors (for chips) -->
+    <color name="priority_high">#F44336</color>        <!-- Red -->
+    <color name="priority_normal">#FFC107</color>      <!-- Amber -->
+    <color name="priority_low">#E0E0E0</color>         <!-- Light Grey -->
+
+    <!-- Status Colors -->
+    <color name="success_color">#4CAF50</color>        <!-- Green -->
+    <color name="error_color">#F44336</color>          <!-- Red -->
+    <color name="warning_color">#FF9800</color>        <!-- Orange -->
+    <color name="info_color">#2196F3</color>           <!-- Blue -->
+
+
+    <!-- ==================== BACKUPS ==================== -->
+
+    <!-- Backup & Restore Colors -->
+    <color name="backup_success">#4CAF50</color>
+    <color name="backup_warning">#FF9800</color>
+    <color name="backup_error">#F44336</color>
+    <color name="backup_info">#2196F3</color>
+    <color name="backup_accent">#673AB7</color>
 
 </resources>
