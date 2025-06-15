@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  */
 public class JsonSchemaValidator {
 
-    private static final String TAG = "JsonSchemaValidator";
+    private static final String TAG = "EV_JSON_VALID";
 
     // Validation constants
     private static final int MAX_TITLE_LENGTH = 100;

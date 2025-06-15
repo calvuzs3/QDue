@@ -33,9 +33,9 @@ import net.calvuz.qdue.BuildConfig;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.EventPackageManager;
-import net.calvuz.qdue.events.MockEventDao;
 import net.calvuz.qdue.events.backup.ExportManager;
-import net.calvuz.qdue.events.imports.EnhancedImportManager;
+import net.calvuz.qdue.events.data.database.EventsDatabase;
+import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.tests.EventsSystemTester;
@@ -109,6 +109,14 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
 
         // Init Backup
         mBackupIntegration = BackupIntegration.getInstance(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mPackageManager != null) {
+            mPackageManager.cleanup();  // Avoid memory leak
+        }
     }
 
     @Override
@@ -230,7 +238,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
             Log.d(TAG, "Starting enhanced import from file: " + fileUri.toString());
 
             // Show format detection info
-            EnhancedImportManager.FileFormatInfo formatInfo = EnhancedImportManager.detectFileFormat(fileUri);
+            EventsImportManager.FileFormatInfo formatInfo = EventsImportManager.detectFileFormat(fileUri);
             if (!formatInfo.supported) {
                 showError("Unsupported file format: " + formatInfo.description);
                 return;
@@ -265,11 +273,11 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
                         case 0: // Quick import
-                            performImport(fileUri, EnhancedImportManager.createDefaultOptions());
+                            performImport(fileUri, EventsImportManager.createDefaultOptions());
                             break;
                         case 1: // Replace existing
-                            EnhancedImportManager.ImportOptions replaceOptions = EnhancedImportManager.createDefaultOptions();
-                            replaceOptions.conflictResolution = EnhancedImportManager.ImportOptions.ConflictResolution.REPLACE_EXISTING;
+                            EventsImportManager.ImportOptions replaceOptions = EventsImportManager.createDefaultOptions();
+                            replaceOptions.conflictResolution = EventsImportManager.ImportOptions.ConflictResolution.REPLACE_EXISTING;
                             performImport(fileUri, replaceOptions);
                             break;
                         case 2: // Validate first
@@ -293,9 +301,9 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        EnhancedImportManager importManager = new EnhancedImportManager(this);
+        EventsImportManager importManager = new EventsImportManager(this);
 
-        importManager.validateFileOnly(fileUri, new EnhancedImportManager.ValidationCallback() {
+        importManager.validateFileOnly(fileUri, new EventsImportManager.ValidationCallback() {
             @Override
             public void onValidationComplete(JsonSchemaValidator.ValidationResult result, EventPackageJson packageJson) {
                 runOnUiThread(() -> {
@@ -340,7 +348,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
                     .setTitle("Validation Results")
                     .setMessage(message.toString())
                     .setPositiveButton("Import Now", (dialog, which) ->
-                            performImport(fileUri, EnhancedImportManager.createDefaultOptions()))
+                            performImport(fileUri, EventsImportManager.createDefaultOptions()))
                     .setNeutralButton("Import Options", (dialog, which) ->
                             showImportOptionsDialog(fileUri))
                     .setNegativeButton("Cancel", null)
@@ -361,7 +369,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
                     .setTitle("Validation Failed")
                     .setMessage(message.toString())
                     .setPositiveButton("Import Anyway", (dialog, which) -> {
-                        EnhancedImportManager.ImportOptions permissiveOptions = EnhancedImportManager.createPermissiveOptions();
+                        EventsImportManager.ImportOptions permissiveOptions = EventsImportManager.createPermissiveOptions();
                         performImport(fileUri, permissiveOptions);
                     })
                     .setNegativeButton("Cancel", null)
@@ -372,7 +380,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
     /**
      * Perform the actual import with progress feedback
      */
-    private void performImport(Uri fileUri, EnhancedImportManager.ImportOptions options) {
+    private void performImport(Uri fileUri, EventsImportManager.ImportOptions options) {
         // Show progress dialog
         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
         progressDialog.setTitle("Importing Events");
@@ -381,9 +389,9 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        EnhancedImportManager importManager = new EnhancedImportManager(this);
+        EventsImportManager importManager = new EventsImportManager(this);
 
-        importManager.importFromFile(fileUri, options, new EnhancedImportManager.ImportCallback() {
+        importManager.importFromFile(fileUri, options, new EventsImportManager.ImportCallback() {
             @Override
             public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
                 runOnUiThread(() -> {
@@ -403,7 +411,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
             }
 
             @Override
-            public void onComplete(EnhancedImportManager.ImportResult result) {
+            public void onComplete(EventsImportManager.ImportResult result) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     showImportResultDialog(result);
@@ -434,7 +442,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
     /**
      * Show detailed import results
      */
-    private void showImportResultDialog(EnhancedImportManager.ImportResult result) {
+    private void showImportResultDialog(EventsImportManager.ImportResult result) {
         String title = result.success ? "Import Completed" : "Import Failed";
 
         StringBuilder message = new StringBuilder();
@@ -514,7 +522,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
             Button importButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
             importButton.setOnClickListener(v -> {
                 // Create import options from dialog settings
-                EnhancedImportManager.ImportOptions options = createImportOptionsFromDialog(dialogView);
+                EventsImportManager.ImportOptions options = createImportOptionsFromDialog(dialogView);
 
                 Log.d(TAG, "Advanced import options configured: " + getOptionsDescription(options));
 
@@ -529,8 +537,8 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
     /**
      * Create ImportOptions from advanced dialog selections
      */
-    private EnhancedImportManager.ImportOptions createImportOptionsFromDialog(View dialogView) {
-        EnhancedImportManager.ImportOptions options = new EnhancedImportManager.ImportOptions();
+    private EventsImportManager.ImportOptions createImportOptionsFromDialog(View dialogView) {
+        EventsImportManager.ImportOptions options = new EventsImportManager.ImportOptions();
 
         // Validation options
         CheckBox checkboxValidateBeforeImport = dialogView.findViewById(R.id.checkbox_validate_before_import);
@@ -553,11 +561,11 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
         int selectedRadioId = radioGroupConflictResolution.getCheckedRadioButtonId();
 
         if (selectedRadioId == R.id.radio_skip_duplicates) {
-            options.conflictResolution = EnhancedImportManager.ImportOptions.ConflictResolution.SKIP_DUPLICATE;
+            options.conflictResolution = EventsImportManager.ImportOptions.ConflictResolution.SKIP_DUPLICATE;
         } else if (selectedRadioId == R.id.radio_replace_existing) {
-            options.conflictResolution = EnhancedImportManager.ImportOptions.ConflictResolution.REPLACE_EXISTING;
+            options.conflictResolution = EventsImportManager.ImportOptions.ConflictResolution.REPLACE_EXISTING;
         } else if (selectedRadioId == R.id.radio_rename_duplicates) {
-            options.conflictResolution = EnhancedImportManager.ImportOptions.ConflictResolution.RENAME_DUPLICATE;
+            options.conflictResolution = EventsImportManager.ImportOptions.ConflictResolution.RENAME_DUPLICATE;
         }
 
         return options;
@@ -566,7 +574,7 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
     /**
      * Get human-readable description of import options for logging
      */
-    private String getOptionsDescription(EnhancedImportManager.ImportOptions options) {
+    private String getOptionsDescription(EventsImportManager.ImportOptions options) {
         StringBuilder desc = new StringBuilder();
         desc.append("Validation: ").append(options.validateBeforeImport ? "ON" : "OFF");
         desc.append(", Progress: ").append(options.reportProgress ? "ON" : "OFF");
@@ -896,58 +904,39 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
      * Load events from database and update UI
      */
     private void loadEvents() {
-        // TODO: Load events from database via EventDao
-        // For now, create sample data
-        // Using the MockEventDao for testing
-        Log.d(TAG, "Loading events from MockEventDao");
+        // Load events from database via EventDao
+        Log.d(TAG, "Loading events from Room Database");
 
-        try {
-            // Get all events from mock DAO
-            MockEventDao mockDao = new MockEventDao();
-            List<LocalEvent> allEvents = mockDao.getAllEvents();
+        // Use Room database directly
+        new Thread(() -> {
+            try {
+                EventsDatabase database = EventsDatabase.getInstance(this);
+                List<LocalEvent> allEvents = database.eventDao().getAllEvents();
 
-            mEventsList.clear();
+                // Switch back to main thread for UI updates
+                runOnUiThread(() -> {
+                    mEventsList.clear();
 
-            if (allEvents != null && !allEvents.isEmpty()) {
-                mEventsList.addAll(allEvents);
-                Log.d(TAG, "Loaded " + allEvents.size() + " events from storage");
-            } else {
-                Log.d(TAG, "No events found in storage, creating sample event");
-                // Create sample event only if no events exist
-                LocalEvent sampleEvent = new LocalEvent("Sample Event", java.time.LocalDate.now());
-                sampleEvent.setDescription("This is a sample event for testing");
-                mEventsList.add(sampleEvent);
+                    if (allEvents != null && !allEvents.isEmpty()) {
+                        mEventsList.addAll(allEvents);
+                        Log.d(TAG, "Loaded " + allEvents.size() + " events from database");
+                    } else {
+                        Log.d(TAG, "No events found in database");
+                    }
+
+                    mEventsAdapter.notifyDataSetChanged();
+                    updateEmptyState();
+
+                    Log.d(TAG, "Events loaded successfully, total: " + mEventsList.size());
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading events from database", e);
+                runOnUiThread(() -> {
+                    Toast.makeText(EventsActivity.this, "Errore caricamento eventi", Toast.LENGTH_SHORT).show();
+                });
             }
-
-            mEventsAdapter.notifyDataSetChanged();
-            updateEmptyState();
-
-            // Debug info
-            if (allEvents != null) {
-                Log.d(TAG, "Events loaded successfully. Debug info:");
-                Log.d(TAG, mockDao.getDebugInfo());
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error loading events", e);
-            // Fallback: create sample event
-            mEventsList.clear();
-            LocalEvent sampleEvent = new LocalEvent("Sample Event", java.time.LocalDate.now());
-            sampleEvent.setDescription("Error loading events - showing sample");
-            mEventsList.add(sampleEvent);
-            mEventsAdapter.notifyDataSetChanged();
-            updateEmptyState();
-        }
-
-//        mEventsList.clear();
-//
-//        // Sample events for testing
-//        LocalEvent sampleEvent = new LocalEvent("Sample Event", java.time.LocalDate.now());
-//        sampleEvent.setDescription("This is a sample event for testing");
-//        mEventsList.add(sampleEvent);
-//
-//        mEventsAdapter.notifyDataSetChanged();
-//        updateEmptyState();
+        }).start();
     }
 
     /**
@@ -967,8 +956,45 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
      * Show event creation dialog
      */
     private void showCreateEventDialog() {
-        // TODO: Implement event creation dialog or activity
-        Toast.makeText(this, "Event creation coming soon", Toast.LENGTH_SHORT).show();
+        // Simple event creation for now
+        android.widget.EditText editTitle = new android.widget.EditText(this);
+        editTitle.setHint("Event title");
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Create New Event")
+                .setMessage("Enter event title:")
+                .setView(editTitle)
+                .setPositiveButton("Create", (dialog, which) -> {
+                    String title = editTitle.getText().toString().trim();
+                    if (!title.isEmpty()) {
+                        createNewEvent(title);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void createNewEvent(String title) {
+        new Thread(() -> {
+            try {
+                LocalEvent newEvent = new LocalEvent(title, java.time.LocalDate.now());
+                newEvent.setDescription("Created via EventsActivity");
+
+                EventsDatabase database = EventsDatabase.getInstance(this);
+                database.eventDao().insertEvent(newEvent);
+
+                runOnUiThread(() -> {
+                    loadEvents(); // Refresh list
+                    showSuccess("Event created: " + title);
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating event", e);
+                runOnUiThread(() -> {
+                    showError("Error creating event");
+                });
+            }
+        }).start();
     }
 
     /**
@@ -1095,18 +1121,33 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
     }
 
     /**
-     * Clear all local events
+     * Clear all local events Room database
      */
     private void clearAllEvents() {
-        // TODO: Clear events from database
-        mEventsList.clear();
-        mEventsAdapter.notifyDataSetChanged();
-        updateEmptyState();
+        new Thread(() -> {
+            try {
+                EventsDatabase database = EventsDatabase.getInstance(this);
+                database.eventDao().deleteAllEvents();
+//                database.eventDao().deleteAllLocalEvents();
 
-        // TRIGGER AUTO BACKUP AFTER CLEAR
-        BackupIntegration.integrateWithClearAll(this, mEventsList);
+                runOnUiThread(() -> {
+                    mEventsList.clear();
+                    mEventsAdapter.notifyDataSetChanged();
+                    updateEmptyState();
 
-        showSuccess("All events cleared");
+                    // TRIGGER AUTO BACKUP AFTER CLEAR
+                    BackupIntegration.integrateWithClearAll(this, mEventsList);
+
+                    showSuccess("All events cleared");
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error clearing events from database", e);
+                runOnUiThread(() -> {
+                    showError("Error clearing events");
+                });
+            }
+        }).start();
     }
 
     /**
@@ -2237,9 +2278,9 @@ public class EventsActivity extends AppCompatActivity implements EventsAdapter.O
             mEventsAdapter.notifyDataSetChanged();
             updateEmptyState();
 
-            showSuccess("Test events added - check logs for test results");
+            showSuccess("Test events added - check logs for test results\nRefresh for real events");
         } else {
-            Toast.makeText(this, "Tests only available in debug mode", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Tests only available in debug mode", Toast.LENGTH_LONG).show();
         }
     }
 }

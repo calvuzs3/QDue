@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class BackupManager {
 
-    private static final String TAG = "BackupManager";
+    private static final String TAG = "EV_BACKUP_MGR";
 
     // Configuration constants
     private static final String BACKUP_DIR_NAME = "events_backup";

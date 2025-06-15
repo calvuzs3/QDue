@@ -23,6 +23,7 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.calendar.CalendarAdapter;
+import net.calvuz.qdue.ui.events.EventsAdapter;
 import net.calvuz.qdue.ui.shared.BaseAdapter;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 

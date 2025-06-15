@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class RestoreManager {
 
-    private static final String TAG = "RestoreManager";
+    private static final String TAG = "EV_RESTORE_MGR";
 
     // Context and dependencies
     private final Context mContext;

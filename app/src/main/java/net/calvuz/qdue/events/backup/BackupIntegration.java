@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class BackupIntegration {
 
-    private static final String TAG = "BackupIntegration";
+    private static final String TAG = "EV_BACKUP_INT";
 
     // Singleton instance for app-wide access
     private static BackupIntegration sInstance;

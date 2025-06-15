@@ -1,6 +1,6 @@
 /**
  * STEP 3: EventsPreferenceFragment Implementation
- *
+ * <p>
  * Complete settings fragment for events management with
  * manual update functionality and SSL validation
  */
@@ -11,14 +11,18 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Toast;
+
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreferenceCompat;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.EventPackageManager;
 import net.calvuz.qdue.utils.Log;
@@ -59,7 +63,6 @@ public class EventsPreferenceFragment extends PreferenceFragmentCompat
         // Initialize managers
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
         mPackageManager = new EventPackageManager(requireContext());
-//        mPackageManager = new EventPackageManager(requireContext(), getEventDao());
 
         // Find preferences
         findPreferences();
@@ -70,6 +73,14 @@ public class EventsPreferenceFragment extends PreferenceFragmentCompat
         // Update UI state
         updatePreferencesState();
         updateLastUpdateInfo();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mPackageManager != null) {
+            mPackageManager.cleanup();
+        }
     }
 
     @Override
@@ -289,35 +300,10 @@ public class EventsPreferenceFragment extends PreferenceFragmentCompat
 
     /**
      * Get EventDao instance
-     * TODO: Replace with your actual DAO implementation
      */
     private EventDao getEventDao() {
-        // TODO: Return your actual EventDao instance
-        // This could be from Room database, Retrofit service, etc.
-        return new MockEventDao();
+        return EventsDatabase.getInstance(requireContext()).eventDao();
     }
-
-    /**
-     * Mock EventDao for compilation
-     * TODO: Replace with your actual implementation
-     */
-    private static class MockEventDao implements EventDao {
-        @Override
-        public void deleteEventsByPackageId(String packageId) {
-            // Mock implementation
-        }
-
-        @Override
-        public void insertEvent(LocalEvent event) {
-            // Mock implementation
-        }
-
-        @Override
-        public void deleteAllLocalEvents() {
-            // Mock implementation
-        }
-    }
-
 }
 
 // ==================== INTEGRATION INSTRUCTIONS ====================
