@@ -3,7 +3,6 @@ package net.calvuz.qdue.events;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import androidx.preference.PreferenceManager;
@@ -12,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -23,63 +23,52 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager; /**
+import javax.net.ssl.X509TrustManager;
+
+/**
  * Manages external event packages with SSL validation
  */
 public class EventPackageManager {
 
-    private static final String TAG = "EventPackageManager";
+    private static final String TAG = "EV_PKG_MGR";
 
     private final Context mContext;
     private final SharedPreferences mPreferences;
-//    private final EventDao mEventDao; // Your database DAO
+    private final EventDao mEventDao; // database DAO
     private final Gson mGson;
+    private final ExecutorService mExecutor; // Executor
 
     // SSL Configuration
     private static final int CONNECT_TIMEOUT = 15000; // 15 seconds
     private static final int READ_TIMEOUT = 30000;    // 30 seconds
 
-
     // ==================== 4. UPDATED PACKAGE MANAGER CONSTRUCTOR ====================
 
     /**
-     * FIXED: EventPackageManager constructor to use MockEventDao
-     * Replace the existing constructor in EventPackageManager
+     * EventPackageManager constructor, use EventDao
      */
-
-    // And update the member variable declaration:
-    private final MockEventDao mEventDao; // Change from EventDao to MockEventDao
-
-// In EventPackageManager.java, replace constructor with:
     public EventPackageManager(Context context) {
         mContext = context;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mEventDao = new MockEventDao(); // Use mock DAO for now
+        mEventDao = EventsDatabase.getInstance(context).eventDao(); // Use EventDAO
         mGson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
                 .create();
+        mExecutor = Executors.newSingleThreadExecutor();
     }
-
-
-
-//    public EventPackageManager(Context context, EventDao eventDao) {
-//        mContext = context;
-//        mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-//        mEventDao = eventDao;
-//        mGson = new GsonBuilder()
-//                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-//                .create();
-//    }
 
     /**
      * Manual update from external URL with SSL validation
@@ -93,28 +82,30 @@ public class EventPackageManager {
         // Validate SSL setting
         boolean sslValidation = mPreferences.getBoolean("events_ssl_validation", true);
 
-        // Execute in background thread
-        new AsyncTask<Void, Void, UpdateResult>() {
-            @Override
-            protected UpdateResult doInBackground(Void... voids) {
-                try {
-                    return downloadAndParsePackage(url, packageId, sslValidation);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error updating from URL: " + e.getMessage(), e);
-                    return new UpdateResult(false, "Errore di connessione: " + e.getMessage());
-                }
-            }
+        // Execute in background thread using ExecutorService
+        mExecutor.execute(() -> {
+            try {
+                UpdateResult result = downloadAndParsePackage(url, packageId, sslValidation);
 
-            @Override
-            protected void onPostExecute(UpdateResult result) {
-                if (result.success) {
-                    callback.onSuccess(result.message);
-                    updateLastUpdateInfo(packageId);
-                } else {
-                    callback.onError(result.message);
-                }
+                // Switch back to main thread for callback
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                    if (result.success) {
+                        callback.onSuccess(result.message);
+                        updateLastUpdateInfo(packageId);
+                    } else {
+                        callback.onError(result.message);
+                    }
+                });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating from URL: " + e.getMessage(), e);
+
+                // Switch back to main thread for error callback
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                    callback.onError("Errore di connessione: " + e.getMessage());
+                });
             }
-        }.execute();
+        });
     }
 
     /**
@@ -209,24 +200,30 @@ public class EventPackageManager {
      * Import events from parsed package
      */
     private int importEventsFromPackage(EventPackageJson packageJson, String sourceUrl) {
-        int importedCount = 0;
         String packageId = packageJson.package_info.id;
         String packageVersion = packageJson.package_info.version;
 
-        // Remove existing events from this package
-        mEventDao.deleteEventsByPackageId(packageId);
+        try {
+            // Remove existing events from this package (Room operation)
+            mEventDao.deleteEventsByPackageId(packageId);
 
-        for (EventPackageJson.EventJson eventJson : packageJson.events) {
-            try {
-                LocalEvent event = convertJsonToEvent(eventJson, packageId, packageVersion, sourceUrl);
-                mEventDao.insertEvent(event);
-                importedCount++;
-            } catch (Exception e) {
-                Log.w(TAG, "Error importing event: " + eventJson.title + " Exception: " + e.getMessage());
+            int importedCount = 0;
+            for (EventPackageJson.EventJson eventJson : packageJson.events) {
+                try {
+                    LocalEvent event = convertJsonToEvent(eventJson, packageId, packageVersion, sourceUrl);
+                    mEventDao.insertEvent(event); // Room operation
+                    importedCount++;
+                } catch (Exception e) {
+                    Log.w(TAG, "Error importing event: " + eventJson.title + " Exception: " + e.getMessage());
+                }
             }
-        }
 
-        return importedCount;
+            return importedCount;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error in importEventsFromPackage", e);
+            return 0;
+        }
     }
 
     /**
@@ -312,16 +309,22 @@ public class EventPackageManager {
     @SuppressLint("TrustAllX509TrustManager")
     private void trustAllCertificates(HttpsURLConnection connection) {
         try {
-            TrustManager[] trustAllCerts = new TrustManager[] {
+            TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
-                        public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
                     }
             };
 
             SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            sc.init(null, trustAllCerts, new SecureRandom());
             connection.setSSLSocketFactory(sc.getSocketFactory());
             connection.setHostnameVerifier((hostname, session) -> true);
 
@@ -330,10 +333,23 @@ public class EventPackageManager {
         }
     }
 
+    // ==================== UTILITIES ===================================
+
+    /**
+     * Cleanup resources when manager is no longer needed
+     */
+    public void cleanup() {
+        if (mExecutor != null && !mExecutor.isShutdown()) {
+            mExecutor.shutdown();
+            Log.d(TAG, "ExecutorService shutdown");
+        }
+    }
+
     // ==================== INTERFACES AND CALLBACKS ====================
 
     public interface UpdateCallback {
         void onSuccess(String message);
+
         void onError(String error);
     }
 

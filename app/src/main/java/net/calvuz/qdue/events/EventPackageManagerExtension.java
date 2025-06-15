@@ -22,7 +22,7 @@ import java.time.format.DateTimeParseException;
  */
 public class EventPackageManagerExtension {
 
-    private static final String TAG = "EventPackageManagerExt";
+    private static final String TAG = "EV_PKG_MGR_EXT";
 
     /**
      * Callback interface for import operations

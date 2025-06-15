@@ -2,11 +2,12 @@ package net.calvuz.qdue.events.tests;
 
 import android.content.Context;
 
+import net.calvuz.qdue.events.EventDao;
 import net.calvuz.qdue.events.EventPackageManagerExtension;
-import net.calvuz.qdue.events.MockEventDao;
 import net.calvuz.qdue.events.backup.BackupManager;
 import net.calvuz.qdue.events.backup.ExportManager;
 import net.calvuz.qdue.events.backup.RestoreManager;
+import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -28,7 +29,7 @@ import java.util.Map;
  */
 public class EventsSystemTester {
 
-    private static final String TAG = "EventsSystemTester";
+    private static final String TAG = "EV_TEST";
 
     /**
      * Create test events for debugging
@@ -153,8 +154,8 @@ public class EventsSystemTester {
                             Log.d(TAG, "Import test successful: " + message);
 
                             // Verify imported events
-                            MockEventDao mockDao = new MockEventDao();
-                            List<LocalEvent> importedEvents = mockDao.getAllEvents();
+                            EventDao eventDao = EventsDatabase.getInstance(context).eventDao();
+                            List<LocalEvent> importedEvents = eventDao.getAllEvents();
                             Log.d(TAG, "Verification: found " + importedEvents.size() + " events after import");
 
                             // Cleanup
@@ -246,51 +247,46 @@ public class EventsSystemTester {
         // Test 2: Backup/restore cycle
         testBackupRestore(context, testEvents);
 
-        // Test 3: Mock DAO operations
-        testMockDao(testEvents);
+        // Test 3: Event DAO operations
+        testRoomDao(context, testEvents);
 
         Log.d(TAG, "=== EVENTS SYSTEM TESTS COMPLETED ===");
     }
 
     /**
-     * Test MockEventDao operations
+     * Test Room DAO operations
      */
-    public static void testMockDao(List<LocalEvent> testEvents) {
-        Log.d(TAG, "Testing MockEventDao operations");
+    public static void testRoomDao(Context context, List<LocalEvent> testEvents) {
+        Log.d(TAG, "Testing Room DAO operations");
 
-        MockEventDao dao = new MockEventDao();
+        EventDao dao = EventsDatabase.getInstance(context).eventDao();
 
-        // Test insertions
-        for (LocalEvent event : testEvents) {
-            dao.insertEvent(event);
-        }
+        // Run tests in background thread (Room requirement)
+        new Thread(() -> {
+            try {
+                // Test insertions
+                for (LocalEvent event : testEvents) {
+                    dao.insertEvent(event);
+                }
 
-        // Test retrieval
-        List<LocalEvent> allEvents = dao.getAllEvents();
-        Log.d(TAG, "DAO test: inserted " + testEvents.size() + ", retrieved " + allEvents.size());
+                // Test retrieval
+                List<LocalEvent> allEvents = dao.getAllEvents();
+                Log.d(TAG, "DAO test: inserted " + testEvents.size() + ", retrieved " + allEvents.size());
 
-        // Test date filtering
-        LocalDate today = LocalDate.now();
-        List<LocalEvent> todayEvents = dao.getEventsForDate(today);
-        Log.d(TAG, "DAO test: found " + todayEvents.size() + " events for today");
+                // Test date filtering
+                LocalDate today = LocalDate.now();
+                List<LocalEvent> todayEvents = dao.getEventsForDate(today.atStartOfDay(), today.atTime(23, 59));
+                Log.d(TAG, "DAO test: found " + todayEvents.size() + " events for today");
 
-        // Test package filtering
-        if (!testEvents.isEmpty()) {
-            LocalEvent firstEvent = testEvents.get(0);
-            firstEvent.setPackageId("test_package");
-            dao.updateEvent(firstEvent);
+                // Test cleanup
+                dao.deleteAllLocalEvents();
+                List<LocalEvent> finalEvents = dao.getAllEvents();
+                Log.d(TAG, "DAO test: " + finalEvents.size() + " events after cleanup (should be 0)");
 
-            dao.deleteEventsByPackageId("test_package");
-            List<LocalEvent> remainingEvents = dao.getAllEvents();
-            Log.d(TAG, "DAO test: " + remainingEvents.size() + " events remaining after package deletion");
-        }
-
-        // Test cleanup
-        dao.deleteAllLocalEvents();
-        List<LocalEvent> finalEvents = dao.getAllEvents();
-        Log.d(TAG, "DAO test: " + finalEvents.size() + " events after cleanup (should be 0)");
-
-        Log.d(TAG, dao.getDebugInfo());
+            } catch (Exception e) {
+                Log.e(TAG, "Room DAO test failed", e);
+            }
+        }).start();
     }
 
     /**

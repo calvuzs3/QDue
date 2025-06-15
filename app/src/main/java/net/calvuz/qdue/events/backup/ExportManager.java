@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class ExportManager {
 
-    private static final String TAG = "ExportManager";
+    private static final String TAG = "EV_EXPORT_MGR";
 
     // Context and dependencies
     private final Context mContext;

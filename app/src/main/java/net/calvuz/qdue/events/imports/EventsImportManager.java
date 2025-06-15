@@ -10,9 +10,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import net.calvuz.qdue.events.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.EventPackageManager;
-import net.calvuz.qdue.events.MockEventDao;
+import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -48,14 +49,14 @@ import javax.net.ssl.X509TrustManager;
  * - Rollback capabilities on import failure
  * - Retrocompatible with existing EventsActivity integration
  */
-public class EnhancedImportManager {
+public class EventsImportManager {
 
-    private static final String TAG = "EnhancedImportManager";
+    private static final String TAG = "EV_IMPORT_MGR";
 
     private final Context mContext;
     private final Gson mGson;
     private final SharedPreferences mPreferences;
-    private final MockEventDao mEventDao;
+    private final EventDao mEventDao;
 
     // SSL Configuration (inherited from EventPackageManager)
     private static final int CONNECT_TIMEOUT = 15000; // 15 seconds
@@ -154,10 +155,10 @@ public class EnhancedImportManager {
         void onValidationDuringDownload(JsonSchemaValidator.ValidationResult preliminaryResult);
     }
 
-    public EnhancedImportManager(Context context) {
+    public EventsImportManager(Context context) {
         mContext = context;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mEventDao = new MockEventDao();
+        mEventDao = EventsDatabase.getInstance(mContext).eventDao(); // Room DAO
         mGson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
                 .setLenient() // Allow more flexible parsing
@@ -462,7 +463,7 @@ public class EnhancedImportManager {
             Log.d(TAG, "Validation skipped by user option");
         }
 
-        // Step 3: Process events with MockEventDao integration
+        // Step 3: Process events with EventDao integration
         ImportResult result = processEventsWithDao(packageJson, sourceDescription, options, callback);
         result = new ImportResult(result.success, result.message, result.totalEvents,
                 result.importedEvents, result.skippedEvents, result.errorEvents,
@@ -472,7 +473,7 @@ public class EnhancedImportManager {
     }
 
     /**
-     * Process events with MockEventDao integration and conflict resolution
+     * Process events with EventDao integration and conflict resolution
      */
     private ImportResult processEventsWithDao(EventPackageJson packageJson, String sourceUrl,
                                               ImportOptions options, ImportCallback callback) {
@@ -540,7 +541,7 @@ public class EnhancedImportManager {
                 // Additional business logic validation
                 validateEventBusinessRules(localEvent, warnings);
 
-                // Save event using MockEventDao
+                // Save event using EventDao
                 if (eventExists && options.conflictResolution == ImportOptions.ConflictResolution.REPLACE_EXISTING) {
                     mEventDao.updateEvent(localEvent);
                 } else {
@@ -663,7 +664,7 @@ public class EnhancedImportManager {
     /**
      * Enhanced unique ID generation with DAO check
      */
-    private String generateUniqueEventId(String packageId, String originalEventId, MockEventDao dao) {
+    private String generateUniqueEventId(String packageId, String originalEventId, EventDao dao) {
         int counter = 1;
         String newId;
 
@@ -922,7 +923,7 @@ public class EnhancedImportManager {
      */
     public String getDebugInfo() {
         StringBuilder info = new StringBuilder();
-        info.append("EnhancedImportManager Debug Info:\n");
+        info.append("EventsImportManager Debug Info:\n");
         info.append("• SSL Validation: ").append(mPreferences.getBoolean("events_ssl_validation", true)).append("\n");
         info.append("• DAO Events Count: ").append(mEventDao.getAllEvents().size()).append("\n");
         info.append("• Available Memory: ").append(Runtime.getRuntime().freeMemory() / 1024 / 1024).append(" MB\n");

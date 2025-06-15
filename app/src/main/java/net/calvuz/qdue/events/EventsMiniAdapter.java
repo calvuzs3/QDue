@@ -1,12 +1,5 @@
 package net.calvuz.qdue.events;
 
-/**
- * COMPLETE EventsMiniAdapter Implementation
- *
- * Mini adapter for displaying events within day rows in DaysList view
- */
-
-
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
@@ -32,7 +25,7 @@ import java.util.List;
  */
 public class EventsMiniAdapter extends RecyclerView.Adapter<EventsMiniAdapter.EventMiniViewHolder> {
 
-    private static final String TAG = "EventsMiniAdapter";
+    private static final String TAG = "EV_MINI_ADAPTER";
 
     private final Context mContext;
     private final List<LocalEvent> mEvents;
