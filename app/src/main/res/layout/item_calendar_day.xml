@@ -1,52 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/layout/item_calendar_day.xml -->
-<!-- Fully loaded state for calendar day cells -->
+<!-- Calendar day cell layout with enhanced events indicators -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="52dp"
-    android:layout_margin="2dp"
-    app:cardElevation="2dp"
-    app:cardCornerRadius="8dp"
-    app:cardBackgroundColor="?attr/colorSurface"
-    android:foreground="?attr/selectableItemBackground">
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/calendar_day_margin"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardCornerRadius="@dimen/calendar_day_corner_radius"
+    app:cardElevation="0dp"
+    app:strokeWidth="0.5dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <RelativeLayout
-        android:id="@+id/card_day_background"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
-<!--        android:padding="8dp"-->
+        android:layout_height="@dimen/calendar_day_size"
+        android:padding="@dimen/calendar_day_padding">
 
-        <!-- Day number -->
+        <!-- NEW: Event indicators container (left side) -->
+        <LinearLayout
+            android:id="@+id/event_indicators_container"
+            android:layout_width="8dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
+
+            <!-- Event type indicator bar (colored left border) -->
+            <View
+                android:id="@+id/event_type_indicator"
+                android:layout_width="3dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/event_type_indicator_bar"
+                android:visibility="gone"
+                tools:background="#F44336"
+                tools:visibility="visible" />
+
+            <!-- Priority badge (on top of type indicator) -->
+            <View
+                android:id="@+id/event_priority_badge"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginStart="1dp"
+                android:background="@drawable/event_priority_badge"
+                android:visibility="gone"
+                tools:background="@drawable/event_priority_badge"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- Day number (centered, with space for indicators) -->
         <TextView
             android:id="@+id/tv_day_number"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:textSize="14sp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_toEndOf="@id/event_indicators_container"
+            android:layout_marginStart="4dp"
+            android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?attr/colorOnSurface"
-            android:textAppearance="@style/TextAppearance.QDue.LabelLarge"
+            android:textStyle="bold"
+            android:gravity="center"
             tools:text="15" />
 
-        <!-- Today indicator (circle background for today) -->
-        <View
-            android:id="@+id/today_indicator"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="-4dp"
-            android:layout_marginTop="-4dp"
-            android:background="@drawable/today_indicator_circle"
-            android:visibility="gone" />
-
-        <!-- Shift indicator -->
+        <!-- Shift indicator (below day number) -->
         <TextView
-            android:id="@+id/tv_shift_indicator"
+            android:id="@+id/shift_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_day_number"
@@ -61,16 +84,22 @@
             tools:text="M"
             tools:visibility="visible" />
 
-        <!-- Events indicator (small dot for events) -->
-        <View
-            android:id="@+id/events_indicator"
-            android:layout_width="6dp"
-            android:layout_height="6dp"
+        <!-- Events count indicator (bottom right corner) -->
+        <TextView
+            android:id="@+id/tv_events_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="4dp"
-            android:background="@drawable/events_indicator_dot"
-            android:visibility="gone" />
+            android:layout_margin="2dp"
+            android:background="@drawable/events_count_badge"
+            android:textSize="8sp"
+            android:textColor="?attr/colorOnPrimary"
+            android:paddingHorizontal="3dp"
+            android:paddingVertical="1dp"
+            android:visibility="gone"
+            tools:text="3"
+            tools:visibility="visible" />
 
     </RelativeLayout>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/item_dayslist_row.xml -->
-<!-- UPDATED: Added events indicator while keeping original structure -->
+<!-- res/layout/item_simple_dayslist_row.xml -->
+<!-- ROLLBACK IMMEDIATO: Layout funzionante che sappiamo che funziona -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,7 +12,7 @@
     android:background="?attr/selectableItemBackground"
     tools:ignore="RtlHardcoded">
 
-    <!-- Original row content - UNCHANGED -->
+    <!-- Row content originale - ESATTAMENTE come prima quando funzionava -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,14 +25,22 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:minWidth="18dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="center"
+            tools:text="15"/>
 
         <TextView
             android:id="@+id/twday"
             android:layout_width="80dp"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:layout_weight="6"/>
+            android:layout_weight="6"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:paddingStart="8dp"
+            tools:text="LUN"/>
 
         <TextView
             android:id="@+id/tt1"
@@ -41,7 +49,10 @@
             android:minWidth="35dp"
             android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="AB"/>
 
         <TextView
             android:id="@+id/tt2"
@@ -50,7 +61,10 @@
             android:minWidth="35dp"
             android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="CD"/>
 
         <TextView
             android:id="@+id/tt3"
@@ -59,7 +73,10 @@
             android:minWidth="35dp"
             android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="EF"/>
 
         <TextView
             android:id="@+id/ttR"
@@ -68,32 +85,36 @@
             android:minWidth="35dp"
             android:layout_gravity="end"
             android:gravity="center"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="GH"/>
 
     </LinearLayout>
 
-    <!-- NEW: Events indicator -->
+    <!-- Events indicator - SEMPLICE come prima -->
     <TextView
         android:id="@+id/tv_events_indicator"
-        style="@style/TextAppearance.QDue.LabelSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="6dp"
         android:paddingVertical="2dp"
+        android:textSize="10sp"
+        android:textColor="?attr/colorPrimary"
         android:background="@drawable/events_indicator_background"
         android:visibility="gone"
         tools:text="2 eventi"
         tools:visibility="visible" />
 
-    <!-- Original separator - UNCHANGED -->
+    <!-- Separator originale -->
     <View
         android:id="@+id/item_row_separator"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/divider_height"
+        android:layout_height="1dp"
         android:background="?attr/colorOutline" />
 
 </LinearLayout>

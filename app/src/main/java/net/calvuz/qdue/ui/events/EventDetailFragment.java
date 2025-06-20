@@ -28,6 +28,9 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
+import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsOperationListener;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -37,7 +40,7 @@ import java.util.Map;
 
 /**
  * EventDetailFragment - Display full screen event details
- *
+ * <p>
  * Features:
  * - Google Calendar-like event display
  * - Smart custom properties mapping
@@ -45,7 +48,7 @@ import java.util.Map;
  * - Status calculation (Past/Current/Upcoming)
  * - Duration formatting
  * - Action handling (edit, share, calendar integration)
- *
+ * <p>
  * Usage:
  * Bundle args = new Bundle();
  * args.putString(ARG_EVENT_ID, eventId);
@@ -55,6 +58,9 @@ public class EventDetailFragment extends Fragment {
 
     private static final String TAG = "EventDetailFragment";
     private static final String ARG_EVENT_ID = "event_id";
+
+    // Interfaces
+    private static EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface = null;
 
     // Date formatters for display
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -134,6 +140,14 @@ public class EventDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        // Check interface implementation
+        if (getActivity() instanceof EventsDatabaseOperationsInterface) {
+            mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+            Log.d(TAG, "EventsDatabaseOperationsInterface initialized successfully");
+        } else {
+            Log.e(TAG, "Activity does not implement EventsDatabaseOperationsInterface");
+        }
 
         if (getArguments() != null) {
             mEventId = getArguments().getString("eventId");
@@ -576,10 +590,14 @@ public class EventDetailFragment extends Fragment {
      */
     private String getStatusText(EventStatus status) {
         switch (status) {
-            case UPCOMING: return "In Programma";
-            case CURRENT: return "In Corso";
-            case PAST: return "Terminato";
-            default: return "Sconosciuto";
+            case UPCOMING:
+                return "In Programma";
+            case CURRENT:
+                return "In Corso";
+            case PAST:
+                return "Terminato";
+            default:
+                return "Sconosciuto";
         }
     }
 
@@ -588,10 +606,14 @@ public class EventDetailFragment extends Fragment {
      */
     private int getStatusIcon(EventStatus status) {
         switch (status) {
-            case UPCOMING: return android.R.drawable.ic_menu_recent_history;
-            case CURRENT: return android.R.drawable.ic_media_play;
-            case PAST: return android.R.drawable.ic_menu_agenda;
-            default: return android.R.drawable.ic_dialog_info;
+            case UPCOMING:
+                return android.R.drawable.ic_menu_recent_history;
+            case CURRENT:
+                return android.R.drawable.ic_media_play;
+            case PAST:
+                return android.R.drawable.ic_menu_agenda;
+            default:
+                return android.R.drawable.ic_dialog_info;
         }
     }
 
@@ -654,12 +676,18 @@ public class EventDetailFragment extends Fragment {
      */
     private String formatEventType(String eventType) {
         switch (eventType.toUpperCase()) {
-            case "STOP_PLANNED": return "Fermata Programmata";
-            case "STOP_EMERGENCY": return "Fermata Emergenza";
-            case "MAINTENANCE": return "Manutenzione";
-            case "MEETING": return "Riunione";
-            case "GENERAL": return "Generale";
-            default: return eventType.replace("_", " ");
+            case "STOP_PLANNED":
+                return "Fermata Programmata";
+            case "STOP_EMERGENCY":
+                return "Fermata Emergenza";
+            case "MAINTENANCE":
+                return "Manutenzione";
+            case "MEETING":
+                return "Riunione";
+            case "GENERAL":
+                return "Generale";
+            default:
+                return eventType.replace("_", " ");
         }
     }
 
@@ -668,10 +696,14 @@ public class EventDetailFragment extends Fragment {
      */
     private String formatPriority(String priority) {
         switch (priority.toUpperCase()) {
-            case "HIGH": return "Alta";
-            case "NORMAL": return "Normale";
-            case "LOW": return "Bassa";
-            default: return priority;
+            case "HIGH":
+                return "Alta";
+            case "NORMAL":
+                return "Normale";
+            case "LOW":
+                return "Bassa";
+            default:
+                return priority;
         }
     }
 
@@ -734,9 +766,41 @@ public class EventDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Handle delete event action - use existing interface pattern
+     */
     private void handleDeleteEvent() {
-        Toast.makeText(getContext(), "Elimina evento - TODO", Toast.LENGTH_SHORT).show();
-        // TODO: Show confirmation dialog and delete event
+        if (mEvent == null || mEvent.getId() == null) {
+            Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Use existing interface pattern like other operations
+        if (mEventsDatabaseOperationsInterface == null) {
+            Log.e(TAG, "Events database operations interface not set");
+            return;
+        }
+
+        // Using DEPENDENCY INJECTION
+        mEventsDatabaseOperationsInterface.triggerEventDeletion(mEvent, new EventDeletionListener() {
+            @Override
+            public void onDeletionRequested() {
+                // Navigate back immediately after deletion is requested
+                navigateBackToList();
+            }
+
+            @Override
+            public void onDeletionCancelled() {
+                // Stay on detail page if deletion was cancelled
+                // Activity will handle any necessary UI updates
+            }
+
+            @Override
+            public void onDeletionCompleted(boolean success, String message) {
+                // This callback might not be needed since we already navigated back
+                // Activity handles the final state
+            }
+        });
     }
 
     private void handleCopyDetails() {
@@ -796,6 +860,8 @@ public class EventDetailFragment extends Fragment {
         return text.toString();
     }
 
+    // ============================= UTILS =============================
+
     /**
      * Show error message and navigate back
      */
@@ -803,6 +869,20 @@ public class EventDetailFragment extends Fragment {
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
         if (getActivity() != null) {
             getActivity().onBackPressed();
+        }
+    }
+
+    /**
+     * Navigate back to events list
+     */
+    private void navigateBackToList() {
+        try {
+            Navigation.findNavController(requireView()).popBackStack();
+        } catch (Exception e) {
+            Log.e(TAG, "Error navigating back: " + e.getMessage());
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
         }
     }
 

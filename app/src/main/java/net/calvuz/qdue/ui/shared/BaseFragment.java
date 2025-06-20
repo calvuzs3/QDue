@@ -21,14 +21,21 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
+import net.calvuz.qdue.events.data.database.EventsDatabase;
+import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,6 +61,12 @@ public abstract class BaseFragment extends Fragment
 
     // TAG
     private static final String TAG = "BaseFragment";
+
+    // MOCK waiting for a stable integration
+    // NEW: Events data support
+    protected Map<LocalDate, List<LocalEvent>> mEventsCache = new ConcurrentHashMap<>();
+    protected final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
+    protected EventsDatabase mEventsDatabase;
 
     // DEBUG it is for initial scrolling bug. now resolved
     protected boolean mIsInitialScrolling = false;
@@ -156,6 +169,12 @@ public abstract class BaseFragment extends Fragment
 
         // Initialize centralized data manager
         mDataManager = CalendarDataManager.getInstance();
+
+        // MOCK
+        // Initialize events database
+        mEventsDatabase = EventsDatabase.getInstance(requireContext());
+        // Start initial events load
+        loadEventsForCurrentPeriod();
     }
 
     /**
@@ -1529,16 +1548,16 @@ public abstract class BaseFragment extends Fragment
         }, 200); // Increased delay to ensure loader visibility
     }
 
-    /**
-     * Add a month to the cache by generating its view items.
-     * DEBUG: made protected insteadof private
-     *
-     * @param monthDate the month to add
-     */
-    protected void addMonthToCache(LocalDate monthDate) {
-        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
-        mItemsCache.addAll(monthItems);
-    }
+//    /**
+//     * Add a month to the cache by generating its view items.
+//     * DEBUG: made protected insteadof private
+//     *
+//     * @param monthDate the month to add
+//     */
+//    protected void addMonthToCache(LocalDate monthDate) {
+//        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
+//        mItemsCache.addAll(monthItems);
+//    }
 
     /**
      * Generate view items for a specific month using the fragment-specific converter.
@@ -2047,4 +2066,192 @@ public abstract class BaseFragment extends Fragment
      * Set adapter, an extension of BaseAdapter
      */
     protected abstract void setFragmentAdapter(BaseAdapter adapter);
+
+
+    // ==================== EVENTS LOADING METHODS ====================
+
+    /**
+     * Load events for the current visible period (non-blocking).
+     * This method runs in background and updates UI when complete.
+     */
+    /**
+     * Load events for the current visible period (non-blocking).
+     * This method runs in background and updates UI when complete.
+     */
+    protected void loadEventsForCurrentPeriod() {
+        if (mIsLoadingEvents.get()) {
+            Log.d(TAG, "Events already loading, skipping");
+            return;
+        }
+
+        mIsLoadingEvents.set(true);
+
+        // Calculate date range for current cache
+        LocalDate startDate = getCurrentPeriodStart();
+        LocalDate endDate = getCurrentPeriodEnd();
+
+        Log.d(TAG, "Loading events for period: " + startDate + " to " + endDate);
+
+        // Load events asynchronously
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                // Convert LocalDate to LocalDateTime for DAO method
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+                return mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading events from database", e);
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            // Process events into date-grouped map
+            Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(events);
+
+            // Update cache on main thread
+            mMainHandler.post(() -> {
+                updateEventsCache(eventsMap);
+                notifyEventsDataChanged();
+                mIsLoadingEvents.set(false);
+            });
+        }).exceptionally(throwable -> {
+            Log.e(TAG, "Failed to load events", throwable);
+            mMainHandler.post(() -> {
+                mIsLoadingEvents.set(false);
+            });
+            return null;
+        });
+    }
+
+    /**
+     * Update events cache and notify adapter.
+     */
+    protected void updateEventsCache(Map<LocalDate, List<LocalEvent>> newEventsMap) {
+        if (newEventsMap != null) {
+            mEventsCache.putAll(newEventsMap);
+            Log.d(TAG, "Updated events cache with " + newEventsMap.size() + " dates");
+        }
+    }
+
+    /**
+     * Group events by their start date for efficient lookup.
+     */
+    private Map<LocalDate, List<LocalEvent>> groupEventsByDate(List<LocalEvent> events) {
+        Map<LocalDate, List<LocalEvent>> grouped = new HashMap<>();
+
+        for (LocalEvent event : events) {
+            LocalDate eventDate = event.getStartDate();
+            grouped.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
+        }
+
+        return grouped;
+    }
+
+    /**
+     * Get start date of current cached period.
+     */
+    private LocalDate getCurrentPeriodStart() {
+        if (mCurrentDate != null) {
+            return mCurrentDate.minusMonths(QD_MONTHS_CACHE_RADIUS);
+        }
+        return LocalDate.now().minusMonths(QD_MONTHS_CACHE_RADIUS);
+    }
+
+    /**
+     * Get end date of current cached period.
+     */
+    private LocalDate getCurrentPeriodEnd() {
+        if (mCurrentDate != null) {
+            return mCurrentDate.plusMonths(QD_MONTHS_CACHE_RADIUS);
+        }
+        return LocalDate.now().plusMonths(QD_MONTHS_CACHE_RADIUS);
+    }
+
+    /**
+     * Notify subclasses that events data has changed.
+     * Subclasses should override this to update their adapters.
+     */
+    protected void notifyEventsDataChanged() {
+        // Default implementation - subclasses should override
+        Log.d(TAG, "Events data changed - " + mEventsCache.size() + " dates with events");
+    }
+
+    /**
+     * Get events for a specific date.
+     * @param date The date to get events for
+     * @return List of events for the date, or empty list if none
+     */
+    protected List<LocalEvent> getEventsForDate(LocalDate date) {
+        List<LocalEvent> events = mEventsCache.get(date);
+        return events != null ? events : new ArrayList<>();
+    }
+
+    /**
+     * Check if a date has any events.
+     * @param date The date to check
+     * @return true if the date has events
+     */
+    protected boolean hasEventsForDate(LocalDate date) {
+        return mEventsCache.containsKey(date) && !mEventsCache.get(date).isEmpty();
+    }
+
+    // ==================== ENHANCED CACHE LOADING ====================
+
+    /**
+     * Enhanced cache loading that also loads events for new periods.
+     */
+    //@Override
+    protected void addMonthToCache(LocalDate monthDate) {
+        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
+        mItemsCache.addAll(monthItems);
+        //addMonthToCache(monthDate);
+
+        // Load events for the new month
+        loadEventsForMonth(monthDate);
+    }
+
+    /**
+     * Load events for a specific month.
+     */
+    protected void loadEventsForMonth(LocalDate monthDate) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                LocalDate startOfMonth = monthDate.withDayOfMonth(1);
+                LocalDate endOfMonth = monthDate.withDayOfMonth(monthDate.lengthOfMonth());
+
+                // Convert to LocalDateTime for DAO method
+                LocalDateTime startDateTime = startOfMonth.atStartOfDay();
+                LocalDateTime endDateTime = endOfMonth.atTime(23, 59, 59);
+
+                return mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading events for month " + monthDate, e);
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            Map<LocalDate, List<LocalEvent>> monthEvents = groupEventsByDate(events);
+            mMainHandler.post(() -> {
+                updateEventsCache(monthEvents);
+                notifyEventsDataChanged();
+            });
+        });
+    }
+
+    // ==================== PUBLIC API FOR SUBCLASSES ====================
+
+    /**
+     * Refresh events data (call when events are added/modified).
+     */
+    public void refreshEventsData() {
+        mEventsCache.clear();
+        loadEventsForCurrentPeriod();
+    }
+
+    /**
+     * Get events cache for adapter integration.
+     * @return Current events cache
+     */
+    protected Map<LocalDate, List<LocalEvent>> getEventsCache() {
+        return new HashMap<>(mEventsCache); // Return copy for thread safety
+    }
+
 }

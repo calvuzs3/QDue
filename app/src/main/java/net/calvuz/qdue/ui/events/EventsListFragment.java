@@ -17,28 +17,34 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.events.backup.BackupIntegration;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * EventsListFragment - Display list of events with navigation to details
- *
+ * <p>
  * Features:
  * - RecyclerView with EventsAdapter
  * - Click handling for navigation to details
  * - Menu integration for import/export
  * - Empty state management
  * - Search functionality
- *
+ * <p>
  * Navigation:
  * - Click event → EventDetailFragment with eventId argument
  */
-public class EventsListFragment extends Fragment implements EventsAdapter.OnEventClickListener {
+public class EventsListFragment extends Fragment implements
+        EventsAdapter.OnEventClickListener {
 
     private static final String TAG = "EventsListFragment";
 
@@ -51,6 +57,14 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
     private EventsAdapter mEventsAdapter;
     private List<LocalEvent> mEventsList;
 
+    // Interfaces
+    private EventsFileOperationsInterface mFileOperationsInterface;
+    private EventsDatabaseOperationsInterface mDataOperationsInterface;
+
+    // Deletions
+    private Set<String> mPendingDeletionIds = new HashSet<>();
+    private boolean mIsRefreshSuppressed = false;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +72,8 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
 
         // Initialize data
         mEventsList = new ArrayList<>();
+        mFileOperationsInterface = (EventsFileOperationsInterface) getActivity();
+        mDataOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
     }
 
     @Nullable
@@ -99,6 +115,12 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
      * Load events from database
      */
     private void loadEvents() {
+        // Skip loading if refresh is suppressed (during pending deletions)
+        if (mIsRefreshSuppressed) {
+            Log.d(TAG, "loadEvents() skipped - refresh suppressed during pending operations");
+            return;
+        }
+
         showLoading(true);
 
         try {
@@ -112,10 +134,14 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
 
                     // Update UI on main thread
                     requireActivity().runOnUiThread(() -> {
+                        // Filter out events with pending deletion
+                        List<LocalEvent> filteredEvents = filterPendingDeletions(events);
+
                         mEventsList.clear();
-                        if (events != null && !events.isEmpty()) {
-                            mEventsList.addAll(events);
-                            Log.d(TAG, "Loaded " + events.size() + " events from database");
+                        if (filteredEvents != null && !filteredEvents.isEmpty()) {
+                            mEventsList.addAll(filteredEvents);
+                            Log.d(TAG, "Loaded " + filteredEvents.size() + " events from database (filtered " +
+                                    (events.size() - filteredEvents.size()) + " pending deletions)");
                         }
                         mEventsAdapter.notifyDataSetChanged();
                         updateViewState();
@@ -127,22 +153,79 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
                         Toast.makeText(getContext(), "Errore caricamento eventi", Toast.LENGTH_SHORT).show();
-
-                        // Fallback to sample events for testing
-                        loadSampleEvents();
-                        updateViewState();
                     });
                 }
             }).start();
 
         } catch (Exception e) {
             Log.e(TAG, "Error getting database instance: " + e.getMessage());
-            showLoading(false);
-
-            // Fallback to sample events
-            loadSampleEvents();
             updateViewState();
+            showLoading(false);
         }
+    }
+
+    /**
+     * Filter out events that are pending deletion
+     */
+    private List<LocalEvent> filterPendingDeletions(List<LocalEvent> events) {
+        if (mPendingDeletionIds.isEmpty() || events == null) {
+            return events;
+        }
+
+        List<LocalEvent> filtered = new ArrayList<>();
+        for (LocalEvent event : events) {
+            if (event != null && event.getId() != null &&
+                    !mPendingDeletionIds.contains(event.getId())) {
+                filtered.add(event);
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * Add event to pending deletion list
+     */
+    public void addToPendingDeletion(String eventId) {
+        if (eventId != null) {
+            mPendingDeletionIds.add(eventId);
+            Log.d(TAG, "Added to pending deletion: " + eventId);
+        }
+    }
+
+    /**
+     * Remove event from pending deletion list (when deletion confirmed or cancelled)
+     */
+    public void removeFromPendingDeletion(String eventId) {
+        if (eventId != null) {
+            boolean removed = mPendingDeletionIds.remove(eventId);
+            Log.d(TAG, "Removed from pending deletion: " + eventId + " (was present: " + removed + ")");
+        }
+    }
+
+    /**
+     * Clear all pending deletions
+     */
+    public void clearPendingDeletions() {
+        mPendingDeletionIds.clear();
+        Log.d(TAG, "Cleared all pending deletions");
+    }
+
+    /**
+     * Suppress refresh temporarily
+     */
+    public void suppressRefresh(boolean suppress) {
+        mIsRefreshSuppressed = suppress;
+        Log.d(TAG, "Refresh suppressed: " + suppress);
+    }
+
+
+    /**
+     * Refresh events list (called from parent activity)
+     */
+    public void refreshEvents() {
+        Log.d(TAG, "refreshEvents() called - forcing refresh");
+        mIsRefreshSuppressed = false; // Always allow explicit refresh
+        loadEvents();
     }
 
     /**
@@ -183,19 +266,26 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
 
-        if (itemId == R.id.action_import_events) {
-            handleImportEvents();
+        if (itemId == R.id.action_import_events_file) {
+            handleImportEventsFromFile();
             return true;
-        } else if (itemId == R.id.action_export_events) {
-            handleExportEvents();
+        } else if (itemId == R.id.action_import_events_url) {
+            handleImportEventsFromUrl();
+            return true;
+        } else if (itemId == R.id.action_clear_all) {
+            handleClearAllEvents();
             return true;
         } else if (itemId == R.id.action_refresh_events) {
             handleRefreshEvents();
             return true;
-        } else if (itemId == R.id.action_search_events) {
-            handleSearchEvents();
-            return true;
         }
+//        else if (itemId == R.id.action_export_events) {
+//            handleExportEvents();
+//            return true;
+//        }  else if (itemId == R.id.action_search_events) {
+//            handleSearchEvents();
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -207,10 +297,15 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
      */
     @Override
     public void onEventClick(LocalEvent event) {
+        Log.d(TAG, "onEventClick called for: " + (event != null ? event.getTitle() : "null"));
+
         if (event == null || event.getId() == null) {
             Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // DEBUG: Log current state before navigation
+        logCurrentEvents();
 
         // Navigate to EventDetailFragment using Navigation Component
         Bundle args = new Bundle();
@@ -220,7 +315,7 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
             Navigation.findNavController(requireView())
                     .navigate(R.id.action_events_list_to_event_detail, args);
         } catch (Exception e) {
-            android.util.Log.e("EventsListFragment", "Navigation error: " + e.getMessage());
+            Log.e(TAG, "Navigation error: " + e.getMessage());
             Toast.makeText(getContext(), "Errore navigazione", Toast.LENGTH_SHORT).show();
         }
     }
@@ -238,112 +333,74 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
 
     // ==================== ACTION HANDLERS ====================
 
-    private void handleImportEvents() {
-        // TODO: Integrate with existing import functionality from EventsActivity
-        Toast.makeText(getContext(), "Import eventi - TODO", Toast.LENGTH_SHORT).show();
+    private void handleImportEventsFromFile() {
+        if (mFileOperationsInterface != null) {
+            mFileOperationsInterface.triggerImportEventsFromFile();
+        }
     }
 
-    private void handleExportEvents() {
-        // TODO: Integrate with existing export functionality from EventsActivity
-        Toast.makeText(getContext(), "Export eventi - TODO", Toast.LENGTH_SHORT).show();
+    private void handleImportEventsFromUrl() {
+        if (mFileOperationsInterface != null) {
+            mFileOperationsInterface.triggerImportEventsFromUrl();
+        }
     }
+
+    private void handleClearAllEvents() {
+        if (mDataOperationsInterface != null) {
+            mDataOperationsInterface.triggerDeleteAllEvents();
+        }
+    }
+
+    //    private void handleExportEvents() {
+//        // TODO: Integrate with existing export functionality from EventsActivity
+//        Toast.makeText(getContext(), "Export eventi - TODO", Toast.LENGTH_SHORT).show();
+//    }
 
     private void handleRefreshEvents() {
+        // Simply reload events from db
         loadEvents();
         Toast.makeText(getContext(), "Eventi aggiornati", Toast.LENGTH_SHORT).show();
     }
 
-    private void handleSearchEvents() {
-        // TODO: Implement search functionality
-        Toast.makeText(getContext(), "Ricerca eventi - TODO", Toast.LENGTH_SHORT).show();
-    }
-
+//    private void handleSearchEvents() {
+//        // TODO: Implement search functionality
+//        Toast.makeText(getContext(), "Ricerca eventi - TODO", Toast.LENGTH_SHORT).show();
+//    }
+//
     private void showEventContextMenu(LocalEvent event) {
         // TODO: Show context menu with options
         Toast.makeText(getContext(), "Menu contestuale per: " + event.getTitle(), Toast.LENGTH_SHORT).show();
     }
 
-    // ==================== SAMPLE DATA FOR TESTING ====================
-
-    /**
-     * Load sample events for testing purposes
-     * TODO: Remove when real database integration is implemented
-     */
-    private void loadSampleEvents() {
-        mEventsList.clear();
-
-        // Sample Event 1
-        LocalEvent event1 = new LocalEvent();
-        event1.setId("sample_001");
-        event1.setTitle("Fermata Programmata Linea A");
-        event1.setDescription("Manutenzione ordinaria programmata");
-        event1.setStartTime(java.time.LocalDateTime.now().plusDays(2));
-        event1.setEndTime(java.time.LocalDateTime.now().plusDays(2).plusHours(8));
-        event1.setLocation("Stabilimento Nord - Linea A");
-        mEventsList.add(event1);
-
-        // Sample Event 2
-        LocalEvent event2 = new LocalEvent();
-        event2.setId("sample_002");
-        event2.setTitle("Riunione Team Produzione");
-        event2.setDescription("Pianificazione attività settimanali");
-        event2.setStartTime(java.time.LocalDateTime.now().plusDays(1));
-        event2.setEndTime(java.time.LocalDateTime.now().plusDays(1).plusHours(2));
-        event2.setLocation("Sala Riunioni B");
-        mEventsList.add(event2);
-
-        // Sample Event 3
-        LocalEvent event3 = new LocalEvent();
-        event3.setId("sample_003");
-        event3.setTitle("Controllo Qualità Mensile");
-        event3.setDescription("Verifica standard qualità prodotti");
-        event3.setStartTime(java.time.LocalDateTime.now().plusDays(7));
-        event3.setEndTime(java.time.LocalDateTime.now().plusDays(7).plusHours(4));
-        event3.setLocation("Laboratorio Qualità");
-        mEventsList.add(event3);
-
-        // Sample Event 4 - Past event
-        LocalEvent event4 = new LocalEvent();
-        event4.setId("sample_004");
-        event4.setTitle("Formazione Sicurezza");
-        event4.setDescription("Corso aggiornamento sicurezza sul lavoro");
-        event4.setStartTime(java.time.LocalDateTime.now().minusDays(3));
-        event4.setEndTime(java.time.LocalDateTime.now().minusDays(3).plusHours(6));
-        event4.setLocation("Aula Formazione");
-        mEventsList.add(event4);
-
-        // Sample Event 5 - All day event
-        LocalEvent event5 = new LocalEvent();
-        event5.setId("sample_005");
-        event5.setTitle("Inventario Generale");
-        event5.setDescription("Inventario annuale di tutti i materiali");
-        event5.setStartTime(java.time.LocalDateTime.now().plusDays(14).withHour(0).withMinute(0));
-        event5.setEndTime(java.time.LocalDateTime.now().plusDays(14).withHour(23).withMinute(59));
-        event5.setLocation("Tutti i reparti");
-        event5.setAllDay(true);
-        mEventsList.add(event5);
-
-        mEventsAdapter.notifyDataSetChanged();
-    }
-
     // ==================== PUBLIC INTERFACE ====================
-
-    /**
-     * Refresh events list (called from parent activity)
-     */
-    public void refreshEvents() {
-        loadEvents();
-    }
 
     /**
      * Add new event to list (called after creation)
      */
     public void addEvent(LocalEvent event) {
+        Log.d(TAG, "addEvent called for: " + (event != null ? event.getTitle() : "null"));
+
         if (event != null) {
-            mEventsList.add(0, event); // Add at top
-            mEventsAdapter.notifyItemInserted(0);
-            mEventsRecyclerView.scrollToPosition(0);
-            updateViewState();
+            // Check if event already exists to avoid duplicates
+            boolean exists = false;
+            for (LocalEvent existingEvent : mEventsList) {
+                if (existingEvent != null && event.getId() != null &&
+                        event.getId().equals(existingEvent.getId())) {
+                    Log.w(TAG, "Event already exists in list: " + event.getTitle());
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                mEventsList.add(0, event); // Add at top
+                mEventsAdapter.notifyItemInserted(0);
+                mEventsRecyclerView.scrollToPosition(0);
+                updateViewState();
+                Log.d(TAG, "Successfully added event: " + event.getTitle());
+            }
+        } else {
+            Log.w(TAG, "Cannot add null event to list");
         }
     }
 
@@ -351,15 +408,41 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
      * Remove event from list (called after deletion)
      */
     public void removeEvent(String eventId) {
+        Log.d(TAG, "removeEvent called for eventId: " + eventId);
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Log.w(TAG, "Cannot remove event - eventId is null or empty");
+            return;
+        }
+
+        boolean found = false;
         for (int i = 0; i < mEventsList.size(); i++) {
-            if (mEventsList.get(i).getId().equals(eventId)) {
+            LocalEvent event = mEventsList.get(i);
+            if (event != null && eventId.equals(event.getId())) {
+                String eventTitle = event.getTitle();
                 mEventsList.remove(i);
                 mEventsAdapter.notifyItemRemoved(i);
+
+                // Also notify range changed for items after the removed one
+                if (i < mEventsList.size()) {
+                    mEventsAdapter.notifyItemRangeChanged(i, mEventsList.size() - i);
+                }
+
                 updateViewState();
+                found = true;
+                Log.d(TAG, "Successfully removed event: " + eventTitle + " (ID: " + eventId + ") at position: " + i);
                 break;
             }
         }
+
+        if (!found) {
+            Log.w(TAG, "Event not found in list for removal: " + eventId);
+            // Force a complete refresh as fallback
+            refreshEvents();
+        }
     }
+
+
 
     /**
      * Update existing event in list (called after editing)
@@ -375,4 +458,58 @@ public class EventsListFragment extends Fragment implements EventsAdapter.OnEven
             }
         }
     }
+
+    /**
+     * Get events list
+     *
+     * @return LocalEvent List
+     */
+    public List<LocalEvent> getEventsList() {
+        return mEventsList;
+    }
+
+    // ==================== PUBLIC INTERFACE ====================
+
+    public void onEventsCleared(int clearedCount, boolean createBackup) {
+        // Clear all
+        mEventsList.clear();
+        onRefreshRequired(null);
+
+        // Trigger AUTO BACKUP after clear
+        if (createBackup)
+            BackupIntegration.integrateWithClearAll(getContext(), mEventsList);
+    }
+
+    public void onEventCreated(LocalEvent event) {
+        // Add Event
+        addEvent(event);
+        // Gentle Notify
+        onRefreshRequired(null);
+    }
+
+    public void onRefreshRequired(String reason) {
+        // Brutal Notify
+        mEventsAdapter.notifyDataSetChanged();
+    }
+
+
+    // ================================== DEBUG =================================
+
+    /**
+     * DEBUG:
+     */
+    public void logCurrentEvents() {
+        Log.d(TAG, "=== CURRENT EVENTS LIST ===");
+        Log.d(TAG, "Total events: " + mEventsList.size());
+        for (int i = 0; i < mEventsList.size(); i++) {
+            LocalEvent event = mEventsList.get(i);
+            if (event != null) {
+                Log.d(TAG, i + ": " + event.getTitle() + " (ID: " + event.getId() + ")");
+            } else {
+                Log.d(TAG, i + ": NULL EVENT");
+            }
+        }
+        Log.d(TAG, "=== END EVENTS LIST ===");
+    }
+
 }

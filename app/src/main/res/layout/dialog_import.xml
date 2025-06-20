@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Validation Options -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Validation"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textColor="?attr/colorPrimary" />
+
+    <CheckBox
+        android:id="@+id/checkbox_validate_before_import"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="Validate before import" />
+
+    <!-- Conflict Resolution -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Duplicate Events"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textColor="?attr/colorPrimary" />
+
+    <RadioGroup
+        android:id="@+id/radio_group_conflict_resolution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radio_skip_duplicates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Skip duplicate events" />
+
+        <RadioButton
+            android:id="@+id/radio_replace_existing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Replace existing events" />
+
+    </RadioGroup>
+
+    <!-- Advanced Import Options -->
+    <Button
+        android:id="@+id/btn_advanced_import"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Advanced Import"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>

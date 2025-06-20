@@ -82,7 +82,7 @@ public interface EventDao {
      * Delete all local events (non-package events).
      */
     @Query("DELETE FROM events WHERE package_id IS NULL OR package_id = ''")
-    void deleteAllLocalEvents();
+    int deleteAllLocalEvents();
 
     /**
      * Delete all events from a specific package.
@@ -95,7 +95,7 @@ public interface EventDao {
      * Delete all events (complete cleanup).
      */
     @Query("DELETE FROM events")
-    void deleteAllEvents();
+    int deleteAllEvents();
 
     // ==================== RETRIEVAL OPERATIONS ====================
 

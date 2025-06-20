@@ -304,4 +304,12 @@ public class LocalEvent implements CalendarEvent {
                 ", packageId='" + packageId + '\'' +
                 '}';
     }
+
+    public LocalDate getStartDate() {
+        return startTime != null ? startTime.toLocalDate() : LocalDate.now();
+    }
+
+    public LocalDate getEndDate() {
+        return endTime != null ? endTime.toLocalDate() : LocalDate.now();
+    }
 }

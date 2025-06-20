@@ -389,7 +389,7 @@
     <string name="events_clear_all_confirm">Clear All</string>
     <string name="action_import_file">Import from File</string>
     <string name="action_export_file">Export to File</string>
-    <string name="action_clear_all">Clear All Events</string>
+    <string name="action_clear_all">Pulisci tutti gli eventi</string>
     <string name="btn_import_first">Import Events</string>
     <string name="location">Luogo</string>
 
@@ -592,6 +592,8 @@
     <string name="cd_event_location_icon">Icona posizione</string>
     <string name="cd_event_details_action">Visualizza dettagli evento</string>
     <string name="event_edit_title">Modifica evento</string>
+    <string name="import_events_file">Importa da file</string>
+    <string name="import_events_url">Importa da URL</string>
 
 
 </resources>

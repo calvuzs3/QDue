@@ -251,8 +251,10 @@ public class VirtualCalendarAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         LoadedDayViewHolder(View itemView) {
             super(itemView);
             dayNumber = itemView.findViewById(R.id.tv_day_number);
-            shiftIndicator = itemView.findViewById(R.id.tv_shift_indicator);
-            backgroundCard = itemView.findViewById(R.id.card_day_background);
+//            shiftIndicator = itemView.findViewById(R.id.tv_shift_indicator);
+            shiftIndicator = itemView.findViewById(R.id.shift_indicator);
+//            backgroundCard = itemView.findViewById(R.id.card_day_background);
+            backgroundCard = null;
         }
     }
 
