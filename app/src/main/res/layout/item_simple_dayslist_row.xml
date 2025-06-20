@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="@dimen/item_padding"
     android:clickable="true"
     android:focusable="true"
     android:background="?attr/selectableItemBackground"
@@ -17,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="@dimen/item_padding_small">
+        android:paddingVertical="@dimen/item_padding_small">
 
         <TextView
             android:id="@+id/tday"
@@ -90,25 +89,25 @@
             android:textColor="?attr/colorOnSurface"
             tools:text="GH"/>
 
+        <!-- Events indicator - SEMPLICE come prima -->
+        <TextView
+            android:id="@+id/tv_events_indicator"
+            android:layout_width="@dimen/spacing_l"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:layout_marginEnd="@dimen/spacing_s"
+            android:gravity="center_horizontal|center_vertical"
+            android:textSize="10sp"
+            android:textColor="?attr/colorPrimary"
+            android:background="@drawable/events_indicator_background"
+            android:visibility="gone"
+            tools:text="2 eventi"
+            tools:visibility="visible" />
+
     </LinearLayout>
 
-    <!-- Events indicator - SEMPLICE come prima -->
-    <TextView
-        android:id="@+id/tv_events_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="4dp"
-        android:paddingHorizontal="6dp"
-        android:paddingVertical="2dp"
-        android:textSize="10sp"
-        android:textColor="?attr/colorPrimary"
-        android:background="@drawable/events_indicator_background"
-        android:visibility="gone"
-        tools:text="2 eventi"
-        tools:visibility="visible" />
+
 
     <!-- Separator originale -->
     <View

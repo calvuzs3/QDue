@@ -11,6 +11,7 @@ package net.calvuz.qdue.ui.dayslist;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,13 +98,23 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         if (holder instanceof MaterialDayViewHolder) {
             MaterialDayViewHolder materialHolder = (MaterialDayViewHolder) holder;
 
-            // Apply background styling
+            // FIX: SEMPRE reset TUTTO prima di applicare nuovi stili
+            resetAllViewHolderState(materialHolder);
+
+            // Apply background styling (improved)
             applyMaterialBackground(materialHolder, dayItem);
 
-            // STEP 5: Use advanced events indicator instead of simple
-            addAdvancedEventsIndicator(materialHolder, dayItem);
+            // Apply special Sunday styling ONLY if it's Sunday
+            if (dayItem.isSunday()) {
+                applySundaySpecialStyling(materialHolder, dayItem);
+            }
+
+            // Add events indicator
+            addWorkingEventsIndicator(materialHolder, dayItem);
         }
     }
+
+
 
     /**
      * Bind data specifically for MaterialDayViewHolder.
@@ -186,29 +197,33 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
         List<LocalEvent> events = date != null ? getEventsForDate(date) : new ArrayList<>();
 
-        // Determine base background color
-        int baseColor;
-        if (dayItem.isToday()) {
-            baseColor = getColorByThemeAttr(mContext, R.attr.colorTodayUserBackground);
-        } else if (dayItem.isSunday()) {
-            baseColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorSurfaceVariant);
-        } else if (hasUserShift(dayItem)) {
-            baseColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorSurfaceContainerLow);
-        } else {
-            baseColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorSurface);
-        }
-
-        // STEP 6: Apply event color overlay if events present
+        // STEP 6 FIX: Simplified background logic for better readability
         if (!events.isEmpty()) {
+            // ONLY apply event colors when there are events
             int eventColor = getDominantEventTypeColor(events);
-            int blendedColor = blendEventColorWithBackground(baseColor, eventColor);
+            int blendedColor = blendEventColorWithBackground(
+                    getBaseBackgroundColor(), // Always use neutral base
+                    eventColor
+            );
             rootView.setBackgroundColor(blendedColor);
 
-            Log.d(TAG, "STEP 6: Applied event color blend for " + date + " with " + events.size() + " events");
+        } else if (dayItem.isToday()) {
+            // Today without events: special today color
+            rootView.setBackgroundColor(getColorByThemeAttr(mContext, R.attr.colorTodayUserBackground));
+
         } else {
-            // No events: use base color
-            rootView.setBackgroundColor(baseColor);
+            // STEP 6 FIX: All other days use neutral background for better readability
+            rootView.setBackgroundColor(getBaseBackgroundColor());
         }
+    }
+
+// 2. AGGIUNGI QUESTO METODO HELPER:
+
+    /**
+     * STEP 6 FIX: Get neutral base background color.
+     */
+    private int getBaseBackgroundColor() {
+        return getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorSurface);
     }
 
 // 2. AGGIUNGI QUESTO METODO PER BLEND COLORI:
@@ -216,21 +231,21 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
     /**
      * STEP 6: Blend event color with background color for subtle indication.
      * Creates a translucent overlay effect.
+     * STEP 6 FIX: More subtle color blending for better readability.
      */
     private int blendEventColorWithBackground(int backgroundColor, int eventColor) {
-        // Extract RGB components from background
+        // Extract RGB components
         int bgRed = android.graphics.Color.red(backgroundColor);
         int bgGreen = android.graphics.Color.green(backgroundColor);
         int bgBlue = android.graphics.Color.blue(backgroundColor);
 
-        // Extract RGB components from event color
         int eventRed = android.graphics.Color.red(eventColor);
         int eventGreen = android.graphics.Color.green(eventColor);
         int eventBlue = android.graphics.Color.blue(eventColor);
 
-        // Blend with 15% event color, 85% background (subtle effect)
-        float eventWeight = 0.15f;
-        float bgWeight = 0.85f;
+        // STEP 6 FIX: Even more subtle blend (8% event color, 92% background)
+        float eventWeight = 0.08f;  // Reduced from 0.15f
+        float bgWeight = 0.92f;
 
         int blendedRed = (int) (bgRed * bgWeight + eventRed * eventWeight);
         int blendedGreen = (int) (bgGreen * bgWeight + eventGreen * eventWeight);
@@ -320,6 +335,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 
     /**
      * STEP 6: Enhanced working events indicator with improved colors.
+     * STEP 6 FIX: Working events indicator method (was missing).
      */
     private void addWorkingEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
@@ -330,26 +346,104 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         List<LocalEvent> events = getEventsForDate(date);
 
         if (events.isEmpty()) {
-            holder.eventsIndicator.setVisibility(View.GONE);
-            return;
+            // FIX: Instead of GONE, make it INVISIBLE (keeps space)
+            holder.eventsIndicator.setVisibility(View.INVISIBLE);
+            holder.eventsIndicator.setText(""); // Clear text
+        } else {
+            // Show indicator with count
+            holder.eventsIndicator.setVisibility(View.VISIBLE);
+            int count = events.size();
+            holder.eventsIndicator.setText(count == 1 ? "1" : String.valueOf(count));
+
+            // Set text color based on event type
+            int textColor = getDominantEventTypeColor(events);
+            holder.eventsIndicator.setTextColor(textColor);
+
+            // Keep original background
+            holder.eventsIndicator.setBackgroundResource(R.drawable.events_indicator_background);
+        }
+    }
+
+    /**
+     * STEP 6 FIX: Apply special styling for Sunday.
+     */
+    private void applySundaySpecialStyling(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+        if (!dayItem.isSunday()) return;
+
+        // STEP 6 FIX: Red text for Sunday day number
+        if (holder.tday != null) {
+            holder.tday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
+            holder.tday.setTypeface(holder.tday.getTypeface(), android.graphics.Typeface.BOLD);
         }
 
-        // Show indicator with count
-        holder.eventsIndicator.setVisibility(View.VISIBLE);
-        int count = events.size();
-        holder.eventsIndicator.setText(count == 1 ? "1 evento" : count + " eventi");
+        // STEP 6 FIX: Red text for Sunday day name
+        if (holder.twday != null) {
+            holder.twday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
+            holder.twday.setTypeface(holder.twday.getTypeface(), android.graphics.Typeface.BOLD);
+        }
 
-        // STEP 6: Set text color based on event type (more informative)
-        int textColor = getDominantEventTypeColor(events);
-        holder.eventsIndicator.setTextColor(textColor);
-
-        // STEP 6: Set background with subtle event color
-        int backgroundColor = blendEventColorWithBackground(
-                ContextCompat.getColor(mContext, R.color.priority_low), // Light base
-                textColor // Event color
-        );
-        holder.eventsIndicator.setBackgroundColor(backgroundColor);
+        // STEP 6 FIX: Red separator line for Sunday
+        View separator = holder.itemView.findViewById(R.id.item_row_separator);
+        if (separator != null) {
+            separator.setBackgroundColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
+        }
     }
+
+    /**
+     * FIX: Reset ALL ViewHolder state to prevent RecyclerView reuse issues.
+     * This method ALWAYS resets everything to default state.
+     */
+    private void resetAllViewHolderState(MaterialDayViewHolder holder) {
+
+        // FIX: Reset day number text to normal state
+        if (holder.tday != null) {
+            holder.tday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
+            holder.tday.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
+            holder.tday.setTextSize(14f); // Reset size if needed
+        }
+
+        // FIX: Reset day name text to normal state
+        if (holder.twday != null) {
+            holder.twday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
+            holder.twday.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
+            holder.twday.setTextSize(14f); // Reset size if needed
+        }
+
+        // FIX: Reset shift TextViews to normal state
+        for (TextView shiftText : holder.shiftTexts) {
+            if (shiftText != null) {
+                shiftText.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
+                shiftText.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
+                shiftText.setTextSize(12f); // Reset size if needed
+            }
+        }
+
+        // FIX: Reset rest teams TextView
+        if (holder.ttR != null) {
+            holder.ttR.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
+            holder.ttR.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
+            holder.ttR.setTextSize(12f); // Reset size if needed
+        }
+
+        // FIX: Reset separator line to normal color
+        View separator = holder.itemView.findViewById(R.id.item_row_separator);
+        if (separator != null) {
+            separator.setBackgroundColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOutline));
+        }
+
+        // FIX: Reset events indicator
+        if (holder.eventsIndicator != null) {
+            holder.eventsIndicator.setVisibility(View.GONE);
+            holder.eventsIndicator.setTextColor(getColorByThemeAttr(mContext,
+                    androidx.appcompat.R.attr.colorPrimary));            holder.eventsIndicator.setBackgroundResource(R.drawable.events_indicator_background);
+        }
+
+        // FIX: Reset root background to default
+        holder.itemView.setBackgroundColor(getBaseBackgroundColor());
+
+        Log.v(TAG, "FIX: Reset all ViewHolder state for position");
+    }
+
 
     private void addSimpleEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
@@ -428,56 +522,6 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         }
     }
 
-    /**
-     * STEP 5: Advanced events indicator with visual elements.
-     */
-    private void addAdvancedEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null) {
-            hideAllEventIndicators(holder);
-            return;
-        }
-
-        LocalDate date = dayItem.day.getLocalDate();
-        List<LocalEvent> events = getEventsForDate(date);
-
-        if (events.isEmpty()) {
-            hideAllEventIndicators(holder);
-            return;
-        }
-
-        // STEP 5: Show container
-        if (holder.eventIndicatorsContainer != null) {
-            holder.eventIndicatorsContainer.setVisibility(View.VISIBLE);
-        }
-
-        // STEP 5: Setup visual indicators using EventIndicatorHelper
-        mEventHelper.setupAdvancedEventIndicators(
-                holder.eventTypeIndicator,
-                holder.eventPriorityBadge,
-                holder.eventsIndicator,
-                events
-        );
-    }
-
-// 3. AGGIUNGI QUESTO METODO HELPER:
-
-    /**
-     * STEP 5: Hide all event indicators for a holder.
-     */
-    private void hideAllEventIndicators(MaterialDayViewHolder holder) {
-        if (holder.eventIndicatorsContainer != null) {
-            holder.eventIndicatorsContainer.setVisibility(View.GONE);
-        }
-        if (holder.eventTypeIndicator != null) {
-            holder.eventTypeIndicator.setVisibility(View.GONE);
-        }
-        if (holder.eventPriorityBadge != null) {
-            holder.eventPriorityBadge.setVisibility(View.GONE);
-        }
-        if (holder.eventsIndicator != null) {
-            holder.eventsIndicator.setVisibility(View.GONE);
-        }
-    }
 
 
     /**
@@ -517,48 +561,21 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
      */
     public class MaterialDayViewHolder extends DayViewHolder {
 
-        // Solo l'indicatore eventi semplice
+        // Solo l'indicatore eventi testuale (che esiste nel layout)
         public TextView eventsIndicator;
-
-        // STEP 5: Advanced event indicators
-        public FrameLayout eventIndicatorsContainer;
-        public View eventTypeIndicator;
-        public View eventPriorityBadge;
 
         public MaterialDayViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            // STEP 5: Find advanced event indicator views
-            eventIndicatorsContainer = itemView.findViewById(R.id.event_indicators_container);
-            eventTypeIndicator = itemView.findViewById(R.id.event_type_indicator);
-            eventPriorityBadge = itemView.findViewById(R.id.event_priority_badge);
-
-            // Original text indicator
+            // FIX: Solo la TextView che esiste davvero nel layout
             eventsIndicator = itemView.findViewById(R.id.tv_events_indicator);
 
-            // STEP 5: Hide all indicators by default
-            hideAllEventIndicators();
-
-            Log.d(TAG, "STEP 5: MaterialDayViewHolder initialized with advanced indicators");
-        }
-
-        /**
-         *
-         * STEP 5: Hide all event indicators by default.
-         */
-        private void hideAllEventIndicators() {
-            if (eventIndicatorsContainer != null) {
-                eventIndicatorsContainer.setVisibility(View.GONE);
-            }
-            if (eventTypeIndicator != null) {
-                eventTypeIndicator.setVisibility(View.GONE);
-            }
-            if (eventPriorityBadge != null) {
-                eventPriorityBadge.setVisibility(View.GONE);
-            }
+            // Hide by default
             if (eventsIndicator != null) {
                 eventsIndicator.setVisibility(View.GONE);
             }
+
+            Log.d(TAG, "FIX: MaterialDayViewHolder initialized correctly");
         }
 
     }
