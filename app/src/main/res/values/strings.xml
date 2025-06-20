@@ -362,7 +362,6 @@
 
     <!-- Navigation items -->
     <string name="nav_user_profile">Utente</string>
-    <string name="nav_eventi">Eventi</string>
 
     <!-- Header text -->
     <string name="nav_header_menu_extended">Menu principale</string>
@@ -390,9 +389,9 @@
     <string name="events_clear_all_confirm">Clear All</string>
     <string name="action_import_file">Import from File</string>
     <string name="action_export_file">Export to File</string>
-    <string name="action_clear_all">Clear All Events</string>
+    <string name="action_clear_all">Pulisci tutti gli eventi</string>
     <string name="btn_import_first">Import Events</string>
-    <string name="localtion">Luogo</string>
+    <string name="location">Luogo</string>
 
 
     <!-- ==================== BACKUP ==================== -->
@@ -453,5 +452,148 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_ok">OK</string>
     <string name="action_close">Close</string>
+    <string name="today">Oggi</string>
+    <string name="no_event_available">Nessun evento disponibile</string>
+    <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
+    <string name="import_events">Importa Eventi</string>
+    <string name="no_events_import_from_JSON_file_or_manually_add_event">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="create_new_event">Crea Nuovo Evento</string>
+    <string name="tip_important_events_will_be_automatically_synchronized">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
+    <string name="search_events">Cerca Eventi</string>
+    <string name="update">Aggiorna</string>
+    <string name="export_events">Esporta Eventi</string>
+    <string name="settings">Impostazioni</string>
+    <string name="edit_event">Modifica Evento</string>
+    <string name="share_event">Condividi Evento</string>
+    <string name="add_to_calendar_app">Aggiungi al Calendario</string>
+    <string name="other_options">Altre Opzioni</string>
+    <string name="delete_event">Elimina Evento</string>
+    <string name="copy_details">Copia Dettagli</string>
+    <string name="show_origin_package">Visualizza Pacchetto Origine</string>
+    <string name="export_event">Esporta Evento</string>
+    <string name="all_day">Tutto il giorno</string>
+    <string name="event_not_found">Evento non trovato</string>
+    <string name="event_not_found_in_database">Evento non trovato nel database</string>
+    <string name="it_ends">"Termina "</string>
+    <string name="error_opening_URL">Impossibile aprire l\'URL</string>
+    <string name="export_event_TODO">Esporta evento - TODO</string>
+    <string name="scheduled">In Programma</string>
+    <string name="running">In Corso</string>
+    <string name="ended">Terminato</string>
+    <string name="unknown">Sconosciuto</string>
+    <string name="hour">"ora"</string>
+    <string name="hours">"ore"</string>
+    <string name="day">"giorno"</string>
+    <string name="edit_event_TODO">Modifica evento - TODO</string>
+    <string name="STOP_PLANNED">Fermata Programmata</string>
+    <string name="STOP_EMERGENCY">Fermata Emergenza</string>
+    <string name="MAINTENANCE">Manutenzione</string>
+    <string name="MEETING">Riunione</string>
+    <string name="GENERAL">Generale</string>
+    <string name="minutes">minuti</string>
+    <string name="event">Evento</string>
+    <string name="error_opening_calendar">Impossibile aprire il calendario</string>
+    <string name="delete_event_TODO">Elimina evento - TODO</string>
+    <string name="details_copied_into_notes">Dettagli copiati negli appunti</string>
+    <string name="no_URL_available">Nessun URL sorgente disponibile</string>
+
+
+
+    <!-- Navigation and Titles -->
+    <string name="nav_eventi">Eventi</string>
+    <string name="event_detail_title">Dettagli Evento</string>
+    <string name="add_new_event">Aggiungi nuovo evento</string>
+
+    <!-- Menu Actions -->
+    <string name="action_import_events">Importa Eventi</string>
+    <string name="action_export_events">Esporta Eventi</string>
+    <string name="action_refresh_events">Aggiorna</string>
+    <string name="action_search_events">Cerca Eventi</string>
+    <string name="action_events_settings">Impostazioni Eventi</string>
+
+    <!-- Event Detail Actions -->
+    <string name="action_edit_event">Modifica Evento</string>
+    <string name="action_share_event">Condividi Evento</string>
+    <string name="action_add_to_calendar">Aggiungi al Calendario</string>
+    <string name="action_delete_event">Elimina Evento</string>
+    <string name="action_copy_details">Copia Dettagli</string>
+    <string name="action_view_source">Visualizza Pacchetto Origine</string>
+    <string name="action_export_event">Esporta Evento</string>
+
+    <!-- Event Status -->
+    <string name="status_upcoming">In programma</string>
+    <string name="status_current">In corso</string>
+    <string name="status_past">Terminato</string>
+    <string name="status_unknown">Stato sconosciuto</string>
+
+    <!-- Event Types -->
+    <string name="type_stop_planned">Fermata Programmata</string>
+    <string name="type_stop_emergency">Fermata Emergenza</string>
+    <string name="type_maintenance">Manutenzione</string>
+    <string name="type_meeting">Riunione</string>
+    <string name="type_general">Generale</string>
+
+    <!-- Event Priority -->
+    <string name="priority_high">Alta</string>
+    <string name="priority_normal">Normale</string>
+    <string name="priority_low">Bassa</string>
+
+    <!-- Time Formats -->
+    <string name="time_all_day">Tutto il giorno</string>
+    <string name="time_until_prefix">fra</string>
+    <string name="time_until_minutes">%d minuti</string>
+    <string name="time_until_hours">%d ore</string>
+    <string name="time_until_days">%d giorni</string>
+    <string name="time_until_days_hours">%d giorni %d ore</string>
+
+    <!-- Duration Formats -->
+    <string name="duration_minutes">%d minuti</string>
+    <string name="duration_hour">1 ora</string>
+    <string name="duration_hours">%d ore</string>
+    <string name="duration_hours_minutes">%d ore %d min</string>
+    <string name="duration_day">1 giorno</string>
+    <string name="duration_days">%d giorni</string>
+    <string name="duration_days_hours">%d giorni %d ore</string>
+
+    <!-- Error Messages -->
+    <string name="error_event_not_found">Evento non trovato</string>
+    <string name="error_invalid_event">Errore: evento non valido</string>
+    <string name="error_navigation">Errore navigazione</string>
+    <string name="error_file_picker">Errore apertura file picker</string>
+    <string name="error_file_saver">Errore apertura file saver</string>
+    <string name="error_import">Errore durante l\'import: %s</string>
+    <string name="error_export">Errore durante l\'export: %s</string>
+    <string name="error_calendar_open">Impossibile aprire il calendario</string>
+    <string name="error_url_open">Impossibile aprire l\'URL</string>
+
+    <!-- Success Messages -->
+    <string name="success_events_imported">Importati %d eventi</string>
+    <string name="success_events_exported">Esportati %d eventi</string>
+    <string name="success_events_refreshed">Eventi aggiornati</string>
+    <string name="success_details_copied">Dettagli copiati negli appunti</string>
+
+    <!-- Empty State -->
+    <string name="empty_no_events_title">Nessun evento disponibile</string>
+    <string name="empty_no_events_description">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="empty_import_events">Importa Eventi</string>
+    <string name="empty_create_event">Crea Nuovo Evento</string>
+    <string name="empty_help_text">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
+
+    <!-- Loading State -->
+    <string name="loading_events">Caricamento eventi...</string>
+    <string name="loading_database">Sto recuperando gli eventi dal database...</string>
+    <string name="loading_importing">Importando eventi...</string>
+    <string name="loading_exporting">Esportando eventi...</string>
+    <string name="loading_cancel">Annulla</string>
+
+    <!-- Accessibility -->
+    <string name="cd_event_status_indicator">Indicatore stato evento</string>
+    <string name="cd_event_time_icon">Icona orario</string>
+    <string name="cd_event_location_icon">Icona posizione</string>
+    <string name="cd_event_details_action">Visualizza dettagli evento</string>
+    <string name="event_edit_title">Modifica evento</string>
+    <string name="import_events_file">Importa da file</string>
+    <string name="import_events_url">Importa da URL</string>
+
 
 </resources>

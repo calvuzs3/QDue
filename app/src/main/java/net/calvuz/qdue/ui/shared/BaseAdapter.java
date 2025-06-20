@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
@@ -25,7 +26,9 @@ import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base unified adapter for both DaysList and Calendar views.
@@ -762,6 +765,41 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             }
         }
         return -1;
+    }
+
+    /**
+     * Helper method to setup event indicators in any ViewHolder.
+     * Can be called from both adapters with their respective ViewHolders.
+     *
+     * @param context Context for EventIndicatorHelper
+     * @param typeIndicator The type indicator View
+     * @param priorityBadge The priority badge View
+     * @param events List of events for this day
+     */
+    public static void setupEventIndicatorsForDay(Context context,
+                                                  View typeIndicator,
+                                                  View priorityBadge,
+                                                  List<LocalEvent> events) {
+        EventIndicatorHelper helper = new EventIndicatorHelper(context);
+        helper.setupEventIndicators(typeIndicator, priorityBadge, events);
+    }
+
+    /**
+     * Helper method to get events for a specific date from events map.
+     * Utility method that can be used by both adapters.
+     *
+     * @param eventsMap Map of date to events list
+     * @param date Date to get events for
+     * @return List of events for the date, or empty list if none
+     */
+    public static List<LocalEvent> getEventsForDate(Map<LocalDate, List<LocalEvent>> eventsMap,
+                                                    LocalDate date) {
+        if (eventsMap == null || date == null) {
+            return new ArrayList<>();
+        }
+
+        List<LocalEvent> events = eventsMap.get(date);
+        return events != null ? events : new ArrayList<>();
     }
 
 // ==================== INNER VIEW HOLDER CLASSES ====================

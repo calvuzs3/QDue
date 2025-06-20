@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Menu for EventsListFragment -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Search Events -->
+    <item
+        android:id="@+id/action_search_events"
+        android:icon="@drawable/ic_rounded_manage_search_24"
+        android:title="@string/search_events"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <!-- Refresh Events -->
+    <item
+        android:id="@+id/action_refresh_events"
+        android:icon="@drawable/ic_rounded_rotate_right_24"
+        android:title="@string/update"
+        android:visible="true
+"
+        app:showAsAction="ifRoom" />
+
+    <!-- Import Events -->
+    <item
+        android:id="@+id/action_import_events"
+        android:icon="@drawable/ic_rounded_input_24"
+        android:title="@string/import_events"
+        android:visible="true"
+        app:showAsAction="never">
+        <menu>
+
+            <!-- Import from a file -->
+            <item
+                android:id="@+id/action_import_events_file"
+                android:icon="@drawable/ic_rounded_upload_file_24"
+                android:title="@string/import_events_file"
+                android:visible="true" />
+
+            <!-- Import from API -->
+            <item
+                android:id="@+id/action_import_events_url"
+                android:icon="@drawable/ic_rounded_link_24"
+                android:title="@string/import_events_url"
+                android:visible="true" />
+
+        </menu>
+
+    </item>
+
+    <!-- Export Events -->
+    <item
+        android:id="@+id/action_export_events"
+        android:icon="@drawable/ic_rounded_save_24"
+        android:title="@string/export_events"
+        android:visible="false"
+        app:showAsAction="never" />
+
+    <!-- Existing menu items -->
+    <item
+        android:id="@+id/action_clear_all"
+        android:title="@string/action_clear_all"
+        android:icon="@drawable/ic_clear_all"
+        android:visible="true"
+        app:showAsAction="never" />
+
+    <!-- Settings -->
+    <item
+        android:id="@+id/action_events_settings"
+        android:icon="@drawable/ic_rounded_settings_24"
+        android:title="@string/settings"
+        android:visible="false"
+        app:showAsAction="never" />
+
+</menu>

@@ -1,0 +1,1027 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EventDetailFragment Layout - Full Screen Event Details with Toolbar -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground">
+
+    <!-- ==================== CONTENT SCROLLVIEW ==================== -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- ==================== CORE EVENT INFO SECTION ==================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Event Title -->
+                    <TextView
+                        android:id="@+id/tv_event_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceHeadline5"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginBottom="8dp"
+                        tools:text="Fermata Programmata Linea A" />
+
+                    <!-- Event Description -->
+                    <TextView
+                        android:id="@+id/tv_event_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="16dp"
+                        tools:text="Manutenzione ordinaria programmata per ottimizzazione prestazioni della linea di produzione A" />
+
+                    <!-- Time Section -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_schedule_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <!-- Start Time -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Inizio: "
+                                    android:textAppearance="?attr/textAppearanceBody2"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tv_start_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="?attr/textAppearanceBody2"
+                                    tools:text="15 Mar 2025, 08:00" />
+                            </LinearLayout>
+
+                            <!-- End Time -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Fine: "
+                                    android:textAppearance="?attr/textAppearanceBody2"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tv_end_time"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="?attr/textAppearanceBody2"
+                                    tools:text="17 Mar 2025, 17:00" />
+                            </LinearLayout>
+
+                            <!-- Duration -->
+                            <LinearLayout
+                                android:id="@+id/layout_duration"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="4dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Durata: "
+                                    android:textAppearance="?attr/textAppearanceCaption"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tv_duration"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="?attr/textAppearanceCaption"
+                                    android:textColor="?attr/colorPrimary"
+                                    tools:text="2 giorni 9 ore" />
+                            </LinearLayout>
+
+                            <!-- All Day Indicator -->
+                            <TextView
+                                android:id="@+id/tv_all_day"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Evento tutto il giorno"
+                                android:textAppearance="?attr/textAppearanceCaption"
+                                android:textColor="?attr/colorSecondary"
+                                android:textStyle="italic"
+                                android:layout_marginTop="4dp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Location -->
+                    <LinearLayout
+                        android:id="@+id/layout_location"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_location_on_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:id="@+id/tv_location"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            tools:text="Stabilimento Nord - Linea A" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== CATEGORIZATION SECTION ==================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Classificazione"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Event Type -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_category_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Tipo: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_event_type"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="Fermata Programmata" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Priority -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_priority_high_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Priorità: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_priority"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="Alta" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== STATUS/INFO SECTION ==================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Stato Evento"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Event Status -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:id="@+id/iv_status_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_schedule_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Stato: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_event_status"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="In Programma" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Time Until Event -->
+                    <LinearLayout
+                        android:id="@+id/layout_time_until"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_timer_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorSecondary" />
+
+                        <TextView
+                            android:id="@+id/tv_time_until"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="?attr/colorSecondary"
+                            tools:text="Fra 3 giorni 5 ore" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== CUSTOM PROPERTIES SECTION ==================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_custom_properties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Dettagli Aggiuntivi"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Department -->
+                    <LinearLayout
+                        android:id="@+id/layout_department"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_business_center_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Dipartimento: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_department"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="Produzione" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Cost Center -->
+                    <LinearLayout
+                        android:id="@+id/layout_cost_center"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_account_balance_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Centro di Costo: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_cost_center"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="PROD_001" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Affected Teams -->
+                    <LinearLayout
+                        android:id="@+id/layout_affected_teams"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_group_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Team Coinvolti: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_affected_teams"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="A, B, C" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Responsible Person -->
+                    <LinearLayout
+                        android:id="@+id/layout_responsible"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_person_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Responsabile: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_responsible"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="Mario Rossi" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Contact Email -->
+                    <LinearLayout
+                        android:id="@+id/layout_contact_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_alternate_email_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Email: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_contact_email"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textColor="?attr/colorPrimary"
+                                android:autoLink="email"
+                                tools:text="produzione@company.com" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Phone Number -->
+                    <LinearLayout
+                        android:id="@+id/layout_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_contact_phone_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Telefono: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_phone"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textColor="?attr/colorPrimary"
+                                android:autoLink="phone"
+                                tools:text="+39 123 456 7890" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Impact Level -->
+                    <LinearLayout
+                        android:id="@+id/layout_impact_level"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_warning_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Livello Impatto: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_impact_level"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="Medio" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Additional Custom Properties Container -->
+                    <LinearLayout
+                        android:id="@+id/layout_additional_properties"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ==================== EXCLUDED SECTIONS (android:visibility="gone") ==================== -->
+
+            <!-- TECHNICAL SECTION - Hidden for current version -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_technical_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Informazioni Tecniche"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Event ID -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ID Evento: "
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_event_id"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:fontFamily="monospace"
+                            tools:text="evt_001_abc123" />
+                    </LinearLayout>
+
+                    <!-- Created Date -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Creato: "
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_created_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            tools:text="10 Gen 2025, 14:30" />
+                    </LinearLayout>
+
+                    <!-- Import Source -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Origine: "
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_import_source"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            tools:text="File JSON" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- PACKAGE METADATA SECTION - Partially hidden for current version -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_package_metadata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Metadati Pacchetto"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Package ID (visible) -->
+                    <LinearLayout
+                        android:id="@+id/layout_package_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_package_2_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ID Pacchetto: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_package_id"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="company_events_2025" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Package Version (visible) -->
+                    <LinearLayout
+                        android:id="@+id/layout_package_version"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_info_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Versione: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_package_version"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                tools:text="1.2.0" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Source URL (visible) -->
+                    <LinearLayout
+                        android:id="@+id/layout_source_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_link_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorPrimary" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="URL Origine: "
+                                android:textAppearance="?attr/textAppearanceBody2"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tv_source_url"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="?attr/textAppearanceCaption"
+                                android:textColor="?attr/colorPrimary"
+                                android:autoLink="web"
+                                android:ellipsize="middle"
+                                android:maxLines="2"
+                                tools:text="https://company.com/events.json" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Package Name (hidden) -->
+                    <LinearLayout
+                        android:id="@+id/layout_package_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nome Pacchetto: "
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_package_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            tools:text="Eventi Aziendali 2025" />
+                    </LinearLayout>
+
+                    <!-- Package Author (hidden) -->
+                    <LinearLayout
+                        android:id="@+id/layout_package_author"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Autore: "
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_package_author"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            tools:text="HR Department" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ADVANCED FEATURES SECTION - Hidden for current version -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_advanced_features"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Features Avanzate"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- Conflict Indicator -->
+                    <LinearLayout
+                        android:id="@+id/layout_conflict_indicator"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_rounded_warning_24"
+                            android:layout_marginEnd="12dp"
+                            android:layout_gravity="center_vertical"
+                            app:tint="?attr/colorError" />
+
+                        <TextView
+                            android:id="@+id/tv_conflict_indicator"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="?attr/colorError"
+                            tools:text="Sovrapposizione con 2 altri eventi" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Spacer for bottom navigation -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

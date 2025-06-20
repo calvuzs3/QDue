@@ -259,4 +259,20 @@
     <color name="backup_info">#2196F3</color>
     <color name="backup_accent">#673AB7</color>
 
+
+    <!-- ==================== EVENTS   ==================== -->
+
+    <!-- Event Status Colors -->
+    <color name="status_upcoming">#2196F3</color>      <!-- Blue - Upcoming events -->
+    <color name="status_current">#4CAF50</color>       <!-- Green - Current events -->
+    <color name="status_past">#757575</color>          <!-- Gray - Past events -->
+    <color name="status_unknown">#9E9E9E</color>       <!-- Light Gray - Unknown status -->
+
+    <!-- Event Type Colors (for future use) -->
+    <color name="type_stop_planned">#FF5722</color>    <!-- Deep Orange - Planned stops -->
+    <color name="type_stop_emergency">#F44336</color>  <!-- Red - Emergency stops -->
+    <color name="type_maintenance">#FF9800</color>     <!-- Orange - Maintenance -->
+    <color name="type_meeting">#2196F3</color>         <!-- Blue - Meetings -->
+    <color name="type_general">#9C27B0</color>         <!-- Purple - General events -->
+
 </resources>
