@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menu for EventEditFragment -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Save Event -->
+    <item
+        android:id="@+id/action_save_event"
+        android:title="Salva"
+        android:icon="@android:drawable/ic_menu_save"
+        app:showAsAction="ifRoom" />
+
+    <!-- Cancel Edit -->
+    <item
+        android:id="@+id/action_cancel_edit"
+        android:title="Annulla"
+        android:icon="@android:drawable/ic_menu_revert"
+        app:showAsAction="never" />
+
+</menu>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ==================== activity_events.xml ==================== -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- EventsActivity Layout - Responsive with Navigation Component Support -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,91 +9,59 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.events.EventsActivity">
 
-    <!-- App Bar with Toolbar -->
+    <!-- App Bar Layout -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:fitsSystemWindows="true">
 
-        <androidx.appcompat.widget.Toolbar
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar_events"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
+            app:title="@string/nav_eventi"
+            app:titleTextColor="?attr/colorOnPrimary"
+            app:navigationIcon="@android:drawable/ic_menu_revert" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Main Content -->
-    <androidx.core.widget.NestedScrollView
+    <!-- Main Content Area with Navigation Host Fragment -->
+    <FrameLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
+        <!-- Navigation Host Fragment Container -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment_events"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            app:defaultNavHost="false"
+            app:navGraph="@navigation/events_navigation" />
 
-            <!-- Events RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_events"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:padding="8dp"
-                android:clipToPadding="false"
-                tools:listitem="@layout/item_event" />
+        <!-- Empty State View (shown when no events available) -->
+        <include
+            android:id="@+id/empty_state_events"
+            layout="@layout/empty_state_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
-            <!-- Empty State View -->
-            <LinearLayout
-                android:id="@+id/empty_state_events"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="32dp"
-                android:visibility="gone"
-                tools:visibility="visible">
+        <!-- Loading State View -->
+        <include
+            android:id="@+id/loading_state_events"
+            layout="@layout/loading_state_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
 
-                <ImageView
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
-                    android:alpha="0.5"
-                    android:src="@drawable/ic_event_note"
-                    android:foregroundTint="?attr/colorOnSurface" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="No Events Found"
-                    android:textAppearance="?attr/textAppearanceHeadline6"
-                    android:textColor="?attr/colorOnSurface" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="Import events from JSON files or create new ones using the + button"
-                    android:textAppearance="?attr/textAppearanceBody2"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_import_first"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:text="Import Events"
-                    app:icon="@drawable/ic_import" />
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -100,82 +69,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="Add Event"
-        app:srcCompat="@drawable/ic_add" />
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/create_new_event"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-
-
-    <!-- ==================== AndroidManifest.xml - Intent Filter ==================== -->
-    <!-- Add this inside MainActivity or create new EventsActivity entry -->
-    <!--
-    <activity
-        android:name=".ui.events.EventsActivity"
-        android:label="@string/nav_eventi"
-        android:theme="@style/Theme.QDue"
-        android:exported="true">
-
-        <!- Standard activity launch ->
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-        </intent-filter>
-
-        <!- JSON file handling ->
-        <intent-filter android:priority="100">
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:mimeType="application/json" />
-        </intent-filter>
-
-        <!- Alternative JSON handling by extension ->
-        <intent-filter android:priority="100">
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="file" />
-            <data android:pathPattern=".*\\.json" />
-        </intent-filter>
-
-    </activity>
-    -->
-
-    <!-- ==================== Additional Strings (add to strings.xml) ==================== -->
-    <!--
-    <string name="events_activity_title">Events Management</string>
-    <string name="events_empty_title">No Events Found</string>
-    <string name="events_empty_message">Import events from JSON files or create new ones</string>
-    <string name="events_import_success">Successfully imported %d events</string>
-    <string name="events_import_error">Failed to import events: %s</string>
-    <string name="events_export_success">Events exported successfully</string>
-    <string name="events_export_error">Failed to export events: %s</string>
-    <string name="events_clear_all_title">Clear All Events</string>
-    <string name="events_clear_all_message">Are you sure you want to delete all local events? This action cannot be undone.</string>
-    <string name="events_clear_all_confirm">Clear All</string>
-    <string name="action_import_file">Import from File</string>
-    <string name="action_export_file">Export to File</string>
-    <string name="action_clear_all">Clear All Events</string>
-    <string name="btn_import_first">Import Events</string>
-    -->
-
-    <!-- ==================== Colors (add to colors.xml) ==================== -->
-    <!--
-    <color name="success_color">#4CAF50</color>
-    <color name="error_color">#F44336</color>
-    <color name="warning_color">#FF9800</color>
-    -->
-
-    <!-- ==================== Icons Required ==================== -->
-    <!--
-    Required drawable resources:
-    - ic_event_note (for empty state)
-    - ic_import (import action)
-    - ic_export (export action)
-    - ic_add (FAB)
-    - ic_location (location indicator)
-    - ic_more_vert (menu button)
-    - ic_settings (settings)
-    - ic_delete (clear all)
-    -->

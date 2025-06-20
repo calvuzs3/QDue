@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background drawable for status pill in event items -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Rounded corners for pill effect -->
+    <corners android:radius="12dp" />
+
+    <!-- Background color (will be tinted programmatically) -->
+    <solid android:color="?attr/colorSecondaryContainer" />
+
+    <!-- Optional stroke for better definition -->
+    <stroke
+        android:width="1dp"
+        android:color="?attr/colorOutline"
+        android:alpha="0.3" />
+
+</shape>
