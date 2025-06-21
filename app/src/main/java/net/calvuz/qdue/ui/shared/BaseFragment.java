@@ -2104,8 +2104,23 @@ public abstract class BaseFragment extends Fragment
                 return new ArrayList<LocalEvent>();
             }
         }).thenAccept(events -> {
+            Log.d(TAG, "Loaded " + events.size() + " events from database");
+
             // Process events into date-grouped map
             Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(events);
+
+            Log.d(TAG, "Grouped into " + eventsMap.size() + " dates with events");
+
+            // Debug: Log alcuni esempi
+            int debugCount = 0;
+            for (Map.Entry<LocalDate, List<LocalEvent>> entry : eventsMap.entrySet()) {
+                if (debugCount < 3) { // Solo primi 3 per debug
+                    LocalDate date = entry.getKey();
+                    List<LocalEvent> dateEvents = entry.getValue();
+                    Log.d(TAG, "DEBUG: Date " + date + " has " + dateEvents.size() + " events");
+                    debugCount++;
+                }
+            }
 
             // Update cache on main thread
             mMainHandler.post(() -> {
@@ -2113,7 +2128,7 @@ public abstract class BaseFragment extends Fragment
                 notifyEventsDataChanged();
                 mIsLoadingEvents.set(false);
             });
-        }).exceptionally(throwable -> {
+    }).exceptionally(throwable -> {
             Log.e(TAG, "Failed to load events", throwable);
             mMainHandler.post(() -> {
                 mIsLoadingEvents.set(false);
@@ -2124,23 +2139,77 @@ public abstract class BaseFragment extends Fragment
 
     /**
      * Update events cache and notify adapter.
+     * Update events cache and notify adapter - FIXED VERSION
+     * PROBLEMA: il metodo sovrascrive invece di fare merge
      */
     protected void updateEventsCache(Map<LocalDate, List<LocalEvent>> newEventsMap) {
-        if (newEventsMap != null) {
-            mEventsCache.putAll(newEventsMap);
-            Log.d(TAG, "Updated events cache with " + newEventsMap.size() + " dates");
+        if (newEventsMap != null && !newEventsMap.isEmpty()) {
+            // FIX: Fare MERGE invece di putAll che può sovrascrivere
+            for (Map.Entry<LocalDate, List<LocalEvent>> entry : newEventsMap.entrySet()) {
+                LocalDate date = entry.getKey();
+                List<LocalEvent> newEvents = entry.getValue();
+
+                if (mEventsCache.containsKey(date)) {
+                    // Merge con eventi esistenti per questa data
+                    List<LocalEvent> existingEvents = mEventsCache.get(date);
+                    if (existingEvents != null) {
+                        // Creare lista combinata evitando duplicati
+                        List<LocalEvent> mergedEvents = new ArrayList<>(existingEvents);
+                        for (LocalEvent newEvent : newEvents) {
+                            if (!mergedEvents.contains(newEvent)) {
+                                mergedEvents.add(newEvent);
+                            }
+                        }
+                        mEventsCache.put(date, mergedEvents);
+                    } else {
+                        mEventsCache.put(date, new ArrayList<>(newEvents));
+                    }
+                } else {
+                    // Nuova data, aggiungi direttamente
+                    mEventsCache.put(date, new ArrayList<>(newEvents));
+                }
+            }
+
+            Log.d(TAG, "Updated events cache with " + newEventsMap.size() + " new dates, total cache: " + mEventsCache.size() + " dates");
+        } else {
+            Log.w(TAG, "Attempted to update events cache with null or empty map - IGNORING");
+            // FIX: NON svuotare la cache se arriva una mappa vuota
+            return;
         }
     }
 
+
     /**
-     * Group events by their start date for efficient lookup.
+     * Group events by their date range for efficient lookup.
+     * FIXED: Now handles multi-day events correctly by adding them to all affected dates
      */
     private Map<LocalDate, List<LocalEvent>> groupEventsByDate(List<LocalEvent> events) {
         Map<LocalDate, List<LocalEvent>> grouped = new HashMap<>();
 
         for (LocalEvent event : events) {
-            LocalDate eventDate = event.getStartDate();
-            grouped.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
+            LocalDate startDate = event.getStartDate();
+            LocalDate endDate = event.getEndDate();
+
+            // SINGLE DAY EVENT: Add only to start date
+            if (endDate == null || startDate.equals(endDate)) {
+                grouped.computeIfAbsent(startDate, k -> new ArrayList<>()).add(event);
+                Log.v(TAG, "Single day event: " + event.getTitle() + " on " + startDate);
+            }
+            // MULTI-DAY EVENT: Add to all dates in range
+            else {
+                LocalDate currentDate = startDate;
+                int dayCount = 0;
+
+                while (!currentDate.isAfter(endDate) && dayCount < 365) { // Safety limit
+                    grouped.computeIfAbsent(currentDate, k -> new ArrayList<>()).add(event);
+                    Log.v(TAG, "Multi-day event: " + event.getTitle() + " added to " + currentDate);
+
+                    currentDate = currentDate.plusDays(1);
+                    dayCount++;
+                }
+
+                Log.d(TAG, "Multi-day event '" + event.getTitle() + "' spans " + dayCount + " days (" + startDate + " to " + endDate + ")");
+            }
         }
 
         return grouped;

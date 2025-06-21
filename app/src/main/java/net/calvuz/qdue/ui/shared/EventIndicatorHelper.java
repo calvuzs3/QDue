@@ -69,7 +69,7 @@ public class EventIndicatorHelper {
     /**
      * Get color for highest priority event in the list.
      */
-    private int getHighestPriorityColor(List<LocalEvent> events) {
+    public int getHighestPriorityColor(List<LocalEvent> events) {
         EventPriority highestPriority = EventPriority.LOW;
 
         for (LocalEvent event : events) {
@@ -402,5 +402,6 @@ public class EventIndicatorHelper {
                 return R.drawable.event_priority_badge_low;
         }
     }
+
 
 }

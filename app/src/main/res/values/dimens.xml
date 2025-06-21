@@ -6,6 +6,8 @@
     <!-- ============================================ -->
 
     <!-- Base spacing units -->
+    <dimen name="spacing_xxxs">1dp</dimen>    <!-- Extra Extra Extra small -->
+    <dimen name="spacing_xxs">2dp</dimen>     <!-- Extra Extra small -->
     <dimen name="spacing_xs">4dp</dimen>      <!-- Extra small -->
     <dimen name="spacing_s">8dp</dimen>       <!-- Small -->
     <dimen name="spacing_m">16dp</dimen>      <!-- Medium (standard) -->
@@ -144,6 +146,9 @@
 
     <!-- Line spacing -->
     <dimen name="text_line_spacing">4dp</dimen>
+    <dimen name="text_badge_size">10dp</dimen>
+    <dimen name="text_number_size">16dp</dimen>
+    <dimen name="text_shift_name_size">24dp</dimen>
 
     <!-- Icon and text spacing -->
     <dimen name="icon_text_spacing">@dimen/spacing_s</dimen>

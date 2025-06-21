@@ -726,7 +726,7 @@ public class EnhancedDaysListAdapter extends BaseAdapter {
 
             // Initialize MaterialCardView for optimal performance
             if (itemView instanceof com.google.android.material.card.MaterialCardView) {
-                CalendarAdapter.initializeCardView((com.google.android.material.card.MaterialCardView) itemView);
+//                CalendarAdapter.initializeCardView(mContext, (com.google.android.material.card.MaterialCardView) itemView);
             }
 
             // Accessibility

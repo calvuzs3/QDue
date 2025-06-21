@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.dayslist.SimpleEnhancedDaysListAdapter;
@@ -19,6 +20,7 @@ import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enhanced DayslistViewFragment with virtual scrolling integration
@@ -84,6 +86,15 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
                 3
         );
         mRecyclerView.setAdapter(mLegacyAdapter);
+
+        // Aggiornare con eventi se disponibili
+        if (mLegacyAdapter != null) {
+            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            if (!eventsCache.isEmpty()) {
+                Log.d(TAG, "Found existing events cache with " + eventsCache.size() + " dates");
+                mLegacyAdapter.updateEventsData(eventsCache);
+            }
+        }
     }
 
     @Override
@@ -156,5 +167,23 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         }
 
         return LocalDate.now().withDayOfMonth(1);
+    }
+
+    @Override
+    protected void notifyEventsDataChanged() {
+        Log.d(TAG, "notifyEventsDataChanged: events updated in BaseFragment");
+
+        if (mLegacyAdapter != null) {
+            // Ottenere eventi dalla cache BaseFragment
+            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            Log.d(TAG, "Passing " + eventsCache.size() + " dates with events to DaysListAdapter");
+
+            // Passare eventi all'adapter
+            mLegacyAdapter.updateEventsData(eventsCache);
+        } else {
+            Log.w(TAG, "mLegacyAdapter is null in notifyEventsDataChanged");
+        }
+
+        super.notifyEventsDataChanged();
     }
 }
