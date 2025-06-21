@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.calendar.CalendarAdapter;
@@ -19,6 +20,7 @@ import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enhanced CalendarViewFragment with virtual scrolling integration
@@ -87,15 +89,18 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
 
     @Override
     protected void setupAdapter() {
-        final String mTAG="setupAdapter";
+        Log.v(TAG, "setupAdapter: called with events support");
 
-        // Try virtual scrolling first, fallback to legacy
-        try {
-            super.setupAdapter(); // This will use bridge adapter
-            Log.d(TAG, mTAG + "Virtual scrolling adapter initialized successfully");
-        } catch (Exception e) {
-            Log.w(TAG, mTAG + "Virtual scrolling failed, fallen back to legacy: " + e.getMessage());
-            // setupLegacyAdapter();// done in super
+        // Chiamare il setup originale della parent class
+        super.setupAdapter();
+
+        // Dopo setup, aggiornare con eventi se disponibili
+        if (mLegacyAdapter != null) {
+            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            if (!eventsCache.isEmpty()) {
+                Log.d(TAG, "Found existing events cache with " + eventsCache.size() + " dates");
+                mLegacyAdapter.updateEventsData(eventsCache);
+            }
         }
     }
 
@@ -202,5 +207,27 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         if (getActivity() != null) {
             // getActivity().setTitle(newMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
         }
+    }
+
+    /**
+     * Override da BaseFragment - chiamato quando eventi cambiano nel database
+     */
+    @Override
+    protected void notifyEventsDataChanged() {
+        Log.d(TAG, "notifyEventsDataChanged: events updated in BaseFragment");
+
+        if (mLegacyAdapter != null) {
+            // Ottenere eventi dalla cache BaseFragment
+            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            Log.d(TAG, "Passing " + eventsCache.size() + " dates with events to CalendarAdapter");
+
+            // Passare eventi al CalendarAdapter
+            mLegacyAdapter.updateEventsData(eventsCache);
+        } else {
+            Log.w(TAG, "mLegacyAdapter is null in notifyEventsDataChanged");
+        }
+
+        // Chiamare il metodo parent
+        super.notifyEventsDataChanged();
     }
 }

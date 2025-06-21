@@ -10,6 +10,7 @@
 package net.calvuz.qdue.ui.dayslist;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
@@ -102,7 +103,8 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
             resetAllViewHolderState(materialHolder);
 
             // Apply background styling (improved)
-            applyMaterialBackground(materialHolder, dayItem);
+            //applyMaterialBackground(materialHolder, dayItem);
+            applyMaterialBackgroundWithWhite(materialHolder, dayItem);
 
             // Apply special Sunday styling ONLY if it's Sunday
             if (dayItem.isSunday()) {
@@ -126,7 +128,8 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         bindOriginalDayData(holder, dayItem, position);
 
         // Add our material design enhancements
-        applyMaterialBackground(holder, dayItem);
+        //applyMaterialBackground(holder, dayItem);
+        applyMaterialBackgroundWithWhite(holder, dayItem);
 
         // Add events indicator
         addEventsIndicator(holder, dayItem);
@@ -217,6 +220,27 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         }
     }
 
+    /**
+     * Usare il blend con bianco nella applyMaterialBackground:
+     */
+    private void applyMaterialBackgroundWithWhite(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+        View rootView = holder.itemView;
+        LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
+        List<LocalEvent> events = date != null ? getEventsForDate(date) : new ArrayList<>();
+
+        if (!events.isEmpty()) {
+            // Blend colore evento con bianco per massima leggibilità
+            int eventColor = getDominantEventTypeColor(events);
+            int lightBackground = blendEventColorWithWhite(eventColor);
+            rootView.setBackgroundColor(lightBackground);
+
+        } else if (dayItem.isToday()) {
+            rootView.setBackgroundColor(getColorByThemeAttr(mContext, R.attr.colorTodayUserBackground));
+        } else {
+            rootView.setBackgroundColor(getBaseBackgroundColor());
+        }
+    }
+
 // 2. AGGIUNGI QUESTO METODO HELPER:
 
     /**
@@ -232,6 +256,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
      * STEP 6: Blend event color with background color for subtle indication.
      * Creates a translucent overlay effect.
      * STEP 6 FIX: More subtle color blending for better readability.
+     * STEP 6 FIX: Blend molto più sottile per leggibilità
      */
     private int blendEventColorWithBackground(int backgroundColor, int eventColor) {
         // Extract RGB components
@@ -243,9 +268,9 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         int eventGreen = android.graphics.Color.green(eventColor);
         int eventBlue = android.graphics.Color.blue(eventColor);
 
-        // STEP 6 FIX: Even more subtle blend (8% event color, 92% background)
-        float eventWeight = 0.08f;  // Reduced from 0.15f
-        float bgWeight = 0.92f;
+        // FIX CONTRAST: Blend ancora più sottile (3% event color, 97% background)
+        float eventWeight = 0.03f;  // Ridotto drasticamente da 0.08f
+        float bgWeight = 0.97f;
 
         int blendedRed = (int) (bgRed * bgWeight + eventRed * eventWeight);
         int blendedGreen = (int) (bgGreen * bgWeight + eventGreen * eventWeight);
@@ -255,6 +280,25 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         blendedRed = Math.max(0, Math.min(255, blendedRed));
         blendedGreen = Math.max(0, Math.min(255, blendedGreen));
         blendedBlue = Math.max(0, Math.min(255, blendedBlue));
+
+        return android.graphics.Color.rgb(blendedRed, blendedGreen, blendedBlue);
+    }
+
+    /**
+     * ALTERNATIVA: Blend colore evento con bianco per garantire chiarezza
+     */
+    private int blendEventColorWithWhite(int eventColor) {
+        int eventRed = android.graphics.Color.red(eventColor);
+        int eventGreen = android.graphics.Color.green(eventColor);
+        int eventBlue = android.graphics.Color.blue(eventColor);
+
+        // Blend con bianco (95% bianco, 5% evento)
+        float eventWeight = 0.16f;
+        float whiteWeight = 0.84f;
+
+        int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
+        int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);
+        int blendedBlue = (int) (255 * whiteWeight + eventBlue * eventWeight);
 
         return android.graphics.Color.rgb(blendedRed, blendedGreen, blendedBlue);
     }
@@ -336,6 +380,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
     /**
      * STEP 6: Enhanced working events indicator with improved colors.
      * STEP 6 FIX: Working events indicator method (was missing).
+     * FIX: Migliorare styling del badge eventi per maggiore visibilità
      */
     private void addWorkingEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
@@ -346,22 +391,38 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
         List<LocalEvent> events = getEventsForDate(date);
 
         if (events.isEmpty()) {
-            // FIX: Instead of GONE, make it INVISIBLE (keeps space)
-            holder.eventsIndicator.setVisibility(View.INVISIBLE);
-            holder.eventsIndicator.setText(""); // Clear text
+            holder.eventsIndicator.setVisibility(View.INVISIBLE); // Mantiene spazio
+            holder.eventsIndicator.setText("");
         } else {
-            // Show indicator with count
             holder.eventsIndicator.setVisibility(View.VISIBLE);
             int count = events.size();
             holder.eventsIndicator.setText(count == 1 ? "1" : String.valueOf(count));
 
-            // Set text color based on event type
-            int textColor = getDominantEventTypeColor(events);
-            holder.eventsIndicator.setTextColor(textColor);
+            // FIX: Colore badge più visibile basato su priorità
+            int priorityColor = mEventHelper.getHighestPriorityColor(events);
 
-            // Keep original background
-            holder.eventsIndicator.setBackgroundResource(R.drawable.events_indicator_background);
+            // Applicare colore al background del badge
+            holder.eventsIndicator.setBackgroundTintList(ColorStateList.valueOf(priorityColor));
+
+            // Testo contrastante
+            holder.eventsIndicator.setTextColor(getContrastingTextColor(priorityColor));
+
+            // FIX: Styling badge più prominente
+            holder.eventsIndicator.setTextSize(10f);
+            holder.eventsIndicator.setTypeface(holder.eventsIndicator.getTypeface(), Typeface.BOLD);
         }
+    }
+
+    /**
+     * Helper per colore testo contrastante
+     */
+    private int getContrastingTextColor(int backgroundColor) {
+        int red = Color.red(backgroundColor);
+        int green = Color.green(backgroundColor);
+        int blue = Color.blue(backgroundColor);
+
+        double luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
+        return luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 
     /**
