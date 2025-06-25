@@ -4,6 +4,8 @@ import static net.calvuz.qdue.QDue.VirtualScrollingSettings.USE_VIRTUAL_SCROLLIN
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.shared.BaseAdapter;
@@ -76,6 +78,7 @@ public class AdapterBridge extends BaseAdapter implements VirtualCalendarDataMan
         }
     }
 
+    @NonNull
     @Override
     public androidx.recyclerview.widget.RecyclerView.ViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
         if (USE_VIRTUAL_SCROLLING && virtualAdapter != null) {

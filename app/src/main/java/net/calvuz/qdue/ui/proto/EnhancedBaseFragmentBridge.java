@@ -4,6 +4,7 @@ import static net.calvuz.qdue.QDue.VirtualScrollingSettings.ENABLE_VIRTUAL_SCROL
 
 import android.os.Bundle;
 import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +20,7 @@ import java.time.LocalDate;
  */
 public abstract class EnhancedBaseFragmentBridge extends BaseFragment {
 
-    private static final String TAG = "EnhancedBaseFragmentBridge";
+    private static final String TAG = "BF-Bridge";
 
     protected AdapterBridge adapterBridge;
     protected VirtualScrollListener virtualScrollListener;
@@ -102,11 +103,12 @@ public abstract class EnhancedBaseFragmentBridge extends BaseFragment {
     }
 
     /**
-     * Override adapter setup to use bridge adapter
+     * Override adapter setup to use bridge adapter if ENABLE_VIRTUAL_SCROLLING is true
      */
     @Override
     protected void setupAdapter() {
-        Log.v(TAG, "setupAdapter with bridge: called.");
+        final String mTAG = "setupAdapter: ";
+        Log.v(TAG, mTAG + "called.");
 
         if (ENABLE_VIRTUAL_SCROLLING) {
             // Create bridge adapter instead of regular adapter
@@ -119,31 +121,18 @@ public abstract class EnhancedBaseFragmentBridge extends BaseFragment {
 
             mRecyclerView.setAdapter(adapterBridge);
             setFragmentAdapter(adapterBridge);
+
+            Log.d(TAG, "Bridge adapter setup completed");
         } else {
 
-            // CRITICAL FIX in EnhancedBaseFragmentBridge.setupAdapter():
-            // REMOVE: super.setupAdapter(); // Abstract method call!
+            // CRITICAL FIX
+            // REMOVED: super.setupAdapter();
             // USE: legacy direct implementation
-            setupLegacyAdapterDirectly();
+            setupLegacyAdapter();
+
+            Log.d(TAG, "Legacy adapter setup completed");
         }
     }
-
-    protected void setupLegacyAdapterDirectly() {
-        // Must be implemented by subclass
-        throw new UnsupportedOperationException("Subclass must override setupLegacyAdapter");
-    }
-
-    // ==================== ABSTRACT METHODS FOR SUBCLASSES ====================
-
-    /**
-     * Get user half team for adapter
-     */
-    protected abstract HalfTeam getHalfTeam();
-
-    /**
-     * Get number of shifts to show
-     */
-    protected abstract int getShiftsToShow();
 
     // ==================== CLEANUP ====================
 
@@ -159,4 +148,21 @@ public abstract class EnhancedBaseFragmentBridge extends BaseFragment {
             mRecyclerView.removeOnScrollListener(virtualScrollListener);
         }
     }
+
+    // ==================== ABSTRACT METHODS FOR SUBCLASSES ====================
+
+    /**
+     * Get user half team for adapter
+     */
+    protected abstract HalfTeam getHalfTeam();
+
+    /**
+     * Get number of shifts to show
+     */
+    protected abstract int getShiftsToShow();
+
+    /**
+     * Setup Legacy Adapter
+     */
+    protected abstract void setupLegacyAdapter();
 }

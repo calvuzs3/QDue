@@ -83,7 +83,7 @@ public class QDue extends Application {
         public static final boolean DEBUG_COLORS = false;
         public static final boolean DEBUG_SHARED_VIEW_MODELS = false;
         // Base
-        public static final boolean DEBUG_BASEFRAGMENT = false;
+        public static final boolean DEBUG_BASEFRAGMENT = true;
         public static final boolean DEBUG_BASEADAPTER = false;
 
     }

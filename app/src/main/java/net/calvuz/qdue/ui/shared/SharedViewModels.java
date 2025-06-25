@@ -30,6 +30,7 @@ import net.calvuz.qdue.utils.Log;
  */
 public class SharedViewModels {
 
+    // TAG
     private static final String TAG = "SharedViewModels";
 
     /**
@@ -97,14 +98,14 @@ public class SharedViewModels {
          * @param monthDate the month date (will be normalized to first day)
          */
         public MonthHeader(LocalDate monthDate) {
-            final String METHOD_TAG = TAG + ":MonthHeader";
+            final String mTAG = "MonthHeader: ";
 
             // Always normalize to first day of month
             this.monthDate = monthDate.withDayOfMonth(1);
             this.title = formatTitle(monthDate);
 
             if (DEBUG_SHARED_VIEW_MODELS)
-                Log.d(METHOD_TAG, "Created header for: " + this.monthDate + " with title: " + this.title);
+                Log.d(TAG, mTAG + "Created header for: " + this.monthDate + " with title: " + this.title);
         }
 
         /**
@@ -128,7 +129,7 @@ public class SharedViewModels {
          * @return formatted title string
          */
         private String formatTitle(LocalDate date) {
-            final String METHOD_TAG = TAG + ":formatTitle";
+            final String mTAG = "formatTitle: ";
 
             try {
                 LocalDate today = LocalDate.now();
@@ -139,11 +140,11 @@ public class SharedViewModels {
                 String formattedTitle = date.format(formatter);
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Formatted " + date + " to: " + formattedTitle);
+                    Log.d(TAG, mTAG + "Formatted " + date + " to: " + formattedTitle);
 
                 return formattedTitle;
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error formatting date title: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error formatting date title: " + e.getMessage());
                 // Fallback to simple string representation
                 return date.getMonth().toString() + " " + date.getYear();
             }
@@ -175,13 +176,13 @@ public class SharedViewModels {
          * @param monthDate the month this day belongs to
          */
         public DayItem(Day day, LocalDate monthDate) {
-            final String METHOD_TAG = TAG + ":DayItem";
+            final String mTAG = "DayItem: ";
 
             this.day = day;
             this.monthDate = monthDate.withDayOfMonth(1);
 
             if (DEBUG_SHARED_VIEW_MODELS)
-                Log.d(METHOD_TAG, "Created day item for: " + (day != null ? day.getDate() : "null"));
+                Log.d(TAG, mTAG + "Created day item for: " + (day != null ? day.getDate() : "null"));
         }
 
         /**
@@ -272,14 +273,14 @@ public class SharedViewModels {
          * @param type the loading position type
          */
         public LoadingItem(LoadingType type) {
-            final String METHOD_TAG = TAG + ":LoadingItem";
+            final String mTAG = "LoadingItem: ";
 
             this.loadingType = type;
             this.message = type == LoadingType.TOP ?
                     "Loading previous..." : "Loading next...";
 
             if (DEBUG_SHARED_VIEW_MODELS)
-                Log.d(METHOD_TAG, "Created " + type + " loading item with message: " + message);
+                Log.d(TAG, mTAG + "Created " + type + " loading item with message: " + message);
         }
 
         /**
@@ -302,7 +303,8 @@ public class SharedViewModels {
      */
     public static class DataConverter {
 
-        private static final String CONVERTER_TAG = TAG + ":DataConverter";
+        // TAG
+        private static final String CONVERTER_TAG = TAG + "DataConverter: ";
 
         /**
          * Convert day data for linear list display (DayslistViewFragment).
@@ -316,7 +318,7 @@ public class SharedViewModels {
          * @return list of view items for linear display
          */
         public static List<ViewItem> convertForDaysList(List<Day> days, LocalDate monthDate) {
-            final String METHOD_TAG = CONVERTER_TAG + " convertForDaysList";
+            final String mTAG = CONVERTER_TAG + "convertForDaysList: ";
 
             List<ViewItem> items = new ArrayList<>();
 
@@ -330,10 +332,10 @@ public class SharedViewModels {
                 }
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Converted " + days.size() + " days to " + items.size() + " items for month: " + monthDate);
+                    Log.d(TAG, mTAG + "Converted " + days.size() + " days to " + items.size() + " items for month: " + monthDate);
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error converting days list: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error converting days list: " + e.getMessage());
             }
 
             return items;
@@ -353,7 +355,7 @@ public class SharedViewModels {
          * @return list of view items for calendar grid display
          */
         public static List<ViewItem> convertForCalendar(List<Day> days, LocalDate monthDate) {
-            final String METHOD_TAG = CONVERTER_TAG + ":convertForCalendar";
+            final String mTAG = CONVERTER_TAG + "convertForCalendar: ";
 
             List<ViewItem> items = new ArrayList<>();
 
@@ -374,7 +376,7 @@ public class SharedViewModels {
                     }
 
                     if (DEBUG_SHARED_VIEW_MODELS)
-                        Log.d(METHOD_TAG, "Created empty month structure with " + daysInMonth + " days");
+                        Log.d(TAG, mTAG + "Created empty month structure with " + daysInMonth + " days");
                 } else {
                     // Month with data
                     addEmptyCellsForWeekStart(items, days.get(0).getDate());
@@ -385,7 +387,7 @@ public class SharedViewModels {
                     }
 
                     if (DEBUG_SHARED_VIEW_MODELS) {
-                        Log.d(METHOD_TAG, "Added " + days.size() + " days with data");
+                        Log.d(TAG, mTAG + "Added " + days.size() + " days with data");
                     }
                 }
 
@@ -395,10 +397,10 @@ public class SharedViewModels {
                 }
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Final calendar grid: " + items.size() + " items (" + (items.size() / 7) + " weeks)");
+                    Log.d(TAG, mTAG + "Final calendar grid: " + items.size() + " items (" + (items.size() / 7) + " weeks)");
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error converting calendar data: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error converting calendar data: " + e.getMessage());
             }
 
             return items;
@@ -407,6 +409,7 @@ public class SharedViewModels {
         /**
          * Add empty cells at the beginning to align the first day with correct weekday.
          * <p>
+         *     TODO: change from mon to sun
          * Uses ISO-8601 standard where Monday = 1, Sunday = 7.
          * For calendar display, we need to align the first day of the month
          * with its correct weekday position.
@@ -415,13 +418,14 @@ public class SharedViewModels {
          * @param firstDay the first day of the month
          */
         private static void addEmptyCellsForWeekStart(List<ViewItem> items, LocalDate firstDay) {
-            final String METHOD_TAG = CONVERTER_TAG + ":addEmptyCellsForWeekStart";
+            final String mTAG = CONVERTER_TAG + "addEmptyCellsForWeekStart: ";
 
             try {
                 int dayOfWeek = firstDay.getDayOfWeek().getValue();
 
                 // Calculate empty cells needed
                 // Sunday (7) needs 0 empty cells, Monday (1) needs 1, etc.
+                // TODO: do dayOfWeek - 1
                 int emptyCells = (dayOfWeek == 7) ? 0 : dayOfWeek;
 
                 for (int i = 0; i < emptyCells; i++) {
@@ -429,10 +433,10 @@ public class SharedViewModels {
                 }
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Added " + emptyCells + " empty cells for first day: " + firstDay + " (weekday: " + dayOfWeek + ")");
+                    Log.d(TAG, mTAG + "Added " + emptyCells + " empty cells for first day: " + firstDay + " (weekday: " + dayOfWeek + ")");
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error adding empty cells for week start: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error adding empty cells for week start: " + e.getMessage());
             }
         }
 
@@ -446,7 +450,7 @@ public class SharedViewModels {
          * @return index of today's position, or -1 if not found
          */
         public static int findTodayPosition(List<ViewItem> items) {
-            final String mTAG = ":findTodayPosition: ";
+            final String mTAG = CONVERTER_TAG + "findTodayPosition: ";
 
             if (items == null || items.isEmpty()) {
                 if (DEBUG_SHARED_VIEW_MODELS) Log.d(TAG, mTAG + "Items list is null or empty");
@@ -457,8 +461,7 @@ public class SharedViewModels {
                 LocalDate today = LocalDate.now();
 
                 for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i) instanceof DayItem) {
-                        DayItem dayItem = (DayItem) items.get(i);
+                    if (items.get(i) instanceof DayItem dayItem) {
                         if (dayItem.day != null && dayItem.day.getDate().equals(today)) {
                             if (DEBUG_SHARED_VIEW_MODELS) {
                                 Log.d(TAG, mTAG + "Found today at position: " + i);
@@ -481,13 +484,14 @@ public class SharedViewModels {
         /**
          * Count the number of day items in the list.
          * <p>
-         * Utility method for DEBUG_SHARED_VIEW_MODELSging and validation.
+         * Utility method for DEBUG_SHARED_VIEW_MODELS
+         * counting and validation.
          *
          * @param items list of view items
          * @return number of DayItem instances
          */
         public static int countDayItems(List<ViewItem> items) {
-            final String METHOD_TAG = CONVERTER_TAG + ":countDayItems";
+            final String mTAG = CONVERTER_TAG + "countDayItems: ";
 
             if (items == null) return 0;
 
@@ -500,10 +504,10 @@ public class SharedViewModels {
                 }
 
                 if (DEBUG_SHARED_VIEW_MODELS)
-                    Log.d(METHOD_TAG, "Counted " + count + " day items out of " + items.size() + " total items");
+                    Log.d(TAG, mTAG + "Counted " + count + " day items out of " + items.size() + " total items");
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error counting day items: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error counting day items: " + e.getMessage());
             }
 
             return count;
@@ -512,13 +516,14 @@ public class SharedViewModels {
         /**
          * Get statistics about the view items list.
          * <p>
-         * Utility method for DEBUG_SHARED_VIEW_MODELSging and monitoring.
+         * Utility method for DEBUG_SHARED_VIEW_MODELS
+         * for statistical analysis and monitoring.
          *
          * @param items list of view items to analyze
          * @return formatted statistics string
          */
         public static String getItemStatistics(List<ViewItem> items) {
-            final String METHOD_TAG = CONVERTER_TAG + ":getItemStatistics";
+            final String mTAG = CONVERTER_TAG + "getItemStatistics: ";
 
             if (items == null) {
                 return "No items (null list)";
@@ -547,12 +552,12 @@ public class SharedViewModels {
                 String stats = String.format("Total: %d (Headers: %d, Days: %d, Empty: %d, Loading: %d)",
                         items.size(), headers, days, empty, loading);
 
-                if (DEBUG_SHARED_VIEW_MODELS) Log.d(METHOD_TAG, "Generated statistics: " + stats);
+                if (DEBUG_SHARED_VIEW_MODELS) Log.d(TAG, mTAG + "Generated statistics: " + stats);
 
                 return stats;
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error generating statistics: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error generating statistics: " + e.getMessage());
                 return "Error generating statistics";
             }
         }
@@ -567,32 +572,32 @@ public class SharedViewModels {
          * @return true if structure is valid for calendar display
          */
         public static boolean validateCalendarStructure(List<ViewItem> items) {
-            final String METHOD_TAG = CONVERTER_TAG + ":validateCalendarStructure";
+            final String mTAG = CONVERTER_TAG + "validateCalendarStructure: ";
 
             if (items == null || items.isEmpty()) {
-                Log.w(METHOD_TAG, "Cannot validate null or empty items list");
+                Log.w(TAG, mTAG + "Cannot validate null or empty items list");
                 return false;
             }
 
             try {
                 // Should start with a header
                 if (!(items.get(0) instanceof MonthHeader)) {
-                    Log.w(METHOD_TAG, "Calendar should start with MonthHeader");
+                    Log.w(TAG, mTAG + "Calendar should start with MonthHeader");
                     return false;
                 }
 
                 // Total items should be multiple of 7 plus 1 (for header)
                 if ((items.size() - 1) % 7 != 0) {
-                    Log.w(METHOD_TAG, "Calendar grid not aligned to weeks: " + items.size() + " items");
+                    Log.w(TAG, mTAG + "Calendar grid not aligned to weeks: " + items.size() + " items");
                     return false;
                 }
 
-                if (DEBUG_SHARED_VIEW_MODELS) Log.d(METHOD_TAG, "Calendar structure is valid");
+                if (DEBUG_SHARED_VIEW_MODELS) Log.d(TAG, mTAG + "Calendar structure is valid");
 
                 return true;
 
             } catch (Exception e) {
-                Log.e(METHOD_TAG, "Error validating calendar structure: " + e.getMessage());
+                Log.e(TAG, mTAG + "Error validating calendar structure: " + e.getMessage());
                 return false;
             }
         }

@@ -16,6 +16,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
+
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -63,7 +65,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     protected static final int VIEW_TYPE_DAY = 1;
     protected static final int VIEW_TYPE_LOADING = 2;
     protected static final int VIEW_TYPE_EMPTY = 3;
-    protected static final int VIEW_TYPE_CUSTOM_START = 100;
 
     // MEMBERS
     protected final Context mContext;
@@ -95,6 +96,24 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         initializeColorCache();
     }
 
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Initializes the color cache by retrieving theme colors.
+     * This optimization prevents repeated theme color lookups during binding.
+     */
+    protected void initializeColorCache() {
+        if (mCachedNormalTextColor == 0) {
+            mCachedNormalTextColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface);
+            mCachedSundayTextColor = getColorByThemeAttr(mContext, R.attr.colorOnSundayBackground);
+            mCachedTodayBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorTodayBackground);
+            mCachedUserShiftBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorUserShiftBackground);
+            mCachedUserShiftTextColor = getColorByThemeAttr(mContext, R.attr.colorOnUserShift);
+        }
+    }
+
+    // ==================== METHODS ====================
+
     /**
      * Updates the adapter's data set and refreshes the display.
      *
@@ -107,7 +126,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     /**
-     * Updates the current user's team and refreshes highlighting.
+     * Updates the current user's team and refreshes the disply.
      *
      * @param newUserTeam New user team for highlighting
      */
@@ -147,7 +166,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                 return VIEW_TYPE_EMPTY;
             case DAY:
             default:
-                return getCustomViewType(item, position);
+                return VIEW_TYPE_DAY;
         }
     }
 
@@ -174,10 +193,9 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                 return createEmptyViewHolder(inflater, parent);
 
             case VIEW_TYPE_DAY:
+            default:
                 return createDayViewHolder(inflater, parent);
 
-            default:
-                return createCustomViewHolder(inflater, parent, viewType);
         }
     }
 
@@ -192,7 +210,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (position >= mItems.size()) return;
 
         if (DEBUG_BASEADAPTER) {
-            Log.d("DEBUG", "ViewHolder: " + holder.getClass().getSimpleName() + " Expected: CalendarDayViewHolder");
+            Log.d(TAG, "onBindViewHolder: ViewHolder = " + holder.getClass().getSimpleName() );
         }
 
         SharedViewModels.ViewItem item = mItems.get(position);
@@ -212,14 +230,12 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
             bindDay((DayViewHolder) holder, dayItem, position);
 
-        } else {
-            bindCustomViewHolder(holder, item, position);
         }
 
         if (DEBUG_BASEADAPTER) {
-            Log.d("DEBUG", "mItems.size(): " + mItems.size());
-            Log.d("DEBUG", "position: " + position);
-            Log.d("DEBUG", "item type: " + item.getClass().getSimpleName());
+            Log.d(TAG, "onBindViewHolder: mItems.size() = " + mItems.size());
+            Log.d(TAG, "onBindViewHolder: position = " + position);
+            Log.d(TAG, "onBindViewHolder: item type = " + item.getClass().getSimpleName());
         }
     }
 
@@ -278,7 +294,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
         View view = inflater.inflate(R.layout.item_dayslist_row, parent, false);
-        return new DayViewHolder(view);
+        return new DayViewHolder((MaterialCardView) view);
     }
 
     // ===========================================================
@@ -308,7 +324,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             if (monthDate.getYear() == today.getYear()) {
                 monthName = monthDate.format(DateTimeFormatter.ofPattern("MMMM", QDue.getLocale()));
             } else {
-                monthName = monthDate.format(DateTimeFormatter.ofPattern("MMMM", QDue.getLocale()));
+                monthName = monthDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", QDue.getLocale()));
             }
 
             enhancedHolder.tvMonthTitle.setText(monthName);
@@ -384,7 +400,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param dayItem  Day item data to bind
      * @param position Position in the adapter
      */
-    protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
+    protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position)
+    {
         Day day = dayItem.day;
         if (day == null) return;
 
@@ -399,21 +416,21 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
 
         // Reset colors and background
-        resetDayViewColors(holder);
+//        resetDayViewColors(holder); // checked for cardview
 
         // Set shift texts
-        bindShiftsToDay(holder, day);
+        bindShiftsToDay(holder, day); // No background implied
 
         // Set rest teams text
         String restTeams = day.getOffWorkHalfTeamsAsString();
         holder.ttR.setText(restTeams != null && !restTeams.isEmpty() ?
                 r.getString(R.string.str_scheme, restTeams) : "");
 
-        // Find and highlight user shift
-        highlightUserShift(holder, day);
-
-        // Apply special day colors (today and Sunday)
-        applySpecialDayColors(holder, isToday, isSunday);
+//        // Find and highlight user shift
+//        highlightUserShift(holder, day);
+//
+//        // Apply special day colors (today and Sunday)
+//        applySpecialDayColors(holder, isToday, isSunday);
 
         if (DEBUG_BASEADAPTER) {
             Log.d("DEBUG", "DayItem.day is null: " + (dayItem.day == null));
@@ -565,7 +582,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             } catch (Exception e) {
                 // Log error but don't crash
-                android.util.Log.e("EnhancedMonthHeader", "Error starting animation: " + e.getMessage());
+                Log.e("EnhancedMonthHeader", "Error starting animation: " + e.getMessage());
                 isAnimating = false;
             }
         }
@@ -590,7 +607,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             } catch (Exception e) {
                 // Log error but don't crash
-                android.util.Log.e("EnhancedMonthHeader", "Error stopping animation: " + e.getMessage());
+                Log.e("EnhancedMonthHeader", "Error stopping animation: " + e.getMessage());
                 isAnimating = false;
             }
         }
@@ -644,7 +661,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected void applySpecialDayColors(DayViewHolder holder, boolean isToday, boolean isSunday) {
         if (isToday) {
-            holder.mView.setBackgroundColor(mCachedTodayBackgroundColor);
+//            holder.mView.setBackgroundColor(mCachedTodayBackgroundColor);
             setAllDayTextColors(holder, mCachedNormalTextColor);
         } else if (isSunday) {
             setAllDayTextColors(holder, mCachedSundayTextColor);
@@ -659,11 +676,12 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param holder ViewHolder to reset
      */
     protected void resetDayViewColors(DayViewHolder holder) {
-        holder.mView.setBackgroundColor(Color.TRANSPARENT);
+        if (!(holder.mView instanceof MaterialCardView))
+//            holder.mView.setBackgroundColor(Color.TRANSPARENT);
 
         for (TextView tv : holder.shiftTexts) {
             if (tv != null) {
-                tv.setBackgroundColor(Color.TRANSPARENT);
+//                tv.setBackgroundColor(Color.TRANSPARENT);
                 tv.setTextColor(mCachedNormalTextColor);
             }
         }
@@ -686,64 +704,13 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                 // Don't change color of highlighted shifts
                 if (tv.getBackground() == null ||
                         ((android.graphics.drawable.ColorDrawable) tv.getBackground()).getColor() == Color.TRANSPARENT) {
-                    tv.setTextColor(color);
+//                    tv.setTextColor(color);
                 }
             }
         }
     }
 
-// ==================== ABSTRACT/VIRTUAL METHODS FOR EXTENSIBILITY ====================
-
-    /**
-     * Allows subclasses to override for custom view types.
-     *
-     * @param item     ViewItem to determine type for
-     * @param position Position in adapter
-     * @return View type constant
-     */
-    protected int getCustomViewType(SharedViewModels.ViewItem item, int position) {
-        return VIEW_TYPE_DAY;
-    }
-
-    /**
-     * Allows subclasses to override for custom ViewHolders.
-     *
-     * @param inflater Layout inflater
-     * @param parent   Parent ViewGroup
-     * @param viewType View type to create
-     * @return Custom ViewHolder instance
-     */
-    protected RecyclerView.ViewHolder createCustomViewHolder(LayoutInflater inflater, ViewGroup parent, int viewType) {
-        // Default: create a DayViewHolder
-        return createDayViewHolder(inflater, parent);
-    }
-
-    /**
-     * Allows subclasses to override for custom binding.
-     *
-     * @param holder   ViewHolder to bind to
-     * @param item     ViewItem to bind
-     * @param position Position in adapter
-     */
-    protected void bindCustomViewHolder(RecyclerView.ViewHolder holder, SharedViewModels.ViewItem item, int position) {
-        // Default: no custom binding
-    }
-
-// ==================== UTILITY METHODS ====================
-
-    /**
-     * Initializes the color cache by retrieving theme colors.
-     * This optimization prevents repeated theme color lookups during binding.
-     */
-    protected void initializeColorCache() {
-        if (mCachedNormalTextColor == 0) {
-            mCachedNormalTextColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface);
-            mCachedSundayTextColor = getColorByThemeAttr(mContext, R.attr.colorOnSundayBackground);
-            mCachedTodayBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorTodayBackground);
-            mCachedUserShiftBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorUserShiftBackground);
-            mCachedUserShiftTextColor = getColorByThemeAttr(mContext, R.attr.colorOnUserShift);
-        }
-    }
+    // ==================== UTILITY METHODS ====================
 
     /**
      * Finds the adapter position for a specific date.
@@ -771,10 +738,10 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Helper method to setup event indicators in any ViewHolder.
      * Can be called from both adapters with their respective ViewHolders.
      *
-     * @param context Context for EventIndicatorHelper
+     * @param context       Context for EventIndicatorHelper
      * @param typeIndicator The type indicator View
      * @param priorityBadge The priority badge View
-     * @param events List of events for this day
+     * @param events        List of events for this day
      */
     public static void setupEventIndicatorsForDay(Context context,
                                                   View typeIndicator,
@@ -789,7 +756,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Utility method that can be used by both adapters.
      *
      * @param eventsMap Map of date to events list
-     * @param date Date to get events for
+     * @param date      Date to get events for
      * @return List of events for the date, or empty list if none
      */
     public static List<LocalEvent> getEventsForDate(Map<LocalDate, List<LocalEvent>> eventsMap,
@@ -802,7 +769,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         return events != null ? events : new ArrayList<>();
     }
 
-// ==================== INNER VIEW HOLDER CLASSES ====================
+    // ==================== INNER VIEW HOLDER CLASSES ====================
 
     /**
      * ViewHolder for month header items.
@@ -895,28 +862,28 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         /**
          * Root view of the item for background manipulation
          */
-        public final View mView;
+        public final MaterialCardView mView;
 
         /**
          * Constructs a new DayViewHolder and initializes shift TextViews.
          *
-         * @param itemView The view associated with this ViewHolder
+         * @param rootView The root view associated with this ViewHolder (MaterialCardView)
          */
-        public DayViewHolder(@NonNull View itemView) {
-            super(itemView);
-            mView = itemView;
-            tday = itemView.findViewById(R.id.tday);
-            twday = itemView.findViewById(R.id.twday);
-            ttR = itemView.findViewById(R.id.ttR);
+        public DayViewHolder(@NonNull MaterialCardView rootView) {
+            super(rootView);
+            mView = rootView;
+            tday = rootView.findViewById(R.id.tday);
+            twday = rootView.findViewById(R.id.twday);
+            ttR = rootView.findViewById(R.id.ttR);
 
             // Initialize shift text views dynamically based on number of shifts
             shiftTexts = new TextView[mNumShifts];
             for (int i = 0; i < mNumShifts && i < 5; i++) {
                 @SuppressLint("DiscouragedApi")
-                int resId = itemView.getResources().getIdentifier("tt" + (i + 1), "id",
-                        itemView.getContext().getPackageName());
+                int resId = rootView.getResources().getIdentifier("tt" + (i + 1), "id",
+                        rootView.getContext().getPackageName());
                 if (resId != 0) {
-                    shiftTexts[i] = itemView.findViewById(resId);
+                    shiftTexts[i] = rootView.findViewById(resId);
                 }
             }
         }
