@@ -76,8 +76,10 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     /**
      * Legacy adapter setup for fallback
      */
+    @Override
     protected void setupLegacyAdapter() {
-        Log.v(TAG, "setupLegacyAdapter: called.");
+        final String mTAG = "setupLegacyAdapter: ";
+        Log.v(TAG, mTAG + "setupLegacyAdapter: called.");
 
         mLegacyAdapter = new SimpleEnhancedDaysListAdapter(
                 getContext(),
@@ -91,7 +93,7 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         if (mLegacyAdapter != null) {
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
-                Log.d(TAG, "Found existing events cache with " + eventsCache.size() + " dates");
+                Log.d(TAG, mTAG + "Found existing events cache with " + eventsCache.size() + " dates");
                 mLegacyAdapter.updateEventsData(eventsCache);
             }
         }
@@ -99,14 +101,19 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
 
     @Override
     protected void setupAdapter() {
+        final String mTAG = "setupAdapter: ";
+        Log.v(TAG, mTAG + "called.");
+
         // Try virtual scrolling first, fallback to legacy
         try {
             super.setupAdapter(); // This will use bridge adapter
-            Log.d(TAG, "Virtual scrolling adapter initialized successfully");
+            Log.d(TAG, mTAG + "Virtual scrolling adapter initialized successfully");
         } catch (Exception e) {
-            Log.w(TAG, "Virtual scrolling failed, falling back to legacy: " + e.getMessage());
+            Log.w(TAG, mTAG + "Virtual scrolling failed, falling back to legacy: " + e.getMessage());
             setupLegacyAdapter();
         }
+
+        Log.d(TAG, mTAG + "Legacy adapter setup completed");
     }
 
     @Override

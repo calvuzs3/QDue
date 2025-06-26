@@ -180,7 +180,7 @@ public class VirtualCalendarAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
             case TYPE_LOADED_DAY:
                 return new LoadedDayViewHolder(
-                        inflater.inflate(R.layout.item_calendar_day, parent, false));
+                        inflater.inflate(R.layout.item_calendar_day_old, parent, false));
 
             case TYPE_LOADING_PROGRESS:
                 return new LoadingProgressViewHolder(

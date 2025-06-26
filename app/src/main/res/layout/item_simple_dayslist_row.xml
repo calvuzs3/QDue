@@ -109,11 +109,11 @@
 
 
 
-    <!-- Separator originale -->
-    <View
-        android:id="@+id/item_row_separator"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?attr/colorOutline" />
+<!--    &lt;!&ndash; Separator originale &ndash;&gt;-->
+<!--    <View-->
+<!--        android:id="@+id/item_row_separator"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:background="?attr/colorOutline" />-->
 
 </LinearLayout>

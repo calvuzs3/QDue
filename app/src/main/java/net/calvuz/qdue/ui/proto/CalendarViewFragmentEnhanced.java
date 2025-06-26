@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
 
-    private static final String TAG = "CalendarViewFragmentEnhanced";
+    private static final String TAG = "F-Calendar";
 
     // Keep existing adapter reference for compatibility
     private CalendarAdapter mLegacyAdapter;
@@ -42,6 +42,7 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     @Override
     protected BaseAdapter getFragmentAdapter() {
         // Return bridge adapter if virtual scrolling is enabled, otherwise legacy
+        Log.d("DEBUG", "getting adapter = " + adapterBridge != null ? "adapterBridge" : "mLegacyAdapter");
         return adapterBridge != null ? adapterBridge : mLegacyAdapter;
     }
 
@@ -50,6 +51,7 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         if (adapter instanceof CalendarAdapter) {
             this.mLegacyAdapter = (CalendarAdapter) adapter;
         }
+        Log.d("DEBUG", "setting LEGACY (CalendarAdapter) adapter");
         // Bridge adapter is handled by parent class
     }
 
@@ -89,7 +91,8 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
 
     @Override
     protected void setupAdapter() {
-        Log.v(TAG, "setupAdapter: called with events support");
+        final String mTAG = "setupAdapter: ";
+        Log.v(TAG, mTAG + "called with events support");
 
         // Chiamare il setup originale della parent class
         super.setupAdapter();
@@ -98,16 +101,12 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         if (mLegacyAdapter != null) {
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
-                Log.d(TAG, "Found existing events cache with " + eventsCache.size() + " dates");
+                Log.d(TAG, mTAG + "Found existing events cache with " + eventsCache.size() + " dates");
                 mLegacyAdapter.updateEventsData(eventsCache);
             }
         }
-    }
 
-    @Override
-    protected void setupLegacyAdapterDirectly() {
-        // Must be implemented by subclass
-        setupLegacyAdapter();
+        Log.d(TAG, mTAG + "Legacy adapter setup completed");
     }
 
     @Override

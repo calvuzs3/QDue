@@ -1,6 +1,5 @@
 package net.calvuz.qdue.ui.calendar;
 
-import static net.calvuz.qdue.QDue.Debug.DEBUG_ADAPTER;
 import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
 import android.content.Context;
@@ -18,9 +17,12 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
+
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 import net.calvuz.qdue.ui.shared.BaseAdapter;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
@@ -39,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * IMPROVED CalendarAdapter - Mantiene la bellezza originale con eventi integrati
- *
+ * <p>
  * DESIGN PRINCIPLES:
  * - Rispetta il design originale che funzionava bene
  * - Aggiunge eventi senza compromettere l'estetica
@@ -55,8 +57,8 @@ public class CalendarAdapter extends BaseAdapter {
 
     // Events data management
     private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
-    private EventIndicatorHelper mEventHelper;
-    private EventsDatabase mEventsDatabase;
+    private final EventIndicatorHelper mEventHelper;
+    private final EventsDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
     // ==================== CONSTRUCTOR ====================
@@ -77,45 +79,41 @@ public class CalendarAdapter extends BaseAdapter {
     @Override
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
         // Use improved calendar layout
-        View view = inflater.inflate(R.layout.item_calendar_day_enhanced, parent, false);
-        return new ImprovedCalendarDayViewHolder(view);
+        View view = inflater.inflate(R.layout.item_calendar_day, parent, false);
+        return new ImprovedCalendarDayViewHolder((MaterialCardView) view);
     }
 
     // ==================== DAY BINDING ====================
 
     @Override
-    protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
-        if (!(holder instanceof ImprovedCalendarDayViewHolder)) {
-            Log.e(TAG, "Invalid ViewHolder type");
-            return;
-        }
+    public void bindDay(BaseAdapter.DayViewHolder dayHolder, SharedViewModels.DayItem dayItem, int position) {
+        Log.v(TAG, "bindDay: " + dayItem.day.getLocalDate());
 
-        ImprovedCalendarDayViewHolder calendarHolder = (ImprovedCalendarDayViewHolder) holder;
+
+        MaterialCardView holder = dayHolder.mView;;
+
+        ImprovedCalendarDayViewHolder calendarHolder = (ImprovedCalendarDayViewHolder) dayHolder;
 
         // STEP 1: Reset visual state
-        resetCalendarCellState(calendarHolder);
+        resetCalendarCellState(calendarHolder); // ok
 
         // STEP 2: Setup day number (top-left, smaller font)
-        setupDayNumber(calendarHolder, dayItem);
+        setupDayNumber(calendarHolder, dayItem); // ok
 
         // STEP 3: Setup events indicator (top-right, dot with badge)
-        setupEventsIndicator(calendarHolder, dayItem);
+        setupEventsIndicator(calendarHolder, dayItem); // ok
 
         // STEP 4: Setup shift name and indicator (bottom-right area)
-        setupShiftDisplay(calendarHolder, dayItem);
+        setupShiftDisplay(calendarHolder, dayItem); // ok
 
         // STEP 5: Apply today/special day styling
-        applySpecialDayStyling(calendarHolder, dayItem);
+        applySpecialDayStyling(calendarHolder, dayItem); // ok
 
         // STEP 6: Apply Sunday highlighting (NEW - missing from original)
-        applySundayHighlighting(calendarHolder, dayItem);
+        applySundayHighlighting(calendarHolder, dayItem); // ok
 
         // STEP 7: Apply background styling for better visual hierarchy
-        applyBackgroundStyling(calendarHolder, dayItem);
-
-        if (DEBUG_ADAPTER) {
-            Log.v(TAG, "Bound improved calendar day: " + dayItem.day.getLocalDate());
-        }
+        applyBackgroundStyling(holder, dayItem); // ok - the only one to touch cardview background
     }
 
     // ==================== SETUP METHODS ====================
@@ -154,16 +152,8 @@ public class CalendarAdapter extends BaseAdapter {
             com.google.android.material.card.MaterialCardView cardView =
                     (com.google.android.material.card.MaterialCardView) holder.itemView;
 
-            // Reset to default card appearance
-            cardView.setStrokeWidth(1);
-            cardView.setCardElevation(1f);
-            cardView.setCardBackgroundColor(getColorByThemeAttr(mContext,
-                    com.google.android.material.R.attr.colorSurface));
-            cardView.setStrokeColor(getColorByThemeAttr(mContext,
-                    com.google.android.material.R.attr.colorOutlineVariant));
+            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
         }
-
-        holder.itemView.setAlpha(1.0f);
     }
 
     /**
@@ -181,14 +171,12 @@ public class CalendarAdapter extends BaseAdapter {
      * Dot for presence + badge for count if > 1
      */
     private void setupEventsIndicator(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        Log.d(TAG, "setupEventsIndicator called");
+        final String mTAG = "setupEventsIndicator: ";
 
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
         List<LocalEvent> events = getEventsForDate(date);
-
-        Log.d(TAG, "Date: " + date + ", Events count: " + events.size());
 
         if (events.isEmpty()) {
             // No events - hide both indicators
@@ -205,41 +193,31 @@ public class CalendarAdapter extends BaseAdapter {
             int priorityColor = mEventHelper.getHighestPriorityColor(events);
 
 
-            Log.d(TAG, "Setting up events indicator for " + eventCount + " events");
-            Log.d(TAG, "Priority color: " + Integer.toHexString(priorityColor));
 
-            if (eventCount == 1) {
-                Log.d(TAG, "Single event - showing dot");
-                // Single event - show colored dot
-                if (holder.vEventsDot != null) {
-                    holder.vEventsDot.setVisibility(View.VISIBLE);
-                    // FIX: Apply color to dot background
-                    holder.vEventsDot.setBackgroundColor(priorityColor);
-                    Log.d(TAG, "Dot visibility set to VISIBLE");
-                } else {
-                    Log.e(TAG, "vEventsDot is NULL!");
-                }
+            if (eventCount >0 )  {
+                Log.d(TAG, mTAG + "Setting up events indicator for " + eventCount + " events");
+                Log.d(TAG, mTAG + "Priority color: " + Integer.toHexString(priorityColor));
 
-                if (holder.tvEventsCount != null) {
-                    holder.tvEventsCount.setVisibility(View.GONE);
-                }
-            } else {
-                Log.d(TAG, "Multiple events - showing badge: " + eventCount);
                 // Multiple events - show count badge with color
                 if (holder.vEventsDot != null) {
                     holder.vEventsDot.setVisibility(View.GONE);
                 }
                 if (holder.tvEventsCount != null) {
                     holder.tvEventsCount.setVisibility(View.VISIBLE);
-                    holder.tvEventsCount.setText(eventCount > 9 ? "9+" : String.valueOf(eventCount));
+                    if (eventCount == 1) {
+                        Log.d(TAG, mTAG + "Single event - showing empty badge");
+                        holder.tvEventsCount.setText("");
+                    }else {
+                        Log.d(TAG, mTAG + "Multiple events - showing badge: " + eventCount);
+                        holder.tvEventsCount.setText(eventCount > 9 ? "9+" : String.valueOf(eventCount));
+                    }
 
                     // CRITICAL: Apply background tint
                     holder.tvEventsCount.getBackground().setTint(priorityColor);
                     holder.tvEventsCount.setTextColor(getContrastingTextColor(priorityColor));
 
-                    Log.d(TAG, "Badge set: text=" + eventCount + ", visibility=VISIBLE");
                 } else {
-                    Log.e(TAG, "tvEventsCount is NULL!");
+                    Log.e(TAG, mTAG + "tvEventsCount is null");
                 }
             }
         }
@@ -260,10 +238,9 @@ public class CalendarAdapter extends BaseAdapter {
         return luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 
-
-
     /**
-     * Setup shift name (first letter) and shift indicator
+     * Setup shift name (first letter) and visibility.
+     * Setup shift indicator (colored bar) and visibility.
      */
     private void setupShiftDisplay(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
@@ -271,7 +248,7 @@ public class CalendarAdapter extends BaseAdapter {
         Day day = dayItem.day;
 
         // Check if user has a shift on this day
-        if (day.getInWichTeamIsHalfTeam(mUserHalfTeam)>=0) {
+        if (day.getInWichTeamIsHalfTeam(mUserHalfTeam) >= 0) {
             // Get user's shift for this day
             Shift userShift = day.getShifts().get(day.getInWichTeamIsHalfTeam(mUserHalfTeam));
 
@@ -295,42 +272,11 @@ public class CalendarAdapter extends BaseAdapter {
         } else {
             // No shift - hide both elements
             if (holder.tvShiftName != null) {
-                holder.tvShiftName.setVisibility(View.GONE);
+                holder.tvShiftName.setVisibility(View.INVISIBLE);
             }
             if (holder.vShiftIndicator != null) {
                 holder.vShiftIndicator.setVisibility(View.INVISIBLE);
             }
-        }
-    }
-
-    /**
-     * Apply special styling for today and other important days
-     */
-    private void applySpecialDayStyling(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null) return;
-
-        LocalDate date = dayItem.day.getLocalDate();
-        LocalDate today = LocalDate.now();
-
-        if (date.equals(today)) {
-            // Today styling - highlight day number and border
-            if (holder.tvDayNumber != null) {
-                holder.tvDayNumber.setTextColor(getColorByThemeAttr(mContext,
-                        androidx.appcompat.R.attr.colorPrimary));
-                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-            }
-
-            // Add border to card
-            if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
-//                ((com.google.android.material.card.MaterialCardView) holder.itemView)
-//                        .setStrokeWidth(1);
-//                ((com.google.android.material.card.MaterialCardView) holder.itemView)
-//                        .setStrokeColor(getColorByThemeAttr(mContext,
-//                                androidx.appcompat.R.attr.colorPrimary));
-            }
-        } else if (date.isBefore(today)) {
-            // Past days - slightly faded
-            holder.itemView.setAlpha(0.50f);
         }
     }
 
@@ -349,7 +295,7 @@ public class CalendarAdapter extends BaseAdapter {
             if (holder.tvDayNumber != null) {
                 holder.tvDayNumber.setTextColor(
                         ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+//                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
             }
 
             // Apply red color to shift name if present
@@ -361,15 +307,32 @@ public class CalendarAdapter extends BaseAdapter {
     }
 
     /**
+     * Apply special styling for today and other important days
+     */
+    private void applySpecialDayStyling(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+        if (dayItem.day == null) return;
+
+        LocalDate date = dayItem.day.getLocalDate();
+        LocalDate today = LocalDate.now();
+
+        if (date.equals(today)) {
+            // Today styling - highlight day number and border
+            if (holder.tvDayNumber != null) {
+                holder.tvDayNumber.setTextColor(getColorByThemeAttr(mContext,
+                        androidx.appcompat.R.attr.colorPrimary));
+//                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            }
+        } else if (date.isBefore(today)) {
+            // Past days - slightly faded
+            HighlightingHelper.setupOldDaysCardStyle((MaterialCardView) holder.itemView);
+        }
+    }
+
+    /**
      * Apply background styling for visual hierarchy
      * Provides subtle backgrounds for better calendar readability
      */
-    private void applyBackgroundStyling(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (!(holder.itemView instanceof com.google.android.material.card.MaterialCardView)) return;
-
-        com.google.android.material.card.MaterialCardView cardView =
-                (com.google.android.material.card.MaterialCardView) holder.itemView;
-
+    private void applyBackgroundStyling(MaterialCardView cardView, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
@@ -378,104 +341,26 @@ public class CalendarAdapter extends BaseAdapter {
         // NUOVO: Controllare se ci sono eventi per questa data
         List<LocalEvent> events = getEventsForDate(date);
 
+
         if (date.equals(today)) {
             // Today: Special background with elevation
-            setupTodayCardStyle(cardView);
+            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
         } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
             // Sunday: Light background highlighting
-            setupSundayCardStyle(cardView);
-        }  else if (!events.isEmpty()) {
-            // NUOVO: Giorni con eventi - background colorato
-            setupEventsCardStyle(cardView, events);
-        } else {
-            // Regular days: Standard subtle background
-            setupRegularCardStyle(cardView);
+            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
+        } else if (!events.isEmpty()) {
+            // Events: colored background
+            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
         }
-    }
+//        else {
+//            // Regular days: Standard subtle background
+//            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
+//        }
 
-    /**
-     * Setup card style for today
-     */
-    private void setupTodayCardStyle(com.google.android.material.card.MaterialCardView cardView) {
-        cardView.setStrokeWidth(1);
-        cardView.setCardElevation(2f);
-        cardView.setCardBackgroundColor(getColorByThemeAttr(mContext,
-                com.google.android.material.R.attr.colorPrimaryContainer));
-        cardView.setStrokeColor(getColorByThemeAttr(mContext,
-                androidx.appcompat.R.attr.colorPrimary));
-    }
-
-    /**
-     * Setup card style for Sunday with subtle highlighting
-     */
-    private void setupSundayCardStyle(com.google.android.material.card.MaterialCardView cardView) {
-        cardView.setStrokeWidth(1);
-        cardView.setCardElevation(1f);
-        cardView.setCardBackgroundColor(getColorByThemeAttr(mContext,
-                com.google.android.material.R.attr.colorSurfaceVariant));
-        cardView.setStrokeColor(
-                ContextCompat.getColor(mContext, android.R.color.holo_red_light));
-    }
-
-    /**
-     * Setup card style for EVENTS with subtle highlighting
-     */
-    private void setupEventsCardStyle(com.google.android.material.card.MaterialCardView cardView, List<LocalEvent> events) {
-        // Ottenere colore dominante eventi
-        int eventColor = getDominantEventTypeColor(events);
-
-        // Applicare blend con bianco per background leggibile
-        int lightBackground = blendEventColorWithWhite(eventColor);
-
-        cardView.setStrokeWidth(1); // FIX: Bordo normale, non spesso
-        cardView.setCardElevation(1f);
-        cardView.setCardBackgroundColor(lightBackground);
-        cardView.setStrokeColor(getColorByThemeAttr(mContext,
-                com.google.android.material.R.attr.colorOutlineVariant));
-    }
-
-    /**
-     * Setup card style for regular days
-     */
-    private void setupRegularCardStyle(com.google.android.material.card.MaterialCardView cardView) {
-        cardView.setStrokeWidth(1);
-        cardView.setCardElevation(1f);
-        cardView.setCardBackgroundColor(getColorByThemeAttr(mContext,
-                com.google.android.material.R.attr.colorSurface));
-        cardView.setStrokeColor(getColorByThemeAttr(mContext,
-                com.google.android.material.R.attr.colorOutlineVariant));
-    }
-
-
-    /**
-     * AGGIUNGERE questo metodo in CalendarAdapter.java (copiato da DaysListAdapter funzionante):
-     */
-    private int blendEventColorWithWhite(int eventColor) {
-        int eventRed = android.graphics.Color.red(eventColor);
-        int eventGreen = android.graphics.Color.green(eventColor);
-        int eventBlue = android.graphics.Color.blue(eventColor);
-
-        // Blend con bianco (84% bianco, 16% evento) - stessi valori che funzionano in DaysList
-        float eventWeight = 0.16f;
-        float whiteWeight = 0.84f;
-
-        int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
-        int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);
-        int blendedBlue = (int) (255 * whiteWeight + eventBlue * eventWeight);
-
-        return android.graphics.Color.rgb(blendedRed, blendedGreen, blendedBlue);
-    }
-
-    /**
-     * AGGIUNGERE questo metodo per ottenere colore dominante eventi:
-     */
-    private int getDominantEventTypeColor(List<LocalEvent> events) {
-        if (events == null || events.isEmpty()) {
-            return ContextCompat.getColor(mContext, R.color.event_type_general);
+        if (date.isBefore(today)) {
+            // Past days - slightly faded
+            HighlightingHelper.setupOldDaysCardStyle(cardView);
         }
-
-        // Usare EventIndicatorHelper per ottenere colore priorità più alta
-        return mEventHelper.getHighestPriorityColor(events);
     }
 
     // ==================== EVENTS DATA MANAGEMENT ====================
@@ -555,7 +440,6 @@ public class CalendarAdapter extends BaseAdapter {
         return shiftColor;
     }
 
-
     // ==================== IMPROVED VIEW HOLDER ====================
 
     /**
@@ -575,7 +459,7 @@ public class CalendarAdapter extends BaseAdapter {
         public final TextView tvShiftName;
         public final View vShiftIndicator;
 
-        public ImprovedCalendarDayViewHolder(@NonNull View itemView) {
+        public ImprovedCalendarDayViewHolder(@NonNull MaterialCardView itemView) {
             super(itemView);
 
             // Initialize all elements
@@ -606,7 +490,6 @@ public class CalendarAdapter extends BaseAdapter {
 //            Log.d(TAG, "ImprovedCalendarDayViewHolder initialized");
         }
     }
-
 
     // ========================================
 // FIX 4: CalendarAdapter.java - Debug in updateEventsData()

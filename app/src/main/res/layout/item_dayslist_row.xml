@@ -1,156 +1,113 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/item_dayslist_row_enhanced.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/item_dayslist_row_enhanced.xml -->
 <!-- ENHANCED: MaterialCardView unified design with localEvents support -->
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
     android:layout_marginVertical="2dp"
+    android:checkable="true"
     android:clickable="true"
-    android:focusable="true"
+    android:focusable="false"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="8dp"
     app:cardElevation="0dp"
     app:rippleColor="?attr/colorPrimaryContainer"
     app:strokeColor="?attr/colorOutlineVariant"
-    app:strokeWidth="0.5dp">
+    app:strokeWidth="@dimen/spacing_xxs">
 
+    <!-- Row content originale - ESATTAMENTE come prima quando funzionava -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:orientation="horizontal"
+        android:paddingVertical="@dimen/item_padding_small">
 
-        <!-- Main row content -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/dayslist_row_height"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <!-- Day number column -->
-            <TextView
-                android:id="@+id/tday"
-                android:layout_width="@dimen/dayslist_day_column_width"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:fontFamily="@font/lato_bold"
-                tools:text="15" />
-
-            <!-- Weekday name column -->
-            <TextView
-                android:id="@+id/twday"
-                android:layout_width="@dimen/dayslist_weekday_column_width"
-                android:layout_height="wrap_content"
-                android:gravity="start|center_vertical"
-                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                android:textColor="?attr/colorOnSurface"
-                android:paddingStart="@dimen/spacing_s"
-                tools:text="Lunedì" />
-
-            <!-- Shift columns with consistent width -->
-            <TextView
-                android:id="@+id/tt1"
-                android:layout_width="@dimen/dayslist_shift_column_width"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="?attr/colorOnSurface"
-                android:background="@drawable/shift_cell_background"
-                android:padding="@dimen/spacing_xs"
-                tools:text="A" />
-
-            <TextView
-                android:id="@+id/tt2"
-                android:layout_width="@dimen/dayslist_shift_column_width"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="?attr/colorOnSurface"
-                android:background="@drawable/shift_cell_background"
-                android:padding="@dimen/spacing_xs"
-                android:layout_marginStart="@dimen/spacing_xs"
-                tools:text="B" />
-
-            <TextView
-                android:id="@+id/tt3"
-                android:layout_width="@dimen/dayslist_shift_column_width"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="?attr/colorOnSurface"
-                android:background="@drawable/shift_cell_background"
-                android:padding="@dimen/spacing_xs"
-                android:layout_marginStart="@dimen/spacing_xs"
-                tools:text="C" />
-
-            <!-- Rest teams column -->
-            <TextView
-                android:id="@+id/ttR"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:padding="@dimen/spacing_xs"
-                android:layout_marginStart="@dimen/spacing_s"
-                tools:text="D,E" />
-
-        </LinearLayout>
-
-        <!-- Events section (expandable for performance) -->
-        <LinearLayout
-            android:id="@+id/ll_events_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="8dp"
-            android:visibility="gone">
-
-            <!-- Events header -->
-            <TextView
-                android:id="@+id/tv_events_header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Eventi"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp" />
-
-            <!-- Mini RecyclerView for localEvents (performance optimized) -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_events"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never"
-                android:maxHeight="120dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_event_mini" />
-
-        </LinearLayout>
-
-        <!-- Events indicator (when collapsed) -->
         <TextView
-            android:id="@+id/tv_events_indicator"
+            android:id="@+id/tday"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minWidth="18dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            tools:text="15" />
+
+        <TextView
+            android:id="@+id/twday"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight="6"
+            android:paddingStart="8dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            tools:text="LUN" />
+
+        <TextView
+            android:id="@+id/tt1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_marginTop="4dp"
-            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-            android:textColor="?attr/colorPrimary"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minWidth="35dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            tools:text="AB" />
+
+        <TextView
+            android:id="@+id/tt2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minWidth="35dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            tools:text="CD" />
+
+        <TextView
+            android:id="@+id/tt3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minWidth="35dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            tools:text="EF" />
+
+        <TextView
+            android:id="@+id/ttR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minWidth="35dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="12sp"
+            tools:text="GH" />
+
+        <!-- Events indicator - SEMPLICE come prima -->
+        <TextView
+            android:id="@+id/tv_events_indicator"
+            android:layout_width="@dimen/spacing_l"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:layout_marginEnd="@dimen/spacing_s"
             android:background="@drawable/events_indicator_background"
-            android:padding="4dp"
+            android:gravity="center_horizontal|center_vertical"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="10sp"
             android:visibility="gone"
-            tools:text="3 eventi"
+            tools:text="2ev"
             tools:visibility="visible" />
 
     </LinearLayout>
