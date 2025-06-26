@@ -39,5 +39,10 @@ public interface EventsEventOperationsInterface {
      * @param event Event to add to calendar
      */
     void triggerAddToCalendar(LocalEvent event);
+
+    /**
+     * Create new event
+     */
+    void triggerCreateNewEvent();
 }
 

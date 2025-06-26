@@ -509,6 +509,7 @@
     <string name="action_export_events">Esporta Eventi</string>
     <string name="action_refresh_events">Aggiorna</string>
     <string name="action_search_events">Cerca Eventi</string>
+    <string name="advanced_menu_events_list">Avanzate</string>
     <string name="action_events_settings">Impostazioni Eventi</string>
 
     <!-- Event Detail Actions -->

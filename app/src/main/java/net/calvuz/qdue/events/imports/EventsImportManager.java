@@ -1016,4 +1016,22 @@ public class EventsImportManager {
         void onSuccess(int importedCount, String message);
         void onError(String error);
     }
+
+    // =============================== INTEGRAZIONE EXTENSION ===================================
+
+    /**
+     * Import from JSON string for file imports
+     */
+    public void importFromJsonString(String jsonContent, String sourceDescription,
+                                     FileImportCallback callback) {
+        // Implementazione usando metodi esistenti
+    }
+
+    /**
+     * Simple callback for file imports (different from UpdateCallback)
+     */
+    public interface FileImportCallback {
+        void onSuccess(int importedCount, String message);
+        void onError(String error);
+    }
 }

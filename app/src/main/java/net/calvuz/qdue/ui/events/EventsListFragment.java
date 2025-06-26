@@ -16,13 +16,17 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.backup.BackupIntegration;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.EventDao;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
@@ -46,12 +50,14 @@ import java.util.Set;
 public class EventsListFragment extends Fragment implements
         EventsAdapter.OnEventClickListener {
 
-    private static final String TAG = "EventsListFragment";
+    private static final String TAG = "EventsListFrg";
 
     // Views
     private RecyclerView mEventsRecyclerView;
     private View mEmptyStateView;
     private View mLoadingStateView;
+    private MaterialButton mBtnEmptyImportEvents;
+    private MaterialButton mBtnEmptyCreateEvent;
 
     // Data
     private EventsAdapter mEventsAdapter;
@@ -60,6 +66,7 @@ public class EventsListFragment extends Fragment implements
     // Interfaces
     private EventsFileOperationsInterface mFileOperationsInterface;
     private EventsDatabaseOperationsInterface mDataOperationsInterface;
+    private EventsUIStateInterface mUIStateInterface;
 
     // Deletions
     private Set<String> mPendingDeletionIds = new HashSet<>();
@@ -74,6 +81,7 @@ public class EventsListFragment extends Fragment implements
         mEventsList = new ArrayList<>();
         mFileOperationsInterface = (EventsFileOperationsInterface) getActivity();
         mDataOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+        mUIStateInterface = (EventsUIStateInterface) getActivity();
     }
 
     @Nullable
@@ -100,6 +108,10 @@ public class EventsListFragment extends Fragment implements
         mEventsRecyclerView = view.findViewById(R.id.recycler_view_events);
         mEmptyStateView = view.findViewById(R.id.empty_state_events);
         mLoadingStateView = view.findViewById(R.id.loading_state_events);
+        mBtnEmptyImportEvents = mEmptyStateView.findViewById(R.id.btn_empty_import_events);
+        mBtnEmptyCreateEvent = mEmptyStateView.findViewById(R.id.btn_empty_create_event);
+
+        setupEmptyStateButtons();
     }
 
     /**
@@ -109,6 +121,30 @@ public class EventsListFragment extends Fragment implements
         mEventsAdapter = new EventsAdapter(mEventsList, this);
         mEventsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mEventsRecyclerView.setAdapter(mEventsAdapter);
+    }
+
+    /**
+     * Setup empty state buttons click handlers
+     */
+    private void setupEmptyStateButtons() {
+        if (mBtnEmptyImportEvents != null) {
+            mBtnEmptyImportEvents.setOnClickListener(v -> {
+                Log.d(TAG, "Empty state import button clicked");
+                if (mFileOperationsInterface != null) {
+                    mFileOperationsInterface.triggerImportEventsFromFile();
+                }
+            });
+        }
+
+        if (mBtnEmptyCreateEvent != null) {
+            mBtnEmptyCreateEvent.setOnClickListener(v -> {
+                Log.d(TAG, "Empty state create button clicked");
+                // Trigger the same action as FAB - delegate to activity
+                if (getActivity() instanceof EventsEventOperationsInterface) {
+                    ((EventsEventOperationsInterface) getActivity()).triggerCreateNewEvent();
+                }
+            });
+        }
     }
 
     /**
@@ -218,7 +254,6 @@ public class EventsListFragment extends Fragment implements
         Log.d(TAG, "Refresh suppressed: " + suppress);
     }
 
-
     /**
      * Refresh events list (called from parent activity)
      */
@@ -232,12 +267,21 @@ public class EventsListFragment extends Fragment implements
      * Update view state based on data availability
      */
     private void updateViewState() {
-        if (mEventsList.isEmpty()) {
-            mEventsRecyclerView.setVisibility(View.GONE);
-            mEmptyStateView.setVisibility(View.VISIBLE);
-        } else {
+        boolean hasEvents = !mEventsList.isEmpty();
+
+        if (hasEvents) {
             mEventsRecyclerView.setVisibility(View.VISIBLE);
             mEmptyStateView.setVisibility(View.GONE);
+            Log.d(TAG, "updateViewState: Showing events list (" + mEventsList.size() + " events)");
+        } else {
+            mEventsRecyclerView.setVisibility(View.GONE);
+            mEmptyStateView.setVisibility(View.VISIBLE);
+            Log.d(TAG, "updateViewState: Showing empty state");
+        }
+
+        // Notify activity about events state change for FAB management
+        if (mUIStateInterface != null) {
+            mUIStateInterface.onEventsListStateChanged(hasEvents);
         }
     }
 
@@ -246,11 +290,12 @@ public class EventsListFragment extends Fragment implements
      */
     private void showLoading(boolean show) {
         if (show) {
-            mLoadingStateView.setVisibility(View.VISIBLE);
             mEventsRecyclerView.setVisibility(View.GONE);
             mEmptyStateView.setVisibility(View.GONE);
+            mLoadingStateView.setVisibility(View.VISIBLE);
         } else {
             mLoadingStateView.setVisibility(View.GONE);
+            updateViewState(); // This will handle showing correct state and notify activity
         }
     }
 
@@ -362,7 +407,7 @@ public class EventsListFragment extends Fragment implements
         Toast.makeText(getContext(), "Eventi aggiornati", Toast.LENGTH_SHORT).show();
     }
 
-//    private void handleSearchEvents() {
+    //    private void handleSearchEvents() {
 //        // TODO: Implement search functionality
 //        Toast.makeText(getContext(), "Ricerca eventi - TODO", Toast.LENGTH_SHORT).show();
 //    }
@@ -442,8 +487,6 @@ public class EventsListFragment extends Fragment implements
         }
     }
 
-
-
     /**
      * Update existing event in list (called after editing)
      */
@@ -491,7 +534,6 @@ public class EventsListFragment extends Fragment implements
         // Brutal Notify
         mEventsAdapter.notifyDataSetChanged();
     }
-
 
     // ================================== DEBUG =================================
 

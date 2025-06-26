@@ -93,6 +93,19 @@ public final class Log {
     }
 
     /**
+     * Log con livello WARNING.
+     *
+     * @param tag Tag per identificare la sorgente del log
+     * @param msg Messaggio da loggare
+     * @param e Eccezione da loggare
+     */
+    public static void w(String tag, String msg, Exception e) {
+        if (QD_DEBUG) {
+            android.util.Log.w(tag, msg, e);
+        }
+    }
+
+    /**
      * Log con livello ERROR.
      *
      * @param tag Tag per identificare la sorgente del log

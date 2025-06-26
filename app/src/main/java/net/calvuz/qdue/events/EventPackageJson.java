@@ -59,7 +59,16 @@ public class EventPackageJson {
     public PackageInfo package_info;
     public List<EventJson> events;
 
+    public PackageInfo getPackageInfo() {
+        return package_info;
+    }
+
+    public List<EventJson> getEvents() {
+        return events;
+    }
+
     public static class PackageInfo {
+
         public String id;
         public String name;
         public String version;
@@ -69,6 +78,30 @@ public class EventPackageJson {
         public String valid_to;
         public String author;
         public String contact_email;
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getCreatedAt() {
+            return created_date;
+        }
     }
 
     public static class EventJson {

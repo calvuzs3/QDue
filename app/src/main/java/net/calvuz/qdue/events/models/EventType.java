@@ -33,7 +33,8 @@ public enum EventType {
     AUDIT("Audit", Color.parseColor("#FFEAA7"), "📋"),
 
     // Custom/imported events
-    IMPORTED("Importato", Color.parseColor("#DDA0DD"), "📥");
+    IMPORTED("Importato", Color.parseColor("#DDA0DD"), "📥"),
+    OTHER("Altro", Color.parseColor("#DDA0DD"), "📥");
 
     private final String displayName;
     private final int color;

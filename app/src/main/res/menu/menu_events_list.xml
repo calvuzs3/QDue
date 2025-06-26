@@ -15,8 +15,7 @@
         android:id="@+id/action_refresh_events"
         android:icon="@drawable/ic_rounded_rotate_right_24"
         android:title="@string/update"
-        android:visible="true
-"
+        android:visible="true"
         app:showAsAction="ifRoom" />
 
     <!-- Import Events -->
@@ -56,18 +55,28 @@
 
     <!-- Existing menu items -->
     <item
-        android:id="@+id/action_clear_all"
-        android:title="@string/action_clear_all"
-        android:icon="@drawable/ic_clear_all"
+        android:id="@+id/action_advanced_events"
+        android:icon="@drawable/ic_rounded_input_24"
+        android:title="@string/advanced_menu_events_list"
         android:visible="true"
-        app:showAsAction="never" />
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_clear_all"
+                android:icon="@drawable/ic_clear_all"
+                android:title="@string/action_clear_all"
+                android:visible="true"
+                app:showAsAction="never" />
 
-    <!-- Settings -->
-    <item
-        android:id="@+id/action_events_settings"
-        android:icon="@drawable/ic_rounded_settings_24"
-        android:title="@string/settings"
-        android:visible="false"
-        app:showAsAction="never" />
+            <!-- Settings -->
+            <item
+                android:id="@+id/action_events_settings"
+                android:icon="@drawable/ic_rounded_settings_24"
+                android:title="@string/settings"
+                android:visible="false"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+
 
 </menu>
