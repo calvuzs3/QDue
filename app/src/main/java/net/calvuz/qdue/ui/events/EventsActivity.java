@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -30,6 +31,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.file.FileAccessAdapter;
+import net.calvuz.qdue.core.file.EventsImportAdapter;
+import net.calvuz.qdue.core.permissions.PermissionManager;
 import net.calvuz.qdue.events.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.backup.BackupIntegration;
@@ -41,6 +45,7 @@ import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.format.DateTimeFormatter;
@@ -66,7 +71,8 @@ import java.time.format.DateTimeFormatter;
 public class EventsActivity extends AppCompatActivity implements
         EventsFileOperationsInterface,
         EventsDatabaseOperationsInterface,
-        EventsEventOperationsInterface {
+        EventsEventOperationsInterface,
+        EventsUIStateInterface {
 
     private static final String TAG = "EventsActivity";
 
@@ -80,12 +86,20 @@ public class EventsActivity extends AppCompatActivity implements
     private View mEmptyStateView;
     private View mLoadingStateView;
 
+    // Empty State
+    private boolean mHasEvents = false;
+
     // File operation launchers
     private ActivityResultLauncher<Intent> mFilePickerLauncher;
     private ActivityResultLauncher<Intent> mFileSaverLauncher;
 
     // Current fragment reference for communication
     private EventsListFragment mCurrentListFragment;
+
+    // File Access
+    private FileAccessAdapter mFileAccessAdapter;
+    private EventsImportAdapter mEventsImportAdapter;
+    private PermissionManager mPermissionManager;
 
     // Interfaces
 //    private EventsOperationListener mEventsOperationListener;
@@ -104,6 +118,19 @@ public class EventsActivity extends AppCompatActivity implements
 
         // Set up interfaces
 //        mEventsOperationListener = (EventsOperationListener) this;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // ADD THESE LINES to your existing onDestroy:
+        if (mFileAccessAdapter != null) {
+            mFileAccessAdapter.clearPendingCallback();
+        }
+        if (mPermissionManager != null) {
+            mPermissionManager.clearPendingCallbacks();
+        }
     }
 
     @Override
@@ -173,16 +200,22 @@ public class EventsActivity extends AppCompatActivity implements
      * Setup FloatingActionButton for creating new events
      */
     private void setupFab() {
-        mFabAddEvent.setOnClickListener(v -> handleCreateNewEvent());
+        mFabAddEvent.setOnClickListener(v -> triggerCreateNewEvent());
 
-        // Initially show FAB (will be controlled by destination changes)
-        mFabAddEvent.show();
+        // Initially hide FAB - will be shown/hidden based on events state
+        mFabAddEvent.hide();
+        Log.d(TAG, "setupFab: completed (hidden)");
     }
 
     /**
      * Setup file operation launchers for import/export
      */
     private void setupFileOperations() {
+        // File  Operation Managers and Adapters (transition)
+        mFileAccessAdapter = new FileAccessAdapter(this);
+        mEventsImportAdapter = new EventsImportAdapter(this);
+        mPermissionManager = new PermissionManager(this);
+
         // File picker for JSON import
         mFilePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -215,8 +248,11 @@ public class EventsActivity extends AppCompatActivity implements
         Log.d(TAG, "Navigation destination changed to: " + destinationId);
 
         if (destinationId == R.id.nav_events_list) {
+            // On events list - update FAB based on events availability
+            updateFabVisibility();
+
             // On events list - show FAB and update fragment reference
-            mFabAddEvent.show();
+//            mFabAddEvent.show();
 
             // Update toolbar title
             if (getSupportActionBar() != null) {
@@ -294,8 +330,7 @@ public class EventsActivity extends AppCompatActivity implements
     /**
      * Handle create new event action
      */
-    private void handleCreateNewEvent() {
-        // TODO: Implement event creation dialog or navigate to creation fragment
+    public void handleCreateNewEvent() {
         showCreateEventDialog();
     }
 
@@ -405,30 +440,50 @@ public class EventsActivity extends AppCompatActivity implements
      * Import events from selected file URI
      */
     private void importEventsFromFile(Uri fileUri) {
-        // TODO: Integrate with existing import functionality
-        Log.d(TAG, "Importing events from: " + fileUri.toString());
-
         try {
-            Log.d(TAG, "Starting enhanced import from file: " + fileUri.toString());
+            Log.d(TAG, "Starting SAF-based import from: " + fileUri.toString());
 
-            // Show format detection info
-            EventsImportManager.FileFormatInfo formatInfo = EventsImportManager.detectFileFormat(fileUri);
-            if (!formatInfo.supported) {
-                showError("Unsupported file format: " + formatInfo.description);
+            // Step 1: Show file info to user
+            String fileInfo = mFileAccessAdapter.getFileDisplayInfo(fileUri);
+            Log.d(TAG, "Selected file: " + fileInfo);
+
+            // Step 2: Check if supported file type
+            if (!mFileAccessAdapter.isSupportedFile(fileUri)) {
+                showError("Unsupported file type. " + FileAccessAdapter.getSupportedFileTypesDescription());
                 return;
             }
 
-            // Show import dialog with options
+            // Step 3: Show import dialog with existing logic (no changes needed!)
             showImportDialog(fileUri);
 
-            // Show import dialog with options
-//            showAdvancedImportDialog(fileUri);
-
         } catch (Exception e) {
-            showGlobalLoading(false, null);
-            Log.e(TAG, "Error importing events: " + e.getMessage());
-            Toast.makeText(this, "Errore durante l'import: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Error starting import", e);
+            showError("Error reading file: " + e.getMessage());
         }
+
+//        Log.d(TAG, "Importing events from: " + fileUri.toString());
+//
+//        try {
+//            Log.d(TAG, "Starting enhanced import from file: " + fileUri.toString());
+//
+//            // Show format detection info
+//            EventsImportManager.FileFormatInfo formatInfo = EventsImportManager.detectFileFormat(fileUri);
+//            if (!formatInfo.supported) {
+//                showError("Unsupported file format: " + formatInfo.description);
+//                return;
+//            }
+//
+//            // Show import dialog with options
+//            showImportDialog(fileUri);
+//
+//            // Show import dialog with options
+////            showAdvancedImportDialog(fileUri);
+//
+//        } catch (Exception e) {
+//            showGlobalLoading(false, null);
+//            Log.e(TAG, "Error importing events: " + e.getMessage());
+//            Toast.makeText(this, "Errore durante l'import: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//        }
     }
 
     /**
@@ -680,22 +735,23 @@ public class EventsActivity extends AppCompatActivity implements
      * Perform the actual import with progress feedback
      */
     private void performImport(Uri fileUri, EventsImportManager.ImportOptions options) {
-        // Show progress dialog
+        // Show progress dialog (your existing code)
         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
         progressDialog.setTitle("Importing Events");
-        progressDialog.setMessage("Processing...");
-        progressDialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMessage("Reading file...");
+        progressDialog.setIndeterminate(true);
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        EventsImportManager importManager = new EventsImportManager(this);
-
-        importManager.importFromFile(fileUri, options, new EventsImportManager.ImportCallback() {
+        // Use SAF-based import adapter instead of direct EventsImportManager
+        mEventsImportAdapter.importFromSAFFile(fileUri, options, new EventsImportManager.ImportCallback() {
             @Override
             public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
                 runOnUiThread(() -> {
-                    if (!validationResult.isValid) {
-                        progressDialog.setMessage("Validation failed, importing anyway...");
+                    if (validationResult.isValid) {
+                        progressDialog.setMessage("Validation passed. Importing events...");
+                    } else {
+                        progressDialog.setMessage("Validation issues found. Continuing...");
                     }
                 });
             }
@@ -703,9 +759,8 @@ public class EventsActivity extends AppCompatActivity implements
             @Override
             public void onProgress(int processed, int total, String currentEvent) {
                 runOnUiThread(() -> {
-                    progressDialog.setMax(total);
-                    progressDialog.setProgress(processed);
-                    progressDialog.setMessage("Processing: " + currentEvent);
+                    progressDialog.setMessage(String.format("Importing... (%d/%d) %s",
+                            processed, total, currentEvent));
                 });
             }
 
@@ -713,22 +768,24 @@ public class EventsActivity extends AppCompatActivity implements
             public void onComplete(EventsImportManager.ImportResult result) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
+                    //handleImportResult(result); // in the case of exporting next snippet
+
+                    //  From OLD code ---
                     showImportResultDialog(result);
 
                     if (result.success && result.importedEvents > 0) {
 
                         // get Fragment actions..
                         mCurrentListFragment.refreshEvents(); // Refresh the list
-//                        loadEvents(); // Refresh the list (->now in fragment)
 
                         // TRIGGER AUTO BACKUP AFTER IMPORT
                         BackupIntegration.integrateWithImport(
                                 EventsActivity.this,
                                 mCurrentListFragment.getEventsList(),
-//                                mEventsList, // (-> now in fragment)
                                 result.importedEvents
                         );
                     }
+                    // ---
                 });
             }
 
@@ -737,9 +794,71 @@ public class EventsActivity extends AppCompatActivity implements
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     showError("Import failed: " + error);
+                    Log.e(TAG, "Import error", exception);
                 });
             }
         });
+
+//        // Show progress dialog
+//        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+//        progressDialog.setTitle("Importing Events");
+//        progressDialog.setMessage("Processing...");
+//        progressDialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL);
+//        progressDialog.setCancelable(false);
+//        progressDialog.show();
+//
+//        EventsImportManager importManager = new EventsImportManager(this);
+//
+//        importManager.importFromFile(fileUri, options, new EventsImportManager.ImportCallback() {
+//            @Override
+//            public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
+//                runOnUiThread(() -> {
+//                    if (!validationResult.isValid) {
+//                        progressDialog.setMessage("Validation failed, importing anyway...");
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onProgress(int processed, int total, String currentEvent) {
+//                runOnUiThread(() -> {
+//                    progressDialog.setMax(total);
+//                    progressDialog.setProgress(processed);
+//                    progressDialog.setMessage("Processing: " + currentEvent);
+//                });
+//            }
+//
+//            @Override
+//            public void onComplete(EventsImportManager.ImportResult result) {
+//                runOnUiThread(() -> {
+//                    progressDialog.dismiss();
+//                    showImportResultDialog(result);
+//
+//                    if (result.success && result.importedEvents > 0) {
+//
+//                        // get Fragment actions..
+//                        mCurrentListFragment.refreshEvents(); // Refresh the list
+////                        loadEvents(); // Refresh the list (->now in fragment)
+//
+//                        // TRIGGER AUTO BACKUP AFTER IMPORT
+//                        BackupIntegration.integrateWithImport(
+//                                EventsActivity.this,
+//                                mCurrentListFragment.getEventsList(),
+////                                mEventsList, // (-> now in fragment)
+//                                result.importedEvents
+//                        );
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onError(String error, Exception exception) {
+//                runOnUiThread(() -> {
+//                    progressDialog.dismiss();
+//                    showError("Import failed: " + error);
+//                });
+//            }
+//        });
     }
 
     /**
@@ -971,7 +1090,28 @@ public class EventsActivity extends AppCompatActivity implements
      */
     @Override
     public void triggerImportEventsFromFile() {
-        handleImportEventsFromFile();
+        // Use SAF-based file selection instead of traditional file picker
+        mFileAccessAdapter.selectFile(new FileAccessAdapter.FileSelectionCallback() {
+            @Override
+            public void onFileSelected(@NonNull Uri fileUri) {
+                // Delegate to existing import logic - zero changes needed!
+                importEventsFromFile(fileUri);
+            }
+
+            @Override
+            public void onSelectionError(@NonNull String error) {
+                showError("File selection failed: " + error);
+            }
+
+            @Override
+            public void onSelectionCancelled() {
+                Log.d(TAG, "File selection cancelled");
+                // No action needed - user cancelled
+            }
+        });
+
+        // Old one
+        //handleImportEventsFromFile();
     }
 
     /**
@@ -1307,6 +1447,15 @@ public class EventsActivity extends AppCompatActivity implements
         handleDeleteAllEvents();
     }
 
+
+    /**
+     * Trigger create new event
+     */
+    @Override
+    public void triggerCreateNewEvent() {
+        handleCreateNewEvent();
+    }
+
     /// //////////////////////////////////////////////////////////////
 
     /**
@@ -1385,4 +1534,66 @@ public class EventsActivity extends AppCompatActivity implements
             mCurrentListFragment.updateEvent(event);
         }
     }
+
+    // ====================== PERMISSIONS RELATED ==========================
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // ADD THIS LINE to your existing onActivityResult:
+        mFileAccessAdapter.onActivityResult(requestCode, resultCode, data);
+
+        // ... your existing onActivityResult code remains unchanged ...
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // ADD THIS LINE to your existing onRequestPermissionsResult:
+        mPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // ... your existing permission handling code remains unchanged ...
+    }
+
+    // ========================== FAB RELATED ==============================
+
+    /**
+     * Implementation of EventsUIStateInterface
+     * Called by EventsListFragment to control FAB visibility
+     */
+    public void onEventsListStateChanged(boolean hasEvents) {
+        Log.d(TAG, "onEventsListStateChanged called - hasEvents: " + hasEvents);
+        mHasEvents = hasEvents;
+        updateFabVisibility();
+    }
+
+    /**
+     * Update FAB visibility based on current navigation destination and events availability
+     */
+    private void updateFabVisibility() {
+        // Only show FAB if we're on events list AND there are events
+        if (mNavController != null) {
+            int currentDestination = mNavController.getCurrentDestination() != null ?
+                    mNavController.getCurrentDestination().getId() : -1;
+
+            if (currentDestination == R.id.nav_events_list) {
+                if (mHasEvents) {
+                    mFabAddEvent.show();
+                    Log.d(TAG, "FAB shown - events list with events present");
+                } else {
+                    mFabAddEvent.hide();
+                    Log.d(TAG, "FAB hidden - events list is empty");
+                }
+            } else {
+                // Other destinations (event detail, edit) - always hide FAB
+                mFabAddEvent.hide();
+                Log.d(TAG, "FAB hidden - not on events list");
+            }
+        }
+    }
+
+
 }

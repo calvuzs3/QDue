@@ -84,8 +84,8 @@ public class JsonSchemaValidator {
         public final List<String> warnings;
         public final List<String> detailedErrors;
 
-        private ValidationResult(boolean isValid, String errorMessage,
-                                 List<String> warnings, List<String> detailedErrors) {
+        public ValidationResult(boolean isValid, String errorMessage,
+                                List<String> warnings, List<String> detailedErrors) {
             this.isValid = isValid;
             this.errorMessage = errorMessage;
             this.warnings = warnings != null ? warnings : new ArrayList<>();

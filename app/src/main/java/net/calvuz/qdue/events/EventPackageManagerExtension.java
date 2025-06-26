@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -66,7 +67,7 @@ public class EventPackageManagerExtension {
             // Process events
             int importedCount = processEvents(packageManager, packageJson, sourceDescription);
 
-            String successMessage = String.format(
+            String successMessage = String.format(QDue.getLocale(),
                     "Successfully imported %d events from %s (Package: %s v%s)",
                     importedCount,
                     sourceDescription,
@@ -213,7 +214,7 @@ public class EventPackageManagerExtension {
         String packageId = packageJson.package_info.id;
         String packageVersion = packageJson.package_info.version;
 
-        Log.d(TAG, String.format("Processing %d events for package %s v%s",
+        Log.d(TAG, String.format(QDue.getLocale(), "Processing %d events for package %s v%s",
                 packageJson.events.size(), packageId, packageVersion));
 
         // TODO: This should use the actual EventPackageManager methods

@@ -22,7 +22,7 @@
         android:id="@+id/action_add_to_calendar"
         android:title="@string/add_to_calendar_app"
         android:icon="@android:drawable/ic_menu_today"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <!-- More Actions (Overflow Menu) -->
     <item
