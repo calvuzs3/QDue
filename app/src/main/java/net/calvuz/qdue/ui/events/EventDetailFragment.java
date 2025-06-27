@@ -25,12 +25,13 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
-import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsOperationListener;
+import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
+import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -56,13 +57,15 @@ import java.util.Map;
  */
 public class EventDetailFragment extends Fragment {
 
-    private static final String TAG = "EventDetailFragment";
+    private static final String TAG = "EventDetailFrg";
     private static final String ARG_EVENT_ID = "event_id";
 
-    // Interfaces
-    private static EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface = null;
+    // Non static
+    private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
+    private EventsEventOperationsInterface mEventsEventOperationsInterface;
+    private EventsFileOperationsInterface mFileOperationsInterface;
 
-    // Date formatters for display
+        // Date formatters for display
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER =
@@ -141,19 +144,47 @@ public class EventDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        // Check interface implementation
-        if (getActivity() instanceof EventsDatabaseOperationsInterface) {
-            mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
-            Log.d(TAG, "EventsDatabaseOperationsInterface initialized successfully");
-        } else {
-            Log.e(TAG, "Activity does not implement EventsDatabaseOperationsInterface");
-        }
+        // Init interfaces
+        initializeInterfaces();
 
         if (getArguments() != null) {
             mEventId = getArguments().getString("eventId");
             Log.d(TAG, "Received eventId: " + mEventId);
         } else {
             Log.e(TAG, "No arguments received");
+        }
+    }
+
+    /**
+     * Initialize all interfaces properly
+     */
+    private void initializeInterfaces() {
+        final String mTAG = "initializeInterfaces: ";
+
+        try {
+            if (getActivity() instanceof EventsDatabaseOperationsInterface) {
+                mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "EventsDatabaseOperationsInterface initialized");
+            } else {
+                Log.e(TAG, mTAG + "Activity does not implement EventsDatabaseOperationsInterface");
+            }
+
+            if (getActivity() instanceof EventsEventOperationsInterface) {
+                mEventsEventOperationsInterface = (EventsEventOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "EventsEventOperationsInterface initialized");
+            } else {
+                Log.e(TAG, mTAG + "Activity does not implement EventsEventOperationsInterface");
+            }
+
+            if (getActivity() instanceof EventsFileOperationsInterface) {
+                mFileOperationsInterface = (EventsFileOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "EventsFileOperationsInterface initialized");
+            } else {
+                Log.w(TAG, mTAG + "Activity does not implement EventsFileOperationsInterface (optional)");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error initializing interfaces: " + e.getMessage());
         }
     }
 
@@ -278,62 +309,90 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Load event data and populate views
+     * ENHANCED: Load event data with better thread safety
      */
     private void loadEventData() {
+        final String mTAG = "loadEventData: ";
+
         if (TextUtils.isEmpty(mEventId)) {
-            Log.e(TAG, "No event ID provided");
-            showError("Evento non trovato");
+            Log.e(TAG, mTAG + "No event ID provided");
+            showError("Evento non trovato - ID mancante");
             return;
         }
 
-        Log.d(TAG, "Loading event with ID: " + mEventId);
+        Log.d(TAG, mTAG + "Loading event with ID: " + mEventId);
 
         try {
             // Get database instance and DAO
-            EventDao eventDao = EventsDatabase.getInstance(requireContext()).eventDao();
+            EventDao eventDao = QDueDatabase.getInstance(requireContext()).eventDao();
 
-            // Load event asynchronously
+            // Load event asynchronously with enhanced error handling
             new Thread(() -> {
                 try {
                     LocalEvent event = eventDao.getEventById(mEventId);
 
-                    // Update UI on main thread
-                    requireActivity().runOnUiThread(() -> {
-                        if (event != null) {
-                            mEvent = event;
-                            populateEventDetails();
-                            Log.d(TAG, "Successfully loaded event: " + event.getTitle());
-                        } else {
-                            Log.w(TAG, "Event not found in database, using sample data");
-                            // Fallback to sample event for testing
-                            mEvent = createSampleEvent();
-                            populateEventDetails();
-                        }
-                    });
+                    // Update UI on main thread with null safety
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            try {
+                                if (event != null) {
+                                    mEvent = event;
+                                    populateEventDetails();
+                                    Log.d(TAG, mTAG + "✅ Successfully loaded event: " + event.getTitle());
+                                } else {
+                                    Log.w(TAG, mTAG + "Event not found in database, trying sample data");
+                                    // Fallback to sample event for testing
+                                    mEvent = createSampleEvent();
+                                    if (mEvent != null) {
+                                        populateEventDetails();
+                                        Log.d(TAG, mTAG + "✅ Using sample event data");
+                                    } else {
+                                        showError("Evento non trovato nel database");
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.e(TAG, mTAG + "Error in UI update: " + e.getMessage());
+                                showError("Errore durante l'aggiornamento UI");
+                            }
+                        });
+                    } else {
+                        Log.w(TAG, mTAG + "Activity is null, cannot update UI");
+                    }
 
                 } catch (Exception e) {
-                    Log.e(TAG, "Error loading event from database: " + e.getMessage());
-                    requireActivity().runOnUiThread(() -> {
-                        // Fallback to sample event
-                        mEvent = createSampleEvent();
-                        if (mEvent != null) {
-                            populateEventDetails();
-                        } else {
-                            showError("Errore caricamento evento dal database");
-                        }
-                    });
+                    Log.e(TAG, mTAG + "Error loading event from database: " + e.getMessage());
+
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            // Enhanced fallback handling
+                            Log.d(TAG, mTAG + "Attempting fallback to sample event");
+                            mEvent = createSampleEvent();
+                            if (mEvent != null) {
+                                populateEventDetails();
+                                Toast.makeText(getContext(), "⚠️ Usando dati di esempio", Toast.LENGTH_SHORT).show();
+                            } else {
+                                showError("Errore caricamento evento dal database");
+                            }
+                        });
+                    }
                 }
             }).start();
 
         } catch (Exception e) {
-            Log.e(TAG, "Error getting database instance: " + e.getMessage());
+            Log.e(TAG, mTAG + "Error getting database instance: " + e.getMessage());
 
-            // Fallback to sample event
-            mEvent = createSampleEvent();
-            if (mEvent != null) {
-                populateEventDetails();
-            } else {
-                showError("Errore accesso database");
+            // Enhanced fallback to sample event
+            try {
+                mEvent = createSampleEvent();
+                if (mEvent != null) {
+                    populateEventDetails();
+                    Toast.makeText(getContext(), "⚠️ Errore database - usando dati di esempio", Toast.LENGTH_LONG).show();
+                } else {
+                    showError("Errore accesso database e creazione dati di esempio");
+                }
+            } catch (Exception fallbackError) {
+                Log.e(TAG, mTAG + "Even fallback failed: " + fallbackError.getMessage());
+                showError("Errore critico nel caricamento evento");
             }
         }
     }
@@ -709,13 +768,32 @@ public class EventDetailFragment extends Fragment {
 
     // ==================== ACTION HANDLERS ====================
 
+    /**
+     * Handle edit event with proper interface usage
+     */
     private void handleEditEvent() {
+        final String mTAG = "handleEditEvent: ";
+
         if (mEvent == null || mEvent.getId() == null) {
             Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Navigate to EventEditFragment
+        Log.d(TAG, mTAG + "Triggering edit for event: " + mEvent.getTitle());
+
+        // Use interface if available, otherwise fall back to navigation
+        if (mEventsEventOperationsInterface != null) {
+            mEventsEventOperationsInterface.triggerEventEdit(mEvent);
+        } else {
+            // Fallback to direct navigation
+            navigateToEdit();
+        }
+    }
+
+    /**
+     * Fallback navigation to edit
+     */
+    private void navigateToEdit() {
         Bundle args = new Bundle();
         args.putString("eventId", mEvent.getId());
 
@@ -728,21 +806,66 @@ public class EventDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * ENHANCED: Handle share event with proper interface usage
+     */
     private void handleShareEvent() {
+        final String mTAG = "handleShareEvent: ";
+
         if (mEvent == null) return;
 
+        Log.d(TAG, mTAG + "Triggering share for event: " + mEvent.getTitle());
+
+        // Use interface if available, otherwise fall back to direct sharing
+        if (mEventsEventOperationsInterface != null) {
+            mEventsEventOperationsInterface.triggerEventShare(mEvent);
+        } else {
+            // Fallback to direct sharing
+            performDirectShare();
+        }
+    }
+
+    /**
+     * Fallback direct share implementation
+     */
+    private void performDirectShare() {
         String shareText = createShareText();
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Evento: " + mEvent.getTitle());
 
-        startActivity(Intent.createChooser(shareIntent, "Condividi Evento"));
+        try {
+            startActivity(Intent.createChooser(shareIntent, "Condividi Evento"));
+        } catch (Exception e) {
+            Log.e(TAG, "Error sharing event: " + e.getMessage());
+            Toast.makeText(getContext(), "Errore condivisione", Toast.LENGTH_SHORT).show();
+        }
     }
 
+    /**
+     * ENHANCED: Handle add to calendar with proper interface usage
+     */
     private void handleAddToCalendar() {
+        final String mTAG = "handleAddToCalendar: ";
+
         if (mEvent == null || mEvent.getStartTime() == null) return;
 
+        Log.d(TAG, mTAG + "Triggering add to calendar for event: " + mEvent.getTitle());
+
+        // Use interface if available, otherwise fall back to direct calendar
+        if (mEventsEventOperationsInterface != null) {
+            mEventsEventOperationsInterface.triggerAddToCalendar(mEvent);
+        } else {
+            // Fallback to direct calendar integration
+            performDirectAddToCalendar();
+        }
+    }
+
+    /**
+     * Fallback direct calendar integration
+     */
+    private void performDirectAddToCalendar() {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
         intent.putExtra(CalendarContract.Events.TITLE, mEvent.getTitle());
@@ -762,57 +885,109 @@ public class EventDetailFragment extends Fragment {
         try {
             startActivity(intent);
         } catch (Exception e) {
+            Log.e(TAG, "Error opening calendar: " + e.getMessage());
             Toast.makeText(getContext(), "Impossibile aprire il calendario", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * Handle delete event action - use existing interface pattern
+     * with proper error checking
      */
     private void handleDeleteEvent() {
+        final String mTAG = "handleDeleteEvent: ";
+
         if (mEvent == null || mEvent.getId() == null) {
             Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Use existing interface pattern like other operations
-        if (mEventsDatabaseOperationsInterface == null) {
-            Log.e(TAG, "Events database operations interface not set");
+        // Check if interface is available
+        if (mEventsEventOperationsInterface == null) {
+            Log.e(TAG, mTAG + "EventsEventOperationsInterface not available");
+            Toast.makeText(getContext(), "Errore: interfaccia eliminazione non disponibile", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Using DEPENDENCY INJECTION
-        mEventsDatabaseOperationsInterface.triggerEventDeletion(mEvent, new EventDeletionListener() {
+        Log.d(TAG, mTAG + "Triggering deletion for event: " + mEvent.getTitle());
+
+        // Use interface for deletion with enhanced listener
+        mEventsEventOperationsInterface.triggerEventDeletion(mEvent, new EventDeletionListener() {
             @Override
             public void onDeletionRequested() {
+                Log.d(TAG, mTAG + "Deletion requested - navigating back");
                 // Navigate back immediately after deletion is requested
                 navigateBackToList();
             }
 
             @Override
             public void onDeletionCancelled() {
+                Log.d(TAG, mTAG + "Deletion cancelled - staying on detail page");
                 // Stay on detail page if deletion was cancelled
-                // Activity will handle any necessary UI updates
+                Toast.makeText(getContext(), "Eliminazione annullata", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onDeletionCompleted(boolean success, String message) {
+                Log.d(TAG, mTAG + "Deletion completed - success: " + success + ", message: " + message);
                 // This callback might not be needed since we already navigated back
                 // Activity handles the final state
+                if (!success && message != null) {
+                    // Show error if we're still here and there was an error
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         });
     }
 
-    private void handleCopyDetails() {
+    /**
+     * NUOVO: Handle duplicate event
+     */
+    private void handleDuplicateEvent() {
+        final String mTAG = "handleDuplicateEvent: ";
+
         if (mEvent == null) return;
 
-        String details = createShareText();
-        android.content.ClipboardManager clipboard =
-                (android.content.ClipboardManager) requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-        android.content.ClipData clip = android.content.ClipData.newPlainText("Event Details", details);
-        clipboard.setPrimaryClip(clip);
+        Log.d(TAG, mTAG + "Triggering duplicate for event: " + mEvent.getTitle());
 
-        Toast.makeText(getContext(), "Dettagli copiati negli appunti", Toast.LENGTH_SHORT).show();
+        // Use interface if available
+        if (mEventsEventOperationsInterface != null) {
+            mEventsEventOperationsInterface.triggerEventDuplicate(mEvent);
+        } else {
+            Toast.makeText(getContext(), "Duplicazione non disponibile", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    /**
+     * ENHANCED: Handle copy details with better formatting
+     */
+    private void handleCopyDetails() {
+        final String mTAG = "handleCopyDetails: ";
+
+        if (mEvent == null) return;
+
+        try {
+            String details = createShareText();
+            android.content.ClipboardManager clipboard =
+                    (android.content.ClipboardManager) requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+
+            if (clipboard != null) {
+                android.content.ClipData clip = android.content.ClipData.newPlainText("Event Details", details);
+                clipboard.setPrimaryClip(clip);
+
+                Toast.makeText(getContext(), "Dettagli copiati negli appunti", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, mTAG + "Event details copied to clipboard");
+            } else {
+                Toast.makeText(getContext(), "Impossibile accedere agli appunti", Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error copying details: " + e.getMessage());
+            Toast.makeText(getContext(), "Errore durante la copia", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void handleViewSource() {
@@ -864,24 +1039,52 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Show error message and navigate back
+     * with better UX
      */
     private void showError(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-        if (getActivity() != null) {
-            getActivity().onBackPressed();
+        final String mTAG = "showError: ";
+
+        try {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                Log.e(TAG, mTAG + message);
+
+                // Navigate back after showing error
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    navigateBackToList();
+                }, 2000); // 2 second delay to let user read the error
+
+            } else {
+                Log.e(TAG, mTAG + "Context is null, cannot show error: " + message);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error showing error message: " + e.getMessage());
         }
     }
 
     /**
      * Navigate back to events list
+     * with proper error handling
      */
     private void navigateBackToList() {
+        final String mTAG = "navigateBackToList: ";
+
         try {
-            Navigation.findNavController(requireView()).popBackStack();
+            if (getView() != null) {
+                Navigation.findNavController(requireView()).popBackStack();
+                Log.d(TAG, mTAG + "Successfully navigated back via Navigation Component");
+            } else {
+                throw new IllegalStateException("View is null");
+            }
         } catch (Exception e) {
-            Log.e(TAG, "Error navigating back: " + e.getMessage());
+            Log.e(TAG, mTAG + "Error with Navigation Component: " + e.getMessage());
+
+            // Fallback to activity back press
             if (getActivity() != null) {
                 getActivity().onBackPressed();
+                Log.d(TAG, mTAG + "Fallback: used activity back press");
+            } else {
+                Log.e(TAG, mTAG + "Cannot navigate back - both Navigation and Activity are unavailable");
             }
         }
     }
@@ -925,5 +1128,20 @@ public class EventDetailFragment extends Fragment {
      */
     private enum EventStatus {
         UPCOMING, CURRENT, PAST, UNKNOWN
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    /**
+     * Debug method to check fragment state
+     */
+    public void debugFragmentState() {
+        Log.d(TAG, "=== EVENT DETAIL FRAGMENT DEBUG ===");
+        Log.d(TAG, "Event ID: " + mEventId);
+        Log.d(TAG, "Event Loaded: " + (mEvent != null ? mEvent.getTitle() : "null"));
+        Log.d(TAG, "Database Operations Interface: " + (mEventsDatabaseOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "Event Operations Interface: " + (mEventsEventOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "File Operations Interface: " + (mFileOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "=== END DEBUG ===");
     }
 }

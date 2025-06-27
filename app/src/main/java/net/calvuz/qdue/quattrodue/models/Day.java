@@ -149,6 +149,10 @@ public class Day implements Cloneable {
         }
     }
 
+    public List<HalfTeam> getOffWorkHalfTeams() {
+        return offWorkHalfTeams;
+    }
+
     /**
      * Sets off-work teams by cloning each provided team.
      *

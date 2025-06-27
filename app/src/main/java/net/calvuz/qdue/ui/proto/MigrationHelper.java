@@ -1,6 +1,6 @@
 package net.calvuz.qdue.ui.proto;
 
-import static net.calvuz.qdue.QDue.VirtualScrollingSettings.isVirtualScrollingEnabled;
+import static net.calvuz.qdue.QDue.VirtualScrollingSettings.USE_VIRTUAL_SCROLLING;
 
 import net.calvuz.qdue.utils.Log;
 
@@ -15,8 +15,8 @@ public class MigrationHelper {
      * Feature flag to enable/disable virtual scrolling globally
      */
     public static boolean isVirtualScrollingEnabled() {
-        // You can make this configurable via SharedPreferences or build config
-        return isVirtualScrollingEnabled; // Change to false to disable virtual scrolling globally
+        // // Change to false in QDue to disable virtual scrolling globally
+        return USE_VIRTUAL_SCROLLING;
     }
 
     /**

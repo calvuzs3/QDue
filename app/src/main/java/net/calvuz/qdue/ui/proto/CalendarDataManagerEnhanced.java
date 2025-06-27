@@ -9,6 +9,8 @@ package net.calvuz.qdue.ui.proto;
 
 // ==================== 1. ENHANCED CALENDAR DATA MANAGER ====================
 
+import android.content.Context;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +21,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.events.dao.TurnExceptionDao;
+import net.calvuz.qdue.events.models.TurnException;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
+import net.calvuz.qdue.user.data.entities.User;
 import net.calvuz.qdue.utils.Log;
 
 /**
@@ -32,6 +39,10 @@ public class CalendarDataManagerEnhanced extends CalendarDataManager {
 
     private static final String TAG = "CalendarDataManagerEnhanced";
     private static final boolean LOG_ENABLED = true;
+
+    // EXCEPTIONS storage integration
+    private TurnExceptionDao exceptionDao;
+    private HalfTeam currentUserTeam;
 
     // Virtual scrolling components
     private final ExecutorService asyncExecutor = Executors.newFixedThreadPool(2);
@@ -67,6 +78,20 @@ public class CalendarDataManagerEnhanced extends CalendarDataManager {
             enhancedInstance.initialize();
         }
         return enhancedInstance;
+    }
+
+    // Integration with EXCEPTIONS Storage
+    private void initializeExceptionStorage() {
+        Context context = QDue.getContext(); // Assume this method exists
+        QDueDatabase database = QDueDatabase.getInstance(context); // Unified
+        this.exceptionDao = database.turnExceptionDao();
+        this.currentUserTeam = QDue.getQuattrodue().getUserHalfTeam();
+    }
+
+    private long getCurrentUserId() {
+        QDueDatabase database = QDueDatabase.getInstance(QDue.getContext());
+        User activeUser = database.getCurrentUser();
+        return activeUser != null ? activeUser.getId() : 1L; // Default fallback
     }
 
     // ==================== 2. ASYNC DATA LOADING ====================
@@ -164,12 +189,38 @@ public class CalendarDataManagerEnhanced extends CalendarDataManager {
                         " (" + (monthDays != null ? monthDays.size() : 0) + " days)");
             }
 
-            return monthDays != null ? monthDays : new ArrayList<>();
+            // Apply user EXCEPTIONS to base pattern
+            List<TurnException> exceptions = loadExceptionsForMonth(normalizedDate);
+            List<Day> mergedDays = PatternMergeEngine.mergePatternWithExceptions(
+                    monthDays, exceptions, currentUserTeam);
+
+            return mergedDays;
+            // Old  one
+            //return monthDays != null ? monthDays : new ArrayList<>();
 
         } catch (Exception e) {
             Log.e(TAG, "Error in loadMonthDataWithProgress: " + e.getMessage());
             throw new RuntimeException("Failed to load month data", e);
         }
+    }
+
+    /**
+     * Load exceptions for a specific month
+     * @param monthDate
+     * @return exceptions list
+     */
+    private List<TurnException> loadExceptionsForMonth(LocalDate monthDate) {
+        if (exceptionDao == null || currentUserTeam == null) {
+            return new ArrayList<>();
+        }
+
+        LocalDate monthStart = monthDate.withDayOfMonth(1);
+        LocalDate monthEnd = monthStart.plusMonths(1);
+
+        // Get user ID (implement getUserId() method)
+        long userId = getCurrentUserId();
+
+        return exceptionDao.getExceptionsForUserMonth(userId, monthStart, monthEnd);
     }
 
     // ==================== 3. VIRTUAL SCROLLING INTEGRATION ====================

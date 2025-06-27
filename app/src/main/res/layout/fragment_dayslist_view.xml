@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.dayslist.DayslistViewFragment">
+    tools:context=".ui.dayslist.DayslistViewFragmentLegacy">
 
 <!--    &lt;!&ndash; AppBarMain &ndash;&gt;
     <include

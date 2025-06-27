@@ -1,4 +1,4 @@
-package net.calvuz.qdue.events.data.converters;
+package net.calvuz.qdue.core.db.converters;
 
 import androidx.room.TypeConverter;
 
@@ -16,13 +16,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- * Room TypeConverters for event-specific data types.
- * Handles conversion between Java objects and SQLite-compatible types.
+ * Unified Room TypeConverters for Q-DUE Database.
+ * Handles conversion between Java objects and SQLite-compatible types for all entities.
+ *
+ * Combines converters from:
+ * - EventsTypeConverters (events)
+ * - LocalDateConverter (users)
+ * - New TurnException converters
  */
-public class EventsTypeConverters {
+public class QDueTypeConverters {
 
     private static final Gson gson = new Gson();
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     // ==================== LocalDateTime Converters ====================
 
@@ -48,11 +54,21 @@ public class EventsTypeConverters {
 
     // ==================== LocalDate Converters ====================
 
+    /**
+     * Convert LocalDate to String for database storage.
+     * @param date LocalDate to convert
+     * @return ISO formatted string or null
+     */
     @TypeConverter
     public static String fromLocalDate(LocalDate date) {
         return date != null ? date.toString() : null;
     }
 
+    /**
+     * Convert String back to LocalDate from database.
+     * @param dateString ISO formatted string
+     * @return LocalDate object or null
+     */
     @TypeConverter
     public static LocalDate toLocalDate(String dateString) {
         return dateString != null ? LocalDate.parse(dateString) : null;
@@ -120,6 +136,68 @@ public class EventsTypeConverters {
         }
     }
 
+    // ==================== TurnException.ExceptionType Converters ====================
+
+    /**
+     * Convert TurnException.ExceptionType enum to String for database storage.
+     * @param exceptionType ExceptionType enum value
+     * @return String representation or null
+     */
+    @TypeConverter
+    public static String fromExceptionType(TurnException.ExceptionType exceptionType) {
+        return exceptionType != null ? exceptionType.name() : null;
+    }
+
+    /**
+     * Convert String back to TurnException.ExceptionType enum from database.
+     * @param exceptionTypeString String representation
+     * @return ExceptionType enum or default value
+     */
+    @TypeConverter
+    public static TurnException.ExceptionType toExceptionType(String exceptionTypeString) {
+        if (exceptionTypeString == null) {
+            return TurnException.ExceptionType.OTHER; // Default fallback
+        }
+
+        try {
+            return TurnException.ExceptionType.valueOf(exceptionTypeString);
+        } catch (IllegalArgumentException e) {
+            // Handle case where enum value doesn't exist (backward compatibility)
+            return TurnException.ExceptionType.OTHER;
+        }
+    }
+
+    // ==================== TurnException.ExceptionStatus Converters ====================
+
+    /**
+     * Convert TurnException.ExceptionStatus enum to String for database storage.
+     * @param status ExceptionStatus enum value
+     * @return String representation or null
+     */
+    @TypeConverter
+    public static String fromExceptionStatus(TurnException.ExceptionStatus status) {
+        return status != null ? status.name() : null;
+    }
+
+    /**
+     * Convert String back to TurnException.ExceptionStatus enum from database.
+     * @param statusString String representation
+     * @return ExceptionStatus enum or default value
+     */
+    @TypeConverter
+    public static TurnException.ExceptionStatus toExceptionStatus(String statusString) {
+        if (statusString == null) {
+            return TurnException.ExceptionStatus.ACTIVE; // Default fallback
+        }
+
+        try {
+            return TurnException.ExceptionStatus.valueOf(statusString);
+        } catch (IllegalArgumentException e) {
+            // Handle case where enum value doesn't exist (backward compatibility)
+            return TurnException.ExceptionStatus.ACTIVE;
+        }
+    }
+
     // ==================== Map<String, String> Converters ====================
 
     /**
@@ -157,7 +235,7 @@ public class EventsTypeConverters {
         }
     }
 
-    // ==================== Boolean Converters (if needed) ====================
+    // ==================== Boolean Converters ====================
 
     /**
      * Convert Boolean to Integer for database storage.
@@ -184,36 +262,5 @@ public class EventsTypeConverters {
             return null;
         }
         return value != 0;
-    }
-
-    // ==================== EXCEPTIONS data converters ========================
-
-    @TypeConverter
-    public String fromExceptionType(TurnException.ExceptionType exceptionType) {
-        return exceptionType != null ? exceptionType.name() : null;
-    }
-
-    @TypeConverter
-    public TurnException.ExceptionType toExceptionType(String exceptionType) {
-        try {
-            return exceptionType != null ? TurnException.ExceptionType.valueOf(exceptionType) : null;
-        } catch (IllegalArgumentException e) {
-            return TurnException.ExceptionType.OTHER;
-        }
-    }
-
-    // TurnException.ExceptionStatus converters
-    @TypeConverter
-    public String fromExceptionStatus(TurnException.ExceptionStatus status) {
-        return status != null ? status.name() : null;
-    }
-
-    @TypeConverter
-    public TurnException.ExceptionStatus toExceptionStatus(String status) {
-        try {
-            return status != null ? TurnException.ExceptionStatus.valueOf(status) : null;
-        } catch (IllegalArgumentException e) {
-            return TurnException.ExceptionStatus.ACTIVE;
-        }
     }
 }

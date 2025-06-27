@@ -1,4 +1,4 @@
-package net.calvuz.qdue.events;
+package net.calvuz.qdue.events.dao;
 
 import androidx.room.Dao;
 import androidx.room.Delete;
@@ -121,6 +121,15 @@ public interface EventDao {
      */
     @Query("SELECT COUNT(*) > 0 FROM events WHERE id = :eventId")
     boolean eventExists(String eventId);
+
+    /**
+     * Get upcoming events from current time.
+     * @param currentTime Current timestamp
+     * @param limit Maximum number of events to return
+     * @return List of upcoming events
+     */
+    @Query("SELECT COUNT(*) FROM events WHERE start_time >= :currentTime ")
+    int getUpcomingEventsCount(LocalDateTime currentTime);
 
     /**
      * Get total count of events.

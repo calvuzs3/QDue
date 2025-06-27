@@ -196,7 +196,6 @@ public class QuattroDue {
 
         // TAG
         final String TAG = QuattroDue.TAG + "updatePreferences()";
-        Log.v(TAG, "start");
 
         try {
             // LoadPreferences
@@ -214,6 +213,13 @@ public class QuattroDue {
             if (showStops != newShowStops) {
                 showStops = newShowStops;
                 setRefresh(true);
+            }
+
+            // NEW: Check for scheme date changes
+            LocalDate newSchemeDate = Preferences.getSchemeStartDate(context);
+            if (!newSchemeDate.equals(this.schemeDate)) {
+                Log.v(TAG, "Scheme date changed - regenerating");
+                regenerateSchemeWithNewDate(context);
             }
 
             // Update user (half)tean if needed
@@ -242,8 +248,6 @@ public class QuattroDue {
         } catch (Exception e) {
             Log.e(TAG, "Error: " + e.getMessage());
         }
-
-        Log.v(TAG, "completed");
     }
 
     /**
@@ -547,5 +551,71 @@ public class QuattroDue {
 //        fetchMonths(context);
 
         Log.v(TAG, "completed");
+
     }
+
+    /**
+     * Force regeneration of the entire scheme with new start date
+     * Called when scheme start date is changed via preferences
+     *
+     * @param context Context
+     * @return true if regeneration successful
+     */
+    public boolean regenerateSchemeWithNewDate(Context context) {
+        final String TAG = QuattroDue.TAG + ":regenerateSchemeWithNewDate";
+        Log.v(TAG, "start");
+
+        try {
+            // Get new scheme date from preferences
+            LocalDate newSchemeDate = Preferences.getSchemeStartDate(context);
+            Log.v(TAG, "New scheme date: " + newSchemeDate);
+
+            // Update internal scheme date
+            this.schemeDate = newSchemeDate;
+
+            // Clear existing scheme data
+            if (schemeDaysList != null) {
+                schemeDaysList.clear();
+            }
+
+            // Regenerate scheme with new date
+            fetchSchemeList();
+
+            // Force refresh flag
+            setRefresh(true);
+
+            Log.v(TAG, "Scheme successfully regenerated with new date");
+            return true;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error regenerating scheme: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Update scheme date and regenerate if changed
+     *
+     * @param context Context
+     */
+    public void updateSchemeDate(Context context) {
+        final String TAG = QuattroDue.TAG + ":updateSchemeDate";
+
+        LocalDate newSchemeDate = Preferences.getSchemeStartDate(context);
+
+        if (!newSchemeDate.equals(this.schemeDate)) {
+            Log.v(TAG, "Scheme date changed from " + this.schemeDate + " to " + newSchemeDate);
+            regenerateSchemeWithNewDate(context);
+        }
+    }
+
+    /**
+     * Get current scheme start date
+     *
+     * @return Current scheme start date
+     */
+    public LocalDate getSchemeDate() {
+        return schemeDate;
+    }
+
 }

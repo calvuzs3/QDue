@@ -50,6 +50,9 @@ public interface EstablishmentDao {
     @Query("DELETE FROM establishments WHERE id = :id")
     void deleteEstablishmentById(long id);
 
+    @Query("DELETE FROM establishments")
+    void deleteAllEstablishments();
+
     @Query("SELECT COUNT(*) FROM establishments")
     int getEstablishmentCount();
 

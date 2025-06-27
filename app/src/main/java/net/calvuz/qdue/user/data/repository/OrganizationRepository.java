@@ -2,15 +2,13 @@ package net.calvuz.qdue.user.data.repository;
 
 import android.content.Context;
 
-import net.calvuz.qdue.user.data.database.UserDatabase;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.user.data.dao.EstablishmentDao;
 import net.calvuz.qdue.user.data.dao.MacroDepartmentDao;
 import net.calvuz.qdue.user.data.dao.SubDepartmentDao;
 import net.calvuz.qdue.user.data.entities.Establishment;
 import net.calvuz.qdue.user.data.entities.MacroDepartment;
 import net.calvuz.qdue.user.data.entities.SubDepartment;
-import net.calvuz.qdue.user.data.models.CompleteOrganizationalHierarchy;
-import net.calvuz.qdue.user.data.models.EstablishmentWithDepartments;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.List;
@@ -32,7 +30,7 @@ public class OrganizationRepository {
     private static volatile OrganizationRepository INSTANCE;
 
     private OrganizationRepository(Context context) {
-        UserDatabase database = UserDatabase.getInstance(context);
+        QDueDatabase database = QDueDatabase.getInstance(context);
         establishmentDao = database.establishmentDao();
         macroDepartmentDao = database.macroDepartmentDao();
         subDepartmentDao = database.subDepartmentDao();

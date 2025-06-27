@@ -50,6 +50,9 @@ public interface SubDepartmentDao {
     @Query("DELETE FROM sub_departments WHERE id = :id")
     void deleteSubDepartmentById(long id);
 
+    @Query("DELETE FROM sub_departments")
+    void deleteAllSubDepartments();
+
     @Query("DELETE FROM sub_departments WHERE macro_department_id = :macroDepartmentId")
     void deleteSubDepartmentsByMacroDepartment(long macroDepartmentId);
 

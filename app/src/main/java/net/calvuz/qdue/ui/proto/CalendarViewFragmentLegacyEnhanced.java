@@ -1,6 +1,10 @@
 package net.calvuz.qdue.ui.proto;
 
+import static net.calvuz.qdue.QDue.VirtualScrollingSettings.ENABLE_VIRTUAL_SCROLLING;
+
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,49 +14,31 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.ui.calendar.CalendarAdapter;
-import net.calvuz.qdue.ui.shared.BaseAdapter;
+import net.calvuz.qdue.ui.calendar.CalendarAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Enhanced CalendarViewFragment with virtual scrolling integration
  * Maintains calendar grid layout while gaining virtual scrolling performance
  */
-public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
+public class CalendarViewFragmentLegacyEnhanced extends EnhancedBaseFragmentLegacyBridge {
 
     private static final String TAG = "F-Calendar";
 
     // Keep existing adapter reference for compatibility
-    private CalendarAdapter mLegacyAdapter;
+    private CalendarAdapterLegacy mLegacyAdapter;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_calendar_view, container, false);
-    }
-
-    @Override
-    protected BaseAdapter getFragmentAdapter() {
-        // Return bridge adapter if virtual scrolling is enabled, otherwise legacy
-        Log.d("DEBUG", "getting adapter = " + adapterBridge != null ? "adapterBridge" : "mLegacyAdapter");
-        return adapterBridge != null ? adapterBridge : mLegacyAdapter;
-    }
-
-    @Override
-    protected void setFragmentAdapter(BaseAdapter adapter) {
-        if (adapter instanceof CalendarAdapter) {
-            this.mLegacyAdapter = (CalendarAdapter) adapter;
-        }
-        Log.d("DEBUG", "setting LEGACY (CalendarAdapter) adapter");
-        // Bridge adapter is handled by parent class
     }
 
     @Override
@@ -81,7 +67,7 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     protected void setupLegacyAdapter() {
         Log.v(TAG, "setupLegacyAdapter: called.");
 
-        mLegacyAdapter = new CalendarAdapter(
+        mLegacyAdapter = new CalendarAdapterLegacy(
                 getContext(),
                 mItemsCache,
                 QDue.getQuattrodue().getUserHalfTeam()
@@ -90,23 +76,62 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     }
 
     @Override
-    protected void setupAdapter() {
-        final String mTAG = "setupAdapter: ";
-        Log.v(TAG, mTAG + "called with events support");
-
-        // Chiamare il setup originale della parent class
-        super.setupAdapter();
-
-        // Dopo setup, aggiornare con eventi se disponibili
-        if (mLegacyAdapter != null) {
-            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
-            if (!eventsCache.isEmpty()) {
-                Log.d(TAG, mTAG + "Found existing events cache with " + eventsCache.size() + " dates");
-                mLegacyAdapter.updateEventsData(eventsCache);
-            }
+    protected BaseAdapterLegacy getFragmentAdapter() {
+        if (ENABLE_VIRTUAL_SCROLLING && adapterBridge != null) {
+            Log.d(TAG, "getFragmentAdapter: ✅ AdapterLegacyBridge (virtual mode)");
+            return adapterBridge;
         }
 
-        Log.d(TAG, mTAG + "Legacy adapter setup completed");
+        Log.d(TAG, "getFragmentAdapter: Legacy (CalendarAdapterLegacy)");
+        return mLegacyAdapter;
+    }
+
+    @Override
+    protected void setFragmentAdapter(BaseAdapterLegacy adapter) {
+        if (ENABLE_VIRTUAL_SCROLLING && adapter instanceof AdapterLegacyBridge) {
+            // ✅ Virtual mode: store bridge adapter reference
+            // Non serve mLegacyAdapter in virtual mode
+            Log.d(TAG, "setFragmentAdapter: ✅ Virtual adapter bridge set");
+            return;
+        }
+
+        if (adapter instanceof CalendarAdapterLegacy) {
+            this.mLegacyAdapter = (CalendarAdapterLegacy) adapter;
+            Log.d(TAG, "setFragmentAdapter: Legacy CalendarAdapterLegacy set");
+        }
+    }
+
+    @Override
+    protected void setupAdapter() {
+        final String mTAG = "setupAdapter: ";
+        Log.d(TAG, mTAG + "called.");
+
+        if (ENABLE_VIRTUAL_SCROLLING) {
+            // ✅ ORDER: Create adapter first
+            adapterBridge = new AdapterLegacyBridge(
+                    getContext(),
+                    mItemsCache,
+                    getHalfTeam(),
+                    getShiftsToShow()
+            );
+
+            // ✅ ORDER: Attach to RecyclerView immediately
+            if (mRecyclerView != null) {
+                mRecyclerView.setAdapter(adapterBridge);
+                Log.d(TAG, mTAG + "✅ Bridge adapter attached");
+            }
+
+            // ✅ ORDER: Set fragment adapter reference
+            setFragmentAdapter(adapterBridge);
+
+            // ✅ ORDER: Load data last
+            loadInitialVirtualData();
+
+            Log.d(TAG, mTAG + "Bridge adapter setup completed");
+            return;
+        }
+
+        setupLegacyAdapter();
     }
 
     @Override
@@ -209,24 +234,60 @@ public class CalendarViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     }
 
     /**
-     * Override da BaseFragment - chiamato quando eventi cambiano nel database
+     * Override da BaseFragmentLegacy - chiamato quando eventi cambiano nel database
      */
     @Override
-    protected void notifyEventsDataChanged() {
-        Log.d(TAG, "notifyEventsDataChanged: events updated in BaseFragment");
+    public void notifyEventsDataChanged() {
+        final String mTAG = "notifyEventsDataChanged: ";
+        Log.v(TAG, mTAG + "called");
 
-        if (mLegacyAdapter != null) {
-            // Ottenere eventi dalla cache BaseFragment
-            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
-            Log.d(TAG, "Passing " + eventsCache.size() + " dates with events to CalendarAdapter");
-
-            // Passare eventi al CalendarAdapter
-            mLegacyAdapter.updateEventsData(eventsCache);
-        } else {
-            Log.w(TAG, "mLegacyAdapter is null in notifyEventsDataChanged");
+        if (ENABLE_VIRTUAL_SCROLLING && adapterBridge != null) {
+            // ✅ VIRTUAL: Notify bridge adapter about events data change
+            notifyVirtualEventsDataChanged();
+            return;
         }
 
-        // Chiamare il metodo parent
-        super.notifyEventsDataChanged();
+        // ✅ LEGACY: Notify legacy adapter
+        if (mLegacyAdapter != null) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                try {
+                    mLegacyAdapter.notifyEventsDataChanged();
+                    Log.d(TAG, mTAG + "Legacy adapter notified");
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error notifying legacy adapter: " + e.getMessage());
+                }
+            });
+        }
+
+        Log.v(TAG, mTAG + "completed");
+    }
+
+    /**
+     * Notify virtual events data changed
+     */
+    private void notifyVirtualEventsDataChanged() {
+        final String mTAG = "notifyVirtualEventsDataChanged: ";
+        Log.v(TAG, mTAG + "called");
+
+        new Handler(Looper.getMainLooper()).post(() -> {
+            try {
+                if (adapterBridge != null) {
+                    // ✅ Method 1: Force adapter refresh
+//                    adapterBridge.notifyDataSetChanged();
+
+                    // ✅ Method 2: Request fresh data
+                        adapterBridge.requestEventsRefresh();
+
+                    // ✅ Method 3: Reload virtual data
+//                    loadInitialVirtualData();
+
+                    Log.d(TAG, mTAG + "Bridge adapter notified and refreshed");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Error notifying bridge adapter: " + e.getMessage());
+            }
+        });
+
+        Log.v(TAG, mTAG + "completed");
     }
 }

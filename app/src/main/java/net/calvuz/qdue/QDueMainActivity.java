@@ -1,5 +1,6 @@
 package net.calvuz.qdue;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -8,8 +9,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -21,12 +24,18 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.ui.events.EventsActivity;
+import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
-import net.calvuz.qdue.user.ui.UserProfileActivity;
 import net.calvuz.qdue.utils.Log;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Enhanced Main Activity with hybrid NavigationRail system.
@@ -59,6 +68,13 @@ public class QDueMainActivity extends BaseActivity {
 
     // Toolbar
     private MaterialToolbar toolbar;
+
+    // NEW: Fragment registration system
+    private final Set<EventsRefreshInterface> mRegisteredEventsFragments =
+            Collections.synchronizedSet(new HashSet<>());
+
+    // NEW: Enhanced activity launcher
+    private ActivityResultLauncher<Intent> mEventsActivityLauncher;
 
     /**
      * Enum to track current navigation mode for proper handling
@@ -99,11 +115,17 @@ public class QDueMainActivity extends BaseActivity {
         // Detect and setup navigation components
         detectNavigationComponents();
         setupNavigationSafely();
+
+        // Setup Events Activity Laucher
+        setupActivityLaunchers();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Clear registered fragments
+        clearAllRegisteredFragments();
 
         // Cleanup enhanced data manager
         if (enhancedDataManager != null) {
@@ -327,6 +349,317 @@ public class QDueMainActivity extends BaseActivity {
     }
 
     /**
+     * Enhanced activity result launcher setup
+     */
+    private void setupActivityLaunchers() {
+        Log.d(TAG, "Initializing enhanced activity result launchers");
+
+        mEventsActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleEventsActivityResult(result)
+        );
+    }
+
+    /**
+     * Enhanced EventsActivity result handler
+     */
+    private void handleEventsActivityResult(androidx.activity.result.ActivityResult result) {
+        final String mTAG = "handleEventsActivityResult: ";
+        Log.d(TAG, mTAG + "Result received: " + result.getResultCode());
+
+        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            Intent data = result.getData();
+            boolean eventsChanged = data.getBooleanExtra(EventsActivity.EXTRA_EVENTS_CHANGED, false);
+
+            if (eventsChanged) {
+                int eventCount = data.getIntExtra(EventsActivity.EXTRA_EVENTS_COUNT, 0);
+                String changeType = data.getStringExtra(EventsActivity.EXTRA_CHANGE_TYPE);
+
+                Log.d(TAG, String.format(QDue.getLocale(),
+                        "%sEvents changed: %s (%d events)", mTAG, changeType, eventCount));
+
+                // Enhanced refresh with both registered and discovered fragments
+                refreshEventsDisplayEnhanced(changeType, eventCount);
+            } else {
+                Log.d(TAG, mTAG + "EventsActivity returned but no events changed");
+            }
+        } else {
+            Log.d(TAG, mTAG + "EventsActivity cancelled or no data returned");
+        }
+    }
+
+    /**
+     * Enhanced refresh that combines registered fragments and discovery
+     */
+    private void refreshEventsDisplayEnhanced(String changeType, int eventCount) {
+        final String mTAG = "refreshEventsDisplayEnhanced: ";
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "%sRefreshing events display: %s (%d events)", mTAG, changeType, eventCount));
+
+        // Get all available fragments using both methods
+        List<EventsRefreshInterface> allFragments = getAllEventsRefreshFragments();
+
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "%sFound %d total fragments for refresh", mTAG, allFragments.size()));
+
+        // Refresh fragments with detailed logging
+        int activeCount = 0;
+        int inactiveCount = 0;
+        int errorCount = 0;
+
+        for (EventsRefreshInterface fragment : allFragments) {
+            try {
+                if (fragment.isFragmentActive()) {
+                    // Fragment is active - refresh immediately
+                    fragment.onEventsChanged(changeType, eventCount);
+                    activeCount++;
+                    Log.d(TAG, String.format("%sRefreshed active fragment: %s",
+                            mTAG, fragment.getFragmentDescription()));
+                } else {
+                    // Fragment is inactive - will refresh when visible
+                    inactiveCount++;
+                    Log.d(TAG, String.format("%sSkipped inactive fragment: %s",
+                            mTAG, fragment.getFragmentDescription()));
+                }
+            } catch (Exception e) {
+                errorCount++;
+                Log.e(TAG, String.format("%sError refreshing fragment %s",
+                        mTAG, fragment.getFragmentDescription()), e);
+            }
+        }
+
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "%sRefresh summary: %d active, %d inactive, %d errors",
+                mTAG, activeCount, inactiveCount, errorCount));
+
+        // Show user feedback
+        if (activeCount > 0) {
+            showSuccessMessage(String.format(QDue.getLocale(),
+                    "Refreshed %d views", activeCount));
+        }
+
+        // Force refresh all if no active fragments and change is significant
+        if (activeCount == 0 && inactiveCount > 0 && isSignificantChange(changeType, eventCount)) {
+            Log.w(TAG, mTAG + "No active fragments, forcing refresh of all fragments");
+            forceRefreshAllEventFragments(allFragments);
+        }
+    }
+
+    /**
+     * Get all fragments using both registered list and discovery
+     */
+    private List<EventsRefreshInterface> getAllEventsRefreshFragments() {
+        Set<EventsRefreshInterface> allFragments = new HashSet<>();
+
+        // Add registered fragments
+        synchronized (mRegisteredEventsFragments) {
+            allFragments.addAll(mRegisteredEventsFragments);
+            Log.d(TAG, String.format("Added %d registered fragments", mRegisteredEventsFragments.size()));
+        }
+
+        // Add discovered fragments (fallback method)
+        List<EventsRefreshInterface> discoveredFragments = getEventsRefreshFragmentsByDiscovery();
+        allFragments.addAll(discoveredFragments);
+        Log.d(TAG, String.format("Added %d discovered fragments", discoveredFragments.size()));
+
+        return new ArrayList<>(allFragments);
+    }
+
+    /**
+     * Original discovery method (enhanced for better detection)
+     */
+    private List<EventsRefreshInterface> getEventsRefreshFragmentsByDiscovery() {
+        List<EventsRefreshInterface> eventFragments = new ArrayList<>();
+
+        try {
+            // Get all fragments from fragment manager
+            List<Fragment> allFragments = getSupportFragmentManager().getFragments();
+            Log.d(TAG, String.format("Discovered %d total fragments", allFragments.size()));
+
+            // Filter for fragments that implement EventsRefreshInterface
+            for (Fragment fragment : allFragments) {
+                if (fragment instanceof EventsRefreshInterface) {
+                    eventFragments.add((EventsRefreshInterface) fragment);
+                    Log.d(TAG, String.format("Found EventsRefreshInterface fragment: %s",
+                            fragment.getClass().getSimpleName()));
+                }
+            }
+
+            // Also check nested fragments (NavHostFragment children)
+            for (Fragment fragment : allFragments) {
+                if (fragment.getChildFragmentManager() != null) {
+                    List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
+                    Log.d(TAG, String.format("Checking %d child fragments of %s",
+                            childFragments.size(), fragment.getClass().getSimpleName()));
+
+                    for (Fragment childFragment : childFragments) {
+                        if (childFragment instanceof EventsRefreshInterface) {
+                            eventFragments.add((EventsRefreshInterface) childFragment);
+                            Log.d(TAG, String.format("Found nested EventsRefreshInterface fragment: %s",
+                                    childFragment.getClass().getSimpleName()));
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error discovering EventsRefreshInterface fragments", e);
+        }
+
+        return eventFragments;
+    }
+
+    /**
+     * Check if a change is significant enough to force refresh
+     */
+    private boolean isSignificantChange(String changeType, int eventCount) {
+        if (changeType == null) return false;
+
+        // Import/delete operations are always significant
+        if (EventsActivity.CHANGE_TYPE_IMPORT.equals(changeType) ||
+                EventsActivity.CHANGE_TYPE_DELETE.equals(changeType)) {
+            return true;
+        }
+
+        // Large numbers of events are significant
+        return eventCount > 5;
+    }
+
+    /**
+     * Enhanced force refresh with better error handling
+     */
+    private void forceRefreshAllEventFragments(List<EventsRefreshInterface> eventFragments) {
+        final String mTAG = "forceRefreshAllEventFragments: ";
+        Log.d(TAG, mTAG + "Force refreshing " + eventFragments.size() + " event fragments");
+
+        int successCount = 0;
+        int errorCount = 0;
+
+        for (EventsRefreshInterface fragment : eventFragments) {
+            try {
+                fragment.onForceEventsRefresh();
+                successCount++;
+                Log.d(TAG, String.format("%sForce refreshed fragment: %s",
+                        mTAG, fragment.getFragmentDescription()));
+            } catch (Exception e) {
+                errorCount++;
+                Log.e(TAG, String.format("%sError force refreshing fragment: %s",
+                        mTAG, fragment.getFragmentDescription()), e);
+            }
+        }
+
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "%sForce refresh completed: %d success, %d errors",
+                mTAG, successCount, errorCount));
+    }
+
+    /**
+     * Open EventsActivity using the activity launcher
+     * This replaces your existing startActivity call
+     */
+    private void openEventsActivity() {
+        Log.d(TAG, "Opening EventsActivity with enhanced result launcher");
+
+        try {
+            Intent intent = new Intent(this, EventsActivity.class);
+            mEventsActivityLauncher.launch(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening EventsActivity", e);
+            showSuccessMessage("Error opening Events");
+        }
+    }
+
+    /**
+     * Refresh events display when returning from EventsActivity
+     * Uses interface-based approach for clean fragment management
+     *
+     * @param changeType Type of change that occurred
+     * @param eventCount Number of events affected
+     */
+    private void refreshEventsDisplay(String changeType, int eventCount) {
+        Log.d(TAG, String.format(QDue.getLocale(), "Refreshing events display: %s (%d events)", changeType, eventCount));
+
+        // Get all fragments that implement EventsRefreshInterface
+        List<EventsRefreshInterface> eventFragments = getEventsRefreshFragments();
+
+        Log.d(TAG, String.format(QDue.getLocale(), "Found %d fragments implementing EventsRefreshInterface", eventFragments.size()));
+
+        // Refresh active fragments immediately
+        int activeCount = 0;
+        int inactiveCount = 0;
+
+        for (EventsRefreshInterface fragment : eventFragments) {
+            try {
+                if (fragment.isFragmentActive()) {
+                    // Fragment is active - refresh immediately
+                    fragment.onEventsChanged(changeType, eventCount);
+                    activeCount++;
+                    Log.d(TAG, String.format("Refreshed active fragment: %s", fragment.getFragmentDescription()));
+                } else {
+                    // Fragment is inactive - will refresh when it becomes visible
+                    inactiveCount++;
+                    Log.d(TAG, String.format("Skipped inactive fragment: %s (will refresh on resume)",
+                            fragment.getFragmentDescription()));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, String.format("Error refreshing fragment %s", fragment.getFragmentDescription()), e);
+            }
+        }
+
+        Log.d(TAG, String.format("Refresh summary: %d active, %d inactive fragments", activeCount, inactiveCount));
+
+        // Show user feedback
+        Toast.makeText(this, String.format(QDue.getLocale(), "Refreshed %d fragments", activeCount), Toast.LENGTH_SHORT).show();
+
+        // Optional: Force refresh all if no active fragments found
+        if (activeCount == 0 && inactiveCount > 0) {
+            Log.w(TAG, "No active fragments found, forcing refresh of all fragments");
+            forceRefreshAllEventFragments(eventFragments);
+        }
+    }
+
+    /**
+     * Get all fragments that implement EventsRefreshInterface
+     * @return List of fragments that can be refreshed when events change
+     */
+    private List<EventsRefreshInterface> getEventsRefreshFragments() {
+        List<EventsRefreshInterface> eventFragments = new ArrayList<>();
+
+        try {
+            // Get all fragments from fragment manager
+            List<Fragment> allFragments = getSupportFragmentManager().getFragments();
+
+            // Filter for fragments that implement EventsRefreshInterface
+            for (Fragment fragment : allFragments) {
+                if (fragment instanceof EventsRefreshInterface) {
+                    eventFragments.add((EventsRefreshInterface) fragment);
+                    Log.d(TAG, String.format("Found EventsRefreshInterface fragment: %s",
+                            fragment.getClass().getSimpleName()));
+                }
+            }
+
+            // Also check nested fragments (if using nested fragment managers)
+            for (Fragment fragment : allFragments) {
+                if (fragment.getChildFragmentManager() != null) {
+                    List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
+                    for (Fragment childFragment : childFragments) {
+                        if (childFragment instanceof EventsRefreshInterface) {
+                            eventFragments.add((EventsRefreshInterface) childFragment);
+                            Log.d(TAG, String.format("Found nested EventsRefreshInterface fragment: %s",
+                                    childFragment.getClass().getSimpleName()));
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting EventsRefreshInterface fragments", e);
+        }
+
+        return eventFragments;
+    }
+
+    /**
      * Unified navigation item selection handler for all navigation modes.
      */
     @Override
@@ -350,8 +683,7 @@ public class QDueMainActivity extends BaseActivity {
                 return true;
             } else if (itemId == R.id.nav_events) {
                 // Use Intent for settings to maintain existing behavior
-                Intent eventsIntent = new Intent(this, EventsActivity.class);
-                startActivity(eventsIntent);
+                openEventsActivity();  // Already set for activity result
                 return true;
             } else if (itemId == R.id.nav_settings) {
                 // Use Intent for settings to maintain existing behavior
@@ -802,5 +1134,76 @@ public class QDueMainActivity extends BaseActivity {
      */
     public FloatingActionButton getFabGoToToday() {
         return fabGoToToday;
+    }
+
+
+    /**
+     * Register a fragment for events refresh notifications
+     * Called by fragments in their onResume()
+     */
+    public void registerEventsRefreshFragment(EventsRefreshInterface fragment) {
+        if (fragment != null) {
+            mRegisteredEventsFragments.add(fragment);
+            Log.d(TAG, String.format(QDue.getLocale(), "Registered fragment: %s (Total: %d)",
+                    fragment.getFragmentDescription(), mRegisteredEventsFragments.size()));
+        }
+    }
+
+    /**
+     * Unregister a fragment from events refresh notifications
+     * Called by fragments in their onPause()
+     */
+    public void unregisterEventsRefreshFragment(EventsRefreshInterface fragment) {
+        if (fragment != null) {
+            boolean removed = mRegisteredEventsFragments.remove(fragment);
+            Log.d(TAG, String.format(QDue.getLocale(), "Unregistered fragment: %s (Removed: %s, Total: %d)",
+                    fragment.getFragmentDescription(), removed, mRegisteredEventsFragments.size()));
+        }
+    }
+
+    /**
+     * Clear all registered fragments (on activity destroy)
+     */
+    private void clearAllRegisteredFragments() {
+        Log.d(TAG, String.format(QDue.getLocale(), "Clearing %d registered fragments", mRegisteredEventsFragments.size()));
+        mRegisteredEventsFragments.clear();
+    }
+
+    /**
+     * Show success message to user
+     */
+    private void showSuccessMessage(String message) {
+        try {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing success message", e);
+        }
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    /**
+     * Debug method to check events refresh system
+     */
+    public void debugEventsRefreshSystem() {
+        Log.d(TAG, "=== EVENTS REFRESH SYSTEM DEBUG ===");
+        Log.d(TAG, "Registered fragments: " + mRegisteredEventsFragments.size());
+
+        synchronized (mRegisteredEventsFragments) {
+            for (EventsRefreshInterface fragment : mRegisteredEventsFragments) {
+                Log.d(TAG, "  - " + fragment.getFragmentDescription() +
+                        " (Active: " + fragment.isFragmentActive() + ")");
+            }
+        }
+
+        List<EventsRefreshInterface> discovered = getEventsRefreshFragmentsByDiscovery();
+        Log.d(TAG, "Discovered fragments: " + discovered.size());
+
+        for (EventsRefreshInterface fragment : discovered) {
+            Log.d(TAG, "  - " + fragment.getFragmentDescription() +
+                    " (Active: " + fragment.isFragmentActive() + ")");
+        }
+
+        Log.d(TAG, "=== END DEBUG ===");
     }
 }

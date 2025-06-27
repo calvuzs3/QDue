@@ -23,11 +23,11 @@ import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;
 
 /**
- * PROTOTYPE: Enhanced BaseFragment with Virtual Scrolling Integration
- *  Enhanced BaseFragment that integrates virtual scrolling for calendar views
+ * PROTOTYPE: Enhanced BaseFragmentLegacy with Virtual Scrolling Integration
+ *  Enhanced BaseFragmentLegacy that integrates virtual scrolling for calendar views
  *  Provides smooth scrolling experience with progressive data loading
  * <p>
- * This enhanced BaseFragment implements:
+ * This enhanced BaseFragmentLegacy implements:
  * 1. Virtual scrolling integration for smooth performance
  * 2. Intelligent scroll detection and prefetching
  * 3. Skeleton UI coordination with data loading
@@ -70,7 +70,7 @@ public abstract class EnhancedBaseFragment extends Fragment {
         // Set initial visible month
         currentVisibleMonth = LocalDate.now().withDayOfMonth(1);
 
-        Log.d(TAG, "Enhanced BaseFragment created with virtual scrolling");
+        Log.d(TAG, "Enhanced BaseFragmentLegacy created with virtual scrolling");
     }
 
     @Override

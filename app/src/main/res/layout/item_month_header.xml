@@ -14,19 +14,19 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="3dp"
-        app:strokeColor="?attr/colorPrimary"
+        app:cardBackgroundColor="?attr/colorPrimary"
+        app:cardCornerRadius="@dimen/spacing_sm"
+        app:cardElevation="2dp"
+        app:strokeColor="?attr/colorOnPrimary"
         app:strokeWidth="1dp"
-        app:rippleColor="?attr/colorPrimary">
+        app:rippleColor="?attr/colorOnPrimary">
 
         <!-- Gradient Background Overlay -->
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/month_header_gradient"
-            android:alpha="0.7" />
+            android:alpha="0.85" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,7 +34,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="@dimen/spacing_m"
-            android:minHeight="64dp">
+            android:minHeight="@dimen/spacing_xxl">
 
             <!-- Month Icon -->
             <ImageView

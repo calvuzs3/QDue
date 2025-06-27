@@ -114,7 +114,7 @@ public final class HighlightingHelper {
     }
 
     /**
-     * AGGIUNGERE questo metodo in CalendarAdapter.java (copiato da DaysListAdapter funzionante):
+     * AGGIUNGERE questo metodo in CalendarAdapterLegacy.java (copiato da DaysListAdapter funzionante):
      */
     private static int blendEventColorWithWhite(int eventColor) {
         int eventRed = android.graphics.Color.red(eventColor);

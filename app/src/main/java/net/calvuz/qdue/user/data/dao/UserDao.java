@@ -51,6 +51,9 @@ public interface UserDao {
     @Query("DELETE FROM users WHERE id = :id")
     void deleteUserById(long id);
 
+    @Query("DELETE FROM users")
+    void deleteAllUsers();
+
     // Authentication queries
     @Query("SELECT * FROM users WHERE auth_provider = :provider")
     List<User> getUsersByAuthProvider(String provider);

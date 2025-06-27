@@ -21,10 +21,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
+import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -56,17 +57,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author calvuzs3
  */
-public abstract class BaseFragment extends Fragment
-        implements NotifyUpdatesInterface {
+public abstract class BaseFragmentLegacy extends Fragment
+        implements NotifyUpdatesInterface,
+        EventsRefreshInterface {
 
     // TAG
-    private static final String TAG = "BaseFragment";
+    private static final String TAG = "BaseFragmentLegacy";
+
+    // ID
+    protected final String mFragmentId = this.toString();
+
+    // NEW: Registration flag to avoid double registration
+    private boolean mIsRegisteredForEventsRefresh = false;
 
     // MOCK waiting for a stable integration
     // NEW: Events data support
     protected Map<LocalDate, List<LocalEvent>> mEventsCache = new ConcurrentHashMap<>();
     protected final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
-    protected EventsDatabase mEventsDatabase;
+    protected QDueDatabase mDatabase;
 
     // DEBUG it is for initial scrolling bug. now resolved
     protected boolean mIsInitialScrolling = false;
@@ -170,9 +178,9 @@ public abstract class BaseFragment extends Fragment
         // Initialize centralized data manager
         mDataManager = CalendarDataManager.getInstance();
 
-        // MOCK
         // Initialize events database
-        mEventsDatabase = EventsDatabase.getInstance(requireContext());
+        mDatabase = QDueDatabase.getInstance(requireContext());
+
         // Start initial events load
         loadEventsForCurrentPeriod();
     }
@@ -201,8 +209,8 @@ public abstract class BaseFragment extends Fragment
             Log.e(TAG, mTAG + "Activity is null, cannot initialize infinite scrolling");
         }
 
-        // Configure the Floating Action Button
-        setupFAB();
+        // Configure the TODAY fab button
+        setupScrollToToday();
     }
 
     // ==================== COMMUNICATION INTERFACE ===============
@@ -596,7 +604,7 @@ public abstract class BaseFragment extends Fragment
     }
 
     // ===== NUOVO METODO: Sincronizzazione Forzata =====
-    private void ensureAdapterSyncWithCache() {
+    protected void ensureAdapterSyncWithCache() {
         final String mTAG = "ensureAdapterSyncWithCache: ";
 
         try {
@@ -783,7 +791,7 @@ public abstract class BaseFragment extends Fragment
     // ===== NUOVO METODO: Retry con Timeout =====
     private void scheduleRetryScrollToToday(int attemptCount) {
         final String mTAG = "scheduleRetryScrollToToday: ";
-        final int MAX_ATTEMPTS = 20; // 20 * 50ms = 1 secondo max
+        final int MAX_ATTEMPTS = 5; // old - 20 * 50ms = 1 secondo max
 
         if (attemptCount >= MAX_ATTEMPTS) {
             Log.e(TAG, mTAG + "Failed to scroll to today after " + MAX_ATTEMPTS + " attempts");
@@ -832,7 +840,7 @@ public abstract class BaseFragment extends Fragment
                 GridLayoutManager gridManager = (GridLayoutManager) mGridLayoutManager;
 
                 // Calcola posizione ottimale per centrare today
-                int optimalPosition = Math.max(0, mTodayPosition - ( 4 * getGridColumnCount() )); // 4 righe sopra
+                int optimalPosition = Math.max(0, mTodayPosition - (4 * getGridColumnCount())); // 4 righe sopra
                 gridManager.scrollToPositionWithOffset(optimalPosition, 20);
 
                 if (DEBUG_BASEFRAGMENT) {
@@ -966,8 +974,15 @@ public abstract class BaseFragment extends Fragment
     // ================================= UI =================================
 
     /**
+     * Setup scrolling to TODAY position separately for better organization
+     */
+    protected void setupScrollToToday() {
+        setupFAB();
+    }
+
+    /**
      * Enhanced FAB setup that works with both integrated and separate FAB modes.
-     * Add this method to BaseFragment.java
+     * Add this method to BaseFragmentLegacy.java
      */
     protected void setupFAB() {
         if (getActivity() instanceof QDueMainActivity) {
@@ -993,7 +1008,7 @@ public abstract class BaseFragment extends Fragment
 
     /**
      * Enhanced FAB visibility update that respects integrated mode.
-     * Update this method in BaseFragment.java
+     * Update this method in BaseFragmentLegacy.java
      */
     protected void updateFabVisibility(int firstVisible, int lastVisible) {
         if (mFabGoToToday == null) {
@@ -1625,7 +1640,8 @@ public abstract class BaseFragment extends Fragment
                 // If we can't determine position, use a safe fallback
                 if (currentPos == RecyclerView.NO_POSITION) {
                     currentPos = mItemsCache.size() / 2; // Use middle as fallback
-                    if (DEBUG_BASEFRAGMENT) Log.w(TAG, mTAG + "Using fallback position for cleanup");
+                    if (DEBUG_BASEFRAGMENT)
+                        Log.w(TAG, mTAG + "Using fallback position for cleanup");
                 }
 
                 // Remove from start if necessary
@@ -1952,16 +1968,64 @@ public abstract class BaseFragment extends Fragment
      * Handle fragment resume lifecycle.
      * Updates today's position and refreshes adapter.
      */
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        final String mTAG = "onResume: ";
+//        Log.v(TAG, mTAG + "Fragment resumed: " + getClass().getSimpleName());
+//
+//        // Update today's position in case date changed
+//        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+//        if (getFragmentAdapter() != null) {
+//            getFragmentAdapter().notifyDataSetChanged();
+//        }
+//    }
     @Override
     public void onResume() {
         super.onResume();
-        final String mTAG = "onResume: ";
-        Log.v(TAG, mTAG + "Fragment resumed: " + getClass().getSimpleName());
 
-        // Update today's position in case date changed
-        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-        if (getFragmentAdapter() != null) {
-            getFragmentAdapter().notifyDataSetChanged();
+        // Check for lazy refresh in base implementation
+        if (shouldPerformBaseLazyRefresh()) {
+            Log.d(TAG, String.format("Performing lazy refresh for %s", getClass().getSimpleName()));
+            onForceEventsRefresh();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Unregister when fragment is not visible
+        unregisterForEventsRefresh();
+    }
+
+    /**
+     * Register this fragment for events refresh notifications
+     */
+    private void registerForEventsRefresh() {
+        if (!mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+
+            // NUOVO: Metodo da aggiungere a QDueMainActivity
+            // mainActivity.registerEventsRefreshFragment(this);
+
+            mIsRegisteredForEventsRefresh = true;
+            Log.d(TAG, String.format("Registered %s for events refresh", mFragmentId));
+        }
+    }
+
+    /**
+     * Unregister this fragment from events refresh notifications
+     */
+    private void unregisterForEventsRefresh() {
+        if (mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+
+            // NUOVO: Metodo da aggiungere a QDueMainActivity
+            // mainActivity.unregisterEventsRefreshFragment(this);
+
+            mIsRegisteredForEventsRefresh = false;
+            Log.d(TAG, String.format("Unregistered %s from events refresh", mFragmentId));
         }
     }
 
@@ -2060,13 +2124,12 @@ public abstract class BaseFragment extends Fragment
     /**
      * Get the current adapter.
      */
-    protected abstract BaseAdapter getFragmentAdapter();
+    protected abstract BaseAdapterLegacy getFragmentAdapter();
 
     /**
-     * Set adapter, an extension of BaseAdapter
+     * Set adapter, an extension of BaseAdapterLegacy
      */
-    protected abstract void setFragmentAdapter(BaseAdapter adapter);
-
+    protected abstract void setFragmentAdapter(BaseAdapterLegacy adapter);
 
     // ==================== EVENTS LOADING METHODS ====================
 
@@ -2098,7 +2161,7 @@ public abstract class BaseFragment extends Fragment
                 // Convert LocalDate to LocalDateTime for DAO method
                 LocalDateTime startDateTime = startDate.atStartOfDay();
                 LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-                return mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
             } catch (Exception e) {
                 Log.e(TAG, "Error loading events from database", e);
                 return new ArrayList<LocalEvent>();
@@ -2128,7 +2191,7 @@ public abstract class BaseFragment extends Fragment
                 notifyEventsDataChanged();
                 mIsLoadingEvents.set(false);
             });
-    }).exceptionally(throwable -> {
+        }).exceptionally(throwable -> {
             Log.e(TAG, "Failed to load events", throwable);
             mMainHandler.post(() -> {
                 mIsLoadingEvents.set(false);
@@ -2139,8 +2202,8 @@ public abstract class BaseFragment extends Fragment
 
     /**
      * Update events cache and notify adapter.
-     * Update events cache and notify adapter - FIXED VERSION
-     * PROBLEMA: il metodo sovrascrive invece di fare merge
+     * FIX: merge instead of overwriting
+     * FIX: no log if no data available
      */
     protected void updateEventsCache(Map<LocalDate, List<LocalEvent>> newEventsMap) {
         if (newEventsMap != null && !newEventsMap.isEmpty()) {
@@ -2170,18 +2233,15 @@ public abstract class BaseFragment extends Fragment
                 }
             }
 
-            Log.d(TAG, "Updated events cache with " + newEventsMap.size() + " new dates, total cache: " + mEventsCache.size() + " dates");
+            Log.d(TAG, "updateEventsCache: ✅ Updated events cache: " + newEventsMap.size() + " new dates; total cache: " + mEventsCache.size() + " dates.");
         } else {
-            Log.w(TAG, "Attempted to update events cache with null or empty map - IGNORING");
-            // FIX: NON svuotare la cache se arriva una mappa vuota
-            return;
+            // FIX: Do not empty cache  if a map is empty
         }
     }
 
-
     /**
      * Group events by their date range for efficient lookup.
-     * FIXED: Now handles multi-day events correctly by adding them to all affected dates
+     * FIX: Now handles multi-day events correctly by adding them to all affected dates
      */
     private Map<LocalDate, List<LocalEvent>> groupEventsByDate(List<LocalEvent> events) {
         Map<LocalDate, List<LocalEvent>> grouped = new HashMap<>();
@@ -2236,16 +2296,8 @@ public abstract class BaseFragment extends Fragment
     }
 
     /**
-     * Notify subclasses that events data has changed.
-     * Subclasses should override this to update their adapters.
-     */
-    protected void notifyEventsDataChanged() {
-        // Default implementation - subclasses should override
-        Log.d(TAG, "Events data changed - " + mEventsCache.size() + " dates with events");
-    }
-
-    /**
      * Get events for a specific date.
+     *
      * @param date The date to get events for
      * @return List of events for the date, or empty list if none
      */
@@ -2256,6 +2308,7 @@ public abstract class BaseFragment extends Fragment
 
     /**
      * Check if a date has any events.
+     *
      * @param date The date to check
      * @return true if the date has events
      */
@@ -2291,7 +2344,7 @@ public abstract class BaseFragment extends Fragment
                 LocalDateTime startDateTime = startOfMonth.atStartOfDay();
                 LocalDateTime endDateTime = endOfMonth.atTime(23, 59, 59);
 
-                return mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
             } catch (Exception e) {
                 Log.e(TAG, "Error loading events for month " + monthDate, e);
                 return new ArrayList<LocalEvent>();
@@ -2305,22 +2358,138 @@ public abstract class BaseFragment extends Fragment
         });
     }
 
-    // ==================== PUBLIC API FOR SUBCLASSES ====================
-
     /**
-     * Refresh events data (call when events are added/modified).
+     * Enhanced refresh events data method
      */
     public void refreshEventsData() {
+        Log.d(TAG, String.format("Refreshing events data for %s", getClass().getSimpleName()));
+
+        // Clear existing cache
         mEventsCache.clear();
+
+        // Reload events for current period
         loadEventsForCurrentPeriod();
+
+        // Schedule adapter notification after load completes
+        mMainHandler.postDelayed(() -> {
+            notifyEventsDataChanged();
+            Log.d(TAG, String.format("Events refresh completed for %s", getClass().getSimpleName()));
+        }, 500); // Small delay to ensure data is loaded
+    }
+
+// ================================== COMPLETE INTERFACE IMPLEMENTATION ====================
+
+    @Override
+    public void onEventsChanged(String changeType, int eventCount) {
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "BaseFragment (%s): Events changed %s (%d events)",
+                getClass().getSimpleName(), changeType, eventCount));
+
+        // Only refresh if fragment is active
+        if (isFragmentActive()) {
+            refreshEventsData();
+
+            // Notify adapter with events data
+            notifyEventsDataChanged();
+        } else {
+            Log.d(TAG, String.format("Fragment %s is inactive, skipping immediate refresh",
+                    getClass().getSimpleName()));
+        }
+    }
+
+    @Override
+    public void onForceEventsRefresh() {
+        Log.d(TAG, String.format("BaseFragment (%s): Force refresh requested",
+                getClass().getSimpleName()));
+
+        // Always refresh on force request, regardless of fragment state
+        refreshEventsData();
+        notifyEventsDataChanged();
+    }
+
+    @Override
+    public boolean isFragmentActive() {
+        // Enhanced check for fragment activity state
+        return isAdded() &&
+                isVisible() &&
+                !isRemoving() &&
+                !isDetached() &&
+                getUserVisibleHint() && // For ViewPager compatibility
+                getActivity() != null &&
+                !getActivity().isFinishing();
+    }
+
+    @Override
+    public String getFragmentDescription() {
+        return String.format("%s (ID: %s)", getClass().getSimpleName(),
+                mFragmentId != null ? mFragmentId : "unknown");
     }
 
     /**
+     * Notify subclasses that events data has changed.
+     * Subclasses should override this to update their adapters.
+     */
+    protected void notifyEventsDataChanged() {
+        try {
+            // Update adapter with new events data
+            if (getFragmentAdapter() != null) {
+                getFragmentAdapter().notifyDataSetChanged();
+                Log.d(TAG, String.format(QDue.getLocale(), "Notified adapter of events changes (%d dates with events)",
+                        mEventsCache.size()));
+            }
+
+            // Additional subclass-specific notifications
+            onEventsDataRefreshed();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error notifying events data changed", e);
+        }
+    }
+
+    /**
+     * Hook for subclasses to perform additional actions when events data is refreshed
+     */
+    protected void onEventsDataRefreshed() {
+        // Default implementation - subclasses can override
+        Log.v(TAG, String.format("Events data refreshed for %s", getClass().getSimpleName()));
+    }
+
+    /**
+     * Check if lazy refresh should be performed
+     *
+     * @return true if events might have changed while fragment was inactive
+     */
+    private boolean shouldPerformBaseLazyRefresh() {
+        // Simple approach: always refresh on resume
+        // Could be enhanced with timestamp checking or other logic
+        return true;
+    }
+
+    // ==================== PUBLIC API FOR SUBCLASSES ====================
+
+    /**
      * Get events cache for adapter integration.
+     *
      * @return Current events cache
      */
     protected Map<LocalDate, List<LocalEvent>> getEventsCache() {
         return new HashMap<>(mEventsCache); // Return copy for thread safety
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    /**
+     * Debug method to verify events integration
+     */
+    public void debugEventsIntegration() {
+        Log.d(TAG, "=== EVENTS INTEGRATION DEBUG ===");
+        Log.d(TAG, "Fragment: " + getFragmentDescription());
+        Log.d(TAG, "Is Active: " + isFragmentActive());
+        Log.d(TAG, "Is Registered: " + mIsRegisteredForEventsRefresh);
+        Log.d(TAG, "Database: " + (mDatabase != null ? "initialized" : "null"));
+        Log.d(TAG, "Events Cache Size: " + mEventsCache.size());
+        Log.d(TAG, "Adapter: " + (getFragmentAdapter() != null ? "initialized" : "null"));
+        Log.d(TAG, "=== END DEBUG ===");
     }
 
 }

@@ -45,6 +45,38 @@
     <string name="settings_sync_title">Sincronizza periodicamente</string>
 
 
+
+    <!-- Preferences per data schema -->
+    <string name="qd_preference_scheme_start_day">preference_scheme_start_day</string>
+    <string name="qd_preference_scheme_start_month">preference_scheme_start_month</string>
+    <string name="qd_preference_scheme_start_year">preference_scheme_start_year</string>
+
+<!--    <string name="qd_preference_scheme_start_day">7</string>-->
+<!--    <string name="qd_preference_scheme_start_month">11</string>-->
+<!--    <string name="qd_preference_scheme_start_year">2018</string>-->
+<!--    -->
+    <!-- Dialog warning e conferma -->
+    <string name="scheme_date_warning_title">Attenzione: Modifica Data Schema</string>
+    <string name="scheme_date_warning_message">La data di inizio schema influenza significativamente la rotazione dei turni.\n\nSi consiglia di:\n• Accettare la data proposta inizialmente (07/11/2018)\n• Modificare solo se necessario\n• Verificare i turni dopo la modifica\n\nVuoi procedere?</string>
+    <string name="scheme_date_current_label">Data attuale: %1$s</string>
+    <string name="scheme_date_proceed">Procedi</string>
+    <string name="scheme_date_cancel">Annulla</string>
+
+    <string name="scheme_date_confirm_title">Conferma Modifica</string>
+    <string name="scheme_date_confirm_message">Nuova data inizio schema: %1$s\n\nQuesta modifica rigenererà immediatamente tutto lo schema dei turni. Sei sicuro?</string>
+    <string name="scheme_date_confirm_yes">Conferma</string>
+    <string name="scheme_date_confirm_no">Annulla</string>
+
+    <string name="scheme_date_success">Schema aggiornato con successo</string>
+    <string name="scheme_date_error">Errore durante l\'aggiornamento dello schema</string>
+    <string name="scheme_date_rollback">Ripristinata data precedente a causa di errore</string>
+
+    <!-- Preference summary -->
+    <string name="settings_scheme_date_current">Data corrente: %1$s</string>
+
+
+
+
     <!-- Tema e Aspetto -->
     <string name="settings_appearance_header">Aspetto</string>
     <string name="settings_theme_title">Tema</string>
@@ -123,9 +155,7 @@
     <string name="qd_preference_scheme_start_date">preference_scheme_start_date</string>
     <string name="qd_preference_signature">preference_signature</string>
     <string name="qd_preference_sync">preference_sync</string>
-    <string name="qd_preference_scheme_start_day">7</string>
-    <string name="qd_preference_scheme_start_month">11</string>
-    <string name="qd_preference_scheme_start_year">2018</string>
+
     <string name="placeholder_calendar_day">1</string>
     <string name="placeholder_calendar_day_n">n</string>
     <string name="header_sunday">DOM</string>
@@ -595,6 +625,13 @@
     <string name="event_edit_title">Modifica evento</string>
     <string name="import_events_file">Importa da file</string>
     <string name="import_events_url">Importa da URL</string>
+    <string name="text_import">Importa</string>
+    <string name="text_cancel">Annulla</string>
+    <string name="text_event">Evento</string>
+    <string name="text_deleted">cancellato</string>
+    <string name="text_capital_cancel">ANNULLA</string>
+    <string name="text_delete">Elimina</string>
+    <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
 
 
 </resources>

@@ -21,9 +21,8 @@ import androidx.preference.SwitchPreferenceCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.EventDao;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageManager;
 import net.calvuz.qdue.utils.Log;
 
@@ -302,7 +301,7 @@ public class EventsPreferenceFragment extends PreferenceFragmentCompat
      * Get EventDao instance
      */
     private EventDao getEventDao() {
-        return EventsDatabase.getInstance(requireContext()).eventDao();
+        return QDueDatabase.getInstance(requireContext()).eventDao();
     }
 }
 

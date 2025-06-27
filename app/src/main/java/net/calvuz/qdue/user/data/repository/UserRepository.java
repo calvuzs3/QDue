@@ -2,7 +2,7 @@ package net.calvuz.qdue.user.data.repository;
 
 import android.content.Context;
 
-import net.calvuz.qdue.user.data.database.UserDatabase;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.user.data.dao.UserDao;
 import net.calvuz.qdue.user.data.entities.User;
 import net.calvuz.qdue.user.data.models.GoogleAuthData;
@@ -27,7 +27,7 @@ public class UserRepository {
     private static volatile UserRepository INSTANCE;
 
     private UserRepository(Context context) {
-        UserDatabase database = UserDatabase.getInstance(context);
+        QDueDatabase database = QDueDatabase.getInstance(context);
         userDao = database.userDao();
         executorService = Executors.newFixedThreadPool(4);
     }

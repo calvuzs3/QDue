@@ -10,6 +10,7 @@
     <dimen name="spacing_xxs">2dp</dimen>     <!-- Extra Extra small -->
     <dimen name="spacing_xs">4dp</dimen>      <!-- Extra small -->
     <dimen name="spacing_s">8dp</dimen>       <!-- Small -->
+    <dimen name="spacing_sm">12dp</dimen>     <!-- Small Medium -->
     <dimen name="spacing_m">16dp</dimen>      <!-- Medium (standard) -->
     <dimen name="spacing_l">24dp</dimen>      <!-- Large -->
     <dimen name="spacing_xl">32dp</dimen>     <!-- Extra large -->

@@ -23,13 +23,13 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.shared.BaseAdapter;
+import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
 import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
@@ -51,10 +51,10 @@ import com.google.android.material.card.MaterialCardView;
  * Enhanced DaysListAdapter with Material Design compliance and events support
  * Minimal changes to the proven original adapter
  */
-public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
+public class DaysListAdapterLegacy extends BaseAdapterLegacy {
 
     // TAG
-    private static final String TAG = "SEDAdapter";
+    private static final String TAG = "D-Adapter";
 
     // Simple events tracking (just count for now)
     private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
@@ -63,20 +63,22 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
     // Event Indicator
     private final EventIndicatorHelper mEventHelper;
 
-    // STEP 4: Database integration fields
-    private final EventsDatabase mEventsDatabase;
+    // Database integration fields
+    private final QDueDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
-    public SimpleEnhancedDaysListAdapter(Context context, List<SharedViewModels.ViewItem> items,
-                                         HalfTeam userHalfTeam, int numShifts) {
+    public DaysListAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
+                                 HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);
 
         // Initialize event helper
         mEventHelper = new EventIndicatorHelper(context);
 
         // Initialize database and load real events
-        mEventsDatabase = EventsDatabase.getInstance(context);
+        mEventsDatabase = QDueDatabase.getInstance(context);
         loadEventsFromDatabase();
+
+        Log.d(TAG, "DayslistAdapterLegacy: ✅ initialized");
     }
 
     @Override
@@ -254,7 +256,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 //     */
 //    private void bindMaterialDay(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
 //
-//        // Call the original binding logic from BaseAdapter
+//        // Call the original binding logic from BaseAdapterLegacy
 //        bindOriginalDayData(holder, dayItem, position);
 //
 //        // Add our material design enhancements
@@ -266,7 +268,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 //    }
 //
 //    /**
-//     * Replicate the original BaseAdapter.bindDay logic for MaterialDayViewHolder.
+//     * Replicate the original BaseAdapterLegacy.bindDay logic for MaterialDayViewHolder.
 //     * This ensures we maintain all the original functionality.
 //     */
 //    private void bindOriginalDayData(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
@@ -681,7 +683,7 @@ public class SimpleEnhancedDaysListAdapter extends BaseAdapter {
 
     /**
      * Minimal events integration that doesn't break existing layout.
-     * Add this method to SimpleEnhancedDaysListAdapter.
+     * Add this method to DaysListAdapterLegacy.
      */
     private void setupMinimalEventIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null || holder.eventsIndicator == null) {

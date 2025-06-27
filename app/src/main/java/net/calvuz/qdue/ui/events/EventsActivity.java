@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.CalendarContract;
 import android.text.InputType;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -23,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -30,17 +30,19 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.file.FileAccessAdapter;
 import net.calvuz.qdue.core.file.EventsImportAdapter;
 import net.calvuz.qdue.core.permissions.PermissionManager;
-import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.backup.BackupIntegration;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.validation.JsonSchemaValidator;
+import net.calvuz.qdue.ui.events.interfaces.BackPressHandler;
 import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
@@ -67,6 +69,18 @@ import java.time.format.DateTimeFormatter;
  * - Uses Navigation Component with separate navigation graph
  * - Fragments handle their own UI and business logic
  * - Activity coordinates global actions (import/export/create)
+ * <p>
+ * * ACTIVITY RESULT PATTERN - COMPLETE IMPLEMENTATION
+ * *
+ * * This implementation provides a simple and reliable way to notify MainActivity
+ * * when events are changed in EventsActivity using the standard Android
+ * * Activity Result pattern.
+ * *
+ * * IMPLEMENTATION STEPS:
+ * * 1. Add constants and notification method to EventsActivity
+ * * 2. Update MainActivity to use ActivityResultLauncher
+ * * 3. Add refresh logic to MainActivity
+ * * 4. Call notification after event operations
  */
 public class EventsActivity extends AppCompatActivity implements
         EventsFileOperationsInterface,
@@ -83,11 +97,11 @@ public class EventsActivity extends AppCompatActivity implements
     // UI Components
     private MaterialToolbar mToolbar;
     private FloatingActionButton mFabAddEvent;
-    private View mEmptyStateView;
     private View mLoadingStateView;
 
     // Empty State
     private boolean mHasEvents = false;
+    private int mTotalEventsCount = 0;
 
     // File operation launchers
     private ActivityResultLauncher<Intent> mFilePickerLauncher;
@@ -96,18 +110,33 @@ public class EventsActivity extends AppCompatActivity implements
     // Current fragment reference for communication
     private EventsListFragment mCurrentListFragment;
 
+    // CORREZIONE: Consistent database usage
+    private QDueDatabase mDatabase;  // ✅ USA LO STESSO DATABASE
+
     // File Access
     private FileAccessAdapter mFileAccessAdapter;
     private EventsImportAdapter mEventsImportAdapter;
     private PermissionManager mPermissionManager;
 
-    // Interfaces
-//    private EventsOperationListener mEventsOperationListener;
+    // Activity Result
+    // Result constants for MainActivity communication
+    public static final String EXTRA_EVENTS_CHANGED = "events_changed";
+    public static final String EXTRA_EVENTS_COUNT = "events_count";
+    public static final String EXTRA_CHANGE_TYPE = "change_type";
+
+    // Change type constants
+    public static final String CHANGE_TYPE_IMPORT = "import";
+    public static final String CHANGE_TYPE_DELETE = "delete";
+    public static final String CHANGE_TYPE_CREATE = "create";
+    public static final String CHANGE_TYPE_MODIFY = "modify";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events);
+
+        // Initialize database consistently
+        mDatabase = QDueDatabase.getInstance(this);  // ✅ STESSO DATABASE
 
         initializeViews();
         setupToolbar();
@@ -118,6 +147,8 @@ public class EventsActivity extends AppCompatActivity implements
 
         // Set up interfaces
 //        mEventsOperationListener = (EventsOperationListener) this;
+        // Initialize events state
+        checkInitialEventsState();
     }
 
     @Override
@@ -134,6 +165,31 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Refresh events state when returning to activity
+        checkInitialEventsState();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Ensure we notify MainActivity of any pending changes when leaving
+        if (mHasEvents) {
+            // Could implement logic to detect if changes occurred during session
+        }
+    }
+
+    @Override
+    public void finish() {
+        // Ensure final notification is sent before finishing
+        Log.d(TAG, "Activity finishing - ensuring MainActivity notification");
+        super.finish();
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         handleIntent(intent);
@@ -145,7 +201,6 @@ public class EventsActivity extends AppCompatActivity implements
     private void initializeViews() {
         mToolbar = findViewById(R.id.toolbar_events);
         mFabAddEvent = findViewById(R.id.fab_add_event);
-        mEmptyStateView = findViewById(R.id.empty_state_events);
         mLoadingStateView = findViewById(R.id.loading_state_events);
     }
 
@@ -161,8 +216,39 @@ public class EventsActivity extends AppCompatActivity implements
         }
 
         // Handle navigation icon click (back to main activity)
+        // CORREZIONE: Sostituire setNavigationOnClickListener con check del fragment
         mToolbar.setNavigationOnClickListener(v -> {
-            // Check if we can navigate back within the events navigation
+            Log.d(TAG, "=== TOOLBAR NAVIGATION CLICKED ===");
+
+            // NUOVO: Check se siamo in EventEditFragment
+            if (mNavController != null && mNavController.getCurrentDestination() != null) {
+                int currentDest = mNavController.getCurrentDestination().getId();
+                Log.d(TAG, "Current destination: " + currentDest);
+
+                if (currentDest == R.id.nav_event_edit) {
+                    Log.d(TAG, "🎯 In EVENT EDIT - checking for unsaved changes");
+
+                    try {
+                        Fragment currentFragment = mNavHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+                        if (currentFragment instanceof BackPressHandler) {
+                            Log.d(TAG, "🎯 Fragment implements BackPressHandler");
+                            boolean handled = ((BackPressHandler) currentFragment).onBackPressed();
+                            Log.d(TAG, "Fragment handled: " + handled);
+
+                            if (handled) {
+                                Log.d(TAG, "✋ Navigation BLOCKED by fragment");
+                                return; // DON'T navigate - fragment is handling it
+                            }
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error checking fragment: " + e.getMessage());
+                    }
+                }
+            }
+
+            Log.d(TAG, "🔄 Proceeding with normal navigation");
+
+            // ESISTENTE: Check if we can navigate back within the events navigation
             if (mNavController != null && !mNavController.popBackStack()) {
                 // If no back stack, finish activity to return to main
                 finish();
@@ -186,7 +272,6 @@ public class EventsActivity extends AppCompatActivity implements
                 mNavController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                     onNavigationDestinationChanged(destination.getId(), arguments);
                 });
-
                 Log.d(TAG, "Navigation Component setup completed");
             } else {
                 Log.e(TAG, "NavHostFragment not found!");
@@ -300,31 +385,6 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
-    // ==================== MENU HANDLING ====================
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // Handle toolbar navigation
-        int itemId = item.getItemId();
-        if (itemId == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Try to navigate back within the events navigation
-        if (mNavController != null && mNavController.popBackStack()) {
-            // Successfully navigated back within navigation graph
-            return;
-        }
-
-        // No back stack, finish activity
-        super.onBackPressed();
-    }
-
     // ==================== ACTION HANDLERS ====================
 
     /**
@@ -337,6 +397,7 @@ public class EventsActivity extends AppCompatActivity implements
     /**
      * Handle import events from file
      */
+    @Deprecated
     public void handleImportEventsFromFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("application/json");
@@ -352,12 +413,44 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
+     * Handle Successful Import action
+     */
+    private void handleSuccessfulImport(EventsImportManager.ImportResult result) {
+        showImportResultDialog(result);
+
+        if (result.success && result.importedEvents > 0) {
+            // Update fragment
+            if (mCurrentListFragment != null) {
+                mCurrentListFragment.refreshEvents();
+            }
+
+            // Update state and notify MainActivity
+            mHasEvents = true;
+            mTotalEventsCount += result.importedEvents;
+            updateFabVisibility();
+            notifyEventsChanged(CHANGE_TYPE_IMPORT, result.importedEvents);
+
+            // TRIGGER AUTO BACKUP AFTER IMPORT
+            BackupIntegration.integrateWithImport(
+                    EventsActivity.this,
+                    mCurrentListFragment != null ? mCurrentListFragment.getEventsList() : null,
+                    result.importedEvents
+            );
+
+            Log.d(TAG, String.format(QDue.getLocale(),
+                    "handleSuccessfulImport: ✅ Successfully imported %d events", result.importedEvents));
+            Log.d(TAG, "handleSuccessfulImport: ✅ MainActivity notified");
+        }
+    }
+
+    /**
      * Handle import events from URL
      */
     public void handleImportEventsFromUrl() {
         // TODO: to implement
         Log.d(TAG, "TODO: Handle import events from URL");
         Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+        // Notify MainActivity
     }
 
     /**
@@ -389,9 +482,9 @@ public class EventsActivity extends AppCompatActivity implements
                 .setMessage("Enter event title:")
                 .setView(editTitle)
                 .setPositiveButton("Create", (dialog, which) -> {
-                    Log.d(TAG, "New Event Title: " + editTitle.getText());
+                    Log.d(TAG, "showCreateEventDialog: New Event Title: " + editTitle.getText());
                     String title = editTitle.getText().toString().trim();
-                    Log.d(TAG, "New Event Title: " + title);
+                    Log.d(TAG, "showCreateEventDialog: New Event Title: " + title);
 
                     if (!title.isEmpty()) {
                         createNewEvent(title);
@@ -407,28 +500,36 @@ public class EventsActivity extends AppCompatActivity implements
                 LocalEvent newEvent = new LocalEvent(title, java.time.LocalDate.now());
                 newEvent.setDescription("My Event");
 
-                EventsDatabase database = EventsDatabase.getInstance(this);
-                long result = database.eventDao().insertEvent(newEvent);
+                long result = mDatabase.eventDao().insertEvent(newEvent);
 
-                // Back to UI thread to update UI
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    Log.d(TAG, "DB insertResult = " + result);
+                runOnUiThread(() -> {
                     if (result > 0) {
-                        Log.d(TAG, "Evento creato (ID: " + newEvent.getId() +
+                        Log.d(TAG, "createNewEvent: ✅ Event created (ID: " + newEvent.getId() +
                                 ") (ROW ID: " + result + ")");
-                        mCurrentListFragment.onEventCreated(newEvent);
-                        showSuccess("Evento creato: " + title);
 
+                        // Update fragment
+                        if (mCurrentListFragment != null) {
+                            mCurrentListFragment.onEventCreated(newEvent);
+                        }
+
+                        showSuccess("✅ " + title);
+
+                        // Update state and notify MainActivity
+                        mHasEvents = true;
+                        mTotalEventsCount++;
+                        updateFabVisibility();
+                        notifyEventsChanged(CHANGE_TYPE_CREATE, 1);
+
+                        Log.d(TAG, "createNewEvent: Event created, MainActivity notified");
                     } else {
-                        showError("Errore creando l'evento " + title);
-
+                        showError("❌ Error creating event " + title);
                     }
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error creating event: " + e.getMessage());
+                Log.e(TAG, "createNewEvent: ❌ Error creating event: " + e.getMessage());
                 runOnUiThread(() -> {
-                    showError("Errore creando l'evento");
+                    showError("❌ Error creating event");
                 });
             }
         }).start();
@@ -441,15 +542,15 @@ public class EventsActivity extends AppCompatActivity implements
      */
     private void importEventsFromFile(Uri fileUri) {
         try {
-            Log.d(TAG, "Starting SAF-based import from: " + fileUri.toString());
+            Log.d(TAG, "importEventsFromFile: Starting SAF-based import from: " + fileUri.toString());
 
             // Step 1: Show file info to user
             String fileInfo = mFileAccessAdapter.getFileDisplayInfo(fileUri);
-            Log.d(TAG, "Selected file: " + fileInfo);
+            Log.d(TAG, "importEventsFromFile: Selected file: " + fileInfo);
 
             // Step 2: Check if supported file type
             if (!mFileAccessAdapter.isSupportedFile(fileUri)) {
-                showError("Unsupported file type. " + FileAccessAdapter.getSupportedFileTypesDescription());
+                showError("❌ Unsupported file type. " + FileAccessAdapter.getSupportedFileTypesDescription());
                 return;
             }
 
@@ -457,8 +558,8 @@ public class EventsActivity extends AppCompatActivity implements
             showImportDialog(fileUri);
 
         } catch (Exception e) {
-            Log.e(TAG, "Error starting import", e);
-            showError("Error reading file: " + e.getMessage());
+            Log.e(TAG, "importEventsFromFile: ❌ Error starting import", e);
+            showError("❌ Error reading file: " + e.getMessage());
         }
 
 //        Log.d(TAG, "Importing events from: " + fileUri.toString());
@@ -490,8 +591,9 @@ public class EventsActivity extends AppCompatActivity implements
      * Import events from selected file URI
      */
     private void importEventsFromUrl(Uri fileUri) {
-        // TODO: Integrate with existing import functionality
+        // TODO: importEventsFromUrl(Uri fileUri) Integrate with existing import functionality
         Log.d(TAG, "Importing events from: " + fileUri.toString());
+        Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -509,8 +611,8 @@ public class EventsActivity extends AppCompatActivity implements
         AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Import Options")
                 .setView(dialogView)
-                .setPositiveButton("Ok", null)  // Set later to prevent auto-close
-                .setNegativeButton("Cancel", null)
+                .setPositiveButton(R.string.text_import, null)  // Set later to prevent auto-close
+                .setNegativeButton(R.string.text_cancel, null)
                 .create();
 
         dialog.setOnShowListener(dialogInterface -> {
@@ -525,7 +627,7 @@ public class EventsActivity extends AppCompatActivity implements
                 // Create import options from dialog settings
                 EventsImportManager.ImportOptions options = createImportOptionsFromDialog(dialogView);
 
-                Log.d(TAG, "Advanced import options configured: " + getOptionsDescription(options));
+                Log.d(TAG, "showImportDialog: Advanced import options configured: " + getOptionsDescription(options));
 
                 dialog.dismiss();
                 performImport(fileUri, options);
@@ -563,11 +665,11 @@ public class EventsActivity extends AppCompatActivity implements
         checkboxAllowPartialImport.setChecked(true);
 
         // Create dialog
-        AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Advanced Import Options")
                 .setView(dialogView)
-                .setPositiveButton("Import", null) // Set later to prevent auto-close
-                .setNegativeButton("Cancel", null)
+                .setPositiveButton(R.string.text_import, null) // Set later to prevent auto-close
+                .setNegativeButton(R.string.text_cancel, null)
                 .create();
 
         dialog.setOnShowListener(dialogInterface -> {
@@ -576,7 +678,7 @@ public class EventsActivity extends AppCompatActivity implements
                 // Create import options from dialog settings
                 EventsImportManager.ImportOptions options = createImportOptionsFromAdvancedDialog(dialogView);
 
-                Log.d(TAG, "Advanced import options configured: " + getOptionsDescription(options));
+                Log.d(TAG, "showAdvancedImportDialog: Advanced import options configured: " + getOptionsDescription(options));
 
                 dialog.dismiss();
                 performImport(fileUri, options);
@@ -759,7 +861,7 @@ public class EventsActivity extends AppCompatActivity implements
             @Override
             public void onProgress(int processed, int total, String currentEvent) {
                 runOnUiThread(() -> {
-                    progressDialog.setMessage(String.format("Importing... (%d/%d) %s",
+                    progressDialog.setMessage(String.format(QDue.getLocale(), "Importing... (%d/%d) %s",
                             processed, total, currentEvent));
                 });
             }
@@ -768,24 +870,7 @@ public class EventsActivity extends AppCompatActivity implements
             public void onComplete(EventsImportManager.ImportResult result) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    //handleImportResult(result); // in the case of exporting next snippet
-
-                    //  From OLD code ---
-                    showImportResultDialog(result);
-
-                    if (result.success && result.importedEvents > 0) {
-
-                        // get Fragment actions..
-                        mCurrentListFragment.refreshEvents(); // Refresh the list
-
-                        // TRIGGER AUTO BACKUP AFTER IMPORT
-                        BackupIntegration.integrateWithImport(
-                                EventsActivity.this,
-                                mCurrentListFragment.getEventsList(),
-                                result.importedEvents
-                        );
-                    }
-                    // ---
+                    handleSuccessfulImport(result);
                 });
             }
 
@@ -794,71 +879,10 @@ public class EventsActivity extends AppCompatActivity implements
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     showError("Import failed: " + error);
-                    Log.e(TAG, "Import error", exception);
+                    Log.e(TAG, "performImport: ❌ Import error", exception);
                 });
             }
         });
-
-//        // Show progress dialog
-//        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
-//        progressDialog.setTitle("Importing Events");
-//        progressDialog.setMessage("Processing...");
-//        progressDialog.setProgressStyle(android.app.ProgressDialog.STYLE_HORIZONTAL);
-//        progressDialog.setCancelable(false);
-//        progressDialog.show();
-//
-//        EventsImportManager importManager = new EventsImportManager(this);
-//
-//        importManager.importFromFile(fileUri, options, new EventsImportManager.ImportCallback() {
-//            @Override
-//            public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
-//                runOnUiThread(() -> {
-//                    if (!validationResult.isValid) {
-//                        progressDialog.setMessage("Validation failed, importing anyway...");
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onProgress(int processed, int total, String currentEvent) {
-//                runOnUiThread(() -> {
-//                    progressDialog.setMax(total);
-//                    progressDialog.setProgress(processed);
-//                    progressDialog.setMessage("Processing: " + currentEvent);
-//                });
-//            }
-//
-//            @Override
-//            public void onComplete(EventsImportManager.ImportResult result) {
-//                runOnUiThread(() -> {
-//                    progressDialog.dismiss();
-//                    showImportResultDialog(result);
-//
-//                    if (result.success && result.importedEvents > 0) {
-//
-//                        // get Fragment actions..
-//                        mCurrentListFragment.refreshEvents(); // Refresh the list
-////                        loadEvents(); // Refresh the list (->now in fragment)
-//
-//                        // TRIGGER AUTO BACKUP AFTER IMPORT
-//                        BackupIntegration.integrateWithImport(
-//                                EventsActivity.this,
-//                                mCurrentListFragment.getEventsList(),
-////                                mEventsList, // (-> now in fragment)
-//                                result.importedEvents
-//                        );
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onError(String error, Exception exception) {
-//                runOnUiThread(() -> {
-//                    progressDialog.dismiss();
-//                    showError("Import failed: " + error);
-//                });
-//            }
-//        });
     }
 
     /**
@@ -990,7 +1014,7 @@ public class EventsActivity extends AppCompatActivity implements
             if (fileUri != null) {
                 String scheme = fileUri.getScheme();
                 if ("file".equals(scheme) || "content".equals(scheme)) {
-                    Log.d(TAG, "Handling file intent: " + fileUri.toString());
+                    Log.d(TAG, "Handling file intent: " + fileUri);
                     importEventsFromFile(fileUri);
                 }
             }
@@ -998,7 +1022,7 @@ public class EventsActivity extends AppCompatActivity implements
             // Handle sharing intent
             Uri sharedUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (sharedUri != null) {
-                Log.d(TAG, "Handling shared file: " + sharedUri.toString());
+                Log.d(TAG, "Handling shared file: " + sharedUri);
                 importEventsFromFile(sharedUri);
             }
         }
@@ -1012,25 +1036,33 @@ public class EventsActivity extends AppCompatActivity implements
     private void deleteAllEvents() {
         new Thread(() -> {
             try {
-                EventsDatabase database = EventsDatabase.getInstance(this);
-                int result = database.eventDao().deleteAllEvents();
-//                database.eventDao().deleteAllLocalEvents(); // clears only local events
+                int result = mDatabase.eventDao().deleteAllEvents();
 
-                // Run on UI thread to update UI
-                new Handler(Looper.getMainLooper()).post(() -> {
+                runOnUiThread(() -> {
                     if (result > 0) {
-                        mCurrentListFragment.onEventsCleared(result, true);
-                        showSuccess("All events cleared");
-                    } else {
-                        showError("Errore nel cancellare tutti  gli eventi");
-                    }
+                        // Update fragment
+                        if (mCurrentListFragment != null) {
+                            mCurrentListFragment.onEventsCleared(result, true);
+                        }
 
+                        showSuccess("All events cleared");
+
+                        // Update state and notify MainActivity
+                        mHasEvents = false;
+                        mTotalEventsCount = 0;
+                        updateFabVisibility();
+                        notifyEventsChanged(CHANGE_TYPE_DELETE, result);
+
+                        Log.d(TAG, "deleteAllEvents: ✅ MainActivity notified");
+                    } else {
+                        showError("❌ Error deleting all events");
+                    }
                 });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error clearing events from database", e);
+                Log.e(TAG, "deleteAllEvents: ❌ Error clearing events from database", e);
                 runOnUiThread(() -> {
-                    showError("Errore nel cancellare tutti  gli eventi");
+                    showError("❌ Error deleting all events");
                 });
             }
         }).start();
@@ -1201,6 +1233,31 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
+    // ============================= TRIGGERS ==============================
+
+    /**
+     * Trigger delete all events from db
+     */
+    @Override
+    public void triggerDeleteAllEvents() {
+        handleDeleteAllEvents();
+    }
+
+    /**
+     * Trigger create new event
+     */
+    @Override
+    public void triggerCreateNewEvent() {
+        handleCreateNewEvent();
+    }
+
+    /**
+     * Trigger export from fragments
+     */
+    public void triggerExportEvents() {
+        exportEventsToFile();
+    }
+
     // ==================== IMPLEMENT EventsEventOperationsInterface ====================
 
     @Override
@@ -1294,10 +1351,7 @@ public class EventsActivity extends AppCompatActivity implements
      */
     private void showEventDeletionDialog(LocalEvent event, EventDeletionListener listener) {
         String dialogMessage = String.format(
-                "Sei sicuro di voler eliminare l'evento?\n\n" +
-                        "Titolo: %s\n" +
-                        "Data: %s\n\n" +
-                        "Potrai annullare l'operazione per alcuni secondi dopo la conferma.",
+                getString(R.string.dialog_event_delete_confirmation),
                 event.getTitle(),
                 formatEventDateForDialog(event)
         );
@@ -1306,12 +1360,12 @@ public class EventsActivity extends AppCompatActivity implements
                 .setTitle("Elimina Evento")
                 .setMessage(dialogMessage)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setPositiveButton("Elimina", (dialog, which) -> {
+                .setPositiveButton(R.string.text_delete, (dialog, which) -> {
                     // User confirmed deletion
                     startPendingEventDeletion(event);
                     listener.onDeletionRequested();
                 })
-                .setNegativeButton("Annulla", (dialog, which) -> {
+                .setNegativeButton(R.string.text_cancel, (dialog, which) -> {
                     // User cancelled deletion
                     listener.onDeletionCancelled();
                 })
@@ -1336,15 +1390,14 @@ public class EventsActivity extends AppCompatActivity implements
 
         // STEP 3: Show undo snackbar
         Snackbar snackbar = Snackbar.make(
-                findViewById(android.R.id.content),
-                "Evento \"" + eventTitle + "\" eliminato",
+                findViewById(android.R.id.content), eventTitle + " " + R.string.text_deleted,
                 Snackbar.LENGTH_LONG // 4 seconds
         );
 
         // Add undo action
-        snackbar.setAction("ANNULLA", v -> {
+        snackbar.setAction(R.string.text_capital_cancel, v -> {
             cancelEventDeletion(event);
-            Log.d(TAG, "Event deletion cancelled by user: " + eventTitle);
+            Log.d(TAG, "startPendingEventDeletion: Event deletion cancelled by user: " + eventTitle);
         });
 
         // Configure snackbar appearance
@@ -1359,7 +1412,7 @@ public class EventsActivity extends AppCompatActivity implements
 
                 // If dismissed without undo action, perform actual deletion
                 if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
-                    Log.d(TAG, "Snackbar dismissed, performing actual deletion: " + eventTitle);
+                    Log.d(TAG, "startPendingEventDeletion: Snackbar dismissed, performing actual deletion: " + eventTitle);
                     performActualEventDeletion(eventId, eventTitle);
                 }
             }
@@ -1368,8 +1421,6 @@ public class EventsActivity extends AppCompatActivity implements
         // Show the snackbar
         snackbar.show();
     }
-
-
 
     /**
      * Cancel pending deletion and restore event
@@ -1396,25 +1447,33 @@ public class EventsActivity extends AppCompatActivity implements
     private void performActualEventDeletion(String eventId, String eventTitle) {
         new Thread(() -> {
             try {
-                EventDao eventDao = EventsDatabase.getInstance(this).eventDao();
+                EventDao eventDao = mDatabase.eventDao();
                 int deletedRows = eventDao.deleteEventById(eventId);
 
                 runOnUiThread(() -> {
                     // Always remove from pending deletion
                     if (mCurrentListFragment != null) {
                         mCurrentListFragment.removeFromPendingDeletion(eventId);
-                        mCurrentListFragment.suppressRefresh(false); // Re-enable refresh
+                        mCurrentListFragment.suppressRefresh(false);
                     }
 
                     if (deletedRows > 0) {
                         Log.d(TAG, "Event permanently deleted: " + eventTitle + " (ID: " + eventId + ")");
-                        showSuccess("Evento eliminato definitivamente");
+                        showSuccess("Event deleted permanently");
+
+                        // Update state
+                        mTotalEventsCount = Math.max(0, mTotalEventsCount - 1);
+                        mHasEvents = mTotalEventsCount > 0;
+                        updateFabVisibility();
+
+                        // Notify MainActivity
+                        notifyEventsChanged(CHANGE_TYPE_DELETE, 1);
 
                         // Trigger backup after deletion
                         triggerBackupAfterDeletion(eventTitle);
                     } else {
                         Log.w(TAG, "No rows deleted for event ID: " + eventId);
-                        showError("Evento non trovato nel database");
+                        showError("Event not found in database");
 
                         // Since deletion failed, force refresh to restore correct state
                         if (mCurrentListFragment != null) {
@@ -1430,89 +1489,12 @@ public class EventsActivity extends AppCompatActivity implements
                     if (mCurrentListFragment != null) {
                         mCurrentListFragment.removeFromPendingDeletion(eventId);
                         mCurrentListFragment.suppressRefresh(false);
-                        mCurrentListFragment.refreshEvents(); // Force refresh on error
+                        mCurrentListFragment.refreshEvents();
                     }
-                    showError("Errore durante l'eliminazione: " + e.getMessage());
+                    showError("Error during deletion: " + e.getMessage());
                 });
             }
         }).start();
-    }
-
-
-    /**
-     * Trigger delete all events from db
-     */
-    @Override
-    public void triggerDeleteAllEvents() {
-        handleDeleteAllEvents();
-    }
-
-
-    /**
-     * Trigger create new event
-     */
-    @Override
-    public void triggerCreateNewEvent() {
-        handleCreateNewEvent();
-    }
-
-    /// //////////////////////////////////////////////////////////////
-
-    /**
-     * Trigger export from fragments
-     */
-    public void triggerExportEvents() {
-        exportEventsToFile();
-    }
-
-    /**
-     * Navigate to event detail
-     */
-    public void navigateToEventDetail(String eventId) {
-        if (mNavController != null && eventId != null) {
-            Bundle args = new Bundle();
-            args.putString("eventId", eventId);
-
-            try {
-                mNavController.navigate(R.id.action_events_list_to_event_detail, args);
-            } catch (Exception e) {
-                Log.e(TAG, "Error navigating to event detail: " + e.getMessage());
-                Toast.makeText(this, "Errore navigazione", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    /**
-     * Navigate back to events list
-     */
-    public void navigateBackToEventsList() {
-        if (mNavController != null) {
-            try {
-                mNavController.popBackStack(R.id.nav_events_list, false);
-            } catch (Exception e) {
-                Log.e(TAG, "Error navigating back to events list: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Refresh events list
-     */
-    public void refreshEventsList() {
-        if (mCurrentListFragment != null) {
-            mCurrentListFragment.refreshEvents();
-        }
-    }
-
-    /**
-     * Add event to list (after creation)
-     */
-    public void addEventToList(LocalEvent event) {
-        if (mCurrentListFragment != null && event != null) {
-            mCurrentListFragment.addEvent(event);
-        }else {
-            Log.w(TAG, "Cannot add event - fragment or event is null");
-        }
     }
 
     /**
@@ -1558,23 +1540,66 @@ public class EventsActivity extends AppCompatActivity implements
         // ... your existing permission handling code remains unchanged ...
     }
 
-    // ========================== FAB RELATED ==============================
+    // ==================== CORREZIONE 1: INTERFACE IMPLEMENTATION ====================
 
     /**
      * Implementation of EventsUIStateInterface
      * Called by EventsListFragment to control FAB visibility
      */
+    @Override
     public void onEventsListStateChanged(boolean hasEvents) {
         Log.d(TAG, "onEventsListStateChanged called - hasEvents: " + hasEvents);
         mHasEvents = hasEvents;
         updateFabVisibility();
+
+        // Update internal state tracking
+        if (hasEvents) {
+            updateEventsCount();
+        } else {
+            mTotalEventsCount = 0;
+        }
+    }
+
+    /**
+     * Update events count for better state tracking
+     */
+    private void updateEventsCount() {
+        new Thread(() -> {
+            try {
+                int count = mDatabase.eventDao().getEventsCount();
+                runOnUiThread(() -> {
+                    mTotalEventsCount = count;
+                    Log.d(TAG, "Updated events count: " + count);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating events count", e);
+            }
+        }).start();
+    }
+
+    /**
+     * Check initial events state on activity start
+     */
+    private void checkInitialEventsState() {
+        new Thread(() -> {
+            try {
+                int count = mDatabase.eventDao().getEventsCount();
+                runOnUiThread(() -> {
+                    mHasEvents = count > 0;
+                    mTotalEventsCount = count;
+                    updateFabVisibility();
+                    Log.d(TAG, "Initial events state: " + count + " events, hasEvents: " + mHasEvents);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking initial events state", e);
+            }
+        }).start();
     }
 
     /**
      * Update FAB visibility based on current navigation destination and events availability
      */
     private void updateFabVisibility() {
-        // Only show FAB if we're on events list AND there are events
         if (mNavController != null) {
             int currentDestination = mNavController.getCurrentDestination() != null ?
                     mNavController.getCurrentDestination().getId() : -1;
@@ -1595,5 +1620,71 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
+// ==================== CORREZIONE 2: ENHANCED NOTIFICATION SYSTEM ====================
 
+    /**
+     * Enhanced notification system with better validation
+     */
+    private void notifyEventsChanged(String changeType, int eventCount) {
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "Notifying events changed: %s (%d events)", changeType, eventCount));
+
+        // Validate parameters
+        if (changeType == null) {
+            Log.w(TAG, "Change type is null, using default");
+            changeType = CHANGE_TYPE_MODIFY;
+        }
+
+        if (eventCount < 0) {
+            Log.w(TAG, "Invalid event count: " + eventCount);
+            eventCount = 0;
+        }
+
+        // Create result intent with enhanced data
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(EXTRA_EVENTS_CHANGED, true);
+        resultIntent.putExtra(EXTRA_EVENTS_COUNT, eventCount);
+        resultIntent.putExtra(EXTRA_CHANGE_TYPE, changeType);
+
+        // Add additional metadata
+        resultIntent.putExtra("timestamp", System.currentTimeMillis());
+        resultIntent.putExtra("total_events", mTotalEventsCount);
+
+        setResult(RESULT_OK, resultIntent);
+
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "Set activity result: %s, count=%d, total=%d",
+                changeType, eventCount, mTotalEventsCount));
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    /**
+     * Debug method to check activity state
+     */
+    public void debugActivityState() {
+        Log.d(TAG, "=== EVENTS ACTIVITY STATE DEBUG ===");
+        Log.d(TAG, "Has Events: " + mHasEvents);
+        Log.d(TAG, "Total Events Count: " + mTotalEventsCount);
+        Log.d(TAG, "Database: " + (mDatabase != null ? "initialized" : "null"));
+        Log.d(TAG, "Current Fragment: " + (mCurrentListFragment != null ? "available" : "null"));
+        Log.d(TAG, "FAB Visibility: " + (mFabAddEvent != null ?
+                (mFabAddEvent.getVisibility() == View.VISIBLE ? "VISIBLE" : "HIDDEN") : "null"));
+
+        if (mNavController != null && mNavController.getCurrentDestination() != null) {
+            Log.d(TAG, "Current Destination: " + mNavController.getCurrentDestination().getId());
+        }
+
+        Log.d(TAG, "=== END DEBUG ===");
+    }
+
+    /**
+     * Debug method to force notification test
+     */
+    public void debugForceNotification(String testChangeType, int testEventCount) {
+        Log.d(TAG, "=== DEBUG FORCE NOTIFICATION ===");
+        Log.d(TAG, "Test notification: " + testChangeType + " (" + testEventCount + " events)");
+        notifyEventsChanged(testChangeType, testEventCount);
+        Log.d(TAG, "=== END DEBUG FORCE NOTIFICATION ===");
+    }
 }

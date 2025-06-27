@@ -45,6 +45,9 @@ public interface MacroDepartmentDao {
     @Query("DELETE FROM macro_departments WHERE id = :id")
     void deleteMacroDepartmentById(long id);
 
+    @Query("DELETE FROM macro_departments")
+    void deleteAllMacroDepartments();
+
     @Query("DELETE FROM macro_departments WHERE establishment_id = :establishmentId")
     void deleteMacroDepartmentsByEstablishment(long establishmentId);
 

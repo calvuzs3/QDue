@@ -55,10 +55,10 @@ import java.util.Map;
  * @version 2.0
  * @since 2025
  */
-public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // TAG
-    protected static final String TAG = "BaseAdapter";
+    protected static final String TAG = "BaseAdapterLegacy";
 
     // CONSTANTS
     protected static final int VIEW_TYPE_MONTH_HEADER = 0;
@@ -80,15 +80,15 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     protected int mCachedUserShiftTextColor = 0;
 
     /**
-     * Constructs a new BaseAdapter with the specified parameters.
+     * Constructs a new BaseAdapterLegacy with the specified parameters.
      *
      * @param context      Application context for resource access
      * @param items        List of view items to display
      * @param userHalfTeam Current user's team for highlighting
      * @param numShifts    Number of shifts to display per day
      */
-    public BaseAdapter(Context context, List<SharedViewModels.ViewItem> items,
-                       HalfTeam userHalfTeam, int numShifts) {
+    public BaseAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
+                             HalfTeam userHalfTeam, int numShifts) {
         this.mContext = context;
         this.mItems = items;
         this.mUserHalfTeam = userHalfTeam;
@@ -122,17 +122,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     @SuppressLint("NotifyDataSetChanged")
     public void setItems(List<SharedViewModels.ViewItem> newItems) {
         this.mItems = newItems;
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Updates the current user's team and refreshes the disply.
-     *
-     * @param newUserTeam New user team for highlighting
-     */
-    @SuppressLint("NotifyDataSetChanged")
-    public void updateUserTeam(HalfTeam newUserTeam) {
-        this.mUserHalfTeam = newUserTeam;
         notifyDataSetChanged();
     }
 
@@ -210,7 +199,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (position >= mItems.size()) return;
 
         if (DEBUG_BASEADAPTER) {
-            Log.d(TAG, "onBindViewHolder: ViewHolder = " + holder.getClass().getSimpleName() );
+            Log.d(TAG, "onBindViewHolder: ViewHolder = " + holder.getClass().getSimpleName());
         }
 
         SharedViewModels.ViewItem item = mItems.get(position);
@@ -307,13 +296,11 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param header Month header data to bind
      */
     protected void bindMonthHeader(MonthHeaderViewHolder holder, SharedViewModels.MonthHeader header) {
-        if (!(holder instanceof EnhancedMonthHeaderViewHolder)) {
+        if (!(holder instanceof EnhancedMonthHeaderViewHolder enhancedHolder)) {
             // Fallback to basic binding
             holder.tvMonthTitle.setText(header.title);
             return;
         }
-
-        EnhancedMonthHeaderViewHolder enhancedHolder = (EnhancedMonthHeaderViewHolder) holder;
 
         try {
             LocalDate monthDate = header.monthDate;
@@ -400,8 +387,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param dayItem  Day item data to bind
      * @param position Position in the adapter
      */
-    protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position)
-    {
+    protected void bindDay(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
         Day day = dayItem.day;
         if (day == null) return;
 
@@ -414,9 +400,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         // Set weekday name
         holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
-
-        // Reset colors and background
-//        resetDayViewColors(holder); // checked for cardview
 
         // Set shift texts
         bindShiftsToDay(holder, day); // No background implied
@@ -433,12 +416,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 //        applySpecialDayColors(holder, isToday, isSunday);
 
         if (DEBUG_BASEADAPTER) {
-            Log.d("DEBUG", "DayItem.day is null: " + (dayItem.day == null));
-            if (dayItem.day != null) {
-                Log.d("DEBUG", "Day date: " + dayItem.day.getDate());
-                Log.d("DEBUG", "Day number: " + dayItem.day.getDayOfMonth());
-            }
-
+            Log.d("DEBUG", "Day date: " + dayItem.day.getDate());
+            Log.d("DEBUG", "Day number: " + dayItem.day.getDayOfMonth());
             Log.d("DEBUG", "ItemView type: " + holder.itemView.getClass().getSimpleName());
             Log.d("DEBUG", "ItemView child count: " + ((ViewGroup) holder.itemView).getChildCount());
         }
@@ -671,23 +650,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     }
 
     /**
-     * Resets all colors and backgrounds to their default state.
-     *
-     * @param holder ViewHolder to reset
-     */
-    protected void resetDayViewColors(DayViewHolder holder) {
-        if (!(holder.mView instanceof MaterialCardView))
-//            holder.mView.setBackgroundColor(Color.TRANSPARENT);
-
-        for (TextView tv : holder.shiftTexts) {
-            if (tv != null) {
-//                tv.setBackgroundColor(Color.TRANSPARENT);
-                tv.setTextColor(mCachedNormalTextColor);
-            }
-        }
-    }
-
-    /**
      * Sets text color for all day-related TextViews.
      * Preserves highlighting for user shifts.
      *
@@ -704,7 +666,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                 // Don't change color of highlighted shifts
                 if (tv.getBackground() == null ||
                         ((android.graphics.drawable.ColorDrawable) tv.getBackground()).getColor() == Color.TRANSPARENT) {
-//                    tv.setTextColor(color);
+                    tv.setTextColor(color);
                 }
             }
         }

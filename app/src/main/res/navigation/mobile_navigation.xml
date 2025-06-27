@@ -5,42 +5,14 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/nav_calendar">
 
-    <!-- Calendar View Fragment - NOW DEFAULT START DESTINATION -->
-<!--    <fragment-->
-<!--        android:id="@+id/nav_calendar"-->
-<!--        android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragment"-->
-<!--        android:label="@string/menu_calendar"-->
-<!--        tools:layout="@layout/fragment_calendar_view" >-->
-<!--        <action-->
-<!--            android:id="@+id/action_nav_calendar_to_nav_settings"-->
-<!--            app:destination="@id/nav_settings" />-->
-<!--        <action-->
-<!--            android:id="@+id/action_nav_calendar_to_nav_dayslist"-->
-<!--            app:destination="@id/nav_dayslist" />-->
-<!--    </fragment>-->
-
-<!--    &lt;!&ndash; Days List Fragment - Secondary destination &ndash;&gt;-->
-<!--    <fragment-->
-<!--        android:id="@+id/nav_dayslist"-->
-<!--        android:label="@string/menu_dayslist"-->
-<!--        android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragment"-->
-<!--        tools:layout="@layout/fragment_dayslist_view" >-->
-<!--        <action-->
-<!--            android:id="@+id/action_nav_dayslist_to_nav_settings"-->
-<!--            app:destination="@id/nav_settings" />-->
-<!--        <action-->
-<!--            android:id="@+id/action_nav_dayslist_to_nav_calendar"-->
-<!--            app:destination="@id/nav_calendar" />-->
-<!--    </fragment>-->
-
     <fragment
          android:id="@+id/nav_calendar"
-         android:name="net.calvuz.qdue.ui.proto.CalendarViewFragmentEnhanced"
+         android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragmentLegacy"
          android:label="@string/menu_calendar" />
 
      <fragment
          android:id="@+id/nav_dayslist"
-         android:name="net.calvuz.qdue.ui.proto.DayslistViewFragmentEnhanced"
+         android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragmentLegacy"
          android:label="@string/menu_dayslist" />
 
     <!-- About Dialog -->

@@ -19,15 +19,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.ui.shared.BaseAdapter;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.R;
 
@@ -40,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * IMPROVED CalendarAdapter - Mantiene la bellezza originale con eventi integrati
+ * IMPROVED CalendarAdapterLegacy - Mantiene la bellezza originale con eventi integrati
  * <p>
  * DESIGN PRINCIPLES:
  * - Rispetta il design originale che funzionava bene
@@ -49,29 +49,37 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * - Posizionamento preciso degli elementi
  * - Indicatori discreti ma visibili
  */
-public class CalendarAdapter extends BaseAdapter {
+public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 
-    private static final String TAG = "CalendarAdapter";
+    private static final String TAG = "C-Adapter";
 
     // ==================== EVENTI INTEGRATION ====================
 
     // Events data management
     private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
+    private Map<LocalDate, Integer> mEventsCount = new HashMap<>();
+
+    // Event Indicator
     private final EventIndicatorHelper mEventHelper;
-    private final EventsDatabase mEventsDatabase;
+
+    // Database integration fields
+    private final QDueDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
     // ==================== CONSTRUCTOR ====================
 
-    public CalendarAdapter(Context context, List<SharedViewModels.ViewItem> items,
-                           HalfTeam userHalfTeam) {
+    public CalendarAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
+                                 HalfTeam userHalfTeam) {
         super(context, items, userHalfTeam, 1); // Calendar doesn't show detailed shift info
 
         // Initialize events support
         mEventHelper = new EventIndicatorHelper(context);
-        mEventsDatabase = EventsDatabase.getInstance(context);
 
-        Log.d(TAG, "CalendarAdapter initialized with improved layout");
+        // Initialize database and load real events
+        mEventsDatabase = QDueDatabase.getInstance(context);
+        loadEventsFromDatabase();
+
+        Log.d(TAG, "CalendarAdapterLegacy: ✅ initialized");
     }
 
     // ==================== VIEW HOLDER CREATION ====================
@@ -86,7 +94,7 @@ public class CalendarAdapter extends BaseAdapter {
     // ==================== DAY BINDING ====================
 
     @Override
-    public void bindDay(BaseAdapter.DayViewHolder dayHolder, SharedViewModels.DayItem dayItem, int position) {
+    public void bindDay(BaseAdapterLegacy.DayViewHolder dayHolder, SharedViewModels.DayItem dayItem, int position) {
         Log.v(TAG, "bindDay: " + dayItem.day.getLocalDate());
 
 
@@ -193,8 +201,6 @@ public class CalendarAdapter extends BaseAdapter {
             int priorityColor = mEventHelper.getHighestPriorityColor(events);
 
 
-
-            if (eventCount >0 )  {
                 Log.d(TAG, mTAG + "Setting up events indicator for " + eventCount + " events");
                 Log.d(TAG, mTAG + "Priority color: " + Integer.toHexString(priorityColor));
 
@@ -219,7 +225,7 @@ public class CalendarAdapter extends BaseAdapter {
                 } else {
                     Log.e(TAG, mTAG + "tvEventsCount is null");
                 }
-            }
+
         }
     }
 
@@ -440,6 +446,140 @@ public class CalendarAdapter extends BaseAdapter {
         return shiftColor;
     }
 
+    public void notifyEventsDataChanged() {
+        // Brutal
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Load events from database asynchronously.
+     */
+    private void loadEventsFromDatabase() {
+        final String mTAG = "loadEventsFromDatabase: ";
+        Log.v(TAG, mTAG + "called.");
+
+        if (mIsLoadingEvents.get()) {
+            Log.w(TAG, mTAG + "Events loading already in progress");
+            return;
+        }
+
+        mIsLoadingEvents.set(true);
+        Log.d(TAG, mTAG + "Starting to load events from database");
+
+        // Calculate date range (current month ± 2 months for visible range)
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.minusMonths(2).withDayOfMonth(1);
+        LocalDate endDate = now.plusMonths(2).withDayOfMonth(now.plusMonths(2).lengthOfMonth());
+
+        // Load events asynchronously
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                // Convert LocalDate to LocalDateTime for DAO method
+                java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
+                java.time.LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+
+                Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
+                return events;
+
+            } catch (Exception e) {
+
+                Log.e(TAG, mTAG + "Error loading events from database: " + e.getMessage());
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            // Process on main thread
+            if (mContext instanceof android.app.Activity) {
+                ((android.app.Activity) mContext).runOnUiThread(() -> {
+                    processLoadedEvents(events);
+                    mIsLoadingEvents.set(false);
+                });
+            }
+        }).exceptionally(throwable -> {
+
+            Log.e(TAG, mTAG + "Failed to load events: " + throwable.getMessage());
+            mIsLoadingEvents.set(false);
+            return null;
+        });
+    }
+
+    /**
+     * Process events loaded from database and expand multi-day events.
+     */
+    private void processLoadedEvents(List<LocalEvent> events) {
+        final String mTAG = "processLoadedEvents: ";
+        Log.v(TAG, mTAG + "called with " + events.size() + " events");
+
+        Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
+
+        // Process each event and expand multi-day events
+        for (LocalEvent event : events) {
+            expandEventAcrossDays(event, eventsMap);
+        }
+
+        // Update adapter with real data
+        updateEventsData(eventsMap);
+
+        Log.d(TAG, mTAG + "Processed " + events.size() + " events into " + eventsMap.size() + " dates");
+
+        // If no real events found
+        if (eventsMap.isEmpty()) {
+
+            Log.d(TAG, mTAG + "No real events found");
+        }
+    }
+
+
+    /**
+     * Expand a single event across all days it covers.
+     * This ensures multi-day events appear on every day they span.
+     */
+    private void expandEventAcrossDays(LocalEvent event, Map<LocalDate, List<LocalEvent>> eventsMap) {
+        final String mTAG = "expandEventAcrossDays: ";
+        Log.v(TAG, mTAG + "called with event: " + event.getTitle());
+
+        try {
+            LocalDate startDate = event.getStartDate();
+            LocalDate endDate = event.getEndDate();
+
+            // Handle null end date
+            if (endDate == null) {
+                endDate = startDate;
+            }
+
+            // Ensure end date is not before start date
+            if (endDate.isBefore(startDate)) {
+                Log.w(TAG, mTAG + "Event end date before start date, using start date only: " + event.getTitle());
+                endDate = startDate;
+            }
+
+            // Add event to every day it spans
+            LocalDate currentDate = startDate;
+            int dayCount = 0;
+
+            while (!currentDate.isAfter(endDate) && dayCount < 365) { // Safety limit to prevent infinite loops
+                eventsMap.computeIfAbsent(currentDate, k -> new ArrayList<>()).add(event);
+                currentDate = currentDate.plusDays(1);
+                dayCount++;
+            }
+
+            // Log multi-day events for debugging
+            if (dayCount > 1) {
+                Log.d(TAG, mTAG + "Expanded event '" + event.getTitle() + "' across " + dayCount + " days (" + startDate + " to " + endDate + ")");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error expanding event '" + event.getTitle() + "': " + e.getMessage());
+
+            // Fallback: add to start date only
+            LocalDate startDate = event.getStartDate();
+            if (startDate != null) {
+                eventsMap.computeIfAbsent(startDate, k -> new ArrayList<>()).add(event);
+            }
+        }
+    }
+
     // ==================== IMPROVED VIEW HOLDER ====================
 
     /**
@@ -492,10 +632,10 @@ public class CalendarAdapter extends BaseAdapter {
     }
 
     // ========================================
-// FIX 4: CalendarAdapter.java - Debug in updateEventsData()
+// FIX 4: CalendarAdapterLegacy.java - Debug in updateEventsData()
 // ========================================
 
-// AGGIUNGERE debug in CalendarAdapter.updateEventsData():
+// AGGIUNGERE debug in CalendarAdapterLegacy.updateEventsData():
 
     /**
      * Update events data from external source - FIXED VERSION WITH DEBUG
@@ -525,7 +665,7 @@ public class CalendarAdapter extends BaseAdapter {
         Log.d(TAG, "mEventsData updated with " + mEventsData.size() + " dates");
 
         // Notificare IMMEDIATAMENTE
-        notifyDataSetChanged();
+//        notifyDataSetChanged();
     }
 
 }

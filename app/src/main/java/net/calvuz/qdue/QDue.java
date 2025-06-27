@@ -7,8 +7,8 @@ import android.os.Build;
 
 import com.google.android.material.color.DynamicColors;
 
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.user.data.database.UserDatabase;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.Locale;
@@ -19,7 +19,7 @@ public class QDue extends Application {
     static String TAG = "QDUE";
 
     @SuppressLint("StaticFieldLeak")
-    private static Context context;
+    private static Context INSTANCE;
 
     private static Locale locale;
 
@@ -29,37 +29,42 @@ public class QDue extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // MEMBERS
-        context = this;
+        // INSTANCE reference
+        INSTANCE = this;
+
+        // Locale
         locale = getSystemLocale();
         Log.d(TAG, "=== SystemLocale initialized");
 
-        // 0. Enable Material You Dynamic Colors (Android 12+)
+        // Enable Material You Dynamic Colors (Android 12+)
         enableDynamicColors();
-        Log.d(TAG, "=== enableDynamicColors initialized");
+        Log.d(TAG, "=== DynamicColors initialized");
 
-        // 1. Initialize ShiftTypeFactory
+        // Initialize ShiftTypeFactory
 //        Log.d(TAG, "=== ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
 
-        // 2. Initialize QuattroDue
+        // Initialize QuattroDue
         quattrodue = QuattroDue.getInstance(this);
         Log.d(TAG, "=== QuattroDue initialized");
 
-        // 3. Initialize User database
-        initializeUserDatabase();
-        Log.d(TAG, "=== InitializeUserDatabase initialized");
+        // Initialize unified database
+        QDueDatabase.getInstance(this);
+        Log.d(TAG, "=== QDueDatabase initialized");
     }
 
     /* ===== GETTERS ===== */
 
+    // Application Context
     public static Context getContext() {
-        return context;
+        return INSTANCE;
     }
 
+    // Locale
     public static Locale getLocale() {
         return locale;
     }
 
+    // QuattroDue Engine
     public static QuattroDue getQuattrodue() {
         return quattrodue;
     }
@@ -69,10 +74,10 @@ public class QDue extends Application {
     @SuppressLint("ObsoleteSdkInt")
     private static Locale getSystemLocale() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return context.getResources().getConfiguration().getLocales().get(0);
+            return INSTANCE.getResources().getConfiguration().getLocales().get(0);
         } else {
             //noinspection deprecation
-            return context.getResources().getConfiguration().locale;
+            return INSTANCE.getResources().getConfiguration().locale;
         }
     }
 
@@ -93,11 +98,16 @@ public class QDue extends Application {
         // HelperMethod
         public static final boolean isVirtualScrollingEnabled = false;
 
-        // EnhancedBaseFragmentBridge
+        // EnhancedBaseFragmentLegacyBridge
         public static final boolean ENABLE_VIRTUAL_SCROLLING = false;
 
-        // AdapterBridge // EnhancedBaseFragmentBridge // CalendarViewFragmentEnhanced
+        // AdapterLegacyBridge // EnhancedBaseFragmentLegacyBridge // CalendarViewFragmentLegacyEnhanced
         public static final boolean USE_VIRTUAL_SCROLLING = false;
+
+        // Exception storage settings
+        public static final boolean USE_EXCEPTION_STORAGE = false;
+        public static final boolean ENABLE_PATTERN_OVERRIDE = false;
+        public static final boolean ENABLE_EXCEPTION_MERGE = false;
     }
 
     /**
@@ -159,15 +169,4 @@ public class QDue extends Application {
         }
     }
 
-    private void initializeUserDatabase() {
-        try {
-            // Initialize user database in background
-            new Thread(() -> {
-                UserDatabase.getInstance(this);
-                Log.i(TAG, "User database initialized");
-            }).start();
-        } catch (Exception e) {
-            Log.e(TAG, "Error initializing user database: " + e.getMessage());
-        }
-    }
 }

@@ -2,12 +2,12 @@ package net.calvuz.qdue.events.tests;
 
 import android.content.Context;
 
-import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageManagerExtension;
 import net.calvuz.qdue.events.backup.BackupManager;
 import net.calvuz.qdue.events.backup.ExportManager;
 import net.calvuz.qdue.events.backup.RestoreManager;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -154,7 +154,7 @@ public class EventsSystemTester {
                             Log.d(TAG, "Import test successful: " + message);
 
                             // Verify imported events
-                            EventDao eventDao = EventsDatabase.getInstance(context).eventDao();
+                            EventDao eventDao = QDueDatabase.getInstance(context).eventDao();
                             List<LocalEvent> importedEvents = eventDao.getAllEvents();
                             Log.d(TAG, "Verification: found " + importedEvents.size() + " events after import");
 
@@ -259,7 +259,7 @@ public class EventsSystemTester {
     public static void testRoomDao(Context context, List<LocalEvent> testEvents) {
         Log.d(TAG, "Testing Room DAO operations");
 
-        EventDao dao = EventsDatabase.getInstance(context).eventDao();
+        EventDao dao = QDueDatabase.getInstance(context).eventDao();
 
         // Run tests in background thread (Room requirement)
         new Thread(() -> {

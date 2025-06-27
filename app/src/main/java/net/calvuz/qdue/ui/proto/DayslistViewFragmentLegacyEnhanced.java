@@ -13,8 +13,8 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.ui.dayslist.SimpleEnhancedDaysListAdapter;
-import net.calvuz.qdue.ui.shared.BaseAdapter;
+import net.calvuz.qdue.ui.dayslist.DaysListAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 import net.calvuz.qdue.utils.Log;
 
@@ -25,13 +25,15 @@ import java.util.Map;
 /**
  * Enhanced DayslistViewFragment with virtual scrolling integration
  * Minimal changes to existing code while gaining virtual scrolling benefits
+ * ✅
+ * ❌
  */
-public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
+public class DayslistViewFragmentLegacyEnhanced extends EnhancedBaseFragmentLegacyBridge {
 
-    private final String TAG = "DayslistViewFragmentEnhanced";
+    private final String TAG = "F-Dayslist";
 
     // Keep existing adapter reference for compatibility
-    private SimpleEnhancedDaysListAdapter mLegacyAdapter;
+    private DaysListAdapterLegacy mLegacyAdapter;
 
     @Nullable
     @Override
@@ -41,15 +43,15 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
     }
 
     @Override
-    protected BaseAdapter getFragmentAdapter() {
+    protected BaseAdapterLegacy getFragmentAdapter() {
         // Return bridge adapter if virtual scrolling is enabled, otherwise legacy
         return adapterBridge != null ? adapterBridge : mLegacyAdapter;
     }
 
     @Override
-    protected void setFragmentAdapter(BaseAdapter adapter) {
-        if (adapter instanceof SimpleEnhancedDaysListAdapter) {
-            this.mLegacyAdapter = (SimpleEnhancedDaysListAdapter) adapter;
+    protected void setFragmentAdapter(BaseAdapterLegacy adapter) {
+        if (adapter instanceof DaysListAdapterLegacy) {
+            this.mLegacyAdapter = (DaysListAdapterLegacy) adapter;
         }
         // Bridge adapter is handled by parent class
     }
@@ -81,7 +83,7 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
         final String mTAG = "setupLegacyAdapter: ";
         Log.v(TAG, mTAG + "setupLegacyAdapter: called.");
 
-        mLegacyAdapter = new SimpleEnhancedDaysListAdapter(
+        mLegacyAdapter = new DaysListAdapterLegacy(
                 getContext(),
                 mItemsCache,
                 QDue.getQuattrodue().getUserHalfTeam(),
@@ -178,10 +180,10 @@ public class DayslistViewFragmentEnhanced extends EnhancedBaseFragmentBridge {
 
     @Override
     protected void notifyEventsDataChanged() {
-        Log.d(TAG, "notifyEventsDataChanged: events updated in BaseFragment");
+        Log.d(TAG, "notifyEventsDataChanged: events updated in BaseFragmentLegacy");
 
         if (mLegacyAdapter != null) {
-            // Ottenere eventi dalla cache BaseFragment
+            // Ottenere eventi dalla cache BaseFragmentLegacy
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             Log.d(TAG, "Passing " + eventsCache.size() + " dates with events to DaysListAdapter");
 

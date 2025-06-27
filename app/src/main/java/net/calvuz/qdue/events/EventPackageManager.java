@@ -12,7 +12,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
 import net.calvuz.qdue.QDue;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
+import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -64,7 +65,7 @@ public class EventPackageManager {
     public EventPackageManager(Context context) {
         mContext = context;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        mEventDao = EventsDatabase.getInstance(context).eventDao(); // Use EventDAO
+        mEventDao = QDueDatabase.getInstance(context).eventDao(); // Use EventDAO
         mGson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
                 .create();

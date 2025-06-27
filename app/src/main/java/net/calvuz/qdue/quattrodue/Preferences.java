@@ -7,6 +7,8 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.utils.Library;
 
+import java.time.LocalDate;
+
 /**
  * Application worldwide preferences
  * <p>
@@ -58,5 +60,44 @@ public class Preferences {
     public static void setSharedPreference(Context context, String key, String value) {
         SharedPreferences sp = Library.getSharedPreferences(context);
         sp.edit().putString(key, value).apply();
+    }
+
+
+    /**
+     * Get current scheme start date as LocalDate
+     *
+     * @param context Context
+     * @return Scheme start date
+     */
+    public static LocalDate getSchemeStartDate(Context context) {
+        int day = getSharedPreference(context, KEY_SCHEME_START_DAY, Costants.QD_SCHEME_START_DAY);
+        int month = getSharedPreference(context, KEY_SCHEME_START_MONTH, Costants.QD_SCHEME_START_MONTH);
+        int year = getSharedPreference(context, KEY_SCHEME_START_YEAR, Costants.QD_SCHEME_START_YEAR);
+
+        return LocalDate.of(year, month, day);
+    }
+
+    /**
+     * Set scheme start date from LocalDate
+     *
+     * @param context Context
+     * @param date New scheme start date
+     */
+    public static void setSchemeStartDate(Context context, LocalDate date) {
+        setSharedPreference(context, KEY_SCHEME_START_DAY, date.getDayOfMonth());
+        setSharedPreference(context, KEY_SCHEME_START_MONTH, date.getMonthValue());
+        setSharedPreference(context, KEY_SCHEME_START_YEAR, date.getYear());
+    }
+
+    /**
+     * Check if scheme start date has changed since last check
+     *
+     * @param context Context
+     * @param lastKnownDate Last known scheme date
+     * @return true if date has changed
+     */
+    public static boolean hasSchemeStartDateChanged(Context context, LocalDate lastKnownDate) {
+        LocalDate currentDate = getSchemeStartDate(context);
+        return !currentDate.equals(lastKnownDate);
     }
 }

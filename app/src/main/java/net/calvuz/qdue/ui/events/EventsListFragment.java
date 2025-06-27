@@ -19,10 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.backup.BackupIntegration;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.data.database.EventsDatabase;
-import net.calvuz.qdue.events.EventDao;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
@@ -161,7 +161,7 @@ public class EventsListFragment extends Fragment implements
 
         try {
             // Get database instance and DAO
-            EventDao eventDao = EventsDatabase.getInstance(requireContext()).eventDao();
+            EventDao eventDao = QDueDatabase.getInstance(requireContext()).eventDao();
 
             // Load all events asynchronously
             new Thread(() -> {
@@ -256,46 +256,85 @@ public class EventsListFragment extends Fragment implements
 
     /**
      * Refresh events list (called from parent activity)
+     * with better state management
      */
     public void refreshEvents() {
-        Log.d(TAG, "refreshEvents() called - forcing refresh");
-        mIsRefreshSuppressed = false; // Always allow explicit refresh
+        final String mTAG = "refreshEvents: ";
+        Log.d(TAG, mTAG + "Called - forcing refresh");
+
+        // Clear suppression flag to allow refresh
+        mIsRefreshSuppressed = false;
+
+        // Clear pending deletions since we're doing a full refresh
+        clearPendingDeletions();
+
+        // Load events (this will automatically update view state when complete)
         loadEvents();
+
+        Log.d(TAG, mTAG + "✅ Refresh initiated");
     }
 
     /**
      * Update view state based on data availability
+     * with better logging and error handling
      */
     private void updateViewState() {
-        boolean hasEvents = !mEventsList.isEmpty();
+        final String mTAG = "updateViewState: ";
 
-        if (hasEvents) {
-            mEventsRecyclerView.setVisibility(View.VISIBLE);
-            mEmptyStateView.setVisibility(View.GONE);
-            Log.d(TAG, "updateViewState: Showing events list (" + mEventsList.size() + " events)");
-        } else {
-            mEventsRecyclerView.setVisibility(View.GONE);
-            mEmptyStateView.setVisibility(View.VISIBLE);
-            Log.d(TAG, "updateViewState: Showing empty state");
-        }
+        try {
+            boolean hasEvents = !mEventsList.isEmpty();
 
-        // Notify activity about events state change for FAB management
-        if (mUIStateInterface != null) {
-            mUIStateInterface.onEventsListStateChanged(hasEvents);
+            Log.d(TAG, mTAG + "Updating view state - hasEvents: " + hasEvents +
+                    " (total: " + mEventsList.size() + ")");
+
+            if (hasEvents) {
+                // Show events list
+                mEventsRecyclerView.setVisibility(View.VISIBLE);
+                mEmptyStateView.setVisibility(View.GONE);
+                Log.d(TAG, mTAG + "📋 Showing events list (" + mEventsList.size() + " events)");
+            } else {
+                // Show empty state
+                mEventsRecyclerView.setVisibility(View.GONE);
+                mEmptyStateView.setVisibility(View.VISIBLE);
+                Log.d(TAG, mTAG + "📭 Showing empty state");
+            }
+
+            // Notify activity about events state change for FAB management
+            if (mUIStateInterface != null) {
+                mUIStateInterface.onEventsListStateChanged(hasEvents);
+                Log.d(TAG, mTAG + "✅ Notified activity of state change: hasEvents=" + hasEvents);
+            } else {
+                Log.w(TAG, mTAG + "UIStateInterface is null, cannot notify activity");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error updating view state: " + e.getMessage());
         }
     }
 
     /**
      * Show/hide loading state
+     * with better state management
      */
     private void showLoading(boolean show) {
-        if (show) {
-            mEventsRecyclerView.setVisibility(View.GONE);
-            mEmptyStateView.setVisibility(View.GONE);
-            mLoadingStateView.setVisibility(View.VISIBLE);
-        } else {
-            mLoadingStateView.setVisibility(View.GONE);
-            updateViewState(); // This will handle showing correct state and notify activity
+        final String mTAG = "showLoading: ";
+        Log.v(TAG, mTAG + "Called with show=" + show);
+
+        try {
+            if (show) {
+                // Hide both other states and show loading
+                mEventsRecyclerView.setVisibility(View.GONE);
+                mEmptyStateView.setVisibility(View.GONE);
+                mLoadingStateView.setVisibility(View.VISIBLE);
+                Log.d(TAG, mTAG + "⏳ Showing loading state");
+            } else {
+                // Hide loading and determine correct state to show
+                mLoadingStateView.setVisibility(View.GONE);
+                updateViewState(); // This will show either events list or empty state
+                Log.d(TAG, mTAG + "✅ Loading hidden, updated to appropriate state");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error managing loading state: " + e.getMessage());
         }
     }
 
@@ -421,70 +460,133 @@ public class EventsListFragment extends Fragment implements
 
     /**
      * Add new event to list (called after creation)
+     * with proper state handling
      */
     public void addEvent(LocalEvent event) {
-        Log.d(TAG, "addEvent called for: " + (event != null ? event.getTitle() : "null"));
+        final String mTAG = "addEvent: ";
+        Log.d(TAG, mTAG + "Called for: " + (event != null ? event.getTitle() : "null"));
 
-        if (event != null) {
-            // Check if event already exists to avoid duplicates
-            boolean exists = false;
-            for (LocalEvent existingEvent : mEventsList) {
-                if (existingEvent != null && event.getId() != null &&
-                        event.getId().equals(existingEvent.getId())) {
-                    Log.w(TAG, "Event already exists in list: " + event.getTitle());
-                    exists = true;
-                    break;
+        if (event == null) {
+            Log.w(TAG, mTAG + "Cannot add null event to list");
+            return;
+        }
+
+        // Ensure we're on main thread
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                try {
+                    // Check if event already exists to avoid duplicates
+                    boolean exists = false;
+                    for (LocalEvent existingEvent : mEventsList) {
+                        if (existingEvent != null && event.getId() != null &&
+                                event.getId().equals(existingEvent.getId())) {
+                            Log.w(TAG, mTAG + "Event already exists in list: " + event.getTitle());
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if (!exists) {
+                        boolean wasEmpty = mEventsList.isEmpty();
+
+                        mEventsList.add(0, event); // Add at top
+                        mEventsAdapter.notifyItemInserted(0);
+                        mEventsRecyclerView.scrollToPosition(0);
+
+                        // CRITICAL: Update view state (this will hide empty state if it was showing)
+                        updateViewState();
+
+                        Log.d(TAG, mTAG + "✅ Successfully added event: " + event.getTitle());
+                        Log.d(TAG, mTAG + "Total events now: " + mEventsList.size());
+
+                        if (wasEmpty) {
+                            Log.d(TAG, mTAG + "📝 List was empty, now has events - empty state should be hidden");
+                        }
+
+                    } else {
+                        Log.w(TAG, mTAG + "Event already exists, not adding duplicate");
+                    }
+
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error adding event: " + e.getMessage());
                 }
-            }
-
-            if (!exists) {
-                mEventsList.add(0, event); // Add at top
-                mEventsAdapter.notifyItemInserted(0);
-                mEventsRecyclerView.scrollToPosition(0);
-                updateViewState();
-                Log.d(TAG, "Successfully added event: " + event.getTitle());
-            }
+            });
         } else {
-            Log.w(TAG, "Cannot add null event to list");
+            Log.w(TAG, mTAG + "Activity is null, cannot update UI");
         }
     }
 
     /**
      * Remove event from list (called after deletion)
+     * with proper empty state handling
      */
     public void removeEvent(String eventId) {
-        Log.d(TAG, "removeEvent called for eventId: " + eventId);
+        final String mTAG = "removeEvent: ";
+        Log.d(TAG, mTAG + "Called for eventId: " + eventId);
 
         if (eventId == null || eventId.trim().isEmpty()) {
-            Log.w(TAG, "Cannot remove event - eventId is null or empty");
+            Log.w(TAG, mTAG + "Cannot remove event - eventId is null or empty");
             return;
         }
 
-        boolean found = false;
-        for (int i = 0; i < mEventsList.size(); i++) {
-            LocalEvent event = mEventsList.get(i);
-            if (event != null && eventId.equals(event.getId())) {
-                String eventTitle = event.getTitle();
-                mEventsList.remove(i);
-                mEventsAdapter.notifyItemRemoved(i);
+        // Ensure we're on main thread
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                try {
+                    boolean found = false;
+                    int removedPosition = -1;
+                    String removedTitle = "";
 
-                // Also notify range changed for items after the removed one
-                if (i < mEventsList.size()) {
-                    mEventsAdapter.notifyItemRangeChanged(i, mEventsList.size() - i);
+                    for (int i = 0; i < mEventsList.size(); i++) {
+                        LocalEvent event = mEventsList.get(i);
+                        if (event != null && eventId.equals(event.getId())) {
+                            removedTitle = event.getTitle();
+                            removedPosition = i;
+                            mEventsList.remove(i);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        // Notify adapter of removal
+                        mEventsAdapter.notifyItemRemoved(removedPosition);
+
+                        // Notify range changed for items after the removed one
+                        if (removedPosition < mEventsList.size()) {
+                            mEventsAdapter.notifyItemRangeChanged(removedPosition,
+                                    mEventsList.size() - removedPosition);
+                        }
+
+                        // CRITICAL: Update view state (this will show empty state if list is now empty)
+                        updateViewState();
+
+                        Log.d(TAG, mTAG + "✅ Successfully removed event: " + removedTitle +
+                                " (ID: " + eventId + ") at position: " + removedPosition);
+                        Log.d(TAG, mTAG + "Remaining events: " + mEventsList.size());
+
+                        // Log if we're now showing empty state
+                        if (mEventsList.isEmpty()) {
+                            Log.d(TAG, mTAG + "📭 List is now empty - empty state should be visible");
+                        }
+
+                    } else {
+                        Log.w(TAG, mTAG + "Event not found in list for removal: " + eventId);
+                        // Force a complete refresh as fallback
+                        Log.d(TAG, mTAG + "Forcing complete refresh as fallback");
+                        refreshEvents();
+                    }
+
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error removing event: " + e.getMessage());
+                    // Fallback to refresh
+                    refreshEvents();
                 }
-
-                updateViewState();
-                found = true;
-                Log.d(TAG, "Successfully removed event: " + eventTitle + " (ID: " + eventId + ") at position: " + i);
-                break;
-            }
+            });
+        } else {
+            Log.w(TAG, mTAG + "Activity is null, cannot update UI");
         }
 
-        if (!found) {
-            Log.w(TAG, "Event not found in list for removal: " + eventId);
-            // Force a complete refresh as fallback
-            refreshEvents();
-        }
     }
 
     /**
@@ -514,36 +616,123 @@ public class EventsListFragment extends Fragment implements
     // ==================== PUBLIC INTERFACE ====================
 
     public void onEventsCleared(int clearedCount, boolean createBackup) {
-        // Clear all
-        mEventsList.clear();
-        onRefreshRequired(null);
+        final String mTAG = "onEventsCleared: ";
+        Log.d(TAG, mTAG + "Called with clearedCount=" + clearedCount + ", createBackup=" + createBackup);
 
-        // Trigger AUTO BACKUP after clear
-        if (createBackup)
-            BackupIntegration.integrateWithClearAll(getContext(), mEventsList);
+        // Ensure we're on main thread
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                try {
+                    // Clear the list
+                    int previousSize = mEventsList.size();
+                    mEventsList.clear();
+
+                    // Clear pending deletions
+                    clearPendingDeletions();
+
+                    // Notify adapter of data change
+                    mEventsAdapter.notifyDataSetChanged();
+
+                    // CRITICAL: Update view state to show empty state
+                    updateViewState();
+
+                    Log.d(TAG, mTAG + "✅ Successfully cleared " + previousSize +
+                            " events and updated to empty state");
+
+                    // Trigger backup if requested
+                    if (createBackup) {
+                        BackupIntegration.integrateWithClearAll(getContext(), mEventsList);
+                        Log.d(TAG, mTAG + "Backup integration triggered");
+                    }
+
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error clearing events: " + e.getMessage());
+                }
+            });
+        } else {
+            Log.w(TAG, mTAG + "Activity is null, cannot update UI");
+        }
     }
 
+    /**
+     * ENHANCED: Handle event creation with proper state management
+     */
     public void onEventCreated(LocalEvent event) {
-        // Add Event
-        addEvent(event);
-        // Gentle Notify
-        onRefreshRequired(null);
+        final String mTAG = "onEventCreated: ";
+        Log.d(TAG, mTAG + "Called for: " + (event != null ? event.getTitle() : "null"));
+
+        if (event != null) {
+            // Add event (this will automatically update view state)
+            addEvent(event);
+
+            Log.d(TAG, mTAG + "✅ Event creation handled successfully");
+        } else {
+            Log.w(TAG, mTAG + "Cannot handle creation of null event");
+        }
     }
 
+    /**
+     * Handle refresh required - deprecated method, should use specific methods
+     */
+    @Deprecated
     public void onRefreshRequired(String reason) {
-        // Brutal Notify
-        mEventsAdapter.notifyDataSetChanged();
+        final String mTAG = "onRefreshRequired: ";
+        Log.d(TAG, mTAG + "Called with reason: " + reason + " - delegating to refreshEvents()");
+
+        // Instead of brutal notify, use proper refresh
+        refreshEvents();
     }
 
-    // ================================== DEBUG =================================
+    /**
+     * Helper method for visibility debugging
+     */
+    private String getVisibilityString(View view) {
+        if (view == null) return "null";
+        switch (view.getVisibility()) {
+            case View.VISIBLE:
+                return "VISIBLE";
+            case View.GONE:
+                return "GONE";
+            case View.INVISIBLE:
+                return "INVISIBLE";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    /**
+     * Enhanced debug method to check fragment state
+     */
+    public void debugFragmentState() {
+        Log.d(TAG, "=== EVENTS LIST FRAGMENT STATE DEBUG ===");
+        Log.d(TAG, "Events List Size: " + mEventsList.size());
+        Log.d(TAG, "Pending Deletions: " + mPendingDeletionIds.size());
+        Log.d(TAG, "Refresh Suppressed: " + mIsRefreshSuppressed);
+
+        // View visibility states
+        Log.d(TAG, "RecyclerView Visibility: " + getVisibilityString(mEventsRecyclerView));
+        Log.d(TAG, "Empty State Visibility: " + getVisibilityString(mEmptyStateView));
+        Log.d(TAG, "Loading State Visibility: " + getVisibilityString(mLoadingStateView));
+
+        // Interface states
+        Log.d(TAG, "File Operations Interface: " + (mFileOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "Data Operations Interface: " + (mDataOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "UI State Interface: " + (mUIStateInterface != null ? "available" : "null"));
+
+        Log.d(TAG, "=== END FRAGMENT STATE DEBUG ===");
+    }
 
     /**
      * DEBUG:
      */
     public void logCurrentEvents() {
-        Log.d(TAG, "=== CURRENT EVENTS LIST ===");
+        Log.d(TAG, "=== CURRENT EVENTS LIST DEBUG ===");
         Log.d(TAG, "Total events: " + mEventsList.size());
-        for (int i = 0; i < mEventsList.size(); i++) {
+        Log.d(TAG, "Should show empty state: " + mEventsList.isEmpty());
+
+        for (int i = 0; i < Math.min(mEventsList.size(), 5); i++) { // Log max 5 events
             LocalEvent event = mEventsList.get(i);
             if (event != null) {
                 Log.d(TAG, i + ": " + event.getTitle() + " (ID: " + event.getId() + ")");
@@ -551,7 +740,11 @@ public class EventsListFragment extends Fragment implements
                 Log.d(TAG, i + ": NULL EVENT");
             }
         }
-        Log.d(TAG, "=== END EVENTS LIST ===");
-    }
 
+        if (mEventsList.size() > 5) {
+            Log.d(TAG, "... and " + (mEventsList.size() - 5) + " more events");
+        }
+
+        Log.d(TAG, "=== END EVENTS LIST DEBUG ===");
+    }
 }
