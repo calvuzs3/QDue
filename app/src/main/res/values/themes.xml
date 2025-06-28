@@ -104,7 +104,7 @@
     <!-- ============================================ -->
 
     <!-- For activities Settings like -->
-    <style name="Theme.QDue.Settings" parent="Thse">
+    <style name="Theme.QDue.Settings" parent="Theme.QDue">
         <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 

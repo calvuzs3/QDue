@@ -1,0 +1,195 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+// Leggi manualmente local.properties
+def localPropertiesFile = rootProject.file('local.properties')
+def localProperties = new Properties()
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { stream ->
+        localProperties.load(stream)
+    }
+    println "✓ local.properties found and loaded"
+} else {
+    println "✗ local.properties not found at: ${localPropertiesFile.absolutePath}"
+}
+
+android {
+    android.buildFeatures.buildConfig = true
+
+    signingConfigs {
+        debug {
+            // Debug usa sempre la chiave di debug di Android Studio
+        }
+        release {
+            // DEBUG: Verifica proprietà con il nuovo metodo
+            println "=== DEBUG SIGNING ========================================"
+            println "localProperties size: ${localProperties.size()}"
+            println "KEYSTORE_FILE: ${localProperties.getProperty('KEYSTORE_FILE')}"
+            println "=========================================================="
+
+            // Usa localProperties invece di project.hasProperty
+            if (localProperties.getProperty('KEYSTORE_FILE') &&
+                    localProperties.getProperty('KEYSTORE_PASSWORD') &&
+                    localProperties.getProperty('KEY_PASSWORD') &&
+                    localProperties.getProperty('KEY_ALIAS')) {
+
+                def keystoreFile = file(localProperties.getProperty('KEYSTORE_FILE'))
+                if (keystoreFile.exists()) {
+                    storeFile keystoreFile
+                    storePassword localProperties.getProperty('KEYSTORE_PASSWORD')
+                    storeType localProperties.getProperty('KEYSTORE_TYPE')
+                    keyPassword localProperties.getProperty('KEY_PASSWORD')
+                    keyAlias localProperties.getProperty('KEY_ALIAS')
+                    println "✓ Using production keystore for release"
+                } else {
+                    println "WARNING: Keystore file not found at ${keystoreFile.absolutePath}"
+                    println "Using debug keystore for release build"
+                    // Fallback a debug keystore
+                    storeFile file("debug.keystore")
+                    storePassword "android"
+                    keyPassword "android"
+                    keyAlias "androiddebugkey"
+                }
+            } else {
+                println "WARNING: Signing properties not found in local.properties"
+                println "Using debug keystore for release build"
+                // Fallback a debug keystore
+                storeFile file("debug.keystore")
+                storePassword "android"
+                keyPassword "android"
+                keyAlias "androiddebugkey"
+            }
+        }
+    }
+
+    namespace 'net.calvuz.qdue'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "net.calvuz.qdue"
+        minSdk 29
+        targetSdk 35
+
+        versionCode rootProject.ext.APP_REVISION
+        versionName rootProject.ext.APP_VERSION
+
+        ndk {
+            debugSymbolLevel 'FULL'
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        configureEach { buildType ->
+            // Google
+            buildConfigField "String", "GOOGLE_CLIENT_ID", "\"${localProperties.getProperty('GOOGLE_CLIENT_ID', 'default_value')}\""
+            buildConfigField "String", "GOOGLE_CLIENT_SECRET", "\"${localProperties.getProperty('GOOGLE_CLIENT_SECRET', 'default_value')}\""
+            // Versions
+            buildConfigField "String", "VERSION_NAME", "\"${rootProject.ext.APP_VERSION}\""
+            buildConfigField "int", "CODE_REVISION", "${rootProject.ext.APP_REVISION}"
+            resValue "string", "app_version_dynamic", "Ver. ${rootProject.ext.APP_VERSION} - Rev. ${rootProject.ext.APP_REVISION}"
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Debug sysmbols
+            ndk {
+                debugSymbolLevel 'FULL'
+            }
+
+            // Per Google Play signing
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    packaging {
+        resources {
+            excludes += [
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'META-INF/license.txt',
+                    'META-INF/NOTICE',
+                    'META-INF/NOTICE.txt',
+                    'META-INF/notice.txt',
+                    'META-INF/ASL2.0',
+                    'META-INF/LGPL2.1',
+                    'META-INF/INDEX.LIST',
+                    'META-INF/io.netty.versions.properties'
+            ]
+
+            pickFirsts += [
+                    '**/libc++_shared.so',
+                    '**/libjsc.so'
+            ]
+        }
+    }
+}
+
+dependencies {
+    implementation libs.appcompat
+    implementation libs.constraintlayout
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.lifecycle.viewmodel.ktx
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+    implementation libs.preference
+    implementation libs.activity
+    implementation libs.colorpickerview
+    implementation libs.material3
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+
+    // Material 3 (Material Design 3)
+    implementation libs.com.google.android.material.material
+
+    // OkHttp for HTTP calls
+    implementation libs.okhttp
+    implementation libs.okhttp3.logging.interceptor
+
+    // Google Sign-In
+    implementation libs.play.services.auth
+
+    // Room Database
+    implementation libs.room.runtime
+    annotationProcessor libs.room.compiler
+
+    // Image loading
+    implementation libs.glide
+    annotationProcessor libs.compiler
+
+    // JSON
+    implementation libs.gson
+
+    // Google Calendar API
+    implementation libs.google.api.client.android
+    implementation libs.google.api.services.calendar
+    implementation libs.google.api.client.gson
+
+    // pROTO
+    // For CompletableFuture (if targeting API < 24)
+    implementation libs.annotations
+
+    // For enhanced animations
+    implementation libs.dynamicanimation
+
+    // For better performance monitoring (optional)
+    implementation libs.tracing
+}
