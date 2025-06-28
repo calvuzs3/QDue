@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/preview_calendar_view.xml -->
+<!-- Mockup of calendar view for welcome preview using path elements -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="120dp"
+    android:viewportWidth="300"
+    android:viewportHeight="120">
+
+    <!-- Background -->
+    <path
+        android:fillColor="?attr/colorSurface"
+        android:pathData="M0,0 L300,0 L300,120 L0,120 Z" />
+
+    <!-- Calendar Header (rounded) -->
+    <path
+        android:fillColor="?attr/colorPrimaryContainer"
+        android:pathData="M10,10 L286,10 Q290,10 290,14 L290,26 Q290,30 286,30 L14,30 Q10,30 10,26 L10,14 Q10,10 14,10 Z" />
+
+    <!-- Month Label (rounded) -->
+    <path
+        android:fillColor="?attr/colorOnPrimaryContainer"
+        android:pathData="M20,14 L78,14 Q80,14 80,16 L80,24 Q80,26 78,26 L22,26 Q20,26 20,24 L20,16 Q20,14 22,14 Z" />
+
+    <!-- Calendar Grid - Week 1 -->
+    <!-- Day 1 (off day) -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M15,40 L46,40 Q50,40 50,44 L50,61 Q50,65 46,65 L19,65 Q15,65 15,61 L15,44 Q15,40 19,40 Z" />
+
+    <!-- Day 2-3 (work days) -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M55,40 L86,40 Q90,40 90,44 L90,61 Q90,65 86,65 L59,65 Q55,65 55,61 L55,44 Q55,40 59,40 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M95,40 L126,40 Q130,40 130,44 L130,61 Q130,65 126,65 L99,65 Q95,65 95,61 L95,44 Q95,40 99,40 Z" />
+
+    <!-- Day 4-5 (off days) -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M135,40 L166,40 Q170,40 170,44 L170,61 Q170,65 166,65 L139,65 Q135,65 135,61 L135,44 Q135,40 139,40 Z" />
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M175,40 L206,40 Q210,40 210,44 L210,61 Q210,65 206,65 L179,65 Q175,65 175,61 L175,44 Q175,40 179,40 Z" />
+
+    <!-- Day 6-7 (work days) -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M215,40 L246,40 Q250,40 250,44 L250,61 Q250,65 246,65 L219,65 Q215,65 215,61 L215,44 Q215,40 219,40 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M255,40 L286,40 Q290,40 290,44 L290,61 Q290,65 286,65 L259,65 Q255,65 255,61 L255,44 Q255,40 259,40 Z" />
+
+    <!-- Week 2 (simplified pattern) -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M15,70 L46,70 Q50,70 50,74 L50,91 Q50,95 46,95 L19,95 Q15,95 15,91 L15,74 Q15,70 19,70 Z" />
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M55,70 L86,70 Q90,70 90,74 L90,91 Q90,95 86,95 L59,95 Q55,95 55,91 L55,74 Q55,70 59,70 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M95,70 L166,70 Q170,70 170,74 L170,91 Q170,95 166,95 L99,95 Q95,95 95,91 L95,74 Q95,70 99,70 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M175,70 L246,70 Q250,70 250,74 L250,91 Q250,95 246,95 L179,95 Q175,95 175,91 L175,74 Q175,70 179,70 Z" />
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M255,70 L286,70 Q290,70 290,74 L290,91 Q290,95 286,95 L259,95 Q255,95 255,91 L255,74 Q255,70 259,70 Z" />
+
+    <!-- Day numbers -->
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M32,48 A4,4 0 1,1 32,56 A4,4 0 1,1 32,48 Z" />
+    <path
+        android:fillColor="?attr/colorOnPrimary"
+        android:pathData="M72,48 A4,4 0 1,1 72,56 A4,4 0 1,1 72,48 Z" />
+    <path
+        android:fillColor="?attr/colorOnPrimary"
+        android:pathData="M112,48 A4,4 0 1,1 112,56 A4,4 0 1,1 112,48 Z" />
+
+    <!-- Legend -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M15,105 L25,105 Q27,105 27,107 L27,111 Q27,113 25,113 L17,113 Q15,113 15,111 L15,107 Q15,105 17,105 Z" />
+    <path
+        android:fillColor="?attr/colorOnSurface"
+        android:pathData="M32,107 L60,107 Q62,107 62,109 L62,111 Q62,113 60,113 L34,113 Q32,113 32,111 L32,109 Q32,107 34,107 Z" />
+
+</vector>

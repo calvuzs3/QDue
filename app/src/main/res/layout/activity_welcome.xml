@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- activity_welcome.xml -->
+<!-- Welcome Activity Layout with animated logo and Material 3 design -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    tools:context=".ui.welcome.WelcomeActivity">
+
+    <!-- ============================================ -->
+    <!-- ANIMATED LOGO CONTAINER -->
+    <!-- Displays during initial animation sequence -->
+    <!-- ============================================ -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/logo_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="@dimen/spacing_xl">
+
+            <!-- Animated Logo Container -->
+            <FrameLayout
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginBottom="@dimen/spacing_xl">
+
+                <!-- Q Logo - Rotates like hour hand -->
+                <ImageView
+                    android:id="@+id/logo_q"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_launcher_foreground"
+                    android:contentDescription="@string/app_name"
+                    app:tint="?attr/colorPrimary"
+                    android:scaleType="fitCenter" />
+<!--                android:src="@drawable/ic_logo_q"-->
+
+                <!-- 2 Logo - Rotates like minute hand (faster) -->
+
+                <!-- Clock center dot -->
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="?attr/colorOnSurfaceVariant" />
+
+            </FrameLayout>
+
+            <!-- Welcome Title (fades in after animation) -->
+            <TextView
+                android:id="@+id/welcome_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_to_qdue"
+                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:alpha="0" />
+
+            <!-- Welcome Subtitle -->
+            <TextView
+                android:id="@+id/welcome_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_subtitle"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:gravity="center"
+                android:alpha="0" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ============================================ -->
+    <!-- MAIN WELCOME CONTENT -->
+    <!-- ViewPager with welcome steps -->
+    <!-- ============================================ -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/welcome_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        android:visibility="invisible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- ============================================ -->
+            <!-- TOP BAR WITH PROGRESS -->
+            <!-- ============================================ -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_l"
+                android:gravity="center_vertical"
+                android:background="?attr/colorSurfaceVariant">
+
+                <!-- App Logo Small -->
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_logo_q"
+                    android:contentDescription="@string/app_name"
+                    app:tint="?attr/colorPrimary"
+                    android:layout_marginEnd="@dimen/spacing_m" />
+
+                <!-- Progress Text -->
+                <TextView
+                    android:id="@+id/progress_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/welcome_progress_placeholder"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <!-- Skip Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_skip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_m"
+                    android:text="@string/welcome_skip"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    app:iconTint="?attr/colorOnSurfaceVariant"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+
+                <!-- Next/Complete Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/welcome_next"
+                    style="@style/Widget.Material3.Button"
+                    app:icon="@drawable/ic_rounded_arrow_forward_24"
+                    app:iconGravity="end"
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:textColor="?attr/colorOnPrimary" />
+
+
+            </LinearLayout>
+
+            <!-- Progress Indicator Tabs -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurfaceVariant"
+                app:tabMode="fixed"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="?attr/colorPrimary"
+                app:tabIndicatorHeight="3dp"
+                app:tabSelectedTextColor="?attr/colorPrimary"
+                app:tabTextColor="?attr/colorOnSurfaceVariant"
+                app:tabRippleColor="?attr/colorPrimary"
+                android:elevation="2dp" />
+
+            <!-- ============================================ -->
+            <!-- VIEWPAGER CONTENT -->
+            <!-- Contains all welcome step fragments -->
+            <!-- ============================================ -->
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/welcome_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="?attr/colorSurface" />
+
+            <!-- ============================================ -->
+            <!-- BOTTOM NAVIGATION BAR -->
+            <!-- ============================================ -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_l"
+                android:background="?attr/colorSurfaceVariant"
+                android:gravity="end"
+                android:elevation="4dp">
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ============================================ -->
+    <!-- FLOATING HELP BUTTON (Optional) -->
+    <!-- ============================================ -->
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/spacing_l"
+        android:src="@drawable/ic_rounded_help_24"
+        android:contentDescription="@string/welcome_help"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:tint="?attr/colorOnSecondaryContainer"
+        android:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

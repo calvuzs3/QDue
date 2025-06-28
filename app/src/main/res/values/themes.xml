@@ -108,9 +108,14 @@
         <item name="android:windowBackground">?attr/colorSurface</item>
     </style>
 
+    <style name="Theme.QDue.Welcome" parent="Theme.QDue">
+        <item name="android:windowBackground">?attr/colorSurface</item>
+    </style>
+
     <!-- For activities that need explicit NoActionBar -->
     <style name="Theme.QDue.NoActionBar" parent="Theme.QDue">
         <item name="android:windowActionBar">false</item>
     </style>
+
 
 </resources>

@@ -12,7 +12,7 @@
             <menu>
                 <item
                     android:id="@+id/nav_dayslist"
-                    android:icon="@drawable/ic_view_list"
+                    android:icon="@drawable/ic_view_dayslist"
                     android:title="@string/menu_dayslist" />
                 <item
                     android:id="@+id/nav_calendar"

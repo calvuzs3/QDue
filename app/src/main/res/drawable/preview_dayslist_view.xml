@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/preview_dayslist_view.xml -->
+<!-- Mockup of dayslist view using path elements for rounded corners -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="120dp"
+    android:viewportWidth="300"
+    android:viewportHeight="120">
+
+    <!-- Background -->
+    <path
+        android:fillColor="?attr/colorSurface"
+        android:pathData="M0,0 L300,0 L300,120 L0,120 Z" />
+
+    <!-- Header with date (rounded) -->
+    <path
+        android:fillColor="?attr/colorPrimaryContainer"
+        android:pathData="M10,5 L286,5 Q290,5 290,9 L290,16 Q290,20 286,20 L14,20 Q10,20 10,16 L10,9 Q10,5 14,5 Z" />
+
+    <!-- Date text -->
+    <path
+        android:fillColor="?attr/colorOnPrimaryContainer"
+        android:pathData="M20,8 L98,8 Q100,8 100,10 L100,15 Q100,17 98,17 L22,17 Q20,17 20,15 L20,10 Q20,8 22,8 Z" />
+
+    <!-- Team Rows -->
+    <!-- Team 1 -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,25 L286,25 Q290,25 290,27 L290,31 Q290,33 286,33 L14,33 Q10,33 10,31 L10,27 Q10,25 14,25 Z" />
+    <circle android:centerX="22" android:centerY="29" android:radius="7dp" android:fillColor="#F44336" />
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M35,27 L73,27 Q75,27 75,29 L75,31 Q75,33 73,33 L37,33 Q35,33 35,31 L35,29 Q35,27 37,27 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M250,27 L278,27 Q280,27 280,29 L280,31 Q280,33 278,33 L252,33 Q250,33 250,31 L250,29 Q250,27 252,27 Z" />
+
+    <!-- Team 2 -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,36 L286,36 Q290,36 290,38 L290,42 Q290,44 286,44 L14,44 Q10,44 10,42 L10,38 Q10,36 14,36 Z" />
+    <circle android:centerX="22" android:centerY="40" android:radius="7dp" android:fillColor="#E91E63" />
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M35,38 L73,38 Q75,38 75,40 L75,42 Q75,44 73,44 L37,44 Q35,44 35,42 L35,40 Q35,38 37,38 Z" />
+
+    <!-- Team 3 -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,47 L286,47 Q290,47 290,49 L290,53 Q290,55 286,55 L14,55 Q10,55 10,53 L10,49 Q10,47 14,47 Z" />
+    <circle android:centerX="22" android:centerY="51" android:radius="7dp" android:fillColor="#9C27B0" />
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M35,49 L73,49 Q75,49 75,51 L75,53 Q75,55 73,55 L37,55 Q35,55 35,53 L35,51 Q35,49 37,49 Z" />
+
+    <!-- Team 4 -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,58 L286,58 Q290,58 290,60 L290,64 Q290,66 286,66 L14,66 Q10,66 10,64 L10,60 Q10,58 14,58 Z" />
+    <circle android:centerX="22" android:centerY="62" android:radius="7dp" android:fillColor="#673AB7" />
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M35,60 L73,60 Q75,60 75,62 L75,64 Q75,66 73,66 L37,66 Q35,66 35,64 L35,62 Q35,60 37,60 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M250,60 L278,60 Q280,60 280,62 L280,64 Q280,66 278,66 L252,66 Q250,66 250,64 L250,62 Q250,60 252,60 Z" />
+
+    <!-- Team 5 -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,69 L286,69 Q290,69 290,71 L290,75 Q290,77 286,77 L14,77 Q10,77 10,75 L10,71 Q10,69 14,69 Z" />
+    <circle android:centerX="22" android:centerY="73" android:radius="7dp" android:fillColor="#3F51B5" />
+    <path
+        android:fillColor="?attr/colorOnSurfaceVariant"
+        android:pathData="M35,71 L73,71 Q75,71 75,73 L75,75 Q75,77 73,77 L37,77 Q35,77 35,75 L35,73 Q35,71 37,71 Z" />
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M250,71 L278,71 Q280,71 280,73 L280,75 Q280,77 278,77 L252,77 Q250,77 250,75 L250,73 Q250,71 252,71 Z" />
+
+    <!-- Teams 6-9 (simplified) -->
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,80 L286,80 Q290,80 290,82 L290,86 Q290,88 286,88 L14,88 Q10,88 10,86 L10,82 Q10,80 14,80 Z" />
+    <circle android:centerX="22" android:centerY="84" android:radius="7dp" android:fillColor="#2196F3" />
+
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,91 L286,91 Q290,91 290,93 L290,97 Q290,99 286,99 L14,99 Q10,99 10,97 L10,93 Q10,91 14,91 Z" />
+    <circle android:centerX="22" android:centerY="95" android:radius="7dp" android:fillColor="#00BCD4" />
+
+    <path
+        android:fillColor="?attr/colorSurfaceVariant"
+        android:pathData="M10,102 L286,102 Q290,102 290,104 L290,108 Q290,110 286,110 L14,110 Q10,110 10,108 L10,104 Q10,102 14,102 Z" />
+    <circle android:centerX="22" android:centerY="106" android:radius="7dp" android:fillColor="#4CAF50" />
+
+    <!-- Legend -->
+    <circle android:centerX="204" android:centerY="112" android:radius="4dp" android:fillColor="?attr/colorPrimary" />
+    <path
+        android:fillColor="?attr/colorOnSurface"
+        android:pathData="M212,111 L230,111 Q232,111 232,112 L232,113 Q232,114 230,114 L214,114 Q212,114 212,113 L212,112 Q212,111 214,111 Z" />
+
+</vector>

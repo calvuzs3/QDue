@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/ic_logo_2.xml -->
+<!-- Number 2 logo designed for minute hand rotation animation -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Background circle for 2 -->
+    <path
+        android:fillColor="?attr/colorSecondary"
+        android:pathData="M40,8 C60.4,8 77,24.6 77,45 C77,65.4 60.4,82 40,82 C19.6,82 3,65.4 3,45 C3,24.6 19.6,8 40,8 Z" />
+
+    <!-- Number 2 path -->
+    <group android:name="number_2">
+        <!-- Top curve of 2 -->
+        <path
+            android:fillColor="?attr/colorOnSecondary"
+            android:pathData="M25,25 C25,20.6 28.6,17 33,17 L47,17 C51.4,17 55,20.6 55,25 C55,29.4 51.4,33 47,33 L42,33 C39.8,33 38,34.8 38,37 C38,39.2 39.8,41 42,41 L55,41" />
+
+        <!-- Middle section of 2 -->
+        <path
+            android:fillColor="?attr/colorOnSecondary"
+            android:pathData="M55,41 L35,61 C33.3,62.7 33.3,65.3 35,67 C36.7,68.7 39.3,68.7 41,67 L55,53" />
+
+        <!-- Bottom line of 2 -->
+        <path
+            android:fillColor="?attr/colorOnSecondary"
+            android:pathData="M25,63 L55,63 C57.2,63 59,61.2 59,59 C59,56.8 57.2,55 55,55 L25,55 C22.8,55 21,56.8 21,59 C21,61.2 22.8,63 25,63 Z" />
+
+        <!-- Small rotation indicator dot -->
+        <circle
+            android:fillColor="?attr/colorPrimary"
+            android:centerX="60"
+            android:centerY="30"
+            android:radius="2.5dp" />
+    </group>
+
+    <!-- Clock hand indicator (subtle) -->
+    <group android:name="minute_indicator">
+        <path
+            android:fillColor="?attr/colorOnSecondary"
+            android:fillAlpha="0.3"
+            android:pathData="M40,20 L41,20 L41,45 L40,45 Z" />
+    </group>
+
+</vector>

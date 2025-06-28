@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- item_welcome_feature.xml -->
+<!-- Feature item layout for welcome introduction -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/feature_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_m"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="@dimen/spacing_m"
+    app:cardElevation="@dimen/elevation_card"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_l"
+        android:gravity="center_vertical">
+
+        <!-- ============================================ -->
+        <!-- FEATURE ICON -->
+        <!-- ============================================ -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="@dimen/spacing_l"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardCornerRadius="@dimen/spacing_m"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <ImageView
+                android:id="@+id/feature_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_view_calendar"
+                android:contentDescription="@string/feature_icon"
+                app:tint="?attr/colorOnPrimaryContainer"
+                android:scaleType="fitCenter" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ============================================ -->
+        <!-- FEATURE CONTENT -->
+        <!-- ============================================ -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Feature Title with Coming Soon Chip -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_xs">
+
+                <TextView
+                    android:id="@+id/feature_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/feature_calendar_view_title"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:fontFamily="roboto_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <!-- Coming Soon Chip -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/coming_soon_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    android:text="@string/coming_soon"
+                    android:textSize="10sp"
+                    android:visibility="gone"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    app:chipBackgroundColor="?attr/colorSecondaryContainer"
+                    app:chipStrokeWidth="0dp"
+                    app:chipMinHeight="24dp"
+                    android:textColor="?attr/colorOnSecondaryContainer" />
+
+            </LinearLayout>
+
+            <!-- Feature Description -->
+            <TextView
+                android:id="@+id/feature_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/feature_calendar_view_desc"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="3"
+                android:ellipsize="end" />
+
+        </LinearLayout>
+
+        <!-- ============================================ -->
+        <!-- FEATURE STATUS INDICATOR -->
+        <!-- ============================================ -->
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:src="@drawable/ic_rounded_arrow_forward_24"
+            android:contentDescription="@string/feature_more"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:alpha="0.6"
+            android:scaleType="fitCenter" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

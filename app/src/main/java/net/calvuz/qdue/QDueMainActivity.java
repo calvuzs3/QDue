@@ -29,6 +29,7 @@ import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
+import net.calvuz.qdue.ui.welcome.WelcomeActivity;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
@@ -97,12 +98,19 @@ public class QDueMainActivity extends BaseActivity {
         final String mTAG = "onCreate: ";
         Log.v(TAG, mTAG + "called.");
 
+        // In MainActivity.onCreate()
+        if (!WelcomeActivity.isWelcomeCompleted(this)) {
+            Intent intent = new Intent(this, WelcomeActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
         // Initialize enhanced data manager if virtual scrolling is enabled
         if (MigrationHelper.shouldUseVirtualScrolling()) {
             enhancedDataManager = CalendarDataManagerEnhanced.getEnhancedInstance();
-            Log.d(TAG, "Virtual scrolling enabled for this session");
+            Log.d(TAG, "=== Virtual scrolling enabled for this session");
         } else {
-            Log.d(TAG, "Using legacy scrolling for this session");
+            Log.d(TAG, "=== Legacy scrolling enabled for this session");
         }
 
         // Log device capabilities for monitoring

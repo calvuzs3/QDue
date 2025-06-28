@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/ic_logo_q.xml -->
+<!-- Q letter logo designed for clock-like rotation animation -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Background circle for Q -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M60,10 C87.6,10 110,32.4 110,60 C110,87.6 87.6,110 60,110 C32.4,110 10,87.6 10,60 C10,32.4 32.4,10 60,10 Z" />
+
+    <!-- Q letter path -->
+    <group android:name="q_letter">
+        <!-- Outer circle of Q -->
+        <path
+            android:fillColor="?attr/colorOnPrimary"
+            android:pathData="M60,25 C75.4,25 88,37.6 88,53 C88,68.4 75.4,81 60,81 C44.6,81 32,68.4 32,53 C32,37.6 44.6,25 60,25 Z" />
+
+        <!-- Inner circle (hole of Q) -->
+        <path
+            android:fillColor="?attr/colorPrimary"
+            android:pathData="M60,40 C67.2,40 73,45.8 73,53 C73,60.2 67.2,66 60,66 C52.8,66 47,60.2 47,53 C47,45.8 52.8,40 60,40 Z" />
+
+        <!-- Q tail -->
+        <path
+            android:fillColor="?attr/colorOnPrimary"
+            android:pathData="M70,65 L82,77 C84.2,79.2 84.2,82.8 82,85 C79.8,87.2 76.2,87.2 74,85 L62,73 C65.4,70.6 68.2,67.8 70,65 Z" />
+
+        <!-- Small rotation indicator dot -->
+        <circle
+            android:fillColor="?attr/colorSecondary"
+            android:centerX="75"
+            android:centerY="45"
+            android:radius="3dp" />
+    </group>
+
+    <!-- Clock hand indicator (subtle) -->
+    <group android:name="clock_indicator">
+        <path
+            android:fillColor="?attr/colorOnPrimary"
+            android:fillAlpha="0.3"
+            android:pathData="M60,30 L62,30 L62,60 L60,60 Z" />
+    </group>
+
+</vector>

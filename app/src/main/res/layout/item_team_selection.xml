@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- item_team_selection.xml -->
+<!-- Individual team card for 3x3 grid selection -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/team_card"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_margin="@dimen/spacing_s"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="@dimen/spacing_l"
+    app:cardElevation="@dimen/elevation_card"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/spacing_m">
+
+        <!-- ============================================ -->
+        <!-- TEAM COLOR BAR -->
+        <!-- Top colored indicator for team identity -->
+        <!-- ============================================ -->
+
+        <View
+            android:id="@+id/team_color_bar"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:background="@color/md_theme_light_primary"
+            android:alpha="0.8" />
+
+        <!-- ============================================ -->
+        <!-- TEAM NUMBER -->
+        <!-- Large prominent number display -->
+        <!-- ============================================ -->
+
+        <TextView
+            android:id="@+id/team_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_xs"
+            android:text="1"
+            style="@style/TextAppearance.QDue.HeadlineLarge"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="32sp"
+            android:gravity="center" />
+
+        <!-- ============================================ -->
+        <!-- TEAM NAME -->
+        <!-- Descriptive label below number -->
+        <!-- ============================================ -->
+
+        <TextView
+            android:id="@+id/team_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/team_name_format"
+            style="@style/TextAppearance.QDue.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:fontFamily="roboto_medium"
+            android:gravity="center"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- ============================================ -->
+        <!-- SELECTION INDICATOR -->
+        <!-- Shows when team is selected -->
+        <!-- ============================================ -->
+
+        <View
+            android:id="@+id/selection_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:background="@color/md_theme_light_primary"
+            android:visibility="gone"
+            android:alpha="0.9" />
+
+    </LinearLayout>
+
+    <!-- ============================================ -->
+    <!-- SELECTION OVERLAY -->
+    <!-- Subtle overlay when selected -->
+    <!-- ============================================ -->
+
+    <View
+        android:id="@+id/selection_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorPrimary"
+        android:alpha="0.05"
+        android:visibility="gone" />
+
+</com.google.android.material.card.MaterialCardView>

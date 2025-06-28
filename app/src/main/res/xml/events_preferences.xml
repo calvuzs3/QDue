@@ -29,7 +29,7 @@
         <SwitchPreferenceCompat
             app:defaultValue="true"
             app:dependency="events_enabled"
-            app:icon="@drawable/ic_view_list"
+            app:icon="@drawable/ic_view_dayslist"
             app:key="events_show_in_dayslist"
             app:summary="@string/settings_events_show_dayslist_summary"
             app:title="@string/settings_events_show_dayslist_title" />

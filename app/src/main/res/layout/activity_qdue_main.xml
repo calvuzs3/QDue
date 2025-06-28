@@ -29,8 +29,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
-                android:paddingStart="4dp"
-                android:paddingEnd="16dp"
                 app:title="@string/app_name"
                 app:titleTextAppearance="@style/TextAppearance.QDue.Toolbar.Title"
                 app:titleTextColor="?attr/colorOnPrimary"

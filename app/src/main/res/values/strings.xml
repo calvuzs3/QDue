@@ -175,9 +175,6 @@
     <string name="legenda_shift_morning">Turno Mattino</string>
     <string name="legenda_shift_afternoon">Turno Pomeriggio</string>
     <string name="legenda_shift_night">Turno Notte</string>
-    <string name="theme_dark">Scuro</string>
-    <string name="theme_light">Chiaro</string>
-    <string name="theme_sys">Sistema</string>
 
     <!-- User Profile Activity -->
     <string name="user_profile">Utente</string>
@@ -632,6 +629,281 @@
     <string name="text_capital_cancel">ANNULLA</string>
     <string name="text_delete">Elimina</string>
     <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
+
+
+
+
+
+
+    <!-- ============================================ -->
+    <!-- WELCOME ACTIVITY STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- General Welcome -->
+    <string name="welcome_to_qdue">Benvenuto in QDue</string>
+    <string name="welcome_subtitle">La tua app per gestire i turni di lavoro sistema quattro-due</string>
+    <string name="welcome_progress">Passo %1$d di %2$d</string>
+    <string name="welcome_progress_placeholder">Passo 1 di 5</string>
+    <string name="welcome_next">Avanti</string>
+    <string name="welcome_skip">Salta</string>
+    <string name="welcome_get_started">Inizia</string>
+    <string name="welcome_help">Aiuto</string>
+
+    <!-- ============================================ -->
+    <!-- INTRODUCTION FRAGMENT STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Introduction Content -->
+    <string name="intro_title">Gestisci i Tuoi Turni con Semplicità</string>
+    <string name="intro_subtitle">QDue è progettata specificamente per il sistema quattro-due: quattro giorni di lavoro seguiti da due giorni di riposo. Tutto sincronizzato per le 9 squadre del tuo team.</string>
+    <string name="intro_features_title">Funzionalità Principali</string>
+    <string name="intro_benefits_title">Perché Scegliere QDue?</string>
+
+    <!-- Benefits -->
+    <string name="intro_benefit_1">Calcolo automatico dei cicli 4-2 per eliminare errori di pianificazione</string>
+    <string name="intro_benefit_2">Coordinamento semplificato tra tutte le 9 squadre</string>
+    <string name="intro_benefit_3">Interfaccia intuitiva ottimizzata per l\'uso quotidiano</string>
+    <string name="benefit_check">Beneficio verificato</string>
+
+    <!-- ============================================ -->
+    <!-- FEATURE STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Current Features -->
+    <string name="feature_calendar_view_title">Vista Calendario</string>
+    <string name="feature_calendar_view_desc">Visualizza i tuoi turni in formato calendario tradizionale per una pianificazione personale ottimale</string>
+
+    <string name="feature_dayslist_view_title">Vista Tutti i Turni</string>
+    <string name="feature_dayslist_view_desc">Consulta tutti i turni delle 9 squadre in un\'unica schermata giornaliera per il coordinamento completo</string>
+
+    <string name="feature_import_events_title">Importa Eventi</string>
+    <string name="feature_import_events_desc">Importa eventi dal calendario, come \"fermata impianto\", per integrarli con i turni di lavoro</string>
+
+    <string name="feature_create_events_title">Crea Eventi Personalizzati</string>
+    <string name="feature_create_events_desc">Aggiungi eventi personalizzati, riunioni e note per personalizzare il tuo calendario</string>
+
+    <string name="feature_manage_events_title">Gestisci Eventi</string>
+    <string name="feature_manage_events_desc">Modifica, elimina e organizza tutti i tuoi eventi con un\'interfaccia semplice e intuitiva</string>
+
+    <string name="feature_share_events_title">Condividi Eventi</string>
+    <string name="feature_share_events_desc">Condividi eventi e turni con i colleghi per migliorare la comunicazione del team</string>
+
+    <!-- Coming Soon Features -->
+    <string name="feature_notifications_title">Notifiche Smart</string>
+    <string name="feature_notifications_desc">Ricevi promemoria personalizzati per turni, eventi e scadenze importanti</string>
+
+    <string name="feature_cloud_sync_title">Sincronizzazione Cloud</string>
+    <string name="feature_cloud_sync_desc">Sincronizza i tuoi dati su tutti i dispositivi per un accesso sempre aggiornato</string>
+
+    <string name="feature_analytics_title">Analisi Turni</string>
+    <string name="feature_analytics_desc">Analizza le statistiche dei turni e ottimizza la gestione del tempo libero</string>
+
+    <!-- Feature UI -->
+    <string name="feature_icon">Icona funzionalità</string>
+    <string name="feature_more">Maggiori dettagli</string>
+    <string name="coming_soon">Prossimamente</string>
+
+    <!-- ============================================ -->
+    <!-- TEAM SELECTION STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Team Selection Content -->
+    <string name="team_selection_title">Seleziona la Tua Squadra</string>
+    <string name="team_selection_subtitle">Scegli la squadra di appartenenza per calcolare automaticamente i tuoi turni nel sistema quattro-due</string>
+    <string name="team_explanation_title">Come Funziona il Sistema</string>
+    <string name="team_explanation_text">Le 9 squadre lavorano in rotazione coordinata: ogni squadra lavora 4 giorni consecutivi e riposa 2 giorni, garantendo una copertura continua del servizio.</string>
+
+    <!-- Team Names and Descriptions -->
+    <string name="team_name_format">Squadra %1$d</string>
+    <string name="team_description_format">Turni coordinati squadra %1$d</string>
+    <string name="team_selected_format">Squadra %1$d selezionata</string>
+    <string name="selected_team_label">Squadra selezionata:</string>
+
+    <!-- ============================================ -->
+    <!-- VIEW MODE SELECTION STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- View Mode Content -->
+    <string name="view_mode_title">Scegli la Tua Vista Preferita</string>
+    <string name="view_mode_subtitle">Seleziona come vuoi visualizzare i turni di lavoro. Potrai sempre cambiare questa impostazione in seguito.</string>
+
+    <!-- Calendar View -->
+    <string name="view_calendar_title">Vista Calendario</string>
+    <string name="view_calendar_description">Visualizza solo i turni della tua squadra in formato calendario mensile. Perfetta per la pianificazione personale.</string>
+    <string name="view_calendar_benefits">• Focus sui tuoi turni\n• Pianificazione semplificata\n• Vista familiare</string>
+
+    <!-- DaysList View -->
+    <string name="view_dayslist_title">Vista Tutti i Turni</string>
+    <string name="view_dayslist_description">Consulta i turni di tutte le 9 squadre giorno per giorno. Ideale per coordinatori e supervisori.</string>
+    <string name="view_dayslist_benefits">• Visione completa del team\n• Coordinamento facilitato\n• Copertura servizio</string>
+
+    <string name="view_mode_selected">Vista selezionata</string>
+
+    <!-- ============================================ -->
+    <!-- PERSONALIZATION STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Personalization Content -->
+    <string name="personalization_title">Personalizza la Tua Esperienza</string>
+    <string name="personalization_subtitle">Configura le impostazioni finali per adattare QDue alle tue preferenze</string>
+
+    <!-- Dynamic Colors -->
+    <string name="dynamic_colors_title">Colori Dinamici</string>
+    <string name="dynamic_colors_description">Usa i colori del sistema per un\'esperienza visiva coordinata con il tuo dispositivo (Android 12+)</string>
+    <string name="dynamic_colors_enabled">Colori dinamici attivati</string>
+    <string name="dynamic_colors_disabled">Colori fissi dell\'app</string>
+
+    <!-- Theme Selection -->
+    <string name="theme_title">Tema Applicazione</string>
+    <string name="theme_light">Tema Chiaro</string>
+    <string name="theme_dark">Tema Scuro</string>
+    <string name="theme_system">Segui Sistema</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifiche</string>
+    <string name="notifications_description">Ricevi promemoria per turni e eventi importanti</string>
+    <string name="notifications_enabled">Notifiche attivate</string>
+    <string name="notifications_disabled">Notifiche disattivate</string>
+
+    <!-- ============================================ -->
+    <!-- COMPLETION STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Completion Content -->
+    <string name="completion_title">Tutto Pronto!</string>
+    <string name="completion_subtitle">QDue è configurata e pronta per gestire i tuoi turni di lavoro</string>
+    <string name="completion_summary_title">Riepilogo Configurazione</string>
+    <string name="completion_team_label">Squadra:</string>
+    <string name="completion_view_label">Vista:</string>
+    <string name="completion_colors_label">Colori:</string>
+    <string name="completion_start_button">Inizia a Usare QDue</string>
+
+    <!-- Quick Tips -->
+    <string name="completion_tips_title">Suggerimenti Rapidi</string>
+    <string name="completion_tip_1">Tocca il menu per cambiare vista in qualsiasi momento</string>
+    <string name="completion_tip_2">Usa il pulsante \"+\" per aggiungere eventi personalizzati</string>
+    <string name="completion_tip_3">I turni si calcolano automaticamente dal tuo primo giorno</string>
+
+    <!-- ============================================ -->
+    <!-- TEAM SELECTION ADDITIONAL STRINGS -->
+    <!-- ============================================ -->
+
+    <string name="team_grid_title">Scegli la Tua Squadra</string>
+    <string name="team_selected">Squadra selezionata</string>
+
+    <!-- Team Colors (for reference) -->
+    <color name="team_1_color">#F44336</color>  <!-- Red -->
+    <color name="team_2_color">#E91E63</color>  <!-- Pink -->
+    <color name="team_3_color">#9C27B0</color>  <!-- Purple -->
+    <color name="team_4_color">#673AB7</color>  <!-- Deep Purple -->
+    <color name="team_5_color">#3F51B5</color>  <!-- Indigo -->
+    <color name="team_6_color">#2196F3</color>  <!-- Blue -->
+    <color name="team_7_color">#00BCD4</color>  <!-- Cyan -->
+    <color name="team_8_color">#4CAF50</color>  <!-- Green -->
+    <color name="team_9_color">#FF9800</color>  <!-- Orange -->
+
+    <!-- ============================================ -->
+    <!-- VIEW MODE ADDITIONAL STRINGS -->
+    <!-- ============================================ -->
+
+    <string name="personal_view">Vista Personale</string>
+    <string name="team_overview">Panoramica Team</string>
+    <string name="view_calendar_preview">Anteprima vista calendario</string>
+    <string name="view_dayslist_preview">Anteprima vista lista turni</string>
+    <string name="view_mode_selected_format">%1$s selezionata</string>
+
+    <!-- ============================================ -->
+    <!-- PERSONALIZATION ADDITIONAL STRINGS -->
+    <!-- ============================================ -->
+
+    <string name="configuration_in_progress">Configurazione in corso...</string>
+    <string name="configuration_complete">✓ Configurazione completata</string>
+    <string name="completion_team_format">Squadra: %1$d</string>
+    <string name="completion_view_format">Vista: %1$s</string>
+    <string name="dynamic_colors_not_supported">Colori dinamici non supportati su questo dispositivo (Android 12+ richiesto)</string>
+
+    <!-- ============================================ -->
+    <!-- COMPLETION FRAGMENT STRINGS -->
+    <!-- ============================================ -->
+
+    <string name="completion_welcome_message">🎉 Benvenuto nel Team!</string>
+    <string name="completion_ready_message">QDue è ora configurata secondo le tue preferenze e pronta per gestire i turni della tua squadra nel sistema quattro-due.</string>
+    <string name="completion_quick_start_title">Inizia Subito</string>
+    <string name="completion_quick_start_desc">Tocca il pulsante qui sotto per accedere al calendario dei turni e iniziare a utilizzare tutte le funzionalità di QDue.</string>
+
+    <!-- ============================================ -->
+    <!-- DRAWABLE RESOURCE NAMES -->
+    <!-- Reference for drawables needed -->
+    <!-- ============================================ -->
+
+    <!-- Logo and Brand -->
+    <!-- ic_logo_q: Q letter for animated logo -->
+    <!-- ic_logo_2: Number 2 for animated logo -->
+
+    <!-- Navigation and UI -->
+    <!-- ic_arrow_forward: Forward navigation arrow -->
+    <!-- ic_check: Checkmark icon -->
+    <!-- ic_check_circle: Checkmark in circle -->
+    <!-- ic_help: Help/question mark icon -->
+
+    <!-- Features -->
+    <!-- ic_calendar_view: Calendar grid icon -->
+    <!-- ic_calendar_month: Monthly calendar icon -->
+    <!-- ic_list_view: List/rows icon -->
+    <!-- ic_view_dayslist: Alternative list icon -->
+    <!-- ic_import: Import/download icon -->
+    <!-- ic_create_event: Add/plus icon -->
+    <!-- ic_edit: Edit/pencil icon -->
+    <!-- ic_share: Share icon -->
+    <!-- ic_notifications: Bell icon -->
+    <!-- ic_sync: Sync/refresh icon -->
+    <!-- ic_analytics: Chart/graph icon -->
+
+    <!-- Teams and Groups -->
+    <!-- ic_group: People/team icon -->
+    <!-- ic_group_work: Teamwork icon -->
+
+    <!-- Themes -->
+    <!-- ic_light_mode: Sun icon -->
+    <!-- ic_dark_mode: Moon icon -->
+    <!-- ic_auto_mode: Auto/system icon -->
+    <!-- ic_palette: Color palette icon -->
+
+    <!-- Other -->
+    <!-- ic_visibility: Eye/view icon -->
+
+    <!-- Backgrounds and Shapes -->
+    <!-- circle_background: Circular shape drawable -->
+    <!-- selection_indicator_background: Rounded rectangle for selection -->
+    <!-- sidebar_header_gradient: Gradient background -->
+    <!-- preview_background: Background for preview images -->
+    <!-- preview_calendar_view: Mock calendar preview image -->
+    <!-- preview_dayslist_view: Mock dayslist preview image -->
+
+    <!-- ============================================ -->
+    <!-- ANIMATION RESOURCE NAMES -->
+    <!-- Reference for animations needed -->
+    <!-- ============================================ -->
+
+    <!-- slide_in_right: Slide in from right transition -->
+    <!-- slide_out_left: Slide out to left transition -->
+
+    <string name="error_no_team_selected">Seleziona una squadra per continuare</string>
+    <string name="error_no_view_selected">Scegli una modalità di visualizzazione</string>
+    <string name="error_configuration_failed">Errore nel salvare la configurazione</string>
+    <string name="error_retry">Riprova</string>
+
+    <!-- ============================================ -->
+    <!-- ACCESSIBILITY STRINGS -->
+    <!-- ============================================ -->
+
+    <string name="accessibility_team_card">Scheda squadra %1$d</string>
+    <string name="accessibility_view_mode_card">Modalità di visualizzazione</string>
+    <string name="accessibility_toggle_option">Attiva/disattiva opzione</string>
+    <string name="accessibility_welcome_progress">Progresso configurazione</string>
+
+
+
 
 
 </resources>
