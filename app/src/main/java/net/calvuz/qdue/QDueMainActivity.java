@@ -30,6 +30,7 @@ import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
 import net.calvuz.qdue.ui.welcome.WelcomeActivity;
+import net.calvuz.qdue.ui.welcome.WelcomeInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
@@ -98,8 +99,8 @@ public class QDueMainActivity extends BaseActivity {
         final String mTAG = "onCreate: ";
         Log.v(TAG, mTAG + "called.");
 
-        // In MainActivity.onCreate()
-        if (!WelcomeActivity.isWelcomeCompleted(this)) {
+        // Welcome Activity if not already completed
+        if (!WelcomeInterface.isWelcomeCompleted(this)) {
             Intent intent = new Intent(this, WelcomeActivity.class);
             startActivity(intent);
             finish();

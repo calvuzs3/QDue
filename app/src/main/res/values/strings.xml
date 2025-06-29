@@ -713,6 +713,11 @@
     <string name="team_explanation_title">Come Funziona il Sistema</string>
     <string name="team_explanation_text">Le 9 squadre lavorano in rotazione coordinata: ogni squadra lavora 4 giorni consecutivi e riposa 2 giorni, garantendo una copertura continua del servizio.</string>
 
+    <!-- Team Names and Descriptions (ALIGNED WITH QDUE) -->
+    <string name="team_letter_format">Squadra %1$s</string>                    <!-- "Squadra A" -->
+    <string name="team_letter_description_format">Turni coordinati squadra %1$s</string> <!-- "Turni coordinati squadra A" -->
+    <string name="team_selected_letter_format">Squadra %1$s selezionata</string>         <!-- "Squadra A selezionata" -->
+
     <!-- Team Names and Descriptions -->
     <string name="team_name_format">Squadra %1$d</string>
     <string name="team_description_format">Turni coordinati squadra %1$d</string>

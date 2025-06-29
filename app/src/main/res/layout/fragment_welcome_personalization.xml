@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_l">
+        android:padding="@dimen/spacing_m">
 
         <!-- ============================================ -->
         <!-- HEADER SECTION -->
@@ -22,11 +22,12 @@
 
         <!-- Title -->
         <TextView
+            android:id="@+id/personalization_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_m"
             android:text="@string/personalization_title"
-            android:textAppearance="@attr/textAppearanceHeadlineSmall"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
             android:textColor="?attr/colorOnSurface"
             android:fontFamily="@font/roboto_medium" />
 
@@ -52,7 +53,8 @@
             app:cardBackgroundColor="?attr/colorPrimaryContainer"
             app:cardCornerRadius="@dimen/spacing_l"
             app:cardElevation="@dimen/elevation_card"
-            app:strokeWidth="0dp">
+            app:strokeWidth="0dp"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -466,7 +468,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/spacing_xs"
                         android:text="@string/notifications_title"
-                        android:textAppearance="@style/TextAppearance.QDue.TitleMedium"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textColor="?attr/colorOnSurface"
                         android:fontFamily="@font/roboto_medium" />
 

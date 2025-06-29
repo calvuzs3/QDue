@@ -81,6 +81,29 @@ public class QDue extends Application {
         }
     }
 
+    /**
+     * Settings - app wide
+     */
+    public static class Settings {
+
+        // Constants for configuration
+        public static final String QD_PREF_NAME = "qdue_prefs";
+        public static final String QD_KEY_WELCOME_COMPLETED = "qdue_welcome_completed";
+        public static final String QD_KEY_SELECTED_TEAM = "qdue_selected_team";
+        public static final String QD_KEY_VIEW_MODE = "qdue_view_mode";
+        public static final String QD_KEY_DYNAMIC_COLORS = "qdue_dynamic_colors_enabled";
+
+
+        // View mode constants
+        public static final String VIEW_MODE_CALENDAR = "calendar";
+        public static final String VIEW_MODE_DAYSLIST = "dayslist";
+
+        // Animation constants
+        public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 3000; // 3 seconds
+        public static final long QD_WELCOME_DISPLAY_DURATION = 2000; // 2 seconds after animation
+
+    }
+
     public static final class Debug {
         public static final boolean DEBUG_ACTIVITY = false;
         public static final boolean DEBUG_FRAGMENT = false;

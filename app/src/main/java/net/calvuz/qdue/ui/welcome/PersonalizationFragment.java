@@ -1,12 +1,10 @@
 package net.calvuz.qdue.ui.welcome;
 
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -48,14 +46,21 @@ public class PersonalizationFragment extends Fragment {
     private boolean areNotificationsEnabled = true;
     private String selectedTheme = "system"; // system, light, dark
 
-    // Preferences
-    private SharedPreferences preferences;
+    // Interface
+    private static WelcomeInterface welcomeInterface;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_welcome_personalization, container, false);
+        View inflate = inflater.inflate(R.layout.fragment_welcome_personalization, container, false);
+
+        if (getActivity() instanceof WelcomeInterface)
+            welcomeInterface = (WelcomeInterface) getActivity();
+        else
+            throw new ClassCastException("Activity does not implement WelcomeInterface");
+
+        return inflate;
     }
 
     @Override
@@ -68,6 +73,9 @@ public class PersonalizationFragment extends Fragment {
         setupThemeSelection();
         checkDynamicColorsSupport();
         startEntranceAnimation();
+
+        // Update configuration status
+        //updateConfigurationStatus();
     }
 
     /**
@@ -87,28 +95,23 @@ public class PersonalizationFragment extends Fragment {
         selectedTeamSummary = view.findViewById(R.id.selected_team_summary);
         selectedViewSummary = view.findViewById(R.id.selected_view_summary);
         configurationStatus = view.findViewById(R.id.configuration_status);
-
-        // Get preferences from parent activity
-        if (getActivity() != null) {
-            preferences = getActivity().getSharedPreferences("qdue_welcome_prefs", getActivity().MODE_PRIVATE);
-        }
     }
 
     /**
      * Load previous selections from welcome flow
      */
     private void loadPreviousSelections() {
-        if (preferences == null) return;
 
         // Load team selection
-        int selectedTeam = preferences.getInt("selected_team", -1);
+        int selectedTeam = welcomeInterface.getSelectedTeam();
         if (selectedTeam > 0) {
+
             selectedTeamSummary.setText(getString(R.string.completion_team_format, selectedTeam));
             selectedTeamSummary.setVisibility(View.VISIBLE);
         }
 
         // Load view mode selection
-        String viewMode = preferences.getString("view_mode", null);
+        String viewMode = welcomeInterface.getViewMode();
         if (viewMode != null) {
             String viewDisplayName = viewMode.equals("calendar") ?
                     getString(R.string.view_calendar_title) : getString(R.string.view_dayslist_title);
@@ -117,14 +120,18 @@ public class PersonalizationFragment extends Fragment {
         }
 
         // Load saved personalization preferences
-        isDynamicColorsEnabled = preferences.getBoolean("dynamic_colors_enabled", false);
-        areNotificationsEnabled = preferences.getBoolean("notifications_enabled", false);
-        selectedTheme = preferences.getString("selected_theme", "system");
+        isDynamicColorsEnabled = welcomeInterface.isDynamicColorsEnabled();
+
+        // Future features
+        //areNotificationsEnabled = welcomeInterface.areNotificationsEnabled();
+        //selectedTheme = welcomeInterface.getSelectedTheme();
 
         // Update UI with loaded values
         dynamicColorsSwitch.setChecked(isDynamicColorsEnabled);
-        notificationsSwitch.setChecked(areNotificationsEnabled);
-        updateThemeSelection();
+
+        // Future features
+        //notificationsSwitch.setChecked(areNotificationsEnabled);
+        //updateThemeSelection();
     }
 
     /**
@@ -157,6 +164,7 @@ public class PersonalizationFragment extends Fragment {
 
     /**
      * Handle theme selection
+     *
      * @param theme Selected theme ("light", "dark", "system")
      */
     private void selectTheme(String theme) {
@@ -175,7 +183,7 @@ public class PersonalizationFragment extends Fragment {
         resetThemeCards();
 
         // Apply selected state
-        final MaterialCardView selectedCard ;
+        final MaterialCardView selectedCard;
         switch (selectedTheme) {
             case "light":
                 selectedCard = lightThemeCard;
@@ -268,9 +276,15 @@ public class PersonalizationFragment extends Fragment {
     private void animateThemeSelection(String theme) {
         MaterialCardView selectedCard = null;
         switch (theme) {
-            case "light": selectedCard = lightThemeCard; break;
-            case "dark": selectedCard = darkThemeCard; break;
-            case "system": selectedCard = systemThemeCard; break;
+            case "light":
+                selectedCard = lightThemeCard;
+                break;
+            case "dark":
+                selectedCard = darkThemeCard;
+                break;
+            case "system":
+                selectedCard = systemThemeCard;
+                break;
         }
 
         if (selectedCard != null) {
@@ -316,27 +330,15 @@ public class PersonalizationFragment extends Fragment {
      * Save preferences to SharedPreferences
      */
     private void saveDynamicColorsPreference(boolean enabled) {
-        if (preferences != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("dynamic_colors_enabled", enabled);
-            editor.apply();
-        }
+        welcomeInterface.setDynamicColorsEnabled(enabled);
     }
 
     private void saveNotificationsPreference(boolean enabled) {
-        if (preferences != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putBoolean("notifications_enabled", enabled);
-            editor.apply();
-        }
+        //welcomeInterface.setNotificationsEnabled(enabled);
     }
 
     private void saveThemePreference(String theme) {
-        if (preferences != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("selected_theme", theme);
-            editor.apply();
-        }
+        //welcomeInterface.setNotificationsEnabled(theme);
     }
 
     /**

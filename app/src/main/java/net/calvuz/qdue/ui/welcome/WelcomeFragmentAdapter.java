@@ -41,8 +41,11 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
     private List<Fragment> createWelcomeFragments() {
         List<Fragment> fragmentList = new ArrayList<>();
 
-        // Step 1: Introduction and App Overview
+        // Step 0: Introduction and App Overview
         fragmentList.add(new IntroductionFragment());
+
+        // Step 1: Features Overview (moved in into section)
+//        fragmentList.add(new FeaturesOverviewFragment());
 
         // Step 2: Team Selection (9 teams available)
         fragmentList.add(new TeamSelectionFragment());
@@ -50,11 +53,11 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
         // Step 3: View Mode Selection
         fragmentList.add(new ViewModeFragment());
 
-        // Step 4: Features Overview
-//        fragmentList.add(new FeaturesOverviewFragment());
-
-        // Step 5: Personalization (colors, etc.)
+        // Step 4: Personalization (colors, etc.)
         fragmentList.add(new PersonalizationFragment());
+
+        // Last Step: Complete
+        // change "continue" button with "get started" text
 
         return fragmentList;
     }

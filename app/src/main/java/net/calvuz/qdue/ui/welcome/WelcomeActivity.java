@@ -21,6 +21,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
 
@@ -36,18 +37,7 @@ import net.calvuz.qdue.R;
  * - Dynamic colors configuration
  * - Smooth transitions between steps
  */
-public class WelcomeActivity extends AppCompatActivity {
-
-    // Constants for configuration
-    private static final String PREF_NAME = "qdue_prefs";
-    private static final String KEY_WELCOME_COMPLETED = "qdue_welcome_completed";
-    private static final String KEY_SELECTED_TEAM = "qdue_selected_team";
-    private static final String KEY_VIEW_MODE = "qdue_view_mode";
-    private static final String KEY_DYNAMIC_COLORS = "qdue_dynamic_colors_enabled";
-
-    // Animation constants
-    private static final long LOGO_ANIMATION_DURATION = 3000; // 3 seconds
-    private static final long WELCOME_DISPLAY_DURATION = 2000; // 2 seconds after animation
+public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterface{
 
     // View components
     private ViewPager2 viewPager;
@@ -71,10 +61,10 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Initialize preferences
-        preferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        preferences = getSharedPreferences(QDue.Settings.QD_PREF_NAME, MODE_PRIVATE);
 
         // Check if welcome was already completed
-        if (preferences.getBoolean(KEY_WELCOME_COMPLETED, false)) {
+        if (preferences.getBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, false)) {
             // Skip welcome and go to main activity
             startMainActivity();
             return;
@@ -152,14 +142,14 @@ public class WelcomeActivity extends AppCompatActivity {
                 updateButtonStates();
             } else {
                 // Complete welcome process
-                completeWelcome();
+                setWelcomeCompleted();
             }
         });
 
         skipButton.setOnClickListener(v -> {
             // Set default values and complete welcome
             setDefaultPreferences();
-            completeWelcome();
+            setWelcomeCompleted();
         });
 
         // ViewPager page change listener
@@ -185,13 +175,13 @@ public class WelcomeActivity extends AppCompatActivity {
 
         // Q rotates like hour hand (slower)
         ObjectAnimator qRotation = ObjectAnimator.ofFloat(logoQ, "rotation", 0f, 360f);
-        qRotation.setDuration(LOGO_ANIMATION_DURATION);
+        qRotation.setDuration(QDue.Settings.QD_WELCOME_LOGO_ANIMATION_DURATION);
         qRotation.setInterpolator(new LinearInterpolator());
         qRotation.setRepeatCount(1); // Rotate twice
 
         // 2 rotates like minute hand (faster)
 //        ObjectAnimator twoRotation = ObjectAnimator.ofFloat(logo2, "rotation", 0f, 720f); // 2 full rotations
-//        twoRotation.setDuration(LOGO_ANIMATION_DURATION);
+//        twoRotation.setDuration(QD_WELCOME_LOGO_ANIMATION_DURATION);
 //        twoRotation.setInterpolator(new LinearInterpolator());
 
         // Fade in title and subtitle after animation
@@ -213,7 +203,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 // Show main content after delay
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     showWelcomeContent();
-                }, WELCOME_DISPLAY_DURATION);
+                }, QDue.Settings.QD_WELCOME_DISPLAY_DURATION);
             }
         });
     }
@@ -286,23 +276,10 @@ public class WelcomeActivity extends AppCompatActivity {
      */
     private void setDefaultPreferences() {
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(KEY_SELECTED_TEAM, 1); // Default to team 1
-        editor.putString(KEY_VIEW_MODE, "calendar"); // Default to calendar view
-        editor.putBoolean(KEY_DYNAMIC_COLORS, true); // Enable dynamic colors by default
+        editor.putInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1); // Default to team 1
+        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, "calendar"); // Default to calendar view
+        editor.putBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, true); // Enable dynamic colors by default
         editor.apply();
-    }
-
-    /**
-     * Complete welcome process and navigate to main activity
-     */
-    private void completeWelcome() {
-        // Mark welcome as completed
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(KEY_WELCOME_COMPLETED, true);
-        editor.apply();
-
-        // Start main activity with smooth transition
-        startMainActivity();
     }
 
     /**
@@ -334,32 +311,88 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     }
 
+    // =============================== WELCOME INTERFACE ==================================
+
+    /**
+     * Get SharedPreferences instance
+     * @return SharedPreferences instance
+     */
+    @Override
+    public SharedPreferences getPreferences() {
+        return preferences;
+    }
+
+    /**
+     * Set selected team preference
+     * @param teamIndex Selected team ID
+     */
+    @Override
+    public void setSelectedTeam(int teamIndex) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(QDue.Settings.QD_KEY_SELECTED_TEAM, teamIndex);
+        editor.apply();
+    }
+
     /**
      * Get selected team preference
+     * @return Selected team ID or default (1)
      */
-    public static int getSelectedTeam(SharedPreferences preferences) {
-        return preferences.getInt(KEY_SELECTED_TEAM, 1);
+    @Override
+    public int getSelectedTeam() {
+        return preferences.getInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1);
+    }
+
+    /**
+     * Set view mode preference
+     * @param viewMode View mode to set
+     */
+    @Override
+    public void setViewMode(String viewMode) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, viewMode);
+        editor.apply();
     }
 
     /**
      * Get view mode preference
+     * @return View mode or default ("dayslist")
      */
-    public static String getViewMode(SharedPreferences preferences) {
-        return preferences.getString(KEY_VIEW_MODE, "calendar");
+    @Override
+    public String getViewMode() {
+        return preferences.getString(QDue.Settings.QD_KEY_VIEW_MODE, "dayslist");
     }
 
     /**
-     * Get dynamic colors preference
+     * Set dynamic colors enabled preference
+     * @param enabled True if enabled, false otherwise
      */
-    public static boolean isDynamicColorsEnabled(SharedPreferences preferences) {
-        return preferences.getBoolean(KEY_DYNAMIC_COLORS, true);
+    @Override
+    public void setDynamicColorsEnabled(boolean enabled) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, enabled);
+        editor.apply();
     }
 
     /**
-     * Check if welcome was completed
+     * Get dynamic colors enabled preference
+     * @return True if enabled, false otherwise
      */
-    public static boolean isWelcomeCompleted(AppCompatActivity activity) {
-        SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, MODE_PRIVATE);
-        return prefs.getBoolean(KEY_WELCOME_COMPLETED, false);
+    @Override
+    public boolean isDynamicColorsEnabled() {
+        return preferences.getBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, true);
+    }
+
+    /**
+     * Set welcome as completed
+     */
+    @Override
+    public void setWelcomeCompleted() {
+        // Mark welcome as completed
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, true);
+        editor.apply();
+
+        // Start main activity with smooth transition
+        startMainActivity();
     }
 }

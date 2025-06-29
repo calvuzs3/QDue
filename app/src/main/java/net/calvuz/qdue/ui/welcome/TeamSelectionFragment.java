@@ -1,3 +1,4 @@
+// TeamSelectionFragment.java
 package net.calvuz.qdue.ui.welcome;
 
 import android.content.SharedPreferences;
@@ -16,33 +17,39 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.jvm.Throws;
+
 /**
  * Team Selection Fragment - Second step of welcome flow
- * <p></p>
+ * <p>
  * Allows user to select their team from 9 available teams.
  * Each team follows the "quattro-due" (4-2) shift system:
  * - 4 consecutive work days
  * - 2 consecutive rest days
- * <p></p>
+ * <p>
  * Teams are numbered 1-9 and displayed in a grid layout
  * with visual indicators for the shift cycle.
  */
 public class TeamSelectionFragment extends Fragment implements TeamSelectionAdapter.OnTeamSelectedListener {
 
-    // Team data class
+    // Team data class aligned with QDue system
     public static class Team {
-        public final int teamNumber;
-        public final String teamName;
-        public final String description;
-        public final int colorRes;
-        public final boolean isSelected;
+        public final int teamIndex;        // 0-8 (for preferences storage)
+        public final String teamLetter;   // A-I (QDue identifier)
+        public final String teamName;     // "Squadra A" (display name)
+        public final String description;  // Full description
+        public final int colorRes;        // Color resource
+        public final boolean isSelected;  // Selection state
 
-        public Team(int teamNumber, String teamName, String description, int colorRes, boolean isSelected) {
-            this.teamNumber = teamNumber;
+        public Team(int teamIndex, String teamLetter, String teamName, String description, int colorRes, boolean isSelected) {
+            this.teamIndex = teamIndex;
+            this.teamLetter = teamLetter;
             this.teamName = teamName;
             this.description = description;
             this.colorRes = colorRes;
@@ -60,14 +67,21 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
     // Selected team tracking
     private int selectedTeamNumber = -1;
 
-    // Preferences
-    private SharedPreferences preferences;
+    // Interface
+    private WelcomeInterface welcomeInterface;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_welcome_team_selection, container, false);
+        View inflate = inflater.inflate(R.layout.fragment_welcome_team_selection, container, false);
+
+        if (getActivity() instanceof WelcomeInterface)
+            welcomeInterface = (WelcomeInterface) getActivity();
+        else
+            throw new ClassCastException("Activity does not implement WelcomeInterface");
+
+        return inflate;
     }
 
     @Override
@@ -75,6 +89,7 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
         super.onViewCreated(view, savedInstanceState);
 
         initializeViews(view);
+        loadSavedPreferences();
         setupTeamsList();
         startEntranceAnimation();
     }
@@ -88,16 +103,14 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
         explanationCard = view.findViewById(R.id.explanation_card);
         teamsRecyclerView = view.findViewById(R.id.teams_recycler_view);
 
-        // Get preferences from parent activity
-        if (getActivity() != null) {
-            preferences = getActivity().getSharedPreferences("qdue_welcome_prefs", getActivity().MODE_PRIVATE);
-            selectedTeamNumber = preferences.getInt("selected_team", -1);
-        }
-
         // Setup RecyclerView with grid layout (3 columns)
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 3);
         teamsRecyclerView.setLayoutManager(layoutManager);
         teamsRecyclerView.setHasFixedSize(true);
+    }
+
+    private void loadSavedPreferences() {
+        selectedTeamNumber = welcomeInterface.getSelectedTeam();
     }
 
     /**
@@ -110,35 +123,40 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
     }
 
     /**
-     * Create list of all 9 teams with shift cycle information
+     * Create list of all 9 teams using QDue's letter system
      */
     private List<Team> createTeamsList() {
         List<Team> teams = new ArrayList<>();
 
-        // Team colors for visual distinction
+        // Get team letters from QDue resources (A-I)
+        String[] teamLetters;
         int[] teamColors = {
-                R.color.team_1_color,
-                R.color.team_2_color,
-                R.color.team_3_color,
-                R.color.team_4_color,
-                R.color.team_5_color,
-                R.color.team_6_color,
-                R.color.team_7_color,
-                R.color.team_8_color,
-                R.color.team_9_color
+                R.color.team_1_color, R.color.team_2_color, R.color.team_3_color,
+                R.color.team_4_color, R.color.team_5_color, R.color.team_6_color,
+                R.color.team_7_color, R.color.team_8_color, R.color.team_9_color
         };
 
-        // Create teams 1-9
-        for (int i = 1; i <= 9; i++) {
-            String teamName = getString(R.string.team_name_format, i);
-            String description = getString(R.string.team_description_format, i);
-            boolean isSelected = (i == selectedTeamNumber);
+        if (getResources() != null) {
+            // Use QDue's existing team letters (A-I)
+            teamLetters = getResources().getStringArray(R.array.pref_entries_user_team);
+        } else {
+            // Fallback to manual letters
+            teamLetters = new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+        }
+
+        // Create teams using letters (A-I) with corresponding indices (0-8)
+        for (int i = 0; i < teamLetters.length && i < 9; i++) {
+            String teamLetter = teamLetters[i];
+            String teamName = getString(R.string.team_letter_format, teamLetter); // "Squadra A"
+            String description = getString(R.string.team_letter_description_format, teamLetter); // "Turni squadra A"
+            boolean isSelected = (i == selectedTeamNumber); // selectedTeamNumber is 0-8 index
 
             teams.add(new Team(
-                    i,
-                    teamName,
-                    description,
-                    teamColors[i - 1],
+                    i,                    // teamNumber: 0-8 (for storage)
+                    teamLetter,          // teamName: A-I (for display)
+                    teamName,            // displayName: "Squadra A"
+                    description,         // description
+                    teamColors[i],       // color
                     isSelected
             ));
         }
@@ -197,38 +215,43 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
 
     /**
      * Handle team selection from adapter
+     * We hace a duplicated value, one is the old quattrodue system,
+     * the other is the new QDue system.
+     * Let's update them both.
      */
     @Override
-    public void onTeamSelected(int teamNumber) {
-        selectedTeamNumber = teamNumber;
+    public void onTeamSelected(int teamIndex) {
+        selectedTeamNumber = teamIndex; // Store 0-8 index (compatible with QDue)
 
-        // Save selection to preferences
-        if (preferences != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt("selected_team", teamNumber);
-            editor.apply();
+        // Save selection to preferences using QDue's key format
+        welcomeInterface.setSelectedTeam(teamIndex);
+
+        // Save selection for quattrodue
+        if (getContext() != null) {
+            SharedPreferences qDuePrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+            SharedPreferences.Editor qDueEditor = qDuePrefs.edit();
+            qDueEditor.putString(getString(R.string.qd_preference_user_team), String.valueOf(teamIndex));
+            qDueEditor.apply();
         }
 
         // Update adapter to reflect new selection
-        adapter.updateSelectedTeam(teamNumber);
+        adapter.updateSelectedTeam(teamIndex);
 
-        // Provide visual feedback
-        showTeamSelectedFeedback(teamNumber);
-
-        // Enable next button in parent activity
-        if (getActivity() instanceof WelcomeActivity) {
-            // Could notify parent activity here if needed
+        // Provide visual feedback with team letter
+        String[] teamLetters = getResources().getStringArray(R.array.pref_entries_user_team);
+        if (teamIndex >= 0 && teamIndex < teamLetters.length) {
+            showTeamSelectedFeedback(teamLetters[teamIndex]); // Show "A", "B", etc.
         }
     }
 
     /**
      * Show visual feedback when team is selected
      */
-    private void showTeamSelectedFeedback(int teamNumber) {
+    private void showTeamSelectedFeedback(String teamLetter) {
         if (getView() != null) {
             TextView selectedTeamText = getView().findViewById(R.id.selected_team_text);
             if (selectedTeamText != null) {
-                selectedTeamText.setText(getString(R.string.team_selected_format, teamNumber));
+                selectedTeamText.setText(getString(R.string.team_selected_letter_format, teamLetter));
                 selectedTeamText.setVisibility(View.VISIBLE);
 
                 // Animate the feedback text

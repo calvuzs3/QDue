@@ -1,7 +1,9 @@
 // ViewModeFragment.java
 package net.calvuz.qdue.ui.welcome;
 
-import android.content.SharedPreferences;
+import static net.calvuz.qdue.QDue.Settings.VIEW_MODE_CALENDAR;
+import static net.calvuz.qdue.QDue.Settings.VIEW_MODE_DAYSLIST;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,10 +30,6 @@ import net.calvuz.qdue.R;
  */
 public class ViewModeFragment extends Fragment {
 
-    // View mode constants
-    public static final String VIEW_MODE_CALENDAR = "calendar";
-    public static final String VIEW_MODE_DAYSLIST = "dayslist";
-
     // View components
     private MaterialCardView calendarCard;
     private MaterialCardView dayslistCard;
@@ -40,14 +38,21 @@ public class ViewModeFragment extends Fragment {
     // Selection state
     private String selectedViewMode = null;
 
-    // Preferences
-    private SharedPreferences preferences;
+    // Interface
+    private WelcomeInterface welcomeInterface;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_welcome_view_mode, container, false);
+        View inflate = inflater.inflate(R.layout.fragment_welcome_view_mode, container, false);
+
+        if (getActivity() instanceof WelcomeInterface)
+            welcomeInterface = (WelcomeInterface) getActivity();
+        else
+            throw new ClassCastException("Activity does not implement WelcomeInterface");
+
+        return inflate;
     }
 
     @Override
@@ -56,7 +61,7 @@ public class ViewModeFragment extends Fragment {
 
         initializeViews(view);
         loadSavedPreferences();
-        setupClickListeners();
+        setupViewsList();
         startEntranceAnimation();
     }
 
@@ -67,21 +72,21 @@ public class ViewModeFragment extends Fragment {
         calendarCard = view.findViewById(R.id.calendar_view_card);
         dayslistCard = view.findViewById(R.id.dayslist_view_card);
         selectedModeText = view.findViewById(R.id.selected_mode_text);
-
-        // Get preferences from parent activity
-        if (getActivity() != null) {
-            preferences = getActivity().getSharedPreferences("qdue_welcome_prefs", getActivity().MODE_PRIVATE);
-        }
     }
 
     /**
      * Load previously saved view mode preference
      */
     private void loadSavedPreferences() {
-        if (preferences != null) {
-            selectedViewMode = preferences.getString("view_mode", null);
+            selectedViewMode = welcomeInterface.getViewMode();
             updateSelectionVisuals();
-        }
+    }
+
+    /**
+     * Setup teams list with all 9 available teams
+     */
+    private void setupViewsList() {
+        setupClickListeners();
     }
 
     /**
@@ -100,11 +105,7 @@ public class ViewModeFragment extends Fragment {
         selectedViewMode = viewMode;
 
         // Save selection to preferences
-        if (preferences != null) {
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("view_mode", viewMode);
-            editor.apply();
-        }
+        welcomeInterface.setViewMode(viewMode);
 
         // Update visual state
         updateSelectionVisuals();

@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
+import net.calvuz.qdue.BuildConfig;
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 
 import java.util.ArrayList;
@@ -66,7 +68,11 @@ public class IntroductionFragment extends Fragment {
 
         initializeViews(view);
         setupFeaturesList();
-        startIntroAnimation();
+
+        // Avvia l'animazione solo se l'app non è in modalità debug
+        if (!BuildConfig.DEBUG) {
+            startIntroAnimation();
+        }
     }
 
     /**

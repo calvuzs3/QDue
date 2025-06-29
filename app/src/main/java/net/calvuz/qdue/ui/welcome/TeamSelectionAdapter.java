@@ -1,3 +1,4 @@
+// TeamSelectionAdapter.java
 package net.calvuz.qdue.ui.welcome;
 
 import android.animation.ObjectAnimator;
@@ -18,7 +19,7 @@ import java.util.List;
 
 /**
  * RecyclerView Adapter for team selection in 3x3 grid layout
- * <p></p>
+ *
  * Features:
  * - Visual team cards with distinct colors
  * - Selection state management
@@ -76,14 +77,12 @@ public class TeamSelectionAdapter extends RecyclerView.Adapter<TeamSelectionAdap
 
     /**
      * Update selected team and refresh affected items
-     * @param teamNumber Selected team number (1-9)
+     * @param teamIndex Selected team index (0-8)
      */
-    public void updateSelectedTeam(int teamNumber) {
-        int newPosition = teamNumber - 1; // Convert to 0-based index
-
-        if (newPosition >= 0 && newPosition < teams.size()) {
+    public void updateSelectedTeam(int teamIndex) {
+        if (teamIndex >= 0 && teamIndex < teams.size()) {
             int oldPosition = selectedPosition;
-            selectedPosition = newPosition;
+            selectedPosition = teamIndex; // Use direct index
 
             // Update old selection
             if (oldPosition != -1) {
@@ -124,7 +123,7 @@ public class TeamSelectionAdapter extends RecyclerView.Adapter<TeamSelectionAdap
          */
         public void bind(Team team, int position, boolean isSelected) {
             // Set team content
-            teamNumberText.setText(String.valueOf(team.teamNumber));
+            teamNumberText.setText(String.valueOf(team.teamLetter));
             teamNameText.setText(team.teamName);
 
             // Set team color
@@ -137,7 +136,7 @@ public class TeamSelectionAdapter extends RecyclerView.Adapter<TeamSelectionAdap
             // Setup click listener
             cardView.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onTeamSelected(team.teamNumber);
+                    listener.onTeamSelected(team.teamIndex);
                     animateSelection();
                 }
             });
