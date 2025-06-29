@@ -25,6 +25,9 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
 
+import net.calvuz.qdue.preferences.QDuePreferences;
+import net.calvuz.qdue.utils.Log;
+
 /**
  * Welcome Activity for QDue app introduction and initial setup.
  * Guides users through team selection, view preferences, and feature overview.
@@ -37,7 +40,9 @@ import net.calvuz.qdue.R;
  * - Dynamic colors configuration
  * - Smooth transitions between steps
  */
-public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterface{
+public class WelcomeActivity extends AppCompatActivity implements WelcomeInterface {
+    // TAG
+    private final static String TAG = "WelcomeActivity";
 
     // View components
     private ViewPager2 viewPager;
@@ -77,6 +82,26 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
 
         // Start with logo animation
         startLogoAnimation();
+
+        // DEBUG
+        if (QDue.Debug.DEBUG_ACTIVITY) {
+            debugPreferencesIntegration();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Log final preferences state if welcome was completed
+        if (preferences.getBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, false)) {
+            Log.d(TAG, "onDestroy: Welcome completed successfully");
+            if (QDue.Debug.DEBUG_ACTIVITY) {
+                QDuePreferences.logAllPreferences(this);
+            }
+        } else {
+            Log.d(TAG, "onDestroy: Welcome activity destroyed without completion");
+        }
+
+        super.onDestroy();
     }
 
     /**
@@ -275,23 +300,92 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
      * Set default preferences when user skips welcome
      */
     private void setDefaultPreferences() {
+        final String mTAG = "setDefaultPreferences: ";
+        Log.d(TAG, mTAG + "Setting default preferences for skipped welcome");
+
         SharedPreferences.Editor editor = preferences.edit();
+
+        // Set defaults using same values as WelcomeActivity
         editor.putInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1); // Default to team 1
-        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, "calendar"); // Default to calendar view
+        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, QDue.Settings.VIEW_MODE_CALENDAR); // Default to calendar
         editor.putBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, true); // Enable dynamic colors by default
+
         editor.apply();
+
+        // ENHANCEMENT: Use QDuePreferences for consistency logging
+        Log.d(TAG, mTAG + "Default preferences applied:");
+        Log.d(TAG, mTAG + " - Team: " + QDuePreferences.getSelectedTeam(this));
+        Log.d(TAG, mTAG + " - View Mode: " + QDuePreferences.getDefaultViewMode(this));
+        Log.d(TAG, mTAG + " - Dynamic Colors: " + QDuePreferences.isDynamicColorsEnabled(this));
+    }
+
+    /**
+     * Ensures all preferences are properly synchronized
+     */
+    public void validateAndSyncPreferences() {
+        final String mTAG = "validateAndSyncPreferences: ";
+        Log.d(TAG, mTAG + "Validating and synchronizing preferences");
+
+        try {
+            // Ensure view mode is properly set
+            String currentViewMode = getViewMode();
+            if (currentViewMode == null || currentViewMode.isEmpty()) {
+                Log.w(TAG, mTAG + "View mode not set, applying default");
+                setViewMode(QDue.Settings.VIEW_MODE_CALENDAR);
+            }
+
+            // Ensure team is properly set
+            int currentTeam = getSelectedTeam();
+            if (currentTeam <= 0) {
+                Log.w(TAG, mTAG + "Team not properly set, applying default");
+                setSelectedTeam(1);
+            }
+
+            // Log final state
+            Log.d(TAG, mTAG + "Preferences validation completed:");
+            Log.d(TAG, mTAG + " - View Mode: " + getViewMode());
+            Log.d(TAG, mTAG + " - Selected Team: " + getSelectedTeam());
+            Log.d(TAG, mTAG + " - Dynamic Colors: " + isDynamicColorsEnabled());
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error validating preferences", e);
+            // Apply safe defaults
+            setDefaultPreferences();
+        }
     }
 
     /**
      * Navigate to main activity
      */
     private void startMainActivity() {
-        Intent intent = new Intent(this, QDueMainActivity.class);
-        startActivity(intent);
-        finish(); // Close welcome activity
+        Log.d(TAG, "startMainActivity: Starting main activity");
 
-        // Add smooth transition
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        try {
+            // Validate preferences before starting main activity
+            validateAndSyncPreferences();
+
+            // Create intent to main activity (existing logic)
+            Intent intent = new Intent(this, QDueMainActivity.class);
+
+            // Pass information about welcome completion
+            intent.putExtra("from_welcome", true);
+            intent.putExtra("selected_view_mode", getViewMode());
+
+            startActivity(intent);
+            finish(); // Close welcome activity
+
+            // Add smooth transition (existing logic)
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+
+            Log.d(TAG, "startMainActivity: Successfully started main activity with view mode: " + getViewMode());
+
+        } catch (Exception e) {
+            Log.e(TAG, "startMainActivity: Error starting main activity", e);
+            // Fallback: start without extras
+            Intent fallbackIntent = new Intent(this, QDueMainActivity.class);
+            startActivity(fallbackIntent);
+            finish();
+        }
     }
 
     /**
@@ -311,10 +405,107 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
         }
     }
 
+    // ==================== FRAGMENT COMMUNICATION ENHANCEMENTS ====================
+
+    /**
+     * ADD this method to help fragments communicate preference changes
+     * This can be called by welcome fragments when they update preferences
+     */
+    public void notifyPreferenceChanged(String preferenceKey) {
+        Log.d(TAG, "notifyPreferenceChanged: Preference change notification: " + preferenceKey);
+
+        // Update progress or UI based on preference changes
+        updateProgressBasedOnPreferences();
+
+        // Validate current state
+        validateAndSyncPreferences();
+    }
+
+    /**
+     * ADD this method to update progress based on completed preferences
+     */
+    private void updateProgressBasedOnPreferences() {
+        // This method can be used to update UI state based on how many preferences are set
+        // Implementation depends on your specific welcome flow requirements
+
+        boolean hasTeam = getSelectedTeam() > 0;
+        boolean hasViewMode = getViewMode() != null && !getViewMode().isEmpty();
+        boolean hasDynamicColors = true; // This has a default value
+
+        int completedSteps = 0;
+        if (hasTeam) completedSteps++;
+        if (hasViewMode) completedSteps++;
+        if (hasDynamicColors) completedSteps++;
+
+        Log.d(TAG, "updateProgressBasedOnPreferences: Preference completion: " + completedSteps + "/3 steps");
+    }
+
+    // ==================== ERROR HANDLING ====================
+
+    /**
+     * ADD this method for robust error handling during preference operations
+     */
+    private void handlePreferenceError(String operation, Exception error) {
+        Log.e(TAG, "handlePreferenceError: Error during preference operation: " + operation, error);
+
+        // Show user feedback
+        if (this != null && !isFinishing()) {
+            runOnUiThread(() -> {
+                // You can show a toast or snackbar here
+                Log.w(TAG, "handlePreferenceError: Preference error occurred, using defaults");
+            });
+        }
+
+        // Apply safe defaults
+        try {
+            setDefaultPreferences();
+        } catch (Exception fallbackError) {
+            Log.e(TAG, "handlePreferenceError: Error applying fallback preferences", fallbackError);
+        }
+    }
+
+    // ==================== INTEGRATION HELPER METHODS ====================
+
+    /**
+     * ADD this new method to check integration with QDuePreferences
+     * This helps debug any synchronization issues
+     */
+    private void debugPreferencesIntegration() {
+        if (!QDue.Debug.DEBUG_ACTIVITY) return;
+
+        Log.d(TAG, "=== WelcomeActivity Preferences Debug ===");
+        Log.d(TAG, "WelcomeActivity values:");
+        Log.d(TAG, " - getViewMode(): " + getViewMode());
+        Log.d(TAG, " - getSelectedTeam(): " + getSelectedTeam());
+        Log.d(TAG, " - isDynamicColorsEnabled(): " + isDynamicColorsEnabled());
+
+        Log.d(TAG, "QDuePreferences values:");
+        Log.d(TAG, " - getDefaultViewMode(): " + QDuePreferences.getDefaultViewMode(this));
+        Log.d(TAG, " - getSelectedTeam(): " + QDuePreferences.getSelectedTeam(this));
+        Log.d(TAG, " - isDynamicColorsEnabled(): " + QDuePreferences.isDynamicColorsEnabled(this));
+        Log.d(TAG, "=== End Debug ===");
+    }
+
+    /**
+     * ADD this method to be called when fragments update preferences
+     * This ensures consistency across the welcome flow
+     */
+    public void onPreferenceUpdatedFromFragment(String key, Object value) {
+        final String methodTag = TAG + ".onPreferenceUpdatedFromFragment";
+        Log.d(methodTag, "Preference updated from fragment - Key: " + key + ", Value: " + value);
+
+        // Trigger validation and sync
+        validateAndSyncPreferences();
+
+        // Debug the state if enabled
+        debugPreferencesIntegration();
+    }
+
     // =============================== WELCOME INTERFACE ==================================
 
     /**
      * Get SharedPreferences instance
+     *
      * @return SharedPreferences instance
      */
     @Override
@@ -324,6 +515,7 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
 
     /**
      * Set selected team preference
+     *
      * @param teamIndex Selected team ID
      */
     @Override
@@ -335,6 +527,7 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
 
     /**
      * Get selected team preference
+     *
      * @return Selected team ID or default (1)
      */
     @Override
@@ -344,26 +537,44 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
 
     /**
      * Set view mode preference
+     *
      * @param viewMode View mode to set
      */
     @Override
     public void setViewMode(String viewMode) {
+        Log.d(TAG, "setViewMode: Setting view mode from welcome: " + viewMode);
+
+        // Normalize the view mode value for consistency
+        String normalizedViewMode;
+        if ("dayslist".equals(viewMode) || QDue.Settings.VIEW_MODE_DAYSLIST.equals(viewMode)) {
+            normalizedViewMode = QDue.Settings.VIEW_MODE_DAYSLIST;
+        } else {
+            normalizedViewMode = QDue.Settings.VIEW_MODE_CALENDAR;
+        }
+
+        // Save using both systems for compatibility
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, viewMode);
+        editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, normalizedViewMode);
         editor.apply();
+
+        Log.d(TAG, "setViewMode: View mode normalized and saved: " + normalizedViewMode);
     }
 
     /**
      * Get view mode preference
+     *
      * @return View mode or default ("dayslist")
      */
     @Override
     public String getViewMode() {
-        return preferences.getString(QDue.Settings.QD_KEY_VIEW_MODE, "dayslist");
+        String viewMode = preferences.getString(QDue.Settings.QD_KEY_VIEW_MODE, QDue.Settings.VIEW_MODE_CALENDAR);
+        Log.d(TAG, "getViewMode: Getting view mode from welcome: " + viewMode);
+        return viewMode;
     }
 
     /**
      * Set dynamic colors enabled preference
+     *
      * @param enabled True if enabled, false otherwise
      */
     @Override
@@ -375,6 +586,7 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
 
     /**
      * Get dynamic colors enabled preference
+     *
      * @return True if enabled, false otherwise
      */
     @Override
@@ -387,12 +599,21 @@ public class WelcomeActivity extends AppCompatActivity implements  WelcomeInterf
      */
     @Override
     public void setWelcomeCompleted() {
-        // Mark welcome as completed
+        Log.d(TAG, "setWelcomeCompleted: Completing welcome flow");
+
+        // Mark welcome as completed (existing logic)
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, true);
         editor.apply();
 
-        // Start main activity with smooth transition
+        // ENHANCEMENT: Log final preferences state for debugging
+        if (QDue.Debug.DEBUG_ACTIVITY) {
+            Log.d(TAG, "setWelcomeCompleted: Welcome completed with final preferences:");
+            QDuePreferences.logAllPreferences(this);
+        }
+
+        // Start main activity with smooth transition (existing logic)
         startMainActivity();
     }
+
 }

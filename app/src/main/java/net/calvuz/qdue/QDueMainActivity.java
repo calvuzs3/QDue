@@ -1,5 +1,7 @@
 package net.calvuz.qdue;
 
+import static net.calvuz.qdue.QDue.SETTINGS_REQUEST_CODE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -23,6 +25,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.events.EventsActivity;
 import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
@@ -94,17 +97,19 @@ public class QDueMainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        Log.v(TAG, "onCreate: called.");
 
-        final String mTAG = "onCreate: ";
-        Log.v(TAG, mTAG + "called.");
-
-        // Welcome Activity if not already completed
-        if (!WelcomeInterface.isWelcomeCompleted(this)) {
-            Intent intent = new Intent(this, WelcomeActivity.class);
-            startActivity(intent);
-            finish();
+        // Check if user needs to see welcome before setting up main activity
+        if (shouldRedirectToWelcome()) {
+            redirectToWelcome();
+            return;
         }
+
+        // Setup view mode preferences before calling super
+        setupDefaultViewModePreferences();
+
+        // Call existing onCreate
+        super.onCreate(savedInstanceState);
 
         // Initialize enhanced data manager if virtual scrolling is enabled
         if (MigrationHelper.shouldUseVirtualScrolling()) {
@@ -117,7 +122,7 @@ public class QDueMainActivity extends BaseActivity {
         // Log device capabilities for monitoring
         logDeviceCapabilities();
 
-        // NORMAL: Use binding
+        // Use binding
         binding = ActivityQdueMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -127,6 +132,23 @@ public class QDueMainActivity extends BaseActivity {
 
         // Setup Events Activity Laucher
         setupActivityLaunchers();
+    }
+
+    /**
+     * Handle returning from other activities (like WelcomeActivity)
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Check if we need to redirect to welcome (edge case)
+        if (shouldRedirectToWelcome()) {
+            redirectToWelcome();
+            return;
+        }
+
+        // Verify navigation state matches preferences
+        verifyNavigationStateMatchesPreferences();
     }
 
     @Override
@@ -141,6 +163,121 @@ public class QDueMainActivity extends BaseActivity {
             enhancedDataManager.shutdown();
         }
     }
+
+    /**
+     * Handle extras from WelcomeActivity:
+     */
+    private void handleWelcomeIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra("from_welcome", false)) {
+            String selectedViewMode = intent.getStringExtra("selected_view_mode");
+            Log.d(TAG, "Started from WelcomeActivity with view mode: " + selectedViewMode);
+
+            // Optional: Show welcome completion message
+            if (findViewById(android.R.id.content) != null) {
+                Snackbar.make(findViewById(android.R.id.content),
+                        "Benvenuto in QDue!", Snackbar.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // ==================== PREFERENCES METHODS ====================
+
+    /**
+     * Check if user should be redirected to WelcomeActivity
+     * @return true if welcome should be shown
+     */
+    private boolean shouldRedirectToWelcome() {
+        boolean shouldShow = QDuePreferences.shouldShowWelcome(this);
+        Log.d(TAG, "Should redirect to welcome: " + shouldShow);
+        return shouldShow;
+    }
+
+    /**
+     * Redirect user to WelcomeActivity for initial setup
+     */
+    private void redirectToWelcome() {
+        Log.d(TAG, "Redirecting to WelcomeActivity for first-time setup");
+
+        Intent welcomeIntent = new Intent(this, WelcomeActivity.class);
+        startActivity(welcomeIntent);
+        finish(); // Close main activity
+
+        // Add smooth transition
+//        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    /**
+     * Setup default view mode preferences and ensure navigation graph compatibility
+     * This method prepares the navigation system based on user preferences
+     */
+    private void setupDefaultViewModePreferences() {
+        final String methodTag = TAG + ".setupDefaultViewModePreferences";
+        Log.d(methodTag, "Setting up view mode preferences");
+
+        try {
+            // Initialize defaults only if needed (respects WelcomeActivity choices)
+            QDuePreferences.initializeDefaultsIfNeeded(this);
+
+            // Log current preferences for debugging
+            if (QDue.Debug.DEBUG_ACTIVITY) {
+                QDuePreferences.logAllPreferences(this);
+            }
+
+            // Get the preferred start destination
+            int preferredDestination = QDuePreferences.getDefaultNavigationDestination(this);
+            String viewMode = QDuePreferences.getDefaultViewMode(this);
+
+            Log.d(methodTag, "User preferred view mode: " + viewMode);
+            Log.d(methodTag, "Target navigation destination: " + preferredDestination);
+
+            // Store for later use in navigation setup
+            currentDestination = preferredDestination;
+
+        } catch (Exception e) {
+            Log.e(methodTag, "Error setting up view mode preferences", e);
+            // Fallback to calendar view
+            currentDestination = R.id.nav_calendar;
+            QDuePreferences.setDefaultViewMode(this, QDue.Settings.VIEW_MODE_CALENDAR);
+        }
+    }
+
+    // ==================== USUAL METHODS ====================
+
+    /**
+     * Verify that current navigation state matches user preferences
+     * This handles cases where preferences might have changed externally
+     */
+    private void verifyNavigationStateMatchesPreferences() {
+        if (navController == null) return;
+
+        try {
+            String currentViewMode = QDuePreferences.getDefaultViewMode(this);
+            int preferredDestination = QDuePreferences.getDefaultNavigationDestination(this);
+            int currentDestination = navController.getCurrentDestination().getId();
+
+            // Only auto-navigate if we're on a main view (not detail/settings/etc)
+            if (isMainNavigationDestination(currentDestination) &&
+                    currentDestination != preferredDestination) {
+
+                Log.d(TAG, "Navigation state mismatch - auto-correcting to preferred view");
+                navController.navigate(preferredDestination);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error verifying navigation state", e);
+        }
+    }
+
+    /**
+     * Check if the given destination ID is a main navigation destination
+     * @param destinationId Navigation destination ID to check
+     * @return true if it's a main destination (calendar or dayslist)
+     */
+    private boolean isMainNavigationDestination(int destinationId) {
+        return destinationId == R.id.nav_calendar || destinationId == R.id.nav_dayslist;
+    }
+
+    /// ////////
 
     /**
      * Log device capabilities for analytics
@@ -326,7 +463,8 @@ public class QDueMainActivity extends BaseActivity {
     @Override
     protected void setupNavController() {
         final String mTAG = "setupNavController: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, mTAG + "called with preferred destination: " + currentDestination);
+
 
         try {
             // Method 1: Find NavHostFragment directly
@@ -342,6 +480,9 @@ public class QDueMainActivity extends BaseActivity {
                 Log.d(TAG, mTAG + "NavController found via Navigation.findNavController");
             }
 
+            // Configure start destination based on user preference
+            configureNavigationStartDestination();
+
         } catch (IllegalStateException e) {
             Log.e(TAG, "Error setting up NavController: " + e.getMessage());
 
@@ -349,6 +490,7 @@ public class QDueMainActivity extends BaseActivity {
             findViewById(R.id.nav_host_fragment_content_main).post(() -> {
                 try {
                     navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+                    configureNavigationStartDestination();
                     Log.d(TAG, mTAG + "NavController found on second attempt");
                 } catch (Exception retryException) {
                     Log.e(TAG, mTAG + "Failed to find NavController on retry: " + retryException.getMessage());
@@ -356,6 +498,138 @@ public class QDueMainActivity extends BaseActivity {
             });
         }
     }
+
+
+    /**
+     * Configure the navigation graph start destination based on user preferences
+     * This modifies the navigation graph dynamically
+     */
+    private void configureNavigationStartDestination() {
+        final String mTAG = "configureNavigationStartDestination: ";
+
+        if (navController == null) {
+            Log.w(TAG, mTAG
+                    + "NavController is null, cannot configure start destination");
+            return;
+        }
+
+        try {
+            // Get user's preferred view mode
+            String preferredViewMode = QDuePreferences.getDefaultViewMode(this);
+
+            // Get the current navigation graph
+            androidx.navigation.NavGraph navGraph = navController.getNavInflater()
+                    .inflate(R.navigation.mobile_navigation);
+
+            // Determine start destination based on preference
+            int startDestinationId;
+            if (QDue.Settings.VIEW_MODE_DAYSLIST.equals(preferredViewMode)) {
+                startDestinationId = R.id.nav_dayslist;
+                Log.d(TAG, mTAG + "Setting start destination to DaysList");
+            } else {
+                startDestinationId = R.id.nav_calendar;
+                Log.d(TAG, mTAG + "Setting start destination to Calendar (default)");
+            }
+
+            // Apply the start destination to the graph
+            navGraph.setStartDestination(startDestinationId);
+            navController.setGraph(navGraph);
+
+            // Update current destination tracking
+            currentDestination = startDestinationId;
+
+            Log.d(TAG, mTAG + "Navigation graph configured with start destination: " + startDestinationId);
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error configuring navigation start destination", e);
+            // Let the navigation graph use its default start destination
+        }
+    }
+
+    // ==================== HANDLE VIEW MODE CHANGES FROM SETTINGS ====================
+
+    /**
+     * Handle navigation when user changes view mode from settings
+     * Call this method when user changes view mode in settings
+     * @param newViewMode The new view mode selected by user
+     */
+    public void onViewModeChanged(String newViewMode) {
+        final String mTAG = "onViewModeChanged: ";
+        Log.d(TAG, mTAG + "View mode changed to: " + newViewMode);
+
+        try {
+            // Save the new preference
+            QDuePreferences.setDefaultViewMode(this, newViewMode);
+
+            // Navigate to the selected view
+            int destinationId;
+            if (QDue.Settings.VIEW_MODE_DAYSLIST.equals(newViewMode)) {
+                destinationId = R.id.nav_dayslist;
+            } else {
+                destinationId = R.id.nav_calendar;
+            }
+
+            // Navigate to the destination if different from current
+            if (navController != null && navController.getCurrentDestination().getId() != destinationId) {
+                navController.navigate(destinationId);
+                Log.d(TAG, mTAG + "Navigated to destination: " + destinationId);
+            }
+
+            // Update current destination tracking
+            currentDestination = destinationId;
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error handling view mode change", e);
+        }
+    }
+
+    // ==================== HANDLE ACTIVITY RESULTS ====================
+
+    /**
+     * MODIFY your existing onActivityResult (if present) or add this method
+     * Handle returning from settings or welcome activity
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check if returning from settings
+        if (requestCode == SETTINGS_REQUEST_CODE && resultCode == RESULT_OK) {
+            handleReturnFromSettings();
+        }
+    }
+
+    /**
+     * Handle returning from settings activity
+     * Refresh navigation if view mode preferences changed
+     */
+    private void handleReturnFromSettings() {
+        final String methodTag = TAG + ".handleReturnFromSettings";
+        Log.d(methodTag, "Returned from settings, checking for preference changes");
+
+        try {
+            // Get current preference
+            String currentViewMode = QDuePreferences.getDefaultViewMode(this);
+            int preferredDestination = QDuePreferences.getDefaultNavigationDestination(this);
+
+            Log.d(methodTag, "Current view mode: " + currentViewMode);
+            Log.d(methodTag, "Preferred destination: " + preferredDestination);
+
+            // Check if we need to navigate to different view
+            if (navController != null) {
+                int currentFragmentId = navController.getCurrentDestination().getId();
+                if (currentFragmentId != preferredDestination) {
+                    Log.d(methodTag, "Navigating from " + currentFragmentId + " to " + preferredDestination);
+                    navController.navigate(preferredDestination);
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(methodTag, "Error handling return from settings", e);
+        }
+    }
+
+    /// /////////
 
     /**
      * Enhanced activity result launcher setup
@@ -1211,6 +1485,44 @@ public class QDueMainActivity extends BaseActivity {
         for (EventsRefreshInterface fragment : discovered) {
             Log.d(TAG, "  - " + fragment.getFragmentDescription() +
                     " (Active: " + fragment.isFragmentActive() + ")");
+        }
+
+        Log.d(TAG, "=== END DEBUG ===");
+    }
+
+    /**
+     * Debug method to log current navigation and preference state
+     * Call this in onCreate or onResume for debugging
+     */
+    private void logNavigationAndPreferenceState() {
+        if (!QDue.Debug.DEBUG_ACTIVITY) return;
+
+        Log.d(TAG, "=== Navigation & Preference State Debug ===");
+
+        if (navController != null && navController.getCurrentDestination() != null) {
+            int currentDestId = navController.getCurrentDestination().getId();
+            Log.d(TAG, "Current navigation destination: " + currentDestId);
+            Log.d(TAG, "Target destination: " + currentDestination);
+        } else {
+            Log.d(TAG, "NavController or current destination is null");
+        }
+
+        // Log all preferences
+        QDuePreferences.logAllPreferences(this);
+
+        Log.d(TAG, "=== End Navigation & Preference Debug ===");
+    }
+
+    private void debugCurrentState() {
+        if (!QDue.Debug.DEBUG_ACTIVITY) return;
+
+        Log.d(TAG, "=== DEBUG: Current App State ===");
+        Log.d(TAG, "Welcome completed: " + QDuePreferences.isWelcomeCompleted(this));
+        Log.d(TAG, "Current view mode: " + QDuePreferences.getDefaultViewMode(this));
+        Log.d(TAG, "Should show welcome: " + QDuePreferences.shouldShowWelcome(this));
+
+        if (navController != null && navController.getCurrentDestination() != null) {
+            Log.d(TAG, "Current navigation: " + navController.getCurrentDestination().getId());
         }
 
         Log.d(TAG, "=== END DEBUG ===");

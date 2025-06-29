@@ -18,6 +18,11 @@ public class QDue extends Application {
     // TAG
     static String TAG = "QDUE";
 
+    // CONSTANTS
+    public static final int SETTINGS_REQUEST_CODE = 1001;
+    public static final int WELCOME_REQUEST_CODE = 1002;
+
+
     @SuppressLint("StaticFieldLeak")
     private static Context INSTANCE;
 

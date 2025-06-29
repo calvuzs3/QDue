@@ -78,11 +78,8 @@
 
 
     <!-- Tema e Aspetto -->
-    <string name="settings_appearance_header">Aspetto</string>
     <string name="settings_theme_title">Tema</string>
     <string name="settings_theme_summary">Scegli il tema dell\'applicazione</string>
-    <string name="settings_dynamic_colors_title">Colori dinamici</string>
-    <string name="settings_dynamic_colors_summary">Usa i colori del sistema (Android 12+)</string>
 
     <!-- Array per le opzioni del tema -->
     <string-array name="theme_entries">
@@ -907,7 +904,33 @@
     <string name="accessibility_toggle_option">Attiva/disattiva opzione</string>
     <string name="accessibility_welcome_progress">Progresso configurazione</string>
 
+    <!-- ============================================ -->
+    <!-- QDUE PREFERENCES STRINGS -->
+    <!-- ============================================ -->
 
+    <!-- Settings View Mode -->
+    <string name="settings_view_mode_changed">Vista predefinita cambiata: %s</string>
+    <string name="settings_default_view_title">Vista predefinita</string>
+    <string name="settings_default_view_summary">Scegli quale vista mostrare all\'avvio dell\'app</string>
+
+    <!-- View Mode Arrays -->
+    <string-array name="view_mode_entries">
+        <item>Vista Calendario</item>
+        <item>Lista Giorni</item>
+    </string-array>
+
+    <string-array name="view_mode_values">
+        <item>calendar</item>
+        <item>dayslist</item>
+    </string-array>
+
+    <!-- Settings Categories -->
+    <string name="settings_interface_header">Interfaccia</string>
+    <string name="settings_appearance_header">Aspetto</string>
+
+    <!-- Dynamic Colors -->
+    <string name="settings_dynamic_colors_title">Colori dinamici</string>
+    <string name="settings_dynamic_colors_summary">Usa i colori del tema di sistema (Android 12+)</string>
 
 
 
