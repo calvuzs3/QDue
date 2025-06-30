@@ -1,3 +1,6 @@
+
+# Roadmap
+
 ✅ Step 1 Completato: EventsActivity con File Picker e Intent Filter
 Ho implementato una EventsActivity completa con tutte le funzionalità richieste:
 📁 Componenti Creati:

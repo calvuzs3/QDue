@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/item_event_simple.xml -->
+<!-- Simple event item for events list dialog -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <!-- Event Type Indicator -->
+        <View
+            android:id="@+id/view_event_type_indicator"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="12dp"
+            android:background="?attr/colorPrimary" />
+
+        <!-- Event Content -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/tv_event_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Titolo evento"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Event Time -->
+            <TextView
+                android:id="@+id/tv_event_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="09:00 - 17:00"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="2dp" />
+
+            <!-- Event Type -->
+            <TextView
+                android:id="@+id/tv_event_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Generale"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorPrimary"
+                android:background="@drawable/bg_event_type_chip"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp" />
+
+        </LinearLayout>
+
+        <!-- Action Menu -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_event_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:contentDescription="@string/advanced_menu_events_list"
+            app:icon="@drawable/ic_rounded_more_vert_24"
+            app:iconSize="20dp"
+            app:iconTint="?attr/colorOnSurfaceVariant"
+            style="@style/Widget.Material3.Button.TextButton" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

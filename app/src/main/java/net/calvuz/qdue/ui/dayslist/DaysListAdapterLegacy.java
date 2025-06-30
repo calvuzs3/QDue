@@ -1,12 +1,3 @@
-/**
- * SIMPLE Enhanced DaysListAdapter
- * <p>
- * Extends original DaysListAdapter with:
- * - Material Design compliant backgrounds
- * - Events indicator at bottom of rows
- * - Minimal changes to proven working code
- */
-
 package net.calvuz.qdue.ui.dayslist;
 
 import android.content.Context;
@@ -29,10 +20,12 @@ import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
+import net.calvuz.qdue.ui.shared.DayLongClickListener;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
 import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
+import net.calvuz.qdue.ui.shared.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -50,8 +43,13 @@ import com.google.android.material.card.MaterialCardView;
 /**
  * Enhanced DaysListAdapter with Material Design compliance and events support
  * Minimal changes to the proven original adapter
+ * <p>
+ * Extends original DaysListAdapter with:
+ * - Material Design compliant backgrounds
+ * - Events indicator at bottom of rows
+ * - Minimal changes to proven working code
  */
-public class DaysListAdapterLegacy extends BaseAdapterLegacy {
+public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     // TAG
     private static final String TAG = "D-Adapter";
@@ -67,6 +65,8 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
     private final QDueDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
+    /// //////////////////////////////////////////////////////////////////////////////////
+
     public DaysListAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
                                  HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);
@@ -78,7 +78,7 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
         mEventsDatabase = QDueDatabase.getInstance(context);
         loadEventsFromDatabase();
 
-        Log.d(TAG, "DayslistAdapterLegacy: ✅ initialized");
+        Log.d(TAG, "DayslistAdapterLegacy: ✅ initialized with BaseClickAdapterLegacy");
     }
 
     @Override
@@ -100,6 +100,10 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
         // Only add our enhancements if it's our ViewHolder
         if (dayHolder instanceof MaterialDayViewHolder materialHolder) {
 
+
+            // NEW: Setup long-click and selection support
+            setupLongClickSupport(materialHolder, dayItem, position);
+
             // STEP 1: Reset visual state
             resetDayslistCellState(materialHolder);
 
@@ -113,23 +117,112 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
 
             // STEP 5: Apply today/special day styling
 
-            // Apply background styling (improved)
+            // STEP 6. Apply background styling (improved)
             //applyMaterialBackground(materialHolder, dayItem);
             applyMaterialBackgroundWithWhite(materialHolder, dayItem);
 
-            // Add events indicator
+            // STEP 7. Add events indicator
             addWorkingEventsIndicator(materialHolder, dayItem);
 
-            // NEW
+            // STEP 8. Background Styling
             applyBackgroundStyling(holder, dayItem);
+
+            // 🔧 DEBUG: Log per verifica
+            Log.d(TAG, "bindDay completed for position " + position +
+                    ", date: " + (dayItem.day != null ? dayItem.day.getLocalDate() : "null") +
+                    ", ViewHolder: MaterialDayViewHolder");
         }
     }
+
+    // ===========================================
+    // Toolbar Action Handling
+    // ===========================================
+
+    /**
+     * Handle toolbar action execution
+     */
+    @Override
+    protected void handleToolbarAction(ToolbarAction action, Day day, LocalDate date) {
+        switch (action) {
+            case FERIE:
+                createQuickEvent("Ferie", date, EventType.GENERAL);
+                break;
+
+            case MALATTIA:
+                createQuickEvent("Malattia", date, EventType.GENERAL);
+                break;
+
+            case LEGGE_104:
+                createQuickEvent("Legge 104", date, EventType.GENERAL);
+                break;
+
+            case PERMESSO:
+                createQuickEvent("Permesso", date, EventType.GENERAL);
+                break;
+
+            case PERMESSO_SINDACALE:
+                createQuickEvent("Permesso Sindacale", date, EventType.GENERAL);
+                break;
+
+            case ADD_EVENT:
+                // This will be handled by fragment to open event editor
+                Log.d(TAG, "ADD_EVENT action - delegating to fragment");
+                break;
+
+            case VIEW_EVENTS:
+                // This will be handled by fragment to show events list
+                Log.d(TAG, "VIEW_EVENTS action - delegating to fragment");
+                break;
+
+            default:
+                Log.w(TAG, "Unknown toolbar action: " + action);
+        }
+    }
+
+    /**
+     * Create a quick event for the specified date
+     * This is a simplified event creation - full implementation would create LocalEvent
+     */
+    private void createQuickEvent(String title, LocalDate date, EventType eventType) {
+        Log.d(TAG, "Creating quick event: " + title + " for date: " + date);
+
+        // TODO: Create actual LocalEvent and save to database
+        // For now, just log the action
+
+        // Example implementation:
+        /*
+        LocalEvent quickEvent = new LocalEvent();
+        quickEvent.setTitle(title);
+        quickEvent.setStartDate(date);
+        quickEvent.setEndDate(date);
+        quickEvent.setEventType(eventType);
+        quickEvent.setAllDay(true);
+        quickEvent.setCreatedAt(LocalDateTime.now());
+
+        // Save to database asynchronously
+        CompletableFuture.runAsync(() -> {
+            try {
+                mEventsDatabase.eventDao().insert(quickEvent);
+
+                // Refresh events data on main thread
+                ((Activity) mContext).runOnUiThread(() -> {
+                    refreshEventsFromDatabase();
+                    Log.d(TAG, "Quick event created and saved: " + title);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving quick event: " + e.getMessage());
+            }
+        });
+        */
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Reset all visual state for consistent appearance
      */
     private void resetDayslistCellState(MaterialDayViewHolder holder) {
-// FIX: Reset day number text to normal state
+        // FIX: Reset day number text to normal state
         if (holder.tday != null) {
             holder.tday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
             holder.tday.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
@@ -594,8 +687,6 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
 //        }
     }
 
-
-
     private void addSimpleEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
             return;
@@ -708,11 +799,19 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
      * Enhanced ViewHolder with events indicator
      * Extends the base DayViewHolder to add event visual indicators.
      */
-    public class MaterialDayViewHolder extends DayViewHolder {
+    public class MaterialDayViewHolder extends DayViewHolder implements BaseClickAdapterLegacy.LongClickCapable {
         final String mTAG = TAG + "MaterialDayViewHolder: ";
 
         // Solo l'indicatore eventi testuale (che esiste nel layout)
         public TextView eventsIndicator;
+
+        // Fields for selection management
+        private boolean mIsSelectionMode = false;
+        private boolean mIsSelected = false;
+        private DayLongClickListener mLongClickListener;
+        private Day mCurrentDay;
+        private LocalDate mCurrentDate;
+        private int mCurrentPosition;
 
         public MaterialDayViewHolder(@NonNull MaterialCardView itemView) {
             super(itemView);
@@ -725,9 +824,167 @@ public class DaysListAdapterLegacy extends BaseAdapterLegacy {
                 eventsIndicator.setVisibility(View.GONE);
             }
 
+
+            // Setup listeners immediately in constructor
+            setupLongClickListener();
+            setupClickListener();
+
             Log.v(TAG, mTAG + "initialized correctly");
         }
 
+        /**
+         * Setup long click listener for toolbar activation
+         */
+        private void setupLongClickListener() {
+            itemView.setOnLongClickListener(v -> {
+                Log.d(TAG, mTAG + "Long click detected!");
+
+                if (mLongClickListener != null && mCurrentDay != null) {
+                    // Provide haptic feedback
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+
+                    // Trigger callback
+                    mLongClickListener.onDayLongClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
+
+                    Log.d(TAG, mTAG + "Long click callback triggered for date: " + mCurrentDate);
+                    return true;
+                } else {
+                    Log.w(TAG, mTAG + "Long click ignored - listener: " +
+                            (mLongClickListener != null ? "OK" : "NULL") +
+                            ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
+                }
+                return false;
+            });
+
+            Log.d(TAG, mTAG + "Long click listener setup completed");
+        }
+
+        /**
+         * Setup regular click listener for selection mode
+         */
+        private void setupClickListener() {
+            itemView.setOnClickListener(v -> {
+                Log.d(TAG, mTAG + "Click detected - selection mode: " + mIsSelectionMode);
+
+                if (mIsSelectionMode && mLongClickListener != null && mCurrentDay != null) {
+                    // Toggle selection
+                    setSelected(!mIsSelected);
+
+                    // Notify listener
+                    mLongClickListener.onDaySelectionChanged(mCurrentDay, mCurrentDate, mIsSelected);
+
+                    Log.d(TAG, mTAG + "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
+                } else if (!mIsSelectionMode) {
+                    Log.v(TAG, mTAG + "Regular click ignored - not in selection mode");
+                }
+            });
+
+            Log.d(TAG, mTAG + "Click listener setup completed");
+        }
+
+
+        /**
+         * 🔧 DEBUG: Metodo per verificare lo stato interno
+         */
+        public void debugState() {
+            Log.d(TAG, "=== VIEWHOLDER DEBUG STATE ===");
+            Log.d(TAG, "Current Day: " + (mCurrentDay != null ? mCurrentDay.getLocalDate() : "NULL"));
+            Log.d(TAG, "Current Date: " + mCurrentDate);
+            Log.d(TAG, "Current Position: " + mCurrentPosition);
+            Log.d(TAG, "Listener: " + (mLongClickListener != null ? "OK" : "NULL"));
+            Log.d(TAG, "Selection Mode: " + mIsSelectionMode);
+            Log.d(TAG, "Is Selected: " + mIsSelected);
+            Log.d(TAG, "ItemView: " + itemView.getClass().getSimpleName());
+
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+                Log.d(TAG, "CardView Checkable: " + cardView.isCheckable());
+                Log.d(TAG, "CardView Checked: " + cardView.isChecked());
+                Log.d(TAG, "CardView Elevation: " + cardView.getCardElevation());
+            }
+
+            // Test listener presence
+            Log.d(TAG, "Has OnLongClickListener: " + (itemView.hasOnClickListeners()));
+            Log.d(TAG, "=== END VIEWHOLDER DEBUG ===");
+        }
+
+        /**
+         * Update UI based on selection state.
+         */
+        private void updateSelectionVisual() {
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+
+                // ✅ ENABLE/DISABLE checkable state
+                cardView.setCheckable(mIsSelectionMode);
+                cardView.setChecked(mIsSelected);
+
+                // ✅ VISUAL FEEDBACK
+                if (mIsSelectionMode) {
+                    cardView.setCardElevation(mIsSelected ? 8f : 4f);
+                } else {
+                    cardView.setCardElevation(2f);
+                }
+            }
+        }
+
+        /**
+         * @param day
+         * @param date
+         * @param position
+         * @param listener
+         */
+        @Override
+        public void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener) {
+            // Memorizza i dati del giorno per i callback
+            mCurrentDay = day;
+            mCurrentDate = date;
+            mCurrentPosition = position;
+            mLongClickListener = listener;
+
+            // Aggiorna visual state
+            updateSelectionVisual();
+        }
+
+        /**
+         * @param isSelectionMode
+         */
+        @Override
+        public void setSelectionMode(boolean isSelectionMode) {
+            mIsSelectionMode = isSelectionMode;
+
+            // Aggiorna visual state
+            updateSelectionVisual();
+
+            // Reset selection se si esce da selection mode
+            if (!isSelectionMode) {
+                setSelected(false);
+            }
+        }
+
+        /**
+         * @param isSelected
+         */
+        @Override
+        public void setSelected(boolean isSelected) {
+            mIsSelected = isSelected;
+
+            // Aggiorna MaterialCardView checked state
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+                cardView.setChecked(isSelected);
+            }
+
+            updateSelectionVisual();
+        }
+
+        /**
+         * @return
+         */
+        @Override
+        public boolean isSelected() {
+            return mIsSelected;
+        }
     }
 
     /**

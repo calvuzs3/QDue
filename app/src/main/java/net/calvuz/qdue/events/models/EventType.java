@@ -66,6 +66,14 @@ public enum EventType {
      * Check if this is a production stop event
      */
     public boolean isProductionStop() {
-        return this == STOP_PLANNED || this == STOP_ORDERS || this == STOP_CASSA;
+        return this == STOP_PLANNED || this == STOP_ORDERS || this == STOP_CASSA || this == STOP_UNPLANNED || this == STOP_SHORTAGE;
+    }
+
+    public boolean isProductionEvent() {
+        return this == MAINTENANCE || this == EMERGENCY;
+    }
+
+    public boolean isShiftRelatedEvent() {
+        return this == SHIFT_CHANGE || this == OVERTIME;
     }
 }

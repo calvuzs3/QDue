@@ -933,5 +933,36 @@
     <string name="settings_dynamic_colors_summary">Usa i colori del tema di sistema (Android 12+)</string>
 
 
+    <!-- ======================================================================= -->
+
+    <!-- Toolbar Actions -->
+    <string name="action_ferie">Ferie</string>
+    <string name="action_malattia">Malattia</string>
+    <string name="action_legge_104">Legge 104</string>
+    <string name="action_permesso">Permesso</string>
+    <string name="action_permesso_sindacale">Permesso Sindacale</string>
+    <string name="action_add_event">Aggiungi</string>
+    <string name="action_view_events">Eventi</string>
+
+    <!-- Selection Mode -->
+    <string name="selection_mode_title">%d giorni selezionati</string>
+    <string name="selection_mode_select_all">Seleziona tutto</string>
+    <string name="selection_mode_clear">Cancella selezione</string>
+
+    <!-- Events Dialog -->
+    <string name="dialog_events_title">Eventi del giorno</string>
+    <string name="dialog_events_empty">Nessun evento per questo giorno</string>
+    <string name="dialog_events_add">Aggiungi evento</string>
+
+    <!-- Quick Events -->
+    <string name="quick_event_created">Evento \'%s\' creato per %s</string>
+    <string name="quick_event_error">Errore nella creazione dell\'evento</string>
+
+    <!-- Accessibility -->
+    <string name="desc_day_long_click">Tocco prolungato per azioni rapide</string>
+    <string name="desc_day_selected">Giorno selezionato</string>
+    <string name="desc_selection_mode">Modalità selezione attiva</string>
+
+    <!-- ======================================================================= -->
 
 </resources>
