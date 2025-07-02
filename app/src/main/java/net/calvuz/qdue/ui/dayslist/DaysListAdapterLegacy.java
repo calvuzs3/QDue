@@ -799,19 +799,12 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
      * Enhanced ViewHolder with events indicator
      * Extends the base DayViewHolder to add event visual indicators.
      */
-    public class MaterialDayViewHolder extends DayViewHolder implements BaseClickAdapterLegacy.LongClickCapable {
+    public class MaterialDayViewHolder extends BaseMaterialDayViewHolder  {
         final String mTAG = TAG + "MaterialDayViewHolder: ";
 
         // Solo l'indicatore eventi testuale (che esiste nel layout)
         public TextView eventsIndicator;
 
-        // Fields for selection management
-        private boolean mIsSelectionMode = false;
-        private boolean mIsSelected = false;
-        private DayLongClickListener mLongClickListener;
-        private Day mCurrentDay;
-        private LocalDate mCurrentDate;
-        private int mCurrentPosition;
 
         public MaterialDayViewHolder(@NonNull MaterialCardView itemView) {
             super(itemView);
@@ -824,166 +817,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
                 eventsIndicator.setVisibility(View.GONE);
             }
 
-
-            // Setup listeners immediately in constructor
-            setupLongClickListener();
-            setupClickListener();
-
-            Log.v(TAG, mTAG + "initialized correctly");
-        }
-
-        /**
-         * Setup long click listener for toolbar activation
-         */
-        private void setupLongClickListener() {
-            itemView.setOnLongClickListener(v -> {
-                Log.d(TAG, mTAG + "Long click detected!");
-
-                if (mLongClickListener != null && mCurrentDay != null) {
-                    // Provide haptic feedback
-                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-
-                    // Trigger callback
-                    mLongClickListener.onDayLongClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
-
-                    Log.d(TAG, mTAG + "Long click callback triggered for date: " + mCurrentDate);
-                    return true;
-                } else {
-                    Log.w(TAG, mTAG + "Long click ignored - listener: " +
-                            (mLongClickListener != null ? "OK" : "NULL") +
-                            ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
-                }
-                return false;
-            });
-
-            Log.d(TAG, mTAG + "Long click listener setup completed");
-        }
-
-        /**
-         * Setup regular click listener for selection mode
-         */
-        private void setupClickListener() {
-            itemView.setOnClickListener(v -> {
-                Log.d(TAG, mTAG + "Click detected - selection mode: " + mIsSelectionMode);
-
-                if (mIsSelectionMode && mLongClickListener != null && mCurrentDay != null) {
-                    // Toggle selection
-                    setSelected(!mIsSelected);
-
-                    // Notify listener
-                    mLongClickListener.onDaySelectionChanged(mCurrentDay, mCurrentDate, mIsSelected);
-
-                    Log.d(TAG, mTAG + "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
-                } else if (!mIsSelectionMode) {
-                    Log.v(TAG, mTAG + "Regular click ignored - not in selection mode");
-                }
-            });
-
-            Log.d(TAG, mTAG + "Click listener setup completed");
-        }
-
-
-        /**
-         * 🔧 DEBUG: Metodo per verificare lo stato interno
-         */
-        public void debugState() {
-            Log.d(TAG, "=== VIEWHOLDER DEBUG STATE ===");
-            Log.d(TAG, "Current Day: " + (mCurrentDay != null ? mCurrentDay.getLocalDate() : "NULL"));
-            Log.d(TAG, "Current Date: " + mCurrentDate);
-            Log.d(TAG, "Current Position: " + mCurrentPosition);
-            Log.d(TAG, "Listener: " + (mLongClickListener != null ? "OK" : "NULL"));
-            Log.d(TAG, "Selection Mode: " + mIsSelectionMode);
-            Log.d(TAG, "Is Selected: " + mIsSelected);
-            Log.d(TAG, "ItemView: " + itemView.getClass().getSimpleName());
-
-            if (itemView instanceof MaterialCardView) {
-                MaterialCardView cardView = (MaterialCardView) itemView;
-                Log.d(TAG, "CardView Checkable: " + cardView.isCheckable());
-                Log.d(TAG, "CardView Checked: " + cardView.isChecked());
-                Log.d(TAG, "CardView Elevation: " + cardView.getCardElevation());
-            }
-
-            // Test listener presence
-            Log.d(TAG, "Has OnLongClickListener: " + (itemView.hasOnClickListeners()));
-            Log.d(TAG, "=== END VIEWHOLDER DEBUG ===");
-        }
-
-        /**
-         * Update UI based on selection state.
-         */
-        private void updateSelectionVisual() {
-            if (itemView instanceof MaterialCardView) {
-                MaterialCardView cardView = (MaterialCardView) itemView;
-
-                // ✅ ENABLE/DISABLE checkable state
-                cardView.setCheckable(mIsSelectionMode);
-                cardView.setChecked(mIsSelected);
-
-                // ✅ VISUAL FEEDBACK
-                if (mIsSelectionMode) {
-                    cardView.setCardElevation(mIsSelected ? 8f : 4f);
-                } else {
-                    cardView.setCardElevation(2f);
-                }
-            }
-        }
-
-        /**
-         * @param day
-         * @param date
-         * @param position
-         * @param listener
-         */
-        @Override
-        public void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener) {
-            // Memorizza i dati del giorno per i callback
-            mCurrentDay = day;
-            mCurrentDate = date;
-            mCurrentPosition = position;
-            mLongClickListener = listener;
-
-            // Aggiorna visual state
-            updateSelectionVisual();
-        }
-
-        /**
-         * @param isSelectionMode
-         */
-        @Override
-        public void setSelectionMode(boolean isSelectionMode) {
-            mIsSelectionMode = isSelectionMode;
-
-            // Aggiorna visual state
-            updateSelectionVisual();
-
-            // Reset selection se si esce da selection mode
-            if (!isSelectionMode) {
-                setSelected(false);
-            }
-        }
-
-        /**
-         * @param isSelected
-         */
-        @Override
-        public void setSelected(boolean isSelected) {
-            mIsSelected = isSelected;
-
-            // Aggiorna MaterialCardView checked state
-            if (itemView instanceof MaterialCardView) {
-                MaterialCardView cardView = (MaterialCardView) itemView;
-                cardView.setChecked(isSelected);
-            }
-
-            updateSelectionVisual();
-        }
-
-        /**
-         * @return
-         */
-        @Override
-        public boolean isSelected() {
-            return mIsSelected;
+            Log.v(TAG, mTAG + "initialized");
         }
     }
 

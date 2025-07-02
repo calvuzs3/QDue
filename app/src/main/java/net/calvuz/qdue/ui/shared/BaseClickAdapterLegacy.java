@@ -2,9 +2,17 @@ package net.calvuz.qdue.ui.shared;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.material.card.MaterialCardView;
+
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.utils.Log;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -346,8 +354,284 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
      */
     public interface LongClickCapable {
         void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener);
+
         void setSelectionMode(boolean isSelectionMode);
+
         void setSelected(boolean isSelected);
+
         boolean isSelected();
+
+        // 🔧 NEW: Regular click support for events preview
+        void setRegularClickListener(DayRegularClickListener listener);
+    }
+
+    /**
+     * Interface for handling regular clicks (non-selection mode)
+     */
+    public interface DayRegularClickListener {
+        /**
+         * Called when a day is clicked in normal mode (not selection mode)
+         */
+        void onDayRegularClick(Day day, LocalDate date, View itemView, int position);
+    }
+
+    // ===========================================
+    // ViewHolder Click and Long-Click Support
+    // ===========================================
+
+    /**
+     * Enhanced MaterialDayViewHolder with regular click support
+     * Aggiornare questa classe in DaysListAdapterLegacy.java
+     */
+    public class BaseMaterialDayViewHolder extends DayViewHolder implements BaseClickAdapterLegacy.LongClickCapable {
+        final String mTAG = "BaseMaterialDayViewHolder: ";
+
+        // Existing fields
+        public TextView eventsIndicator;
+
+        // Selection support fields
+        private boolean mIsSelectionMode = false;
+        private boolean mIsSelected = false;
+        private DayLongClickListener mLongClickListener;
+
+        // 🔧 NEW: Regular click support
+        private DayRegularClickListener mRegularClickListener;
+
+        private Day mCurrentDay;
+        private LocalDate mCurrentDate;
+        private int mCurrentPosition;
+
+        public BaseMaterialDayViewHolder(@NonNull MaterialCardView itemView) {
+            super(itemView);
+
+            // Initialize existing components
+            eventsIndicator = itemView.findViewById(R.id.tv_events_indicator);
+            if (eventsIndicator != null) {
+                eventsIndicator.setVisibility(View.GONE);
+            }
+
+            // Setup listeners immediately in constructor
+            setupLongClickListener();
+            setupClickListener(); // Enhanced to handle both modes
+
+            Log.v(TAG, mTAG + "initialized");
+        }
+
+        // ===========================================
+        // Enhanced LongClick Listener Setup
+        // ===========================================
+
+        /**
+         * Setup long click listener for toolbar activation
+         */
+        private void setupLongClickListener() {
+            itemView.setOnLongClickListener(v -> {
+                Log.d(TAG, mTAG + "Long click detected!");
+
+                if (mLongClickListener != null && mCurrentDay != null) {
+                    // Provide haptic feedback
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+
+                    // Trigger callback
+                    mLongClickListener.onDayLongClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
+
+                    Log.d(TAG, mTAG + "Long click callback triggered for date: " + mCurrentDate);
+                    return true;
+                } else {
+                    Log.w(TAG, mTAG + "Long click ignored - listener: " +
+                            (mLongClickListener != null ? "OK" : "NULL") +
+                            ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
+                }
+                return false;
+            });
+
+            Log.d(TAG, mTAG + "Long click listener setup completed");
+        }
+
+        // ===========================================
+        // Enhanced Click Listener Setup
+        // ===========================================
+
+        /**
+         * Enhanced setup regular click listener for both selection and normal mode
+         */
+        private void setupClickListener() {
+            itemView.setOnClickListener(v -> {
+                Log.d(TAG, mTAG + "Click detected - selection mode: " + mIsSelectionMode);
+
+                if (mIsSelectionMode) {
+                    // Selection mode: toggle selection
+                    handleSelectionModeClick();
+                } else {
+                    // Normal mode: show events preview or handle as regular click
+                    handleRegularModeClick();
+                }
+            });
+
+            Log.d(TAG, mTAG + "Enhanced click listener setup completed");
+        }
+
+        /**
+         * Handle click in selection mode
+         */
+        private void handleSelectionModeClick() {
+            if (mLongClickListener != null && mCurrentDay != null) {
+                // Toggle selection
+                setSelected(!mIsSelected);
+
+                // Notify listener
+                mLongClickListener.onDaySelectionChanged(mCurrentDay, mCurrentDate, mIsSelected);
+
+                Log.d(TAG, mTAG + "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
+            } else {
+                Log.w(TAG, mTAG + "Selection mode click ignored - missing data or listener");
+            }
+        }
+
+        /**
+         * Handle click in normal mode (events preview)
+         */
+        private void handleRegularModeClick() {
+            if (mRegularClickListener != null && mCurrentDay != null) {
+                // Trigger regular click callback for events preview
+                mRegularClickListener.onDayRegularClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
+
+                Log.d(TAG, mTAG + "Regular click triggered for date: " + mCurrentDate);
+            } else {
+                Log.v(TAG, mTAG + "Regular click ignored - listener: " +
+                        (mRegularClickListener != null ? "OK" : "NULL") +
+                        ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
+            }
+        }
+
+        // ===========================================
+        // LongClickCapable Interface Implementation
+        // ===========================================
+
+        @Override
+        public void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener) {
+            Log.d(TAG, mTAG + "bindDayData called for date: " + date);
+
+            // Store day data for callbacks
+            mCurrentDay = day;
+            mCurrentDate = date;
+            mCurrentPosition = position;
+            mLongClickListener = listener;
+
+            // Debug verification
+            Log.d(TAG, mTAG + "Data bound - Day: " + (day != null ? "OK" : "NULL") +
+                    ", Listener: " + (listener != null ? "OK" : "NULL") +
+                    ", Date: " + date);
+
+            // Update visual state
+            updateSelectionVisual();
+        }
+
+        @Override
+        public void setRegularClickListener(DayRegularClickListener listener) {
+            mRegularClickListener = listener;
+            Log.d(TAG, mTAG + "Regular click listener set: " + (listener != null ? "OK" : "NULL"));
+        }
+
+        @Override
+        public void setSelectionMode(boolean isSelectionMode) {
+            Log.d(TAG, mTAG + "setSelectionMode: " + isSelectionMode + " (was: " + mIsSelectionMode + ")");
+
+            mIsSelectionMode = isSelectionMode;
+
+            // Update visual state
+            updateSelectionVisual();
+
+            // Reset selection if exiting selection mode
+            if (!isSelectionMode) {
+                setSelected(false);
+            }
+        }
+
+        @Override
+        public void setSelected(boolean isSelected) {
+            Log.d(TAG, mTAG + "setSelected: " + isSelected + " (was: " + mIsSelected + ")");
+
+            mIsSelected = isSelected;
+
+            // Update MaterialCardView checked state
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+                cardView.setChecked(isSelected);
+                Log.d(TAG, mTAG + "MaterialCardView.setChecked(" + isSelected + ")");
+            }
+
+            updateSelectionVisual();
+        }
+
+        @Override
+        public boolean isSelected() {
+            return mIsSelected;
+        }
+
+        // ===========================================
+        // Visual State Management (Enhanced)
+        // ===========================================
+
+        /**
+         * Enhanced update UI based on selection state and click mode
+         */
+        private void updateSelectionVisual() {
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+
+                Log.v(TAG, mTAG + "updateSelectionVisual - SelectionMode: " + mIsSelectionMode +
+                        ", Selected: " + mIsSelected);
+
+                // Enable/disable checkable state based on selection mode
+                cardView.setCheckable(mIsSelectionMode);
+                cardView.setChecked(mIsSelected);
+
+                // Visual feedback based on mode
+                if (mIsSelectionMode) {
+                    // Selection mode: elevation and selection styling
+                    cardView.setCardElevation(mIsSelected ? 8f : 4f);
+
+                    // Optional: Add selection mode visual cues
+                    //updateSelectionModeVisuals(cardView);
+
+                    Log.v(TAG, mTAG + "Selection mode elevation set: " + (mIsSelected ? "8f" : "4f"));
+                } else {
+                    // Normal mode: standard elevation with subtle hover effect
+                    cardView.setCardElevation(2f);
+
+                    // Optional: Add clickable visual cues for events preview
+                    //updateNormalModeVisuals(cardView);
+
+                    Log.v(TAG, mTAG + "Normal mode elevation set: 2f");
+                }
+            }
+        }
+
+        /**
+         * 🔧 DEBUG: Metodo per verificare lo stato interno
+         */
+        public void debugState() {
+            Log.d(TAG, "=== VIEWHOLDER DEBUG STATE ===");
+            Log.d(TAG, "Current Day: " + (mCurrentDay != null ? mCurrentDay.getLocalDate() : "NULL"));
+            Log.d(TAG, "Current Date: " + mCurrentDate);
+            Log.d(TAG, "Current Position: " + mCurrentPosition);
+            Log.d(TAG, "Listener: " + (mLongClickListener != null ? "OK" : "NULL"));
+            Log.d(TAG, "Selection Mode: " + mIsSelectionMode);
+            Log.d(TAG, "Is Selected: " + mIsSelected);
+            Log.d(TAG, "ItemView: " + itemView.getClass().getSimpleName());
+
+            if (itemView instanceof MaterialCardView) {
+                MaterialCardView cardView = (MaterialCardView) itemView;
+                Log.d(TAG, "CardView Checkable: " + cardView.isCheckable());
+                Log.d(TAG, "CardView Checked: " + cardView.isChecked());
+                Log.d(TAG, "CardView Elevation: " + cardView.getCardElevation());
+            }
+
+            // Test listener presence
+            Log.d(TAG, "Has OnLongClickListener: " + (itemView.hasOnClickListeners()));
+            Log.d(TAG, "=== END VIEWHOLDER DEBUG ===");
+        }
+
     }
 }

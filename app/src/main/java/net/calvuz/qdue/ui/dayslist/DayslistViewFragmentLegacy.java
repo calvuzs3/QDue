@@ -16,6 +16,7 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickFragmentLegacy;
+import net.calvuz.qdue.ui.shared.EventsPreviewManager;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 import net.calvuz.qdue.ui.shared.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
@@ -411,6 +412,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     /**
      * Enhanced back press handling with selection mode priority
      */
+    @Override
     public boolean onBackPressed() {
         // First check if we can handle it in BaseClickFragmentLegacy
         boolean handled = super.onBackPressed();
@@ -457,6 +459,14 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         // TODO: Add DaysList-specific menu handling
 
         return false;
+    }
+
+    /**
+     * Abstract method for subclasses to specify their view type
+     */
+    @Override
+    protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
+        return null;
     }
 
     // ===========================================
@@ -561,6 +571,9 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
             mIsSelectionMode = mLegacyAdapter.isSelectionMode();
             updateSelectionUI();
         }
+
+        testEventsPreview();
+
     }
 
     @Override
@@ -623,5 +636,19 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         }
 
         Log.d(TAG, "=== END TOOLBAR INTEGRATION TEST ===");
+    }
+
+    public void debugClickHandling() {
+        Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
+    }
+
+    // Nel fragment, temporaneamente:
+    public void testEventsPreview() {
+        debugClickHandling();
+
+        // Test click normale su un giorno con eventi
+        LocalDate testDate = LocalDate.now();
+        List<LocalEvent> testEvents = getEventsForDate(testDate);
+        // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
     }
 }

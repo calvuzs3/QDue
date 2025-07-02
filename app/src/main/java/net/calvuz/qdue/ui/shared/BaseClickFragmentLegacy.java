@@ -11,6 +11,7 @@ import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,10 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     protected abstract BaseClickAdapterLegacy getClickAdapter();
 
     protected abstract String getFragmentName();
+
+    // Events Preview Integration
+    protected EventsPreviewManager mEventsPreviewManager;
+    protected boolean mEventsPreviewEnabled = true;
 
     // ===========================================
     // DayLongClickListener Implementation
@@ -357,19 +362,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // Action Handling
     // ===========================================
 
-    /**
-     * Open event editor for the specified date
-     */
-    protected void openEventEditor(LocalDate date) {
-        Log.d(TAG, "Opening event editor for date: " + date);
 
-        // TODO: Navigate to event editor with pre-filled date
-        // Example using Navigation Component or Intent
-
-        // For now, show a toast and delegate to subclass
-        showEventEditorPlaceholder(date);
-        onOpenEventEditor(date);
-    }
 
     /**
      * Show events dialog for the specified date
@@ -493,36 +486,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // Back Press Handling
     // ===========================================
 
-    /**
-     * 🔧 NEW: Enhanced back press handling with auto-exit awareness
-     */
-    public boolean onBackPressed() {
-        if (mIsSelectionMode) {
-            Log.d(TAG, getFragmentName() + ": Back press in selection mode");
-
-            BaseClickAdapterLegacy adapter = getClickAdapter();
-            if (adapter != null && adapter.getSelectedCount() > 0) {
-                // Has selections - clear them (this will auto-exit)
-                adapter.deselectAll();
-                Log.d(TAG, getFragmentName() + ": Cleared selections on back press");
-            } else {
-                // No selections - just exit mode
-                exitSelectionMode();
-                Log.d(TAG, getFragmentName() + ": Exited selection mode on back press");
-            }
-            return true; // Consumed
-        }
-
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            return adapter.onBackPressed();
-        }
-
-        return false; // Not consumed
-    }
-
-
-    // ===========================================
+       // ===========================================
     // Menu Handling
     // ===========================================
 
@@ -561,9 +525,16 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     public void onDestroy() {
         super.onDestroy();
 
+        // LongClick
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null) {
             adapter.onDestroy();
+        }
+
+        // Events Preview Click
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.onDestroy();
+            mEventsPreviewManager = null;
         }
     }
 
@@ -573,6 +544,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
         // Setup long-click listener in adapter if available
         setupAdapterLongClickListener();
+
+        // Initialize events preview after base setup
+        initializeEventsPreview();
     }
 
     /**
@@ -637,7 +611,401 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // ===========================================
 
     /**
-     * Debug selection state
+     * Debug long-click integration
+     */
+    public void debugLongClickIntegration() {
+        Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " LONG-CLICK INTEGRATION DEBUG ===");
+
+        debugSelectionState();
+
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            // Call adapter debug if available
+            try {
+                java.lang.reflect.Method debugMethod = adapter.getClass().getMethod("debugSelectionState");
+                debugMethod.invoke(adapter);
+            } catch (Exception e) {
+                Log.d(TAG, "Adapter debug method not available: " + e.getMessage());
+            }
+        }
+
+        Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " LONG-CLICK DEBUG ===");
+    }
+
+
+
+    /// ////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    // ===========================================
+    // NUOVO: Events Preview Integration
+    // ===========================================
+
+
+    /**
+     * Initialize events preview manager in onCreate or onViewCreated
+     */
+    protected void initializeEventsPreview() {
+        mEventsPreviewManager = new EventsPreviewManager(requireContext());
+        mEventsPreviewManager.setEventsPreviewListener(new EventsPreviewListenerImpl());
+
+        // Set view type based on fragment type
+        EventsPreviewManager.ViewType viewType = getEventsPreviewViewType();
+        mEventsPreviewManager.setViewType(viewType);
+
+        Log.d(TAG, getFragmentName() + ": Events preview initialized with type: " + viewType);
+    }
+
+    /**
+     * Abstract method for subclasses to specify their view type
+     */
+    protected abstract EventsPreviewManager.ViewType getEventsPreviewViewType();
+
+    /**
+     * Handle regular click on day (non-selection mode)
+     */
+    protected void handleDayRegularClick(Day day, LocalDate date, View itemView, int position) {
+        Log.d(TAG, getFragmentName() + ": Regular click on date: " + date);
+
+        if (!mEventsPreviewEnabled) {
+            Log.v(TAG, "Events preview disabled, ignoring click");
+            return;
+        }
+
+        // Get events for this date
+        List<LocalEvent> events = getEventsForDate(date);
+
+        if (events.isEmpty()) {
+            // No events - show "add event" option or ignore
+            handleNoEventsClick(date, itemView);
+        } else {
+            // Has events - show preview
+            if (mEventsPreviewManager != null) {
+                mEventsPreviewManager.showEventsPreview(date, events, itemView);
+            }
+        }
+    }
+
+    /**
+     * Handle click on date with no events
+     */
+    protected void handleNoEventsClick(LocalDate date, View itemView) {
+        Log.d(TAG, getFragmentName() + ": Click on date with no events: " + date);
+
+        // Default: offer to add event
+        showAddEventOption(date);
+    }
+
+    /**
+     * Show option to add event for date with no events
+     */
+    protected void showAddEventOption(LocalDate date) {
+        if (getContext() != null) {
+            // Simple toast for now - can be enhanced with quick add dialog
+            String message = "Nessun evento per " + date + ". Tocca a lungo per aggiungere.";
+            android.widget.Toast.makeText(getContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Get events for a specific date from cache
+     */
+    protected List<LocalEvent> getEventsForDate(LocalDate date) {
+        Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+        List<LocalEvent> events = eventsCache.get(date);
+        return events != null ? events : new ArrayList<>();
+    }
+
+// ===========================================
+// Events Preview Listener Implementation
+// ===========================================
+
+    /**
+     * Implementation of EventsPreviewListener for handling events preview callbacks
+     */
+    private class EventsPreviewListenerImpl implements EventsPreviewInterface.EventsPreviewListener {
+
+        @Override
+        public void onEventQuickAction(EventsPreviewInterface.EventQuickAction action,
+                                       LocalEvent event, LocalDate date) {
+            Log.d(TAG, getFragmentName() + ": Event quick action: " + action + " for event: " + event.getTitle());
+
+            switch (action) {
+                case EDIT:
+                    openEventEditor(event, date);
+                    break;
+                case DELETE:
+                    confirmDeleteEvent(event, date);
+                    break;
+                case DUPLICATE:
+                    duplicateEvent(event, date);
+                    break;
+                case TOGGLE_COMPLETE:
+                    toggleEventComplete(event, date);
+                    break;
+            }
+
+            // Hide preview after action
+            if (mEventsPreviewManager != null) {
+                mEventsPreviewManager.hideEventsPreview();
+            }
+        }
+
+        @Override
+        public void onEventsGeneralAction(EventsPreviewInterface.EventGeneralAction action, LocalDate date) {
+            Log.d(TAG, getFragmentName() + ": Events general action: " + action + " for date: " + date);
+
+            switch (action) {
+                case ADD_EVENT:
+                    openEventEditor(date);
+                    break;
+                case NAVIGATE_TO_EVENTS_ACTIVITY:
+                    navigateToEventsActivity(date);
+                    break;
+                case REFRESH_EVENTS:
+                    onForceEventsRefresh();
+                    break;
+            }
+
+            // Hide preview after action
+            if (mEventsPreviewManager != null) {
+                mEventsPreviewManager.hideEventsPreview();
+            }
+        }
+
+        @Override
+        public void onEventsPreviewShown(LocalDate date, int eventCount) {
+            Log.d(TAG, getFragmentName() + ": Events preview shown for " + date + " with " + eventCount + " events");
+
+            // Optional: Analytics, state tracking, etc.
+        }
+
+        @Override
+        public void onEventsPreviewHidden(LocalDate date) {
+            Log.d(TAG, getFragmentName() + ": Events preview hidden for " + date);
+
+            // Optional: Cleanup, state tracking, etc.
+        }
+    }
+
+// ===========================================
+// Event Action Handlers
+// ===========================================
+
+    /**
+     * Open event editor for existing event
+     */
+    protected void openEventEditor(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "Opening event editor for event: " + event.getTitle());
+
+        // TODO: Implement navigation to event editor with event data
+        // For now, delegate to base implementation
+        onOpenEventEditor(date);
+    }
+
+    /**
+     * Open event editor for new event on date
+     */
+    protected void openEventEditor(LocalDate date) {
+        Log.d(TAG, "Opening event editor for new event on date: " + date);
+
+        // TODO: Navigate to event editor with pre-filled date
+        // Example using Navigation Component or Intent
+
+        // For now, show a toast and delegate to subclass
+        showEventEditorPlaceholder(date);
+
+        // Delegate to base implementation
+        onOpenEventEditor(date);
+    }
+
+    /**
+     * Confirm and delete event
+     */
+    protected void confirmDeleteEvent(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "Confirming delete for event: " + event.getTitle());
+
+        if (getContext() == null) return;
+
+        // Show confirmation dialog
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setTitle("Elimina evento")
+                .setMessage("Vuoi eliminare l'evento \"" + event.getTitle() + "\"?")
+                .setPositiveButton("Elimina", (dialog, which) -> deleteEvent(event, date))
+                .setNegativeButton("Annulla", null)
+                .show();
+    }
+
+    /**
+     * Delete event
+     */
+    protected void deleteEvent(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "Deleting event: " + event.getTitle());
+
+        // TODO: Implement actual event deletion
+        // For now, show placeholder
+        if (getContext() != null) {
+            android.widget.Toast.makeText(getContext(),
+                    "Evento \"" + event.getTitle() + "\" eliminato",
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
+
+        // Refresh events
+        onForceEventsRefresh();
+    }
+
+    /**
+     * Duplicate event
+     */
+    protected void duplicateEvent(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "Duplicating event: " + event.getTitle());
+
+        // TODO: Implement event duplication
+        if (getContext() != null) {
+            android.widget.Toast.makeText(getContext(),
+                    "Evento \"" + event.getTitle() + "\" duplicato",
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
+
+        // Refresh events
+        onForceEventsRefresh();
+    }
+
+    /**
+     * Toggle event completion status
+     */
+    protected void toggleEventComplete(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "Toggling completion for event: " + event.getTitle());
+
+        // TODO: Implement completion toggle
+        if (getContext() != null) {
+            android.widget.Toast.makeText(getContext(),
+                    "Stato evento \"" + event.getTitle() + "\" cambiato",
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
+
+        // Refresh events
+        onForceEventsRefresh();
+    }
+
+    /**
+     * Navigate to events activity
+     */
+    protected void navigateToEventsActivity(LocalDate date) {
+        Log.d(TAG, "Navigating to events activity for date: " + date);
+
+        // TODO: Implement navigation to events activity
+        if (getContext() != null) {
+            android.widget.Toast.makeText(getContext(),
+                    "Apertura eventi per " + date,
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+
+// ===========================================
+// Lifecycle Integration
+// ===========================================
+
+
+    /**
+     * Enhanced onPause with events preview cleanup
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.onPause();
+        }
+    }
+
+
+// ===========================================
+// Public API Methods
+// ===========================================
+
+    /**
+     * Enable/disable events preview
+     */
+    public void setEventsPreviewEnabled(boolean enabled) {
+        mEventsPreviewEnabled = enabled;
+
+        if (!enabled && mEventsPreviewManager != null) {
+            mEventsPreviewManager.hideEventsPreview();
+        }
+    }
+
+    /**
+     * Check if events preview is enabled
+     */
+    public boolean isEventsPreviewEnabled() {
+        return mEventsPreviewEnabled;
+    }
+
+    /**
+     * Force hide events preview
+     */
+    public void hideEventsPreview() {
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.hideEventsPreview();
+        }
+    }
+
+    /**
+     * Check if events preview is currently showing
+     */
+    public boolean isEventsPreviewShowing() {
+        return mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing();
+    }
+
+// ===========================================
+// Enhanced Back Press Handling
+// ===========================================
+
+    /**
+     * Enhanced back press handling with events preview
+     */
+    public boolean onBackPressed() {
+        // First check if events preview is showing
+        if (mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing()) {
+            mEventsPreviewManager.hideEventsPreview();
+            return true; // Consumed
+        }
+
+        // Then check selection mode
+        //return super.onBackPressed();
+
+        if (mIsSelectionMode) {
+            Log.d(TAG, getFragmentName() + ": Back press in selection mode");
+
+            BaseClickAdapterLegacy adapter = getClickAdapter();
+            if (adapter != null && adapter.getSelectedCount() > 0) {
+                // Has selections - clear them (this will auto-exit)
+                adapter.deselectAll();
+                Log.d(TAG, getFragmentName() + ": Cleared selections on back press");
+            } else {
+                // No selections - just exit mode
+                exitSelectionMode();
+                Log.d(TAG, getFragmentName() + ": Exited selection mode on back press");
+            }
+            return true; // Consumed
+        }
+
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            return adapter.onBackPressed();
+        }
+
+        return false; // Not consumed
+    }
+
+// ===========================================
+// Debug Methods Enhanced
+// ===========================================
+
+    /**
+     * Enhanced debug with events preview state
      */
     public void debugSelectionState() {
         Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " SELECTION STATE DEBUG ===");
@@ -664,27 +1032,18 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
         Log.d(TAG, "FAB Visible: " + (mFabGoToToday != null && mFabGoToToday.getVisibility() == View.VISIBLE));
         Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " SELECTION DEBUG ===");
-    }
 
-    /**
-     * Debug long-click integration
-     */
-    public void debugLongClickIntegration() {
-        Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " LONG-CLICK INTEGRATION DEBUG ===");
+        //super.debugSelectionState();
 
-        debugSelectionState();
+        Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " EVENTS PREVIEW DEBUG ===");
+        Log.d(TAG, "Events Preview Enabled: " + mEventsPreviewEnabled);
 
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            // Call adapter debug if available
-            try {
-                java.lang.reflect.Method debugMethod = adapter.getClass().getMethod("debugSelectionState");
-                debugMethod.invoke(adapter);
-            } catch (Exception e) {
-                Log.d(TAG, "Adapter debug method not available: " + e.getMessage());
-            }
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.debugState();
+        } else {
+            Log.d(TAG, "Events Preview Manager: null");
         }
 
-        Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " LONG-CLICK DEBUG ===");
+        Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " EVENTS PREVIEW DEBUG ===");
     }
 }
