@@ -21,7 +21,6 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
-import net.calvuz.qdue.ui.shared.DayLongClickListener;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
 import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
@@ -41,18 +40,12 @@ import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 import com.google.android.material.card.MaterialCardView;
 
 /**
- * Enhanced DaysListAdapter with Material Design compliance and events support
- * Minimal changes to the proven original adapter
- * <p>
- * Extends original DaysListAdapter with:
- * - Material Design compliant backgrounds
- * - Events indicator at bottom of rows
- * - Minimal changes to proven working code
+ * DaysListLegacyAdapter
  */
 public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     // TAG
-    private static final String TAG = "D-Adapter";
+    private static final String TAG = "DayslistLgsAdp";
 
     // Simple events tracking (just count for now)
     private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
@@ -67,6 +60,14 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /// //////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Constructor for DaysListLegacyAdapter
+     *
+     * @param context      Context of the adapter
+     * @param items        List of view items
+     * @param userHalfTeam User's half team
+     * @param numShifts    Number of shifts per day
+     */
     public DaysListAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
                                  HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);
@@ -78,16 +79,30 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         mEventsDatabase = QDueDatabase.getInstance(context);
         loadEventsFromDatabase();
 
-        Log.d(TAG, "DayslistAdapterLegacy: ✅ initialized with BaseClickAdapterLegacy");
+        Log.d(TAG, "DayslistAdapterLegacy: ✅ initialized");
     }
 
+    /**
+     * Create a new dayslist day view holder
+     *
+     * @param inflater Layout inflater
+     * @param parent   Parent ViewGroup
+     * @return New dayslist day view holder
+     */
     @Override
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
         // Use original layout - no changes needed
         View view = inflater.inflate(R.layout.item_dayslist_row, parent, false);
-        return new MaterialDayViewHolder((MaterialCardView) view);
+        return new DayslistDayViewHolder((MaterialCardView) view);
     }
 
+    /**
+     * Bind data to a dayslist day view holder
+     *
+     * @param dayHolder ViewHolder to bind data to
+     * @param dayItem   Day item data to bind
+     * @param position  Position in the adapter
+     */
     @Override
     protected void bindDay(DayViewHolder dayHolder, SharedViewModels.DayItem dayItem, int position) {
         Log.v(TAG, "bindDay: " + dayItem.day.getLocalDate());
@@ -98,31 +113,30 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         MaterialCardView holder = dayHolder.mView;
 
         // Only add our enhancements if it's our ViewHolder
-        if (dayHolder instanceof MaterialDayViewHolder materialHolder) {
-
+        if (dayHolder instanceof DayslistDayViewHolder dayslistHolder) {
 
             // NEW: Setup long-click and selection support
-            setupLongClickSupport(materialHolder, dayItem, position);
+            setupLongClickSupport(dayslistHolder, dayItem, position);
 
             // STEP 1: Reset visual state
-            resetDayslistCellState(materialHolder);
+            resetDayslistCellState(dayslistHolder);
 
             // STEP 2: Setup day number (top-left, smaller font)
 
             // STEP 3: Setup events indicator (top-right, dot with badge)
-            setupEventsIndicator(materialHolder, dayItem);
+            setupEventsIndicator(dayslistHolder, dayItem);
 
             // STEP 4: Setup shift name and indicator (bottom-right area)
-            setupShiftDisplay(materialHolder, dayItem);
+            setupShiftDisplay(dayslistHolder, dayItem);
 
             // STEP 5: Apply today/special day styling
 
             // STEP 6. Apply background styling (improved)
-            //applyMaterialBackground(materialHolder, dayItem);
-            applyMaterialBackgroundWithWhite(materialHolder, dayItem);
+            //applyMaterialBackground(dayslistHolder, dayItem);
+            applyMaterialBackgroundWithWhite(dayslistHolder, dayItem);
 
             // STEP 7. Add events indicator
-            addWorkingEventsIndicator(materialHolder, dayItem);
+            addWorkingEventsIndicator(dayslistHolder, dayItem);
 
             // STEP 8. Background Styling
             applyBackgroundStyling(holder, dayItem);
@@ -130,7 +144,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
             // 🔧 DEBUG: Log per verifica
             Log.d(TAG, "bindDay completed for position " + position +
                     ", date: " + (dayItem.day != null ? dayItem.day.getLocalDate() : "null") +
-                    ", ViewHolder: MaterialDayViewHolder");
+                    ", ViewHolder: DayslistDayViewHolder");
         }
     }
 
@@ -140,6 +154,10 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /**
      * Handle toolbar action execution
+     *
+     * @param action Toolbar action to handle
+     * @param day    Day associated with the action
+     * @param date   Date associated with the action
      */
     @Override
     protected void handleToolbarAction(ToolbarAction action, Day day, LocalDate date) {
@@ -182,8 +200,12 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     /**
      * Create a quick event for the specified date
      * This is a simplified event creation - full implementation would create LocalEvent
+     *
+     * @param title Title of the event
+     * @param date  Date of the event
+     * @param type  Type of the event
      */
-    private void createQuickEvent(String title, LocalDate date, EventType eventType) {
+    private void createQuickEvent(String title, LocalDate date, EventType type) {
         Log.d(TAG, "Creating quick event: " + title + " for date: " + date);
 
         // TODO: Create actual LocalEvent and save to database
@@ -195,7 +217,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         quickEvent.setTitle(title);
         quickEvent.setStartDate(date);
         quickEvent.setEndDate(date);
-        quickEvent.setEventType(eventType);
+        quickEvent.setEventType(type);
         quickEvent.setAllDay(true);
         quickEvent.setCreatedAt(LocalDateTime.now());
 
@@ -220,8 +242,10 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /**
      * Reset all visual state for consistent appearance
+     *
+     * @param holder ViewHolder to reset
      */
-    private void resetDayslistCellState(MaterialDayViewHolder holder) {
+    private void resetDayslistCellState(DayslistDayViewHolder holder) {
         // FIX: Reset day number text to normal state
         if (holder.tday != null) {
             holder.tday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
@@ -272,8 +296,11 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     /**
      * Setup events indicator in top-right corner
      * Dot for presence + badge for count if > 1
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void setupEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void setupEventsIndicator(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         final String mTAG = "setupEventsIndicator: ";
         Log.v(TAG, mTAG + "called.");
 
@@ -314,8 +341,11 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /**
      * Setup shift name (first letter) and shift indicator
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void setupShiftDisplay(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void setupShiftDisplay(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
 
         Day day = dayItem.day;
@@ -343,81 +373,13 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
             }
         }
     }
-//    /**
-//     * Bind data specifically for MaterialDayViewHolder.
-//     * This method handles all the day binding logic that was previously in bindDay.
-//     */
-//    private void bindMaterialDay(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
-//
-//        // Call the original binding logic from BaseAdapterLegacy
-//        bindOriginalDayData(holder, dayItem, position);
-//
-//        // Add our material design enhancements
-//        //applyMaterialBackground(holder, dayItem);
-//        applyMaterialBackgroundWithWhite(holder, dayItem);
-//
-//        // Add events indicator
-//        addEventsIndicator(holder, dayItem);
-//    }
-//
-//    /**
-//     * Replicate the original BaseAdapterLegacy.bindDay logic for MaterialDayViewHolder.
-//     * This ensures we maintain all the original functionality.
-//     */
-//    private void bindOriginalDayData(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
-//        Day day = dayItem.day;
-//
-//        if (day == null) {
-//            // Empty day
-//            holder.tday.setText("");
-//            holder.twday.setText("");
-//            for (TextView shiftText : holder.shiftTexts) {
-//                if (shiftText != null) {
-//                    shiftText.setText("");
-//                    shiftText.setBackgroundColor(Color.TRANSPARENT);
-//                }
-//            }
-//            if (holder.ttR != null) {
-//                holder.ttR.setText("");
-//            }
-//            return;
-//        }
-//
-//        // Set day number and day name
-//        holder.tday.setText(String.valueOf(day.getDayOfMonth()));
-//        holder.twday.setText(day.getDayOfWeekAsString());
-//
-//        // Set shift information
-//        List<Shift> shifts = day.getShifts();
-//        for (int i = 0; i < holder.shiftTexts.length; i++) {
-//            TextView shiftText = holder.shiftTexts[i];
-//            if (shiftText == null) continue;
-//
-//            if (i < shifts.size()) {
-//                Shift shift = shifts.get(i);
-//                shiftText.setText(shift.getTeamsAsString());
-//
-//                // Apply shift colors if needed
-//                if (mUserHalfTeam != null && shift.containsHalfTeam(mUserHalfTeam)) {
-//                    shiftText.setBackgroundColor(shift.getShiftType().getColor());
-//                } else {
-//                    shiftText.setBackgroundColor(Color.TRANSPARENT);
-//                }
-//            } else {
-//                shiftText.setText("");
-//                shiftText.setBackgroundColor(Color.TRANSPARENT);
-//            }
-//        }
-//
-//        // Set rest teams
-//        if (holder.ttR != null) {
-//            holder.ttR.setText(day.getOffWorkHalfTeamsAsString());
-//        }
-//    }
 
     /**
      * Apply background styling for visual hierarchy
      * Provides subtle backgrounds for better calendar readability
+     *
+     * @param cardView View to apply styling to
+     * @param dayItem  Day item data to bind
      */
     private void applyBackgroundStyling(MaterialCardView cardView, SharedViewModels.DayItem dayItem) {
 
@@ -450,9 +412,12 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * Usare il blend con bianco nella applyMaterialBackground:
+     * Usare il blend con bianco nella applyMaterialBackground
+     *
+     * @param holder  DayslistViewHolder to apply styling to
+     * @param dayItem Day item data to bind
      */
-    private void applyMaterialBackgroundWithWhite(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void applyMaterialBackgroundWithWhite(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         com.google.android.material.card.MaterialCardView cardView =
                 (com.google.android.material.card.MaterialCardView) holder.itemView;
         View rootView = holder.itemView;
@@ -475,151 +440,12 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * HELPER - Get neutral base background color.
+     * Working events indicator with improved colors.
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private int getBaseBackgroundColor() {
-        return getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorSurface);
-    }
-
-// 2. AGGIUNGI QUESTO METODO PER BLEND COLORI:
-
-    /**
-     * STEP 6: Blend event color with background color for subtle indication.
-     * Creates a translucent overlay effect.
-     * STEP 6 FIX: More subtle color blending for better readability.
-     * STEP 6 FIX: Blend molto più sottile per leggibilità
-     */
-    private int blendEventColorWithBackground(int backgroundColor, int eventColor) {
-        // Extract RGB components
-        int bgRed = android.graphics.Color.red(backgroundColor);
-        int bgGreen = android.graphics.Color.green(backgroundColor);
-        int bgBlue = android.graphics.Color.blue(backgroundColor);
-
-        int eventRed = android.graphics.Color.red(eventColor);
-        int eventGreen = android.graphics.Color.green(eventColor);
-        int eventBlue = android.graphics.Color.blue(eventColor);
-
-        // FIX CONTRAST: Blend ancora più sottile (3% event color, 97% background)
-        float eventWeight = 0.03f;  // Ridotto drasticamente da 0.08f
-        float bgWeight = 0.97f;
-
-        int blendedRed = (int) (bgRed * bgWeight + eventRed * eventWeight);
-        int blendedGreen = (int) (bgGreen * bgWeight + eventGreen * eventWeight);
-        int blendedBlue = (int) (bgBlue * bgWeight + eventBlue * eventWeight);
-
-        // Ensure values are in valid range
-        blendedRed = Math.max(0, Math.min(255, blendedRed));
-        blendedGreen = Math.max(0, Math.min(255, blendedGreen));
-        blendedBlue = Math.max(0, Math.min(255, blendedBlue));
-
-        return android.graphics.Color.rgb(blendedRed, blendedGreen, blendedBlue);
-    }
-
-    /**
-     * ALTERNATIVA: Blend colore evento con bianco per garantire chiarezza
-     */
-    private int blendEventColorWithWhite(int eventColor) {
-        int eventRed = android.graphics.Color.red(eventColor);
-        int eventGreen = android.graphics.Color.green(eventColor);
-        int eventBlue = android.graphics.Color.blue(eventColor);
-
-        // Blend con bianco (95% bianco, 5% evento)
-        float eventWeight = 0.16f;
-        float whiteWeight = 0.84f;
-
-        int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
-        int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);
-        int blendedBlue = (int) (255 * whiteWeight + eventBlue * eventWeight);
-
-        return android.graphics.Color.rgb(blendedRed, blendedGreen, blendedBlue);
-    }
-
-    /**
-     * STEP 6: Get color for dominant event type.
-     */
-    private int getDominantEventTypeColor(List<LocalEvent> events) {
-        if (events == null || events.isEmpty()) {
-            return ContextCompat.getColor(mContext, R.color.event_type_general);
-        }
-
-        EventType dominantType = EventType.GENERAL;
-        int dominantScore = 0;
-
-        for (LocalEvent event : events) {
-            EventType eventType = event.getEventType();
-            int typeScore = getEventTypeScore(eventType);
-
-            if (typeScore > dominantScore) {
-                dominantScore = typeScore;
-                dominantType = eventType;
-            }
-        }
-
-        return getEventTypeColor(dominantType);
-    }
-
-    /**
-     * STEP 6: Get score for event type (higher = more critical).
-     */
-    private int getEventTypeScore(EventType eventType) {
-        if (eventType == null) return 1;
-
-        switch (eventType) {
-            case STOP_UNPLANNED:
-                return 10;  // Più critico
-            case STOP_SHORTAGE:
-                return 9;
-            case STOP_PLANNED:
-                return 8;
-            case EMERGENCY:
-                return 7;
-            case MAINTENANCE:
-                return 6;
-            case MEETING:
-                return 3;
-            case TRAINING:
-                return 2;
-            case GENERAL:
-            default:
-                return 1;               // Meno critico
-        }
-    }
-
-    /**
-     * STEP 6: Get color for event type.
-     */
-    private int getEventTypeColor(EventType eventType) {
-        if (eventType == null) {
-            return ContextCompat.getColor(mContext, R.color.event_type_general);
-        }
-
-        switch (eventType) {
-            case STOP_UNPLANNED:
-                return ContextCompat.getColor(mContext, R.color.event_type_stop_unplanned);  // Rosso
-            case STOP_SHORTAGE:
-                return ContextCompat.getColor(mContext, R.color.event_type_stop_shortage);   // Viola
-            case STOP_PLANNED:
-                return ContextCompat.getColor(mContext, R.color.event_type_stop_planned);    // Arancione
-            case MAINTENANCE:
-                return ContextCompat.getColor(mContext, R.color.event_type_maintenance);     // Verde
-            case EMERGENCY:
-                return ContextCompat.getColor(mContext, R.color.error_color);                // Rosso scuro
-            case MEETING:
-                return ContextCompat.getColor(mContext, R.color.event_type_meeting);         // Blu
-            case TRAINING:
-                return ContextCompat.getColor(mContext, R.color.event_type_training);        // Arancione chiaro
-            case GENERAL:
-            default:
-                return ContextCompat.getColor(mContext, R.color.event_type_general);         // Grigio
-        }
-    }
-
-    /**
-     * STEP 6: Enhanced working events indicator with improved colors.
-     * STEP 6 FIX: Working events indicator method (was missing).
-     * FIX: Migliorare styling del badge eventi per maggiore visibilità
-     */
-    private void addWorkingEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void addWorkingEventsIndicator(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
             return;
         }
@@ -651,7 +477,9 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * Helper per colore testo contrastante
+     * HELPER - contrasting text color
+     *
+     * @param backgroundColor Background color
      */
     private int getContrastingTextColor(int backgroundColor) {
         int red = Color.red(backgroundColor);
@@ -663,9 +491,12 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * STEP 6 FIX: Apply special styling for Sunday.
+     * Apply special styling for Sunday.
+     *
+     * @param holder  DayslistViewHolder to apply styling to
+     * @param dayItem Day item data to bind
      */
-    private void applySundaySpecialStyling(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void applySundaySpecialStyling(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (!dayItem.isSunday()) return;
 
         // STEP 6 FIX: Red text for Sunday day number
@@ -679,15 +510,15 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
             holder.twday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
             holder.twday.setTypeface(holder.twday.getTypeface(), android.graphics.Typeface.BOLD);
         }
-
-//        // STEP 6 FIX: Red separator line for Sunday
-//        View separator = holder.itemView.findViewById(R.id.item_row_separator);
-//        if (separator != null) {
-//            separator.setBackgroundColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-//        }
     }
 
-    private void addSimpleEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    /**
+     * Add events indicator
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
+     */
+    private void addSimpleEventsIndicator(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.eventsIndicator == null || dayItem.day == null) {
             return;
         }
@@ -701,125 +532,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         mEventHelper.setupSimpleEventIndicator(holder.eventsIndicator, events);
     }
 
-    /**
-     * Get events for a specific date.
-     * For now returns empty list - will be populated in STEP 3.
-     */
-    private List<LocalEvent> getEventsForDate(LocalDate date) {
-        final String mTAG = "getEventsForDate: ";
-
-        List<LocalEvent> events = mEventsData.get(date);
-        List<LocalEvent> result = events != null ? events : new ArrayList<>();
-
-        // Debug logging
-        if (!result.isEmpty()) {
-            Log.d(TAG, mTAG + "Found " + result.size() + " events for date " + date);
-        }
-
-        return result;
-    }
-
-    /**
-     * STEP 2: Method to update events data (will be used in STEP 3).
-     * For now just stores the data.
-     */
-    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
-        final String mTAG = "updateEventsData: ";
-
-        this.mEventsData = eventsMap != null ? eventsMap : new HashMap<>();
-
-        Log.d(TAG, mTAG + "Updated events data - " + mEventsData.size() + " dates with events");
-
-        // Notify adapter to refresh indicators
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Check if user has shift on this day.
-     */
-    private boolean hasUserShift(SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null || mUserHalfTeam == null) return false;
-        return dayItem.day.getInWichTeamIsHalfTeam(mUserHalfTeam) >= 0;
-    }
-
-    /**
-     * Add events indicator at bottom of row.
-     * Updated to work with MaterialDayViewHolder.
-     */
-    private void addEventsIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null || holder.eventsIndicator == null) {
-            return;
-        }
-
-        LocalDate date = dayItem.day.getLocalDate();
-        Integer eventCount = mEventsCount.get(date);
-
-        if (eventCount != null && eventCount > 0) {
-            holder.eventsIndicator.setVisibility(View.VISIBLE);
-            holder.eventsIndicator.setText(eventCount == 1 ? "1 evento" : eventCount + " eventi");
-            holder.eventsIndicator.setTextColor(getColorByThemeAttr(mContext,
-                    androidx.appcompat.R.attr.colorPrimary));
-        } else {
-            holder.eventsIndicator.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * Update events count for days
-     */
-    public void updateEventsCount(Map<LocalDate, Integer> eventsCount) {
-        mEventsCount = eventsCount != null ? eventsCount : new HashMap<>();
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Minimal events integration that doesn't break existing layout.
-     * Add this method to DaysListAdapterLegacy.
-     */
-    private void setupMinimalEventIndicator(MaterialDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null || holder.eventsIndicator == null) {
-            return;
-        }
-
-        LocalDate date = dayItem.day.getLocalDate();
-
-        // For now, just show a simple indicator if there might be events
-        // TODO: Replace with actual events data when integrated
-        boolean hasEvents = false; // Placeholder logic
-
-        if (hasEvents) {
-            holder.eventsIndicator.setVisibility(View.VISIBLE);
-            holder.eventsIndicator.setText("Eventi");
-        } else {
-            holder.eventsIndicator.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * Enhanced ViewHolder with events indicator
-     * Extends the base DayViewHolder to add event visual indicators.
-     */
-    public class MaterialDayViewHolder extends BaseMaterialDayViewHolder  {
-        final String mTAG = TAG + "MaterialDayViewHolder: ";
-
-        // Solo l'indicatore eventi testuale (che esiste nel layout)
-        public TextView eventsIndicator;
-
-
-        public MaterialDayViewHolder(@NonNull MaterialCardView itemView) {
-            super(itemView);
-
-            // FIX: Solo la TextView che esiste davvero nel layout
-            eventsIndicator = itemView.findViewById(R.id.tv_events_indicator);
-
-            // Hide by default
-            if (eventsIndicator != null) {
-                eventsIndicator.setVisibility(View.GONE);
-            }
-
-            Log.v(TAG, mTAG + "initialized");
-        }
-    }
+    /// /////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Load events from database asynchronously.
@@ -876,6 +589,9 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /**
      * Process events loaded from database and expand multi-day events.
+     * This ensures multi-day events appear on every day they span.
+     *
+     * @param events List of events loaded from database
      */
     private void processLoadedEvents(List<LocalEvent> events) {
         final String mTAG = "processLoadedEvents: ";
@@ -901,8 +617,64 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
+     * Get events for a specific date.
+     * For now returns empty list - will be populated in STEP 3.
+     *
+     * @param date Date to get events for
+     * @return List of events for the specified date (or empty list)
+     */
+    private List<LocalEvent> getEventsForDate(LocalDate date) {
+        final String mTAG = "getEventsForDate: ";
+
+        List<LocalEvent> events = mEventsData.get(date);
+        List<LocalEvent> result = events != null ? events : new ArrayList<>();
+
+        // Debug logging
+        if (!result.isEmpty()) {
+            Log.d(TAG, mTAG + "Found " + result.size() + " events for date " + date);
+        }
+
+        return result;
+    }
+
+    /**
+     * Method to update events data (will be used in STEP 3).
+     * For now just stores the data.
+     *
+     * @param eventsMap Map of events for each date
+     *                  Key: Date
+     *                  Value: List of events
+     */
+    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
+        final String mTAG = "updateEventsData: ";
+
+        this.mEventsData = eventsMap != null ? eventsMap : new HashMap<>();
+
+        Log.d(TAG, mTAG + "Updated events data - " + mEventsData.size() + " dates with events");
+
+        // Notify adapter to refresh indicators
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Update events count for days
+     *
+     * @param eventsCount Map of events count for each date
+     *                    Key: Date
+     *                    Value: Number of events
+     */
+    public void updateEventsCount(Map<LocalDate, Integer> eventsCount) {
+        mEventsCount = eventsCount != null ? eventsCount : new HashMap<>();
+        notifyDataSetChanged();
+    }
+
+    /**
      * Expand a single event across all days it covers.
      * This ensures multi-day events appear on every day they span.
+     *
+     * @param event Event to expand
+     *              Key: Date
+     *              Value: List of events
      */
     private void expandEventAcrossDays(LocalEvent event, Map<LocalDate, List<LocalEvent>> eventsMap) {
         final String mTAG = "expandEventAcrossDays: ";
@@ -950,8 +722,10 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * STEP 4 FIX: Get the end date of an event safely.
+     * Get the end date of an event safely.
      * Handles cases where endTime might be null or same day.
+     *
+     * @param event Event to get end date for
      */
     private LocalDate getEventEndDate(LocalEvent event) {
         try {
@@ -963,18 +737,41 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
                 return event.getStartDate();
             }
         } catch (Exception e) {
-            Log.w(TAG, "STEP 4 FIX: Error getting end date for event, using start date: " + e.getMessage());
+            Log.w(TAG, "getEventEndDate: Error getting end date for event, using start date: " + e.getMessage());
             return event.getStartDate();
         }
     }
 
     /**
-     * STEP 4: Public method to refresh events data.
+     * Public method to refresh events data.
      * Call this when events are added/modified in the database.
      */
     public void refreshEventsFromDatabase() {
-        Log.d(TAG, "STEP 4: Refreshing events from database");
+        Log.d(TAG, "refreshEventsFromDatabase: Refreshing events from database");
         mEventsData.clear();
         loadEventsFromDatabase();
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * DayslistDayViewHolder
+     */
+    public class DayslistDayViewHolder extends BaseMaterialDayViewHolder {
+        public TextView eventsIndicator;
+
+        public DayslistDayViewHolder(@NonNull MaterialCardView itemView) {
+            super(itemView);
+
+            // Events Indicator
+            eventsIndicator = itemView.findViewById(R.id.tv_events_indicator);
+
+            // Hide by default
+            if (eventsIndicator != null) {
+                eventsIndicator.setVisibility(View.GONE);
+            }
+
+            Log.d(TAG, "DayslistDayViewHolder: initialized");
+        }
     }
 }

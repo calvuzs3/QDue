@@ -380,7 +380,7 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
     // ===========================================
 
     /**
-     * Enhanced MaterialDayViewHolder with regular click support
+     * Enhanced DayslistDayViewHolder with regular click support
      * Aggiornare questa classe in DaysListAdapterLegacy.java
      */
     public class BaseMaterialDayViewHolder extends DayViewHolder implements BaseClickAdapterLegacy.LongClickCapable {
@@ -394,7 +394,7 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         private boolean mIsSelected = false;
         private DayLongClickListener mLongClickListener;
 
-        // 🔧 NEW: Regular click support
+        // 🔧 NEW: Regular click support (calendar view  overrides it)
         private DayRegularClickListener mRegularClickListener;
 
         private Day mCurrentDay;

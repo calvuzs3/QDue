@@ -19,15 +19,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
 import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.ui.shared.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.R;
 
@@ -40,20 +44,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * IMPROVED CalendarAdapterLegacy - Mantiene la bellezza originale con eventi integrati
- * <p>
- * DESIGN PRINCIPLES:
- * - Rispetta il design originale che funzionava bene
- * - Aggiunge eventi senza compromettere l'estetica
- * - Layout più alto (1/4 in più) per maggiore spazio
- * - Posizionamento preciso degli elementi
- * - Indicatori discreti ma visibili
+ * CalendarAdapterLegacy
  */
-public class CalendarAdapterLegacy extends BaseAdapterLegacy {
+public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
 
-    private static final String TAG = "C-Adapter";
-
-    // ==================== EVENTI INTEGRATION ====================
+    // TAG
+    private static final String TAG = "CalendarLgsAdp";
 
     // Events data management
     private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
@@ -66,8 +62,15 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
     private final QDueDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
-    // ==================== CONSTRUCTOR ====================
+    /// //////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Constructor for CalendarAdapterLegacy
+     *
+     * @param context      Context of the adapter
+     * @param items        List of view items
+     * @param userHalfTeam User's half team
+     */
     public CalendarAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
                                  HalfTeam userHalfTeam) {
         super(context, items, userHalfTeam, 1); // Calendar doesn't show detailed shift info
@@ -82,25 +85,37 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
         Log.d(TAG, "CalendarAdapterLegacy: ✅ initialized");
     }
 
-    // ==================== VIEW HOLDER CREATION ====================
-
+    /**
+     * Create a new calendar day view holder
+     *
+     * @param inflater Layout inflater
+     * @param parent   Parent ViewGroup
+     * @return New calendar day view holder
+     */
     @Override
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
         // Use improved calendar layout
         View view = inflater.inflate(R.layout.item_calendar_day, parent, false);
-        return new ImprovedCalendarDayViewHolder((MaterialCardView) view);
+        return new CalendarDayViewHolder((MaterialCardView) view);
     }
 
-    // ==================== DAY BINDING ====================
-
+    /**
+     * Bind data to a calendar day view holder
+     *
+     * @param dayHolder ViewHolder to bind data to
+     * @param dayItem   Day item data to bind
+     * @param position  Position in the adapter
+     */
     @Override
     public void bindDay(BaseAdapterLegacy.DayViewHolder dayHolder, SharedViewModels.DayItem dayItem, int position) {
         Log.v(TAG, "bindDay: " + dayItem.day.getLocalDate());
 
+        MaterialCardView holder = dayHolder.mView;
+        ;
+        CalendarDayViewHolder calendarHolder = (CalendarDayViewHolder) dayHolder;
 
-        MaterialCardView holder = dayHolder.mView;;
-
-        ImprovedCalendarDayViewHolder calendarHolder = (ImprovedCalendarDayViewHolder) dayHolder;
+        // NEW: Setup long-click and selection support
+        setupLongClickSupport(calendarHolder, dayItem, position);
 
         // STEP 1: Reset visual state
         resetCalendarCellState(calendarHolder); // ok
@@ -124,12 +139,88 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
         applyBackgroundStyling(holder, dayItem); // ok - the only one to touch cardview background
     }
 
-    // ==================== SETUP METHODS ====================
+    // ===========================================
+    // Toolbar Action Handling
+    // ===========================================
+
+    /**
+     * Handle toolbar action execution
+     *
+     * @param action Toolbar action to handle
+     * @param day    Day associated with the action
+     * @param date   Date associated with the action
+     */
+    @Override
+    protected void handleToolbarAction(ToolbarAction action, Day day, LocalDate date) {
+        Log.d(TAG, "Handling toolbar action: " + action + " for date: " + date);
+
+        switch (action) {
+            case ADD_EVENT:
+                // Create new event for this date
+                createQuickEvent("Nuovo evento", date, EventType.GENERAL);
+                break;
+
+            case VIEW_EVENTS:
+                // This will be handled by fragment to show events list
+                Log.d(TAG, "VIEW_EVENTS action - delegating to fragment");
+                break;
+
+            case FERIE:
+                createQuickEvent("Ferie", date, EventType.GENERAL);
+                break;
+
+            case MALATTIA:
+                createQuickEvent("Malattia", date, EventType.GENERAL);
+                break;
+
+            case LEGGE_104:
+                createQuickEvent("Legge 104", date, EventType.GENERAL);
+                break;
+
+            case PERMESSO:
+                createQuickEvent("Permesso", date, EventType.GENERAL);
+                break;
+
+            default:
+                Log.w(TAG, "Unhandled toolbar action: " + action);
+        }
+    }
+
+    /**
+     * Create a quick event for the specified date
+     * This is a simplified event creation - full implementation would create LocalEvent
+     *
+     * @param title Title of the event
+     * @param date  Date of the event
+     * @param type  Type of the event
+     */
+    private void createQuickEvent(String title, LocalDate date, EventType type) {
+        Log.d(TAG, "Creating quick event: " + title + " for " + date);
+
+        // TODO: Create actual LocalEvent and save to database
+        // For now, just log the action and show a toast
+
+        if (mContext instanceof android.app.Activity) {
+            android.app.Activity activity = (android.app.Activity) mContext;
+            activity.runOnUiThread(() -> {
+                android.widget.Toast.makeText(mContext,
+                        "Evento '" + title + "' creato per " + date,
+                        android.widget.Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        // Refresh events after creation
+        loadEventsFromDatabase();
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Reset all visual state for consistent appearance
+     *
+     * @param holder ViewHolder to reset
      */
-    private void resetCalendarCellState(ImprovedCalendarDayViewHolder holder) {
+    private void resetCalendarCellState(CalendarDayViewHolder holder) {
         // Reset day number
         if (holder.tvDayNumber != null) {
             holder.tvDayNumber.setTextColor(getColorByThemeAttr(mContext,
@@ -166,8 +257,11 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 
     /**
      * Setup day number in top-left corner with smaller font
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void setupDayNumber(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void setupDayNumber(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (holder.tvDayNumber == null || dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
@@ -177,8 +271,11 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
     /**
      * Setup events indicator in top-right corner
      * Dot for presence + badge for count if > 1
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void setupEventsIndicator(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void setupEventsIndicator(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         final String mTAG = "setupEventsIndicator: ";
 
         if (dayItem.day == null) return;
@@ -200,37 +297,38 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
             // FIX: Get priority color for tinting
             int priorityColor = mEventHelper.getHighestPriorityColor(events);
 
+            Log.d(TAG, mTAG + "Setting up events indicator for " + eventCount + " events");
+            Log.d(TAG, mTAG + "Priority color: " + Integer.toHexString(priorityColor));
 
-                Log.d(TAG, mTAG + "Setting up events indicator for " + eventCount + " events");
-                Log.d(TAG, mTAG + "Priority color: " + Integer.toHexString(priorityColor));
-
-                // Multiple events - show count badge with color
-                if (holder.vEventsDot != null) {
-                    holder.vEventsDot.setVisibility(View.GONE);
-                }
-                if (holder.tvEventsCount != null) {
-                    holder.tvEventsCount.setVisibility(View.VISIBLE);
-                    if (eventCount == 1) {
-                        Log.d(TAG, mTAG + "Single event - showing empty badge");
-                        holder.tvEventsCount.setText("");
-                    }else {
-                        Log.d(TAG, mTAG + "Multiple events - showing badge: " + eventCount);
-                        holder.tvEventsCount.setText(eventCount > 9 ? "9+" : String.valueOf(eventCount));
-                    }
-
-                    // CRITICAL: Apply background tint
-                    holder.tvEventsCount.getBackground().setTint(priorityColor);
-                    holder.tvEventsCount.setTextColor(getContrastingTextColor(priorityColor));
-
+            // Multiple events - show count badge with color
+            if (holder.vEventsDot != null) {
+                holder.vEventsDot.setVisibility(View.GONE);
+            }
+            if (holder.tvEventsCount != null) {
+                holder.tvEventsCount.setVisibility(View.VISIBLE);
+                if (eventCount == 1) {
+                    Log.d(TAG, mTAG + "Single event - showing empty badge");
+                    holder.tvEventsCount.setText("");
                 } else {
-                    Log.e(TAG, mTAG + "tvEventsCount is null");
+                    Log.d(TAG, mTAG + "Multiple events - showing badge: " + eventCount);
+                    holder.tvEventsCount.setText(eventCount > 9 ? "9+" : String.valueOf(eventCount));
                 }
+
+                // CRITICAL: Apply background tint
+                holder.tvEventsCount.getBackground().setTint(priorityColor);
+                holder.tvEventsCount.setTextColor(getContrastingTextColor(priorityColor));
+
+            } else {
+                Log.e(TAG, mTAG + "tvEventsCount is null");
+            }
 
         }
     }
 
     /**
-     * AGGIUNGERE metodo helper per testo contrastante:
+     * HELPER - contrasting text color for background
+     *
+     * @param backgroundColor Background color
      */
     private int getContrastingTextColor(int backgroundColor) {
         // Calculate luminance
@@ -247,8 +345,11 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
     /**
      * Setup shift name (first letter) and visibility.
      * Setup shift indicator (colored bar) and visibility.
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void setupShiftDisplay(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void setupShiftDisplay(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
 
         Day day = dayItem.day;
@@ -289,8 +390,11 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
     /**
      * Apply Sunday highlighting - RED text and special background
      * This restores the original calendar Sunday highlighting behavior
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void applySundayHighlighting(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void applySundayHighlighting(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
@@ -314,8 +418,11 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 
     /**
      * Apply special styling for today and other important days
+     *
+     * @param holder  ViewHolder to setup
+     * @param dayItem Day item data to bind
      */
-    private void applySpecialDayStyling(ImprovedCalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+    private void applySpecialDayStyling(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
@@ -337,6 +444,9 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
     /**
      * Apply background styling for visual hierarchy
      * Provides subtle backgrounds for better calendar readability
+     *
+     * @param cardView MaterialCardView to setup
+     * @param dayItem  Day item data to bind
      */
     private void applyBackgroundStyling(MaterialCardView cardView, SharedViewModels.DayItem dayItem) {
         if (dayItem.day == null) return;
@@ -346,7 +456,6 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 
         // NUOVO: Controllare se ci sono eventi per questa data
         List<LocalEvent> events = getEventsForDate(date);
-
 
         if (date.equals(today)) {
             // Today: Special background with elevation
@@ -369,87 +478,7 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
         }
     }
 
-    // ==================== EVENTS DATA MANAGEMENT ====================
-
-    /**
-     * Get events for a specific date - FIXED VERSION WITH DEBUG
-     * AGGIUNGERE debug specifico per le date con eventi:
-     */
-    private List<LocalEvent> getEventsForDate(LocalDate date) {
-        Log.v(TAG, "getEventsForDate(" + date + ") called");
-        Log.v(TAG, "mEventsData has " + mEventsData.size() + " total dates");
-
-        List<LocalEvent> events = mEventsData.get(date);
-
-        return (events != null) ? events : new ArrayList<>();
-    }
-
-    /**
-     * Load events from database asynchronously
-     */
-    public void loadEventsAsync() {
-        if (mIsLoadingEvents.getAndSet(true)) {
-            return;
-        }
-
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                return mEventsDatabase.eventDao().getAllEvents();
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading events", e);
-                return new ArrayList<LocalEvent>();
-            }
-        }).thenAccept(events -> {
-            Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
-            for (LocalEvent event : events) {
-                LocalDate eventDate = event.getStartDate();
-                eventsMap.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
-            }
-
-            if (mContext instanceof android.app.Activity) {
-                ((android.app.Activity) mContext).runOnUiThread(() -> {
-                    updateEventsData(eventsMap);
-                    mIsLoadingEvents.set(false);
-                });
-            }
-        });
-    }
-
-    // ==================== UTILITY METHODS ====================
-
-    /**
-     * Get color for shift indicator based on shift type
-     */
-    private int getShiftColor(Shift shift) {
-        if (shift == null || shift.getShiftType() == null) {
-            return getColorByThemeAttr(mContext, androidx.appcompat.R.attr.colorPrimary);
-        }
-
-        // Use the color from ShiftType
-        int shiftColor = shift.getShiftType().getColor();
-
-        // If no color set, use theme-based colors by shift name
-        if (shiftColor == 0) {
-            String shiftName = shift.getShiftType().getName().toLowerCase();
-
-            if (shiftName.contains("mattino") || shiftName.contains("morning") || shiftName.contains("m")) {
-                return getColorByThemeAttr(mContext, R.attr.colorShiftMorning);
-            } else if (shiftName.contains("pomeriggio") || shiftName.contains("afternoon") || shiftName.contains("p")) {
-                return getColorByThemeAttr(mContext, R.attr.colorShiftAfternoon);
-            } else if (shiftName.contains("notte") || shiftName.contains("night") || shiftName.contains("n")) {
-                return getColorByThemeAttr(mContext, R.attr.colorShiftNight);
-            } else {
-                return getColorByThemeAttr(mContext, androidx.appcompat.R.attr.colorPrimary);
-            }
-        }
-
-        return shiftColor;
-    }
-
-    public void notifyEventsDataChanged() {
-        // Brutal
-        notifyDataSetChanged();
-    }
+    /// /////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Load events from database asynchronously.
@@ -506,6 +535,9 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 
     /**
      * Process events loaded from database and expand multi-day events.
+     * This ensures multi-day events appear on every day they span.
+     *
+     * @param events List of events to process
      */
     private void processLoadedEvents(List<LocalEvent> events) {
         final String mTAG = "processLoadedEvents: ";
@@ -530,10 +562,14 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
         }
     }
 
-
     /**
      * Expand a single event across all days it covers.
      * This ensures multi-day events appear on every day they span.
+     *
+     * @param event     Event to expand
+     * @param eventsMap Map to add expanded events to
+     *                  Key: Date,
+     *                  Value: List of events
      */
     private void expandEventAcrossDays(LocalEvent event, Map<LocalDate, List<LocalEvent>> eventsMap) {
         final String mTAG = "expandEventAcrossDays: ";
@@ -580,66 +616,13 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
         }
     }
 
-    // ==================== IMPROVED VIEW HOLDER ====================
-
     /**
-     * Improved CalendarDayViewHolder with precise element positioning
-     */
-    public class ImprovedCalendarDayViewHolder extends DayViewHolder {
-
-        // Day number (top-left, smaller)
-        public final TextView tvDayNumber;
-
-        // Events indicators (top-right area)
-        public final FrameLayout eventsContainer;
-        public final View vEventsDot;
-        public final TextView tvEventsCount;
-
-        // Shift display (bottom-right area)
-        public final TextView tvShiftName;
-        public final View vShiftIndicator;
-
-        public ImprovedCalendarDayViewHolder(@NonNull MaterialCardView itemView) {
-            super(itemView);
-
-            // Initialize all elements
-            tvDayNumber = itemView.findViewById(R.id.tv_day_number);
-
-            eventsContainer = itemView.findViewById(R.id.events_container);
-            vEventsDot = itemView.findViewById(R.id.v_events_dot);
-            tvEventsCount = itemView.findViewById(R.id.tv_events_count);
-
-            tvShiftName = itemView.findViewById(R.id.tv_shift_name);
-            vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);
-
-            // Set click listener for day interaction
-            itemView.setOnClickListener(v -> {
-                Log.v(TAG, "Calendar day clicked: " + getAdapterPosition());
-                // Handle day click - could show day details, events, etc.
-            });
-
-            // DEBUG: Verificare che gli elementi esistano
-//            Log.d(TAG, "ViewHolder Debug:");
-//            Log.d(TAG, "tvDayNumber: " + (tvDayNumber != null ? "OK" : "NULL"));
-//            Log.d(TAG, "eventsContainer: " + (eventsContainer != null ? "OK" : "NULL"));
-//            Log.d(TAG, "vEventsDot: " + (vEventsDot != null ? "OK" : "NULL"));
-//            Log.d(TAG, "tvEventsCount: " + (tvEventsCount != null ? "OK" : "NULL"));
-//            Log.d(TAG, "tvShiftName: " + (tvShiftName != null ? "OK" : "NULL"));
-//            Log.d(TAG, "vShiftIndicator: " + (vShiftIndicator != null ? "OK" : "NULL"));
-//
-//            Log.d(TAG, "ImprovedCalendarDayViewHolder initialized");
-        }
-    }
-
-    // ========================================
-// FIX 4: CalendarAdapterLegacy.java - Debug in updateEventsData()
-// ========================================
-
-// AGGIUNGERE debug in CalendarAdapterLegacy.updateEventsData():
-
-    /**
-     * Update events data from external source - FIXED VERSION WITH DEBUG
-     * Problema potenziale: mEventsData potrebbe essere sovrascritto da thread diversi
+     * Update events data from external source
+     * This is called from the main thread to avoid overwriting the data
+     *
+     * @param eventsMap Map of events to update
+     *                  Key: Date,
+     *                  Value: List of events
      */
     public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
         // FIX: Assicurarsi che l'aggiornamento avvenga nel main thread
@@ -668,4 +651,126 @@ public class CalendarAdapterLegacy extends BaseAdapterLegacy {
 //        notifyDataSetChanged();
     }
 
+    /**
+     * Get events for a specific date
+     *
+     * @param date Date to get events for
+     */
+    private List<LocalEvent> getEventsForDate(LocalDate date) {
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "getEventsForDate: (%s) %d events in total", date, mEventsData.size()));
+
+        List<LocalEvent> events = mEventsData.get(date);
+
+        return (events != null) ? events : new ArrayList<>();
+    }
+
+    /**
+     * Load events from database asynchronously
+     */
+    public void loadEventsAsync() {
+        if (mIsLoadingEvents.getAndSet(true)) {
+            return;
+        }
+
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return mEventsDatabase.eventDao().getAllEvents();
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading events", e);
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
+            for (LocalEvent event : events) {
+                LocalDate eventDate = event.getStartDate();
+                eventsMap.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
+            }
+
+            if (mContext instanceof android.app.Activity) {
+                ((android.app.Activity) mContext).runOnUiThread(() -> {
+                    updateEventsData(eventsMap);
+                    mIsLoadingEvents.set(false);
+                });
+            }
+        });
+    }
+
+    /**
+     * Notify events data changed
+     */
+    public void notifyEventsDataChanged() {
+        // Brutal
+        notifyDataSetChanged();
+    }
+
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Get color for shift indicator based on shift type
+     * If no shift type is set, use theme color
+     * If no color is set, use shift name
+     *
+     * @param shift Shift to get color for
+     */
+    private int getShiftColor(Shift shift) {
+        if (shift == null || shift.getShiftType() == null) {
+            return getColorByThemeAttr(mContext, androidx.appcompat.R.attr.colorPrimary);
+        }
+
+        // Use the color from ShiftType
+        int shiftColor = shift.getShiftType().getColor();
+
+        // If no color set, use theme-based colors by shift name
+        if (shiftColor == 0) {
+            String shiftName = shift.getShiftType().getName().toLowerCase();
+
+            if (shiftName.contains("mattino") || shiftName.contains("morning") || shiftName.contains("m")) {
+                return getColorByThemeAttr(mContext, R.attr.colorShiftMorning);
+            } else if (shiftName.contains("pomeriggio") || shiftName.contains("afternoon") || shiftName.contains("p")) {
+                return getColorByThemeAttr(mContext, R.attr.colorShiftAfternoon);
+            } else if (shiftName.contains("notte") || shiftName.contains("night") || shiftName.contains("n")) {
+                return getColorByThemeAttr(mContext, R.attr.colorShiftNight);
+            } else {
+                return getColorByThemeAttr(mContext, androidx.appcompat.R.attr.colorPrimary);
+            }
+        }
+
+        return shiftColor;
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * CalendarDayViewHolder
+     */
+    public class CalendarDayViewHolder extends BaseMaterialDayViewHolder {
+        final String mTAG = TAG + "CalendarDayViewHolder: ";
+
+        // Day number (top-left, smaller)
+        public final TextView tvDayNumber;
+
+        // Events indicators (top-right area)
+        public final FrameLayout eventsContainer;
+        public final View vEventsDot;
+        public final TextView tvEventsCount;
+
+        // Shift display (bottom-right area)
+        public final TextView tvShiftName;
+        public final View vShiftIndicator;
+
+        public CalendarDayViewHolder(@NonNull MaterialCardView itemView) {
+            super(itemView);
+
+            // Initialize all elements
+            tvDayNumber = itemView.findViewById(R.id.tv_day_number);
+            eventsContainer = itemView.findViewById(R.id.events_container);
+            vEventsDot = itemView.findViewById(R.id.v_events_dot);
+            tvEventsCount = itemView.findViewById(R.id.tv_events_count);
+            tvShiftName = itemView.findViewById(R.id.tv_shift_name);
+            vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);
+
+            Log.d(TAG, mTAG + "initialized");
+        }
+    }
 }

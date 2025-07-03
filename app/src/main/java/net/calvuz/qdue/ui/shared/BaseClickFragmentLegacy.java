@@ -463,6 +463,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * Subclasses should override for specific navigation
      */
     protected void onOpenEventEditor(LocalDate date) {
+        Log.d(TAG, "Opening event editor for date: " + date);
         // Default implementation - subclasses can override
     }
 
@@ -471,6 +472,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * Subclasses should override for specific dialog implementation
      */
     protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
+        Log.d(TAG, "Showing events dialog for date: " + date);
         // Default implementation - subclasses can override
     }
 
@@ -479,14 +481,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * Subclasses should override for specific handling
      */
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
+        Log.d(TAG, "Quick event created: " + action + " for date: " + date);
         // Default implementation - subclasses can override
     }
 
     // ===========================================
-    // Back Press Handling
-    // ===========================================
-
-       // ===========================================
     // Menu Handling
     // ===========================================
 
@@ -520,6 +519,18 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // ===========================================
     // Lifecycle
     // ===========================================
+
+    /**
+     * Enhanced onPause with events preview cleanup
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.onPause();
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -604,7 +615,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             }
         }
     }
-
 
     // ===========================================
     // Debug Methods
@@ -903,22 +913,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
     }
 
-// ===========================================
-// Lifecycle Integration
-// ===========================================
-
-
-    /**
-     * Enhanced onPause with events preview cleanup
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (mEventsPreviewManager != null) {
-            mEventsPreviewManager.onPause();
-        }
-    }
 
 
 // ===========================================

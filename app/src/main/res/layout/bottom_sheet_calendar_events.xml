@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/bottom_sheet_calendar_events.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/colorSurface"
+    android:paddingTop="8dp">
+
+    <!-- Drag Handle -->
+    <View
+        android:layout_width="32dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bottom_sheet_drag_handle"
+        android:backgroundTint="?attr/colorOnSurfaceVariant" />
+
+    <!-- Header Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp">
+
+        <!-- Date Header -->
+        <TextView
+            android:id="@+id/tv_date_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="4dp"
+            tools:text="Martedì, 15 Gennaio 2025" />
+
+        <!-- Events Count -->
+        <TextView
+            android:id="@+id/tv_events_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="center_horizontal"
+            tools:text="3 eventi" />
+
+    </LinearLayout>
+
+    <!-- Content Section -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="200dp"
+        android:maxHeight="400dp">
+
+        <!-- Events RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="8dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:visibility="visible"
+            tools:listitem="@layout/item_event"
+            tools:itemCount="3" />
+
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/empty_state_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <!-- Empty State Icon -->
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="Evento non disponibile"
+                android:src="@drawable/ic_rounded_event_available_24"
+                app:tint="?attr/colorOnSurfaceVariant"
+                android:alpha="0.6" />
+
+            <!-- Empty State Text -->
+            <TextView
+                android:id="@+id/tv_empty_state"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:gravity="center"
+                android:layout_marginBottom="16dp"
+                tools:text="Nessun evento per 15 Gennaio 2025" />
+
+            <!-- Quick Add Event Button in Empty State -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_quick_add_empty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aggiungi Evento"
+                android:icon="@drawable/ic_rounded_add_24"
+                style="@style/Widget.Material3.Button.TonalButton" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Actions Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="?attr/colorSurfaceContainer">
+
+        <!-- Add Event Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_event"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Aggiungi"
+            android:icon="@drawable/ic_rounded_add_24"
+            style="@style/Widget.Material3.Button.TonalButton" />
+
+        <!-- Navigate to Events Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_navigate_to_events"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Vedi Tutti"
+            android:icon="@drawable/ic_rounded_event_note_24"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -30,9 +30,9 @@ import java.util.Map;
  * Minimal changes to existing code while gaining virtual scrolling benefits
  * ✅
  * ❌
- *
+ * <p>
  * DayslistViewFragmentLegacy Enhanced - Complete Events Integration
- *
+ * <p>
  * CORREZIONI PRINCIPALI:
  * 1. Override metodi EventsRefreshInterface
  * 2. Implementazione corretta adapter events update
@@ -47,9 +47,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     // Keep existing adapter reference for compatibility
     private DaysListAdapterLegacy mLegacyAdapter;
 
-    // ===========================================
-    // Abstract Methods Implementation (BaseClickFragmentLegacy)
-    // ===========================================
+    // ==================== ABSTRACT METHOD IMPLEMENTATION ====================
 
     @Override
     protected BaseClickAdapterLegacy getClickAdapter() {
@@ -61,24 +59,12 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return "DaysListViewFragment";
     }
 
-    // ==================== EXISTING CODE REMAINS UNCHANGED ====================
+    // ==================== EXISTING FRAGMENT IMPLEMENTATION ====================
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_dayslist_view, container, false);
-    }
-
-    @Override
-    protected BaseAdapterLegacy getFragmentAdapter() {
-        return mLegacyAdapter;
-    }
-
-    @Override
-    protected void setFragmentAdapter(BaseAdapterLegacy adapter) {
-        if (adapter instanceof DaysListAdapterLegacy) {
-            this.mLegacyAdapter = (DaysListAdapterLegacy) adapter;
-        }
     }
 
     @Override
@@ -97,6 +83,8 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return SharedViewModels.DataConverter.convertForDaysList(days, monthDate);
     }
 
+    // ==================== ADAPTER SETUP ====================
+
     @Override
     protected void setupAdapter() {
         setupLegacyAdapter();
@@ -104,30 +92,16 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     }
 
     @Override
-    protected void updateFabVisibility(int firstVisible, int lastVisible) {
-        Log.v(TAG, "updateFabVisibility: called.");
-
-        if (mFabGoToToday == null) return;
-
-        // Don't update FAB visibility if in selection mode
-        if (mIsSelectionMode) return;
-
-        boolean showFab = true;
-        if (mTodayPosition >= 0) {
-            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
-        }
-
-        // Animate FAB visibility changes
-        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
-            mFabGoToToday.setVisibility(View.VISIBLE);
-            mFabGoToToday.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).start();
-        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
-            mFabGoToToday.animate().alpha(0f).scaleX(0f).scaleY(0f).setDuration(150)
-                    .withEndAction(() -> mFabGoToToday.setVisibility(View.GONE)).start();
-        }
+    protected BaseAdapterLegacy getFragmentAdapter() {
+        return mLegacyAdapter;
     }
 
-    // ==================== CORREZIONE 1: ENHANCED ADAPTER SETUP ====================
+    @Override
+    protected void setFragmentAdapter(BaseAdapterLegacy adapter) {
+        if (adapter instanceof DaysListAdapterLegacy) {
+            this.mLegacyAdapter = (DaysListAdapterLegacy) adapter;
+        }
+    }
 
     /**
      * Enhanced legacy adapter setup with events integration
@@ -146,6 +120,8 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
 
         Log.d(TAG, "setupLegacyAdapter: ✅ Legacy adapter setup completed");
     }
+
+    // ==================== EVENTS INTEGRATION ====================
 
     /**
      * Update adapter with current events data
@@ -172,10 +148,33 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         }
     }
 
-    // ==================== CORREZIONE 2: COMPLETE EVENTS REFRESH IMPLEMENTATION ====================
+    // ==================== FAB VISIBILITY ====================
+
+    @Override
+    protected void updateFabVisibility(int firstVisible, int lastVisible) {
+        Log.v(TAG, "updateFabVisibility: called.");
+
+        if (mFabGoToToday == null) return;
+
+        // Don't update FAB visibility if in selection mode
+        if (mIsSelectionMode) return;
+
+        boolean showFab = true;
+        if (mTodayPosition >= 0) {
+            showFab = !(firstVisible <= mTodayPosition && lastVisible >= mTodayPosition);
+        }
+
+        // Animate FAB visibility changes
+        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
+            mFabGoToToday.setVisibility(View.VISIBLE);
+            mFabGoToToday.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).start();
+        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
+            mFabGoToToday.animate().alpha(0f).scaleX(0f).scaleY(0f).setDuration(150)
+                    .withEndAction(() -> mFabGoToToday.setVisibility(View.GONE)).start();
+        }
+    }
 
     // ==================== FRAGMENT ACTIVITY CHECK ====================
-
 
     @Override
     public String getFragmentDescription() {
@@ -366,7 +365,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     }
 
     // ===========================================
-    // Public API Methods Enhanced
+    // Public API Methods
     // ===========================================
 
     /**
@@ -406,7 +405,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     }
 
     // ===========================================
-    // Back Press Handling Enhanced
+    // Back Press Handling
     // ===========================================
 
     /**
@@ -427,7 +426,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     }
 
     // ===========================================
-    // Menu Integration Enhanced
+    // Menu Integration
     // ===========================================
 
     /**
@@ -461,12 +460,106 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return false;
     }
 
+    // ===========================================
+    // Preview Integration
+    // ===========================================
+
     /**
      * Abstract method for subclasses to specify their view type
      */
     @Override
     protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
         return null;
+    }
+
+    // ===========================================
+    // Lifecycle Enhanced
+    // ===========================================
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Ensure selection state consistency
+        if (mLegacyAdapter != null && mIsSelectionMode != mLegacyAdapter.isSelectionMode()) {
+            Log.w(TAG, "Selection mode inconsistency detected, syncing...");
+            mIsSelectionMode = mLegacyAdapter.isSelectionMode();
+            updateSelectionUI();
+        }
+
+        testEventsPreview();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Exit selection mode when fragment is paused to avoid confusion
+        if (mIsSelectionMode) {
+            Log.d(TAG, "Exiting selection mode due to fragment pause");
+            exitSelectionMode();
+        }
+    }
+
+    // ===========================================
+    // Integration Test Methods
+    // ===========================================
+
+    /**
+     * Test long-click functionality
+     */
+    public void testLongClickFunctionality() {
+        Log.d(TAG, "=== TESTING LONG-CLICK FUNCTIONALITY ===");
+
+        if (mLegacyAdapter == null) {
+            Log.e(TAG, "Cannot test: adapter is null");
+            return;
+        }
+
+        // Test selection mode toggle
+        boolean wasInSelectionMode = mIsSelectionMode;
+
+        if (!wasInSelectionMode) {
+            enterSelectionMode();
+            Log.d(TAG, "Test: Entered selection mode");
+        }
+
+        // Test selection state
+        debugSelectionState();
+
+        if (!wasInSelectionMode) {
+            exitSelectionMode();
+            Log.d(TAG, "Test: Exited selection mode");
+        }
+
+        Log.d(TAG, "=== END LONG-CLICK FUNCTIONALITY TEST ===");
+    }
+
+    /**
+     * Test toolbar integration
+     */
+    public void testToolbarIntegration() {
+        Log.d(TAG, "=== TESTING TOOLBAR INTEGRATION ===");
+
+        // Test each toolbar action
+        LocalDate testDate = LocalDate.now();
+
+        for (ToolbarAction action : ToolbarAction.values()) {
+            Log.d(TAG, "Testing action: " + action);
+            onToolbarActionSelected(action, null, testDate);
+        }
+
+        Log.d(TAG, "=== END TOOLBAR INTEGRATION TEST ===");
+    }
+
+    // Nel fragment, temporaneamente:
+    public void testEventsPreview() {
+        debugClickHandling();
+
+        // Test click normale su un giorno con eventi
+        LocalDate testDate = LocalDate.now();
+        List<LocalEvent> testEvents = getEventsForDate(testDate);
+        // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
     }
 
     // ===========================================
@@ -557,98 +650,9 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "=== END DAYSLIST SELECTION DEBUG ===");
     }
 
-    // ===========================================
-    // Lifecycle Enhanced
-    // ===========================================
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Ensure selection state consistency
-        if (mLegacyAdapter != null && mIsSelectionMode != mLegacyAdapter.isSelectionMode()) {
-            Log.w(TAG, "Selection mode inconsistency detected, syncing...");
-            mIsSelectionMode = mLegacyAdapter.isSelectionMode();
-            updateSelectionUI();
-        }
-
-        testEventsPreview();
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        // Exit selection mode when fragment is paused to avoid confusion
-        if (mIsSelectionMode) {
-            Log.d(TAG, "Exiting selection mode due to fragment pause");
-            exitSelectionMode();
-        }
-    }
-
-    // ===========================================
-    // Integration Test Methods
-    // ===========================================
-
-    /**
-     * Test long-click functionality
-     */
-    public void testLongClickFunctionality() {
-        Log.d(TAG, "=== TESTING LONG-CLICK FUNCTIONALITY ===");
-
-        if (mLegacyAdapter == null) {
-            Log.e(TAG, "Cannot test: adapter is null");
-            return;
-        }
-
-        // Test selection mode toggle
-        boolean wasInSelectionMode = mIsSelectionMode;
-
-        if (!wasInSelectionMode) {
-            enterSelectionMode();
-            Log.d(TAG, "Test: Entered selection mode");
-        }
-
-        // Test selection state
-        debugSelectionState();
-
-        if (!wasInSelectionMode) {
-            exitSelectionMode();
-            Log.d(TAG, "Test: Exited selection mode");
-        }
-
-        Log.d(TAG, "=== END LONG-CLICK FUNCTIONALITY TEST ===");
-    }
-
-    /**
-     * Test toolbar integration
-     */
-    public void testToolbarIntegration() {
-        Log.d(TAG, "=== TESTING TOOLBAR INTEGRATION ===");
-
-        // Test each toolbar action
-        LocalDate testDate = LocalDate.now();
-
-        for (ToolbarAction action : ToolbarAction.values()) {
-            Log.d(TAG, "Testing action: " + action);
-            onToolbarActionSelected(action, null, testDate);
-        }
-
-        Log.d(TAG, "=== END TOOLBAR INTEGRATION TEST ===");
-    }
-
     public void debugClickHandling() {
+
         Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
     }
 
-    // Nel fragment, temporaneamente:
-    public void testEventsPreview() {
-        debugClickHandling();
-
-        // Test click normale su un giorno con eventi
-        LocalDate testDate = LocalDate.now();
-        List<LocalEvent> testEvents = getEventsForDate(testDate);
-        // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
-    }
 }

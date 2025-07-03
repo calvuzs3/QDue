@@ -14,8 +14,12 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
+import net.calvuz.qdue.ui.shared.BaseClickFragmentLegacy;
 import net.calvuz.qdue.ui.shared.BaseFragmentLegacy;
+import net.calvuz.qdue.ui.shared.EventsPreviewManager;
 import net.calvuz.qdue.ui.shared.SharedViewModels;
+import net.calvuz.qdue.ui.shared.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -23,28 +27,34 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enhanced CalendarViewFragment with virtual scrolling integration
- * Maintains calendar grid layout while gaining virtual scrolling performance
- *
- * // ==================== CORREZIONI CALENDARVIEWFRAGMENTLEGACY ====================
- *
- * CalendarViewFragmentLegacy Enhanced - Complete Events Integration
- *
- * CORREZIONI PRINCIPALI:
- * 1. Override metodi EventsRefreshInterface mancanti
- * 2. Implementazione corretta adapter events update
- * 3. Enhanced logging e thread safety
- * 4. Integration con CalendarAdapterLegacy
+ * CalendarViewFragmentLegacy - Complete Click System Integration
+ * <p>
+ * ENHANCED FEATURES:
+ * - Extends BaseClickFragmentLegacy for long-click support
+ * - Implements regular click for events preview bottom sheet
+ * - Full integration with events system
+ * - Thread-safe operations
  */
-
-public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
+public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
 
     private static final String TAG = "CalendarLgsFrg";
 
     // Keep existing adapter reference for compatibility
     private CalendarAdapterLegacy mLegacyAdapter;
 
-    // ==================== EXISTING CODE REMAINS UNCHANGED ====================
+    // ==================== ABSTRACT METHOD IMPLEMENTATION ====================
+
+    @Override
+    protected BaseClickAdapterLegacy getClickAdapter() {
+        return mLegacyAdapter;
+    }
+
+    @Override
+    protected String getFragmentName() {
+        return "CalendarViewFragment";
+    }
+
+    // ==================== EXISTING FRAGMENT IMPLEMENTATION ====================
 
     @Nullable
     @Override
@@ -69,9 +79,22 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         return SharedViewModels.DataConverter.convertForCalendar(days, monthDate);
     }
 
+    // ==================== CLICK ADAPTER INTEGRATION ====================
+
+    @Override
+    protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
+        return EventsPreviewManager.ViewType.CALENDAR_VIEW;
+    }
+
+    // ==================== ADAPTER SETUP ====================
+
+    @Override
+    protected void setupAdapter() {
+        setupLegacyAdapter();
+    }
+
     @Override
     protected BaseAdapterLegacy getFragmentAdapter() {
-        Log.d(TAG, "getFragmentAdapter: Legacy (CalendarAdapterLegacy)");
         return mLegacyAdapter;
     }
 
@@ -82,11 +105,59 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         }
     }
 
-    @Override
-    protected void setupAdapter() {
-        setupLegacyAdapter();
-        Log.d(TAG, "setupAdapter: ✅ Legacy adapter setup completed");
+    /**
+     * Enhanced legacy adapter setup with full click integration
+     */
+    protected void setupLegacyAdapter() {
+        final String mTAG = "setupLegacyAdapter: ";
+        Log.v(TAG, mTAG + "called.");
+
+        // Create adapter with click support
+        mLegacyAdapter = new CalendarAdapterLegacy(
+                getContext(),
+                mItemsCache,
+                QDue.getQuattrodue().getUserHalfTeam()
+        );
+
+        // Setup click listeners BEFORE setting adapter
+//        setupClickListeners();
+
+        // Set adapter to RecyclerView
+        mRecyclerView.setAdapter(mLegacyAdapter);
+
+        // Update with events if available
+        updateAdapterWithEvents();
+
+        Log.d(TAG, mTAG + "✅ Legacy adapter setup completed");
     }
+
+//    /**
+//     * Setup both long-click and regular click listeners
+//     */
+//    private void setupClickListeners() {
+//        final String mTAG = "setupClickListeners: ";
+//
+//        if (mLegacyAdapter == null) {
+//            Log.w(TAG, mTAG + "Adapter is null, cannot setup click listeners");
+//            return;
+//        }
+//
+//        // Setup long-click listener (from BaseClickFragmentLegacy)
+//        mLegacyAdapter.setLongClickListener(this);
+//
+//        // Setup regular click listener for events preview
+//        mLegacyAdapter.setRegularClickListener(new BaseClickAdapterLegacy.DayRegularClickListener() {
+//            @Override
+//            public void onDayRegularClick(Day day, LocalDate date, View itemView, int position) {
+//                handleDayRegularClick(day, date, itemView, position);
+//            }
+//        });
+//
+//        Log.d(TAG, mTAG + "✅ Click listeners setup completed");
+//    }
+
+
+    // ==================== FAB VISIBILITY ====================
 
     @Override
     protected void updateFabVisibility(int firstVisible, int lastVisible) {
@@ -112,27 +183,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         }
     }
 
-    // ==================== CORREZIONE 1: ENHANCED ADAPTER SETUP ====================
-
-    /**
-     * Enhanced legacy adapter setup with events integration
-     */
-    protected void setupLegacyAdapter() {
-        final String mTAG = "setupLegacyAdapter: ";
-        Log.v(TAG, mTAG + "called.");
-
-        mLegacyAdapter = new CalendarAdapterLegacy(
-                getContext(),
-                mItemsCache,
-                QDue.getQuattrodue().getUserHalfTeam()
-        );
-        mRecyclerView.setAdapter(mLegacyAdapter);
-
-        // ENHANCED: Update with events if available
-        updateAdapterWithEvents();
-
-        Log.d(TAG, mTAG + "✅ Legacy adapter setup completed with events integration");
-    }
+    // ==================== EVENTS INTEGRATION ====================
 
     /**
      * Update adapter with current events data
@@ -159,7 +210,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         }
     }
 
-    // ==================== CORREZIONE 2: COMPLETE EVENTS REFRESH IMPLEMENTATION ====================
+    // ==================== EVENTS REFRESH IMPLEMENTATION ====================
 
     /**
      * OVERRIDE: Enhanced implementation for Calendar specific behavior
@@ -200,7 +251,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         boolean isInCalendarView = isCurrentlyInCalendarView();
 
         boolean isActive = baseActive && isInCalendarView;
-        Log.v(TAG, String.format("Fragment activity check - base: %s, inCalendarView: %s, result: %s",
+        Log.v(TAG, String.format(QDue.getLocale(), "Fragment activity check - base: %s, inCalendarView: %s, result: %s",
                 baseActive, isInCalendarView, isActive));
 
         return isActive;
@@ -211,10 +262,10 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
      */
     @Override
     public String getFragmentDescription() {
-        return "CalendarViewFragment (Legacy)";
+        return "CalendarViewFragment (Legacy with Click Integration)";
     }
 
-    // ==================== CORREZIONE 3: ENHANCED EVENTS DATA NOTIFICATION ====================
+    // ==================== ENHANCED EVENTS DATA NOTIFICATION ====================
 
     /**
      * OVERRIDE: Enhanced events data notification with Calendar specifics
@@ -222,7 +273,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
     @Override
     protected void notifyEventsDataChanged() {
         final String mTAG = "notifyEventsDataChanged: ";
-        Log.d(TAG, mTAG + "called for CalendarFragment");
+        Log.v(TAG, mTAG + "called");
 
         try {
             // Call parent implementation
@@ -255,7 +306,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
     @Override
     protected void onEventsDataRefreshed() {
         final String mTAG = "onEventsDataRefreshed: ";
-        Log.v(TAG, mTAG + "Events data refreshed for CalendarFragment");
+        Log.v(TAG, mTAG + "called.");
 
         // Additional Calendar-specific refresh logic
         updateAdapterWithEventsDelayed();
@@ -263,23 +314,6 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
 
     // ==================== HELPER METHODS ====================
 
-    /**
-     * Update adapter with events using delayed execution for thread safety
-     */
-    private void updateAdapterWithEventsDelayed() {
-        final String mTAG = "updateAdapterWithEventsDelayed: ";
-
-        if (mMainHandler != null) {
-            mMainHandler.postDelayed(() -> {
-                updateAdapterWithEvents();
-                Log.v(TAG, mTAG + "Delayed adapter update completed");
-            }, 100); // Small delay to ensure data is ready
-        } else {
-            // Fallback to immediate update
-            updateAdapterWithEvents();
-            Log.v(TAG, mTAG + "Immediate adapter update completed");
-        }
-    }
 
     /**
      * Check if fragment is currently in Calendar view (vs DaysList view)
@@ -287,7 +321,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
     private boolean isCurrentlyInCalendarView() {
         try {
             if (getActivity() instanceof QDueMainActivity) {
-                // You might need to add a method to check current navigation destination
+                // TODO: check current navigation destination
                 // For now, assume we're in the right view if fragment is attached
                 return true;
             }
@@ -297,7 +331,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         return false;
     }
 
-    // ==================== EXISTING METHODS ENHANCED ====================
+    // ==================== ENHANCED DAY CLICK HANDLING ====================
 
     /**
      * Enhanced day click handling with events consideration
@@ -312,9 +346,8 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
             // Could show events dialog or navigate to day detail
         }
 
-        // Add your calendar-specific day click logic here
-        // Example: Show day detail dialog
-        // showDayDetailDialog(date, dayData, eventsForDay);
+        // This will be handled by the regular click listener
+        // which shows the bottom sheet
     }
 
     /**
@@ -340,7 +373,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
      */
     public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
         final String mTAG = "updateEventsData: ";
-        Log.d(TAG, mTAG + "External events data update requested");
+        Log.v(TAG, mTAG + "External events data update called.");
 
         if (eventsMap != null && !eventsMap.isEmpty()) {
             // Update internal cache
@@ -360,8 +393,90 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
      * Used by MainActivity when events change
      */
     public void refreshEvents() {
-        Log.d(TAG, "refreshEvents: External refresh request");
+        Log.d(TAG, "refreshEvents: External refresh called.");
         onForceEventsRefresh();
+    }
+
+
+    // ==================== CLICK SUPPORT ====================
+
+    // ===========================================
+    // Override BaseClickFragmentLegacy Methods for DaysList Specifics
+    // ===========================================
+
+    @Override
+    protected void onOpenEventEditor(LocalDate date) {
+        Log.d(TAG, "Calendar: Opening event editor for date: " + date);
+
+        // TODO: Implement specific navigation for DaysList
+        // For now, delegate to base implementation
+        super.onOpenEventEditor(date);
+
+        // DaysList-specific event editor handling
+        // Example: Pass additional context like selected shift, etc.
+    }
+
+    @Override
+    protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
+        Log.d(TAG, "Calendar: Showing events dialog for date: " + date);
+
+        // DaysList-specific events dialog
+        if (events != null && !events.isEmpty()) {
+            // TODO: Create DaysListEventsDialog with specific features
+            showCalendarEventsDialog(date, events);
+        } else {
+            super.onShowEventsDialog(date, events);
+        }
+    }
+
+    @Override
+    protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
+        Log.d(TAG, "Calendar: Quick event created: " + action + " for date: " + date);
+
+        // Refresh events data after quick event creation
+        refreshEventsDataDelayed();
+
+        // DaysList-specific post-creation handling
+        updateAdapterWithEventsDelayed();
+    }
+
+    // ===========================================
+    // Calendar Specific Methods
+    // ===========================================
+
+    /**
+     * Show DaysList-specific events dialog
+     */
+    private void showCalendarEventsDialog(LocalDate date, List<LocalEvent> events) {
+        Log.d(TAG, "Showing Calendar events dialog with " + events.size() + " events for " + date);
+
+        // TODO: Implement CalendarEventsDialogFragment
+        // For now, use base implementation
+        showEventsListDialog(date, events);
+    }
+
+    /**
+     * Refresh events data with delay for thread safety
+     */
+    private void refreshEventsDataDelayed() {
+        if (mMainHandler != null) {
+            mMainHandler.postDelayed(() -> {
+                loadEventsForCurrentPeriod();
+                Log.d(TAG, "Delayed events data refresh completed");
+            }, 200);
+        }
+    }
+
+    /**
+     * Update adapter with events using delayed execution
+     */
+    private void updateAdapterWithEventsDelayed() {
+        if (mMainHandler != null) {
+            mMainHandler.postDelayed(() -> {
+                updateAdapterWithEvents();
+                Log.d(TAG, "Delayed adapter events update completed");
+            }, 300);
+        }
     }
 
     // ==================== DEBUG METHODS ====================
@@ -370,7 +485,7 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
      * Debug method specific to Calendar fragment
      */
     public void debugCalendarEventsIntegration() {
-        Log.d(TAG, "=== CALENDAR EVENTS INTEGRATION DEBUG ===");
+        Log.d(TAG, "=== CALENDAR CLICK INTEGRATION DEBUG ===");
 
         // Call parent debug
         debugEventsIntegration();
@@ -381,18 +496,48 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
         Log.d(TAG, "Items Cache Size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
         Log.d(TAG, "Grid Columns: " + getGridColumnCount());
         Log.d(TAG, "In Calendar View: " + isCurrentlyInCalendarView());
+        Log.d(TAG, "Events Preview Manager: " + (mEventsPreviewManager != null ? "active" : "null"));
 
         if (mLegacyAdapter != null) {
             try {
                 // Check adapter state
-                Log.d(TAG, "Adapter Events Integration: active");
                 Log.d(TAG, "Adapter Item Count: " + mLegacyAdapter.getItemCount());
+                Log.d(TAG, "Adapter Selection Mode: " + mLegacyAdapter.isSelectionMode());
+                Log.d(TAG, "Adapter Selected Count: " + mLegacyAdapter.getSelectedCount());
             } catch (Exception e) {
                 Log.e(TAG, "Error accessing adapter debug info: " + e.getMessage());
             }
         }
 
-        Log.d(TAG, "=== END CALENDAR DEBUG ===");
+        // Events preview debug
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.debugState();
+        }
+
+        Log.d(TAG, "=== END CALENDAR CLICK DEBUG ===");
+    }
+
+    /**
+     * Debug method to test bottom sheet functionality
+     */
+    public void debugTestBottomSheet() {
+        Log.d(TAG, "=== DEBUG TEST BOTTOM SHEET ===");
+
+        LocalDate testDate = LocalDate.now();
+        List<LocalEvent> testEvents = getEventsForDate(testDate);
+
+        Log.d(TAG, "Testing bottom sheet for today: " + testDate);
+        Log.d(TAG, "Test events count: " + testEvents.size());
+
+        if (mEventsPreviewManager != null) {
+            View anchorView = mRecyclerView != null ? mRecyclerView : getView();
+            mEventsPreviewManager.showEventsPreview(testDate, testEvents, anchorView);
+            Log.d(TAG, "Bottom sheet show requested");
+        } else {
+            Log.e(TAG, "Events preview manager is null - cannot test");
+        }
+
+        Log.d(TAG, "=== END DEBUG TEST BOTTOM SHEET ===");
     }
 
     /**
@@ -423,4 +568,5 @@ public class CalendarViewFragmentLegacy extends BaseFragmentLegacy {
 
         Log.d(TAG, "=== END DEBUG FORCE RELOAD (CALENDAR) ===");
     }
+
 }
