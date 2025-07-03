@@ -16,10 +16,9 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickFragmentLegacy;
-import net.calvuz.qdue.ui.shared.BaseFragmentLegacy;
 import net.calvuz.qdue.ui.shared.EventsPreviewManager;
-import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.ui.shared.ToolbarAction;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -224,7 +223,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
         super.onEventsChanged(changeType, eventCount);
 
         // Additional Calendar-specific logic
-        updateAdapterWithEventsDelayed();
     }
 
     /**
@@ -331,73 +329,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
         return false;
     }
 
-    // ==================== ENHANCED DAY CLICK HANDLING ====================
-
-    /**
-     * Enhanced day click handling with events consideration
-     */
-    protected void onDayClicked(LocalDate date, Day dayData) {
-        Log.d(TAG, "Day clicked: " + date);
-
-        // Check if day has events
-        List<LocalEvent> eventsForDay = getEventsForDate(date);
-        if (!eventsForDay.isEmpty()) {
-            Log.d(TAG, "Day has " + eventsForDay.size() + " events");
-            // Could show events dialog or navigate to day detail
-        }
-
-        // This will be handled by the regular click listener
-        // which shows the bottom sheet
-    }
-
-    /**
-     * Enhanced month change handling with events loading
-     */
-    protected void onMonthChanged(LocalDate newMonth) {
-        Log.d(TAG, "Month changed to: " + newMonth);
-
-        // Load events for new month if needed
-        loadEventsForMonth(newMonth);
-
-        // Update any calendar-specific UI elements
-        if (getActivity() != null) {
-            // getActivity().setTitle(newMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
-        }
-    }
-
-    // ==================== PUBLIC API METHODS ====================
-
-    /**
-     * Public method for external events data updates
-     * Used by MainActivity or other components
-     */
-    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
-        final String mTAG = "updateEventsData: ";
-        Log.v(TAG, mTAG + "External events data update called.");
-
-        if (eventsMap != null && !eventsMap.isEmpty()) {
-            // Update internal cache
-            updateEventsCache(eventsMap);
-
-            // Update adapter
-            updateAdapterWithEvents();
-
-            Log.d(TAG, mTAG + "✅ External events data update completed");
-        } else {
-            Log.w(TAG, mTAG + "Empty or null events map provided");
-        }
-    }
-
-    /**
-     * Public method to force refresh events
-     * Used by MainActivity when events change
-     */
-    public void refreshEvents() {
-        Log.d(TAG, "refreshEvents: External refresh called.");
-        onForceEventsRefresh();
-    }
-
-
     // ==================== CLICK SUPPORT ====================
 
     // ===========================================
@@ -433,9 +364,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
         Log.d(TAG, "Calendar: Quick event created: " + action + " for date: " + date);
 
-        // Refresh events data after quick event creation
-        refreshEventsDataDelayed();
-
         // DaysList-specific post-creation handling
         updateAdapterWithEventsDelayed();
     }
@@ -455,17 +383,7 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
         showEventsListDialog(date, events);
     }
 
-    /**
-     * Refresh events data with delay for thread safety
-     */
-    private void refreshEventsDataDelayed() {
-        if (mMainHandler != null) {
-            mMainHandler.postDelayed(() -> {
-                loadEventsForCurrentPeriod();
-                Log.d(TAG, "Delayed events data refresh completed");
-            }, 200);
-        }
-    }
+
 
     /**
      * Update adapter with events using delayed execution
@@ -552,8 +470,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
             Log.d(TAG, "Cleared events cache");
         }
 
-        // Force reload
-        loadEventsForCurrentPeriod();
 
         // Schedule adapter update
         if (mMainHandler != null) {

@@ -3,7 +3,6 @@ package net.calvuz.qdue.ui.shared;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -26,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * CalendarEventsBottomSheet - Bottom Sheet implementation for Calendar events preview
+ * DaysListEventsBottomSheet - Bottom Sheet implementation for Calendar events preview
  *
  * Features:
  * - Standard Bottom Sheet (non-modal) behavior
@@ -35,9 +33,9 @@ import java.util.Locale;
  * - Action buttons for add event and navigate to events activity
  * - Integrates with existing click handling system
  */
-public class CalendarEventsBottomSheet extends BaseEventsPreview {
+public class DaysListEventsBottomSheet extends BaseEventsPreview {
 
-    private static final String TAG = "CalendarEventsBS";
+    private static final String TAG = "DayslistEventsBS";
 
     // UI Components
     private BottomSheetDialog mBottomSheetDialog;
@@ -55,7 +53,7 @@ public class CalendarEventsBottomSheet extends BaseEventsPreview {
     private final DateTimeFormatter mDateFormatter;
     private final DateTimeFormatter mWeekdayFormatter;
 
-    public CalendarEventsBottomSheet(@NonNull Context context) {
+    public DaysListEventsBottomSheet(@NonNull Context context) {
         super(context);
 
         // Initialize formatters for Italian locale
@@ -257,7 +255,6 @@ public class CalendarEventsBottomSheet extends BaseEventsPreview {
     public LocalDate getCurrentDate() {
         return mCurrentDate;
     }
-
     // ==================== UI UPDATE METHODS ====================
 
     /**

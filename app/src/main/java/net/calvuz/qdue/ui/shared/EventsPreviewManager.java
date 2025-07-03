@@ -3,6 +3,7 @@ package net.calvuz.qdue.ui.shared;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;
 import java.util.List;
@@ -57,7 +58,7 @@ public class EventsPreviewManager implements EventsPreviewInterface {
         }
 
         // Set listener on new implementation
-        if (mCurrentImplementation != null && mListener != null) {
+        if (mListener != null) {
             mCurrentImplementation.setEventsPreviewListener(mListener);
         }
 
@@ -133,19 +134,34 @@ public class EventsPreviewManager implements EventsPreviewInterface {
     }
 
     /**
+     * Get current implementation (for back press handling)
+     */
+    public EventsPreviewInterface getCurrentImplementation() {
+        return mCurrentImplementation;
+    }
+
+    /**
      * Debug current state
      */
     public void debugState() {
-        Log.d(TAG, "=== EVENTS PREVIEW MANAGER DEBUG ===");
+        Log.d(TAG, "=== EVENTS PREVIEW MANAGER DEBUG (Phase 3) ===");
         Log.d(TAG, "Current View Type: " + mCurrentViewType);
         Log.d(TAG, "Implementation: " + (mCurrentImplementation != null ?
                 mCurrentImplementation.getClass().getSimpleName() : "null"));
         Log.d(TAG, "Listener: " + (mListener != null ? "SET" : "NULL"));
+        Log.d(TAG, "Currently Showing: " + isEventsPreviewShowing());
 
         if (mCurrentImplementation instanceof BaseEventsPreview) {
             ((BaseEventsPreview) mCurrentImplementation).debugState();
         }
 
-        Log.d(TAG, "=== END MANAGER DEBUG ===");
+        // Phase 3 specific debugging
+        if (mCurrentImplementation instanceof DaysListEventsPreview daysListPreview) {
+            Log.d(TAG, "DaysList Expanded Cards: " + (daysListPreview.hasExpandedCard() ? "YES" : "NO"));
+            Log.d(TAG, "DaysList Expanded Date: " + daysListPreview.getCurrentlyExpandedDate());
+        }
+
+        Log.d(TAG, "=== END MANAGER DEBUG (Phase 3) ===");
     }
+
 }

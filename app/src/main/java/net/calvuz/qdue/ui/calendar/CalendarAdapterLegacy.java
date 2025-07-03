@@ -27,11 +27,11 @@ import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
-import net.calvuz.qdue.ui.shared.HighlightingHelper;
-import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
+import net.calvuz.qdue.ui.shared.utils.HighlightingHelper;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
+import net.calvuz.qdue.ui.shared.utils.EventIndicatorHelper;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.shared.ToolbarAction;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.R;
 

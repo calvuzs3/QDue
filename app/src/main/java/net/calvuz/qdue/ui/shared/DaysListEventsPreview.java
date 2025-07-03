@@ -10,104 +10,167 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * DaysListEventsPreview - Placeholder for Phase 3 Implementation
+ * DaysListEventsPreview - Updated implementation using Bottom Sheet
  *
- * This will implement in-place MaterialCardView expansion for DaysListAdapter
- * since the row height (56dp) provides sufficient space for expansion.
- *
- * PLANNED FEATURES FOR PHASE 3:
- * - In-place expansion of MaterialCardView rows
- * - Smooth expand/collapse animations
- * - Embedded RecyclerView for events list
- * - Quick action buttons within expanded view
- * - Maintains scroll position during expansion
+ * This class now uses DaysListEventsBottomSheet for a better user experience
+ * on DaysList rows, replacing the problematic in-place card expansion.
  */
 public class DaysListEventsPreview extends BaseEventsPreview {
 
     private static final String TAG = "DaysListEventsPreview";
 
+    // Delegate to bottom sheet implementation
+    private DaysListEventsBottomSheet mBottomSheetImpl;
+
     public DaysListEventsPreview(Context context) {
         super(context);
-        Log.d(TAG, "DaysListEventsPreview initialized - ready for Phase 3");
+
+        // Initialize bottom sheet implementation
+        mBottomSheetImpl = new DaysListEventsBottomSheet(context);
+
+        // Set up listener forwarding
+        setupListenerForwarding();
+
+        Log.d(TAG, "DaysListEventsPreview initialized with bottom sheet");
     }
 
-    // ==================== PHASE 3 IMPLEMENTATION PLACEHOLDER ====================
+    // ==================== LISTENER FORWARDING ====================
+
+    /**
+     * Setup listener forwarding to delegate to bottom sheet
+     */
+    private void setupListenerForwarding() {
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.setEventsPreviewListener(new EventsPreviewListener() {
+                @Override
+                public void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date) {
+                    // Forward to our listener
+                    if (mListener != null) {
+                        mListener.onEventQuickAction(action, event, date);
+                    }
+                }
+
+                @Override
+                public void onEventsGeneralAction(EventGeneralAction action, LocalDate date) {
+                    // Forward to our listener
+                    if (mListener != null) {
+                        mListener.onEventsGeneralAction(action, date);
+                    }
+                }
+
+                @Override
+                public void onEventsPreviewShown(LocalDate date, int eventCount) {
+                    // Forward to our listener
+                    if (mListener != null) {
+                        mListener.onEventsPreviewShown(date, eventCount);
+                    }
+                }
+
+                @Override
+                public void onEventsPreviewHidden(LocalDate date) {
+                    // Forward to our listener
+                    if (mListener != null) {
+                        mListener.onEventsPreviewHidden(date);
+                    }
+                }
+            });
+        }
+    }
+
+    // ==================== BASE EVENTS PREVIEW IMPLEMENTATION ====================
 
     @Override
     protected void showEventsPreviewImpl(LocalDate date, List<LocalEvent> events, View anchorView) {
-        Log.d(TAG, "PHASE 3 TODO: Implement in-place MaterialCardView expansion");
-        Log.d(TAG, "Date: " + date + ", Events: " + events.size() + ", Anchor: " +
-                (anchorView != null ? anchorView.getClass().getSimpleName() : "null"));
+        Log.d(TAG, "Delegating to bottom sheet: showEventsPreview for " + date + " with " + events.size() + " events");
 
-        // TODO PHASE 3: Implement the following
-        // 1. Find the MaterialCardView that was clicked
-        // 2. Create expanded layout with events list
-        // 3. Animate expansion with smooth height transition
-        // 4. Show events using existing EventsAdapter
-        // 5. Add quick action buttons
-        // 6. Handle collapse on outside click or back press
-
-        // For now, show a simple toast
-        if (mContext instanceof android.app.Activity) {
-            android.app.Activity activity = (android.app.Activity) mContext;
-            activity.runOnUiThread(() -> {
-                android.widget.Toast.makeText(mContext,
-                        "PHASE 3: Espansione card per " + date + " con " + events.size() + " eventi",
-                        android.widget.Toast.LENGTH_SHORT).show();
-            });
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.showEventsPreview(date, events, anchorView);
+        } else {
+            Log.e(TAG, "Bottom sheet implementation is null");
         }
     }
 
     @Override
     protected void hideEventsPreviewImpl() {
-        Log.d(TAG, "PHASE 3 TODO: Implement in-place collapse animation");
+        Log.d(TAG, "Delegating to bottom sheet: hideEventsPreview");
 
-        // TODO PHASE 3: Implement the following
-        // 1. Find currently expanded MaterialCardView
-        // 2. Animate collapse to original height
-        // 3. Remove expanded content
-        // 4. Restore original row layout
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.hideEventsPreview();
+        }
     }
 
     @Override
     protected String getViewType() {
-        return "DaysList";
+        return "DaysList-BottomSheet";
     }
 
-    // ==================== PHASE 3 PLANNED METHODS ====================
+    // ==================== ADDITIONAL METHODS ====================
 
-    /**
-     * PHASE 3: Expand MaterialCardView with events content
-     */
-    private void expandCardView(View cardView, LocalDate date, List<LocalEvent> events) {
-        // TODO: Implementation for Phase 3
-        Log.d(TAG, "TODO Phase 3: expandCardView()");
+    @Override
+    public void setEventsPreviewListener(EventsPreviewListener listener) {
+        // Store listener and update forwarding
+        super.setEventsPreviewListener(listener);
+        setupListenerForwarding();
     }
 
-    /**
-     * PHASE 3: Collapse expanded MaterialCardView
-     */
-    private void collapseCardView(View cardView) {
-        // TODO: Implementation for Phase 3
-        Log.d(TAG, "TODO Phase 3: collapseCardView()");
+    @Override
+    public boolean isEventsPreviewShowing() {
+        return mBottomSheetImpl != null && mBottomSheetImpl.isEventsPreviewShowing();
     }
 
+    // ==================== LEGACY COMPATIBILITY ====================
+
     /**
-     * PHASE 3: Create expanded content layout
+     * Legacy compatibility method for compact mode setting
+     * Now unused since we use bottom sheet, but kept for API compatibility
      */
-    private View createExpandedContent(LocalDate date, List<LocalEvent> events) {
-        // TODO: Implementation for Phase 3
-        Log.d(TAG, "TODO Phase 3: createExpandedContent()");
-        return null;
+    public void setUseCompactMode(boolean useCompactMode) {
+        Log.d(TAG, "setUseCompactMode called but ignored (using bottom sheet)");
+        // No-op - bottom sheet handles all presentation logic
     }
 
     /**
-     * PHASE 3: Animate height change with smooth transition
+     * Check if any bottom sheet is currently expanded
      */
-    private void animateHeightChange(View view, int fromHeight, int toHeight,
-                                     Runnable onComplete) {
-        // TODO: Implementation for Phase 3
-        Log.d(TAG, "TODO Phase 3: animateHeightChange()");
+    public boolean hasExpandedCard() {
+        return isEventsPreviewShowing();
+    }
+
+    /**
+     * Get currently expanded date (from bottom sheet)
+     */
+    public LocalDate getCurrentlyExpandedDate() {
+        return mBottomSheetImpl != null ? mBottomSheetImpl.getCurrentDate() : null;
+    }
+
+    /**
+     * Force collapse all expanded views (hide bottom sheet)
+     */
+    public void collapseAll() {
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.hideEventsPreview();
+        }
+    }
+
+    // ==================== LIFECYCLE METHODS ====================
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.onDestroy();
+            mBottomSheetImpl = null;
+        }
     }
 
     // ==================== DEBUG METHODS ====================
@@ -117,9 +180,13 @@ public class DaysListEventsPreview extends BaseEventsPreview {
         super.debugState();
 
         Log.d(TAG, "=== DAYSLIST EVENTS PREVIEW DEBUG ===");
-        Log.d(TAG, "Implementation Status: PHASE 3 PLACEHOLDER");
-        Log.d(TAG, "Planned Features: In-place CardView expansion");
-        Log.d(TAG, "Target Row Height: 56dp (sufficient for expansion)");
-        Log.d(TAG, "=== END DAYSLIST DEBUG ===");
+        Log.d(TAG, "Implementation: BOTTOM SHEET");
+        Log.d(TAG, "Bottom Sheet Implementation: " + (mBottomSheetImpl != null ? "active" : "null"));
+
+        if (mBottomSheetImpl != null) {
+            mBottomSheetImpl.debugState();
+        }
+
+        Log.d(TAG, "=== END DAYSLIST EVENTS PREVIEW DEBUG ===");
     }
 }

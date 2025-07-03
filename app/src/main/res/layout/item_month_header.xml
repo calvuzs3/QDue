@@ -58,7 +58,7 @@
                     android:id="@+id/tv_month_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.QDue.HeadlineSmall"
+                    android:textAppearance="@style/TextAppearance.QDue.TitleLarge"
                     android:textColor="?attr/colorOnPrimaryContainer"
                     android:textStyle="bold"
                     android:gravity="start"

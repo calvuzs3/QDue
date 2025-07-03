@@ -30,10 +30,11 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:title="@string/app_name"
-                app:titleTextAppearance="@style/TextAppearance.QDue.Toolbar.Title"
+                app:titleTextAppearance="@style/TextAppearance.QDue.TitleLarge"
+                android:textStyle="bold"
                 app:titleTextColor="?attr/colorOnPrimary"
                 app:titleMarginStart="12dp"
-                app:navigationIcon="@android:drawable/menu_frame"
+                app:navigationIcon="@drawable/ic_rounded_menu_24"
                 app:navigationIconTint="?attr/colorOnPrimary"
                 app:menu="@menu/toolbar_menu"
                 app:theme="@style/ThemeOverlay.QDue.Toolbar" />

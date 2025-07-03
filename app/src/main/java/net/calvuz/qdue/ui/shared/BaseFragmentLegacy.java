@@ -26,6 +26,9 @@ import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
+import net.calvuz.qdue.ui.shared.interfaces.FragmentCommunicationInterface;
+import net.calvuz.qdue.ui.shared.interfaces.NotifyUpdatesInterface;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -57,8 +60,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @author calvuzs3
  */
-public abstract class BaseFragmentLegacy extends Fragment
-        implements NotifyUpdatesInterface,
+public abstract class BaseFragmentLegacy extends Fragment implements
+        NotifyUpdatesInterface,
         EventsRefreshInterface {
 
     // TAG
@@ -158,6 +161,43 @@ public abstract class BaseFragmentLegacy extends Fragment
     //Reference to the communication interface
     protected FragmentCommunicationInterface communicationInterface;
 
+    // =======================================================
+    // === ABSTRACT METHODS THAT SUBCLASSES MUST IMPLEMENT ===
+    // =======================================================
+
+    /**
+     * Find and setup views.
+     */
+    protected abstract void findViews(View rootView);
+
+    /**
+     * Convert data in fragment specific format.
+     */
+    protected abstract List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate);
+
+    /**
+     * Fragment specific adapter setup.
+     * Subclass create a specific Adapter instance
+     * which is given to the RecyclerView with mRecyclerView,setAdapter( adapter )
+     */
+    protected abstract void setupAdapter();
+
+    /**
+     * Get the current adapter.
+     */
+    protected abstract BaseAdapterLegacy getFragmentAdapter();
+
+    /**
+     * Set adapter, an extension of BaseAdapterLegacy
+     */
+    protected abstract void setFragmentAdapter(BaseAdapterLegacy adapter);
+
+    /**
+     * Abstract method for subclasses to specify column count.
+     * DayslistViewFragment returns 1, CalendarViewFragment returns 7.
+     */
+    protected abstract int getGridColumnCount();
+
     // ============================================================
 
     /**
@@ -206,7 +246,7 @@ public abstract class BaseFragmentLegacy extends Fragment
         if (getActivity() != null) {
             setupInfiniteScrolling();
         } else {
-            Log.e(TAG, mTAG + "Activity is null, cannot initialize infinite scrolling");
+            Log.e(TAG, mTAG + "❌ Activity is null, cannot initialize infinite scrolling");
         }
 
         // Configure the TODAY fab button
@@ -229,7 +269,7 @@ public abstract class BaseFragmentLegacy extends Fragment
             communicationInterface = (FragmentCommunicationInterface) context;
             Log.v(TAG, mTAG + "Communication interface attached");
         } catch (ClassCastException e) {
-            Log.e(TAG, mTAG + "Error in attaching Communication Interface");
+            Log.e(TAG, mTAG + "❌ Error in attaching Communication Interface");
             throw new ClassCastException(context.toString()
                     + " must implement FragmentCommunicationInterface");
         }
@@ -275,7 +315,7 @@ public abstract class BaseFragmentLegacy extends Fragment
         Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
-            Log.e(TAG, mTAG + "RecyclerView is null - subclass must implement findViews()");
+            Log.e(TAG, mTAG + "❌ RecyclerView is null - subclass must implement findViews()");
             return;
         }
 
@@ -309,21 +349,12 @@ public abstract class BaseFragmentLegacy extends Fragment
         // Store reference for position calculations
         mGridLayoutManager = gridLayoutManager;
 
-        // Set mLayoutManager to null since we're using GridLayoutManager
-//        mLayoutManager = null;
-
         // Apply common optimizations
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setItemAnimator(null);
 
-        Log.d(TAG, mTAG + "Configured GridLayoutManager with " + columnCount + " columns");
+        Log.d(TAG, mTAG + "✅ Configured GridLayoutManager with " + columnCount + " columns");
     }
-
-    /**
-     * Abstract method for subclasses to specify column count.
-     * DayslistViewFragment returns 1, CalendarViewFragment returns 7.
-     */
-    protected abstract int getGridColumnCount();
 
     // ============================================================
 
@@ -503,7 +534,7 @@ public abstract class BaseFragmentLegacy extends Fragment
             }
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "updateToolbarTitle: Error updating toolbar title: " + e.getMessage());
+            Log.e(TAG, mTAG + "updateToolbarTitle: ❌ Error updating toolbar title: " + e.getMessage());
         }
     }
 
@@ -512,7 +543,7 @@ public abstract class BaseFragmentLegacy extends Fragment
      * FIXED: Setup infinite scrolling with proper initial positioning
      */
     protected void setupInfiniteScrolling() {
-        final String mTAG = ":setupInfiniteScrolling: ";
+        final String mTAG = "setupInfiniteScrolling: ";
         Log.v(TAG, mTAG + "called.");
 
         try {
@@ -536,7 +567,7 @@ public abstract class BaseFragmentLegacy extends Fragment
             setupAdapter();
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error during infinite scrolling setup: " + e.getMessage());
+            Log.e(TAG, mTAG + "❌ Error during infinite scrolling setup: " + e.getMessage());
         }
 
         try {
@@ -575,7 +606,7 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
     }
 
-    // ===== 2. NUOVO: Verifica Prerequisites =====
+    // ===== Verify Prerequisites =====
     private boolean areComponentsReady() {
         String mTAG = "areComponentsReady: ";
 
@@ -603,7 +634,11 @@ public abstract class BaseFragmentLegacy extends Fragment
         return true;
     }
 
-    // ===== NUOVO METODO: Sincronizzazione Forzata =====
+    // ===== Forced sync =====
+
+    /**
+     * Ensure cache and adapter are in sync.
+     */
     protected void ensureAdapterSyncWithCache() {
         final String mTAG = "ensureAdapterSyncWithCache: ";
 
@@ -656,7 +691,9 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
     }
 
-    // ===== 3. NUOVO: Setup Ritardato =====
+    /**
+     * Schedule infinite scrolling setup after a delay.
+     */
     private void scheduleInfiniteScrollingSetup() {
         final String mTAG = "scheduleInfiniteScrollingSetup: ";
 
@@ -686,7 +723,9 @@ public abstract class BaseFragmentLegacy extends Fragment
         }, 100);
     }
 
-    // ===== METODO MODIFICATO: Scroll con Verifica =====
+    /**
+     * Scroll with check
+     */
     private void scheduleVerifiedScrollToToday() {
         final String mTAG = "scheduleVerifiedScrollToToday: -";
 
@@ -699,15 +738,15 @@ public abstract class BaseFragmentLegacy extends Fragment
             return;
         }
 
-        // NULL CHECK aggiunto
+        // NULL CHECK added
         if (mRecyclerView == null) {
             Log.e(TAG, mTAG + "mRecyclerView is null, cannot schedule scroll");
             return;
         }
 
-        // Verifica che the adapter abbia abbastanza elementi
+        // Check if the adapter has enough elements
         if (getFragmentAdapter().getItemCount() > mTodayPosition) {
-            // Dati pronti - scroll immediato ma con un piccolo delay per layout
+            // Data ready - immediate scroll (little delay for the layout)
             mRecyclerView.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -721,7 +760,9 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
     }
 
-    // ===== 6. NUOVO: Tentativo di Caricamento Mese Corrente =====
+    /**
+     * Try to load the current Month
+     */
     private void tryLoadCurrentMonth() {
         final String mTAG = "tryLoadCurrentMonth: ";
 
@@ -756,17 +797,19 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
     }
 
-    // ===== 7. NUOVO: Ricontrolla Posizione Today =====
+    /**
+     * Recheck today position
+     */
     private void recheckTodayPosition() {
         final String mTAG = "recheckTodayPosition: ";
 
         try {
-            // Aggiorna la cache
-            // but it's a pain in the ass
+            // Update cache
+            // but it's a pain in the ass..
             //mItemsCache = mDataManager.getCachedItems();
 
             if (mItemsCache != null && !mItemsCache.isEmpty()) {
-                // Ricalcola posizione today
+                // Calculate today position
                 mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
 
                 if (DEBUG_BASEFRAGMENT) {
@@ -789,6 +832,12 @@ public abstract class BaseFragmentLegacy extends Fragment
     }
 
     // ===== NUOVO METODO: Retry con Timeout =====
+
+    /**
+     * Retry scroll to today
+     *
+     * @param attemptCount mu number of attempts
+     */
     private void scheduleRetryScrollToToday(int attemptCount) {
         final String mTAG = "scheduleRetryScrollToToday: ";
         final int MAX_ATTEMPTS = 5; // old - 20 * 50ms = 1 secondo max
@@ -817,7 +866,9 @@ public abstract class BaseFragmentLegacy extends Fragment
         }, 50); // Retry ogni 50ms
     }
 
-    // ===== METODO MODIFICATO: Scroll Verificato =====
+    /**
+     * Perform verified scroll to today
+     */
     private void performVerifiedScrollToToday() {
         final String mTAG = "performVerifiedScrollToToday: ";
 
@@ -882,38 +933,9 @@ public abstract class BaseFragmentLegacy extends Fragment
      */
     protected void setupScrollListeners() {
         if (mRecyclerView != null) {
-            mRecyclerView.addOnScrollListener(new DebuggingScrollListener());
+            mRecyclerView.addOnScrollListener(new debugScrollListener());
             mRecyclerView.clearOnScrollListeners();
             mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
-        }
-    }
-
-// ===================================================================
-// DEBUGGING: IDENTIFICARE IL COLPEVOLE
-// ===================================================================
-
-    /**
-     * DEBUG: Add logging to identify what's causing the scroll reset
-     */
-    public class DebuggingScrollListener extends RecyclerView.OnScrollListener {
-
-        private int mLastPosition = -1;
-
-        @Override
-        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-
-            int currentPosition = getCurrentVisiblePosition();
-
-            if (currentPosition != mLastPosition && currentPosition != RecyclerView.NO_POSITION) {
-                Log.w("SCROLL_DEBUG", "Position changed from " + mLastPosition + " to " + currentPosition +
-                        " dx=" + dx + " dy=" + dy + " thread=" + Thread.currentThread().getName());
-
-                // Print stack trace to see who triggered the scroll
-                Log.w("SCROLL_DEBUG", "Stack trace:" + new Exception("Scroll trigger"));
-
-                mLastPosition = currentPosition;
-            }
         }
     }
 
@@ -1023,12 +1045,31 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
 
         // Applica visibilità
-        if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
-            mFabGoToToday.show();
-            Log.v(TAG, "updateFabVisibility: Showing FAB");
-        } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
-            mFabGoToToday.hide();
-            Log.v(TAG, "updateFabVisibility: Hiding FAB");
+        toggleFabVisibility(mFabGoToToday);
+    }
+
+    /**
+     * Toggle FAB visibility.
+     */
+    protected static void toggleFabVisibility(@NonNull FloatingActionButton fab) {
+        if (fab.getVisibility() != View.VISIBLE) {
+            fab.setVisibility(View.VISIBLE);
+            fab.animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(200)
+                    .start();
+            fab.show();
+        } else {
+            fab.animate()
+                    .alpha(0f)
+                    .scaleX(0f)
+                    .scaleY(0f)
+                    .setDuration(200)
+                    .withEndAction(() -> fab.setVisibility(View.GONE))
+                    .start();
+            fab.hide();
         }
     }
 
@@ -1952,8 +1993,6 @@ public abstract class BaseFragmentLegacy extends Fragment
     @Override
     public void onStart() {
         super.onStart();
-        final String mTAG = "onStart: ";
-        Log.v(TAG, mTAG + "called.");
 
         if (QDue.getQuattrodue() != null) {
             QDue.getQuattrodue().updatePreferences(getActivity());
@@ -1964,22 +2003,6 @@ public abstract class BaseFragmentLegacy extends Fragment
         }
     }
 
-    /**
-     * Handle fragment resume lifecycle.
-     * Updates today's position and refreshes adapter.
-     */
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        final String mTAG = "onResume: ";
-//        Log.v(TAG, mTAG + "Fragment resumed: " + getClass().getSimpleName());
-//
-//        // Update today's position in case date changed
-//        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-//        if (getFragmentAdapter() != null) {
-//            getFragmentAdapter().notifyDataSetChanged();
-//        }
-//    }
     @Override
     public void onResume() {
         super.onResume();
@@ -1989,6 +2012,9 @@ public abstract class BaseFragmentLegacy extends Fragment
             Log.d(TAG, String.format("Performing lazy refresh for %s", getClass().getSimpleName()));
             onForceEventsRefresh();
         }
+
+        // Register when fragment is visible
+        registerForEventsRefresh();
     }
 
     @Override
@@ -2003,11 +2029,10 @@ public abstract class BaseFragmentLegacy extends Fragment
      * Register this fragment for events refresh notifications
      */
     private void registerForEventsRefresh() {
-        if (!mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity) {
-            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+        if (!mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity mainActivity) {
 
-            // NUOVO: Metodo da aggiungere a QDueMainActivity
-            // mainActivity.registerEventsRefreshFragment(this);
+            // Register
+            mainActivity.registerEventsRefreshFragment(this);
 
             mIsRegisteredForEventsRefresh = true;
             Log.d(TAG, String.format("Registered %s for events refresh", mFragmentId));
@@ -2018,11 +2043,11 @@ public abstract class BaseFragmentLegacy extends Fragment
      * Unregister this fragment from events refresh notifications
      */
     private void unregisterForEventsRefresh() {
-        if (mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity) {
-            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+        Log.v(TAG, "unregisterForEventsRefresh: called.");
+        if (mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity mainActivity) {
 
-            // NUOVO: Metodo da aggiungere a QDueMainActivity
-            // mainActivity.unregisterEventsRefreshFragment(this);
+            // Unregister
+            mainActivity.unregisterEventsRefreshFragment(this);
 
             mIsRegisteredForEventsRefresh = false;
             Log.d(TAG, String.format("Unregistered %s from events refresh", mFragmentId));
@@ -2036,8 +2061,6 @@ public abstract class BaseFragmentLegacy extends Fragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        final String mTAG = "onDestroyView: ";
-        Log.v(TAG, mTAG + "called.");
 
         // Cancel all pending operations
         if (mMainHandler != null) {
@@ -2054,18 +2077,15 @@ public abstract class BaseFragmentLegacy extends Fragment
         if (mRecyclerView != null) {
             mRecyclerView.clearOnScrollListeners();
         }
-
-        if (DEBUG_BASEFRAGMENT)
-            Log.d(TAG, mTAG + "Fragment view destroyed: " + getClass().getSimpleName());
     }
 
     /**
-     * Refresh data when preferences change.
-     * Clears data manager cache and regenerates data.
+     * API: Refresh data when preferences change.
+     * - clears data manager
+     * - regenerates data.
      */
     public void refreshData() {
-        final String mTAG = "refreshData: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, "refreshData: called.");
 
         // Clear data manager cache
         mDataManager.clearCache();
@@ -2075,13 +2095,12 @@ public abstract class BaseFragmentLegacy extends Fragment
     }
 
     /**
-     * Notify updates from external sources.
+     * API: Notify updates from external sources.
      * Updates user team and refreshes adapter.
      */
     @SuppressLint("NotifyDataSetChanged")
     public void notifyUpdates() {
-        final String mTAG = "notifyUpdates: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, "notifyUpdates: called.");
 
         // Update user team if necessary
         onUserTeamChanged();
@@ -2096,114 +2115,30 @@ public abstract class BaseFragmentLegacy extends Fragment
      * Subclasses can override for specific logic.
      */
     protected void onUserTeamChanged() {
-        final String mTAG = "onUserTeamChanged: ";
-        Log.v(TAG, mTAG + "User team changed");
+        Log.v(TAG, "onUserTeamChanged: called.");
     }
 
-    // =======================================================
-    // === ABSTRACT METHODS THAT SUBCLASSES MUST IMPLEMENT ===
-    // =======================================================
+    // ==================== CACHE LOADING ====================
 
     /**
-     * Find and setup views.
+     * Enhanced cache loading that also loads events for new periods.
+     * - loadEventsForCurrentPeriod()
+     *
+     * @param monthDate month date to load
      */
-    protected abstract void findViews(View rootView);
+    //@Override
+    protected void addMonthToCache(LocalDate monthDate) {
+        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
+        mItemsCache.addAll(monthItems);
+        //addMonthToCache(monthDate);
 
-    /**
-     * Convert data in fragment specific format.
-     */
-    protected abstract List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate);
-
-    /**
-     * Fragment specific adapter setup.
-     * Subclass create a specific Adapter instance
-     * which is given to the RecyclerView with mRecyclerView,setAdapter( adapter )
-     */
-    protected abstract void setupAdapter();
-
-    /**
-     * Get the current adapter.
-     */
-    protected abstract BaseAdapterLegacy getFragmentAdapter();
-
-    /**
-     * Set adapter, an extension of BaseAdapterLegacy
-     */
-    protected abstract void setFragmentAdapter(BaseAdapterLegacy adapter);
-
-    // ==================== EVENTS LOADING METHODS ====================
-
-    /**
-     * Load events for the current visible period (non-blocking).
-     * This method runs in background and updates UI when complete.
-     */
-    /**
-     * Load events for the current visible period (non-blocking).
-     * This method runs in background and updates UI when complete.
-     */
-    protected void loadEventsForCurrentPeriod() {
-        if (mIsLoadingEvents.get()) {
-            Log.d(TAG, "Events already loading, skipping");
-            return;
-        }
-
-        mIsLoadingEvents.set(true);
-
-        // Calculate date range for current cache
-        LocalDate startDate = getCurrentPeriodStart();
-        LocalDate endDate = getCurrentPeriodEnd();
-
-        Log.d(TAG, "Loading events for period: " + startDate + " to " + endDate);
-
-        // Load events asynchronously
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                // Convert LocalDate to LocalDateTime for DAO method
-                LocalDateTime startDateTime = startDate.atStartOfDay();
-                LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading events from database", e);
-                return new ArrayList<LocalEvent>();
-            }
-        }).thenAccept(events -> {
-            Log.d(TAG, "Loaded " + events.size() + " events from database");
-
-            // Process events into date-grouped map
-            Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(events);
-
-            Log.d(TAG, "Grouped into " + eventsMap.size() + " dates with events");
-
-            // Debug: Log alcuni esempi
-            int debugCount = 0;
-            for (Map.Entry<LocalDate, List<LocalEvent>> entry : eventsMap.entrySet()) {
-                if (debugCount < 3) { // Solo primi 3 per debug
-                    LocalDate date = entry.getKey();
-                    List<LocalEvent> dateEvents = entry.getValue();
-                    Log.d(TAG, "DEBUG: Date " + date + " has " + dateEvents.size() + " events");
-                    debugCount++;
-                }
-            }
-
-            // Update cache on main thread
-            mMainHandler.post(() -> {
-                updateEventsCache(eventsMap);
-                notifyEventsDataChanged();
-                mIsLoadingEvents.set(false);
-            });
-        }).exceptionally(throwable -> {
-            Log.e(TAG, "Failed to load events", throwable);
-            mMainHandler.post(() -> {
-                mIsLoadingEvents.set(false);
-            });
-            return null;
-        });
+        // Load events for the new month
+        loadEventsForMonth(monthDate);
     }
 
     /**
-     * Update events cache and notify adapter.
+     * Update events cache (#and notify adapter).
      * FIX: merge instead of overwriting
-     * FIX: no log if no data available
      */
     protected void updateEventsCache(Map<LocalDate, List<LocalEvent>> newEventsMap) {
         if (newEventsMap != null && !newEventsMap.isEmpty()) {
@@ -2235,8 +2170,125 @@ public abstract class BaseFragmentLegacy extends Fragment
 
             Log.d(TAG, "updateEventsCache: ✅ Updated events cache: " + newEventsMap.size() + " new dates; total cache: " + mEventsCache.size() + " dates.");
         } else {
+
             // FIX: Do not empty cache  if a map is empty
+            Log.v(TAG, "updateEventsCache: ✅ events cache not updated - empty map or null");
         }
+    }
+
+    /**
+     * API: Enhanced refresh events data method
+     * Update cache
+     * Notify adapter
+     */
+    public void refreshEventsData() {
+        Log.v(TAG, String.format("refreshEventsData: Refreshing events data for %s", getClass().getSimpleName()));
+
+        // Clear existing cache
+        mEventsCache.clear();
+
+        // Reload events for current period
+        loadEventsForCurrentPeriod();
+
+        // Notify UI already done
+        // TODO: if the usr leaves the events page before the  time to abort changes, the UI isn't updated
+    }
+
+    // ==================== EVENTS LOADING METHODS ====================
+
+    /**
+     * Load events for a specific month. This method:
+     * - runs in background
+     * - updates UI when complete.
+     *
+     * @param monthDate The month to load events for
+     */
+    private void loadEventsForMonth(LocalDate monthDate) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                LocalDate startOfMonth = monthDate.withDayOfMonth(1);
+                LocalDate endOfMonth = monthDate.withDayOfMonth(monthDate.lengthOfMonth());
+
+                // Convert to LocalDateTime for DAO method
+                LocalDateTime startDateTime = startOfMonth.atStartOfDay();
+                LocalDateTime endDateTime = endOfMonth.atTime(23, 59, 59);
+
+                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Error loading events for month " + monthDate, e);
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            Map<LocalDate, List<LocalEvent>> monthEvents = groupEventsByDate(events);
+            mMainHandler.post(() -> {
+                updateEventsCache(monthEvents);
+                notifyEventsDataChanged();
+            });
+        });
+    }
+
+    /**
+     * Load events for the current visible period (non-blocking). This method:
+     * - runs in background
+     * - updates UI when complete.
+     */
+    private void loadEventsForCurrentPeriod() {
+        if (mIsLoadingEvents.get()) {
+            Log.d(TAG, "Events already loading, skipping");
+            return;
+        }
+
+        mIsLoadingEvents.set(true);
+
+        // Calculate date range for current cache
+        LocalDate startDate = getCurrentPeriodStart();
+        LocalDate endDate = getCurrentPeriodEnd();
+
+        Log.d(TAG, "Loading events for period: " + startDate + " to " + endDate);
+
+        // Load events asynchronously
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                // Convert LocalDate to LocalDateTime for DAO method
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Error loading events from database", e);
+                return new ArrayList<LocalEvent>();
+            }
+        }).thenAccept(events -> {
+            Log.d(TAG, "✅ Loaded " + events.size() + " events from database");
+
+            // Process events into date-grouped map
+            Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(events);
+
+            Log.d(TAG, "✅ Grouped into " + eventsMap.size() + " dates with events");
+
+            // Debug: Log alcuni esempi
+            int debugCount = 0;
+            for (Map.Entry<LocalDate, List<LocalEvent>> entry : eventsMap.entrySet()) {
+                if (debugCount < 3) { // Solo primi 3 per debug
+                    LocalDate date = entry.getKey();
+                    List<LocalEvent> dateEvents = entry.getValue();
+                    Log.d(TAG, "DEBUG: Date " + date + " has " + dateEvents.size() + " events");
+                    debugCount++;
+                }
+            }
+
+            // Update cache on main thread
+            mMainHandler.post(() -> {
+                updateEventsCache(eventsMap);
+                notifyEventsDataChanged();
+                mIsLoadingEvents.set(false);
+            });
+        }).exceptionally(throwable -> {
+            Log.e(TAG, "Failed to load events", throwable);
+            mMainHandler.post(() -> {
+                mIsLoadingEvents.set(false);
+            });
+            return null;
+        });
     }
 
     /**
@@ -2316,69 +2368,16 @@ public abstract class BaseFragmentLegacy extends Fragment
         return mEventsCache.containsKey(date) && !mEventsCache.get(date).isEmpty();
     }
 
-    // ==================== ENHANCED CACHE LOADING ====================
+    // ==================== COMPLETE INTERFACE IMPLEMENTATION ====================
 
     /**
-     * Enhanced cache loading that also loads events for new periods.
+     * Called when events change.
+     * Refresh Events Data
+     * Notify Adapter
+     *
+     * @param changeType Type of change (import, delete, create, modify)
+     * @param eventCount Number of events affected by the change
      */
-    //@Override
-    protected void addMonthToCache(LocalDate monthDate) {
-        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
-        mItemsCache.addAll(monthItems);
-        //addMonthToCache(monthDate);
-
-        // Load events for the new month
-        loadEventsForMonth(monthDate);
-    }
-
-    /**
-     * Load events for a specific month.
-     */
-    protected void loadEventsForMonth(LocalDate monthDate) {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                LocalDate startOfMonth = monthDate.withDayOfMonth(1);
-                LocalDate endOfMonth = monthDate.withDayOfMonth(monthDate.lengthOfMonth());
-
-                // Convert to LocalDateTime for DAO method
-                LocalDateTime startDateTime = startOfMonth.atStartOfDay();
-                LocalDateTime endDateTime = endOfMonth.atTime(23, 59, 59);
-
-                return mDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
-            } catch (Exception e) {
-                Log.e(TAG, "Error loading events for month " + monthDate, e);
-                return new ArrayList<LocalEvent>();
-            }
-        }).thenAccept(events -> {
-            Map<LocalDate, List<LocalEvent>> monthEvents = groupEventsByDate(events);
-            mMainHandler.post(() -> {
-                updateEventsCache(monthEvents);
-                notifyEventsDataChanged();
-            });
-        });
-    }
-
-    /**
-     * Enhanced refresh events data method
-     */
-    public void refreshEventsData() {
-        Log.d(TAG, String.format("Refreshing events data for %s", getClass().getSimpleName()));
-
-        // Clear existing cache
-        mEventsCache.clear();
-
-        // Reload events for current period
-        loadEventsForCurrentPeriod();
-
-        // Schedule adapter notification after load completes
-        mMainHandler.postDelayed(() -> {
-            notifyEventsDataChanged();
-            Log.d(TAG, String.format("Events refresh completed for %s", getClass().getSimpleName()));
-        }, 500); // Small delay to ensure data is loaded
-    }
-
-// ================================== COMPLETE INTERFACE IMPLEMENTATION ====================
-
     @Override
     public void onEventsChanged(String changeType, int eventCount) {
         Log.d(TAG, String.format(QDue.getLocale(),
@@ -2389,14 +2388,15 @@ public abstract class BaseFragmentLegacy extends Fragment
         if (isFragmentActive()) {
             refreshEventsData();
 
-            // Notify adapter with events data
-            notifyEventsDataChanged();
         } else {
             Log.d(TAG, String.format("Fragment %s is inactive, skipping immediate refresh",
                     getClass().getSimpleName()));
         }
     }
 
+    /**
+     * Called when events data needs to be refreshed.
+     */
     @Override
     public void onForceEventsRefresh() {
         Log.d(TAG, String.format("BaseFragment (%s): Force refresh requested",
@@ -2404,7 +2404,7 @@ public abstract class BaseFragmentLegacy extends Fragment
 
         // Always refresh on force request, regardless of fragment state
         refreshEventsData();
-        notifyEventsDataChanged();
+        //notifyEventsDataChanged(); // done in refresh
     }
 
     @Override
@@ -2419,22 +2419,28 @@ public abstract class BaseFragmentLegacy extends Fragment
                 !getActivity().isFinishing();
     }
 
+    /**
+     * Get a description of the fragment for debugging.
+     *
+     * @return Fragment description
+     */
     @Override
     public String getFragmentDescription() {
-        return String.format("%s (ID: %s)", getClass().getSimpleName(),
-                mFragmentId != null ? mFragmentId : "unknown");
+        // Child classe should implement this
+        return String.format("%s (ID: %s)", getClass().getSimpleName(), "unknown");
     }
 
     /**
      * Notify subclasses that events data has changed.
      * Subclasses should override this to update their adapters.
      */
+    @SuppressLint("NotifyDataSetChanged")
     protected void notifyEventsDataChanged() {
         try {
             // Update adapter with new events data
             if (getFragmentAdapter() != null) {
                 getFragmentAdapter().notifyDataSetChanged();
-                Log.d(TAG, String.format(QDue.getLocale(), "Notified adapter of events changes (%d dates with events)",
+                Log.d(TAG, String.format(QDue.getLocale(), "✅ Notified adapter of events changes (%d dates with events)",
                         mEventsCache.size()));
             }
 
@@ -2442,7 +2448,7 @@ public abstract class BaseFragmentLegacy extends Fragment
             onEventsDataRefreshed();
 
         } catch (Exception e) {
-            Log.e(TAG, "Error notifying events data changed", e);
+            Log.e(TAG, "notifyEventsDataChanged: ❌", e);
         }
     }
 
@@ -2451,7 +2457,7 @@ public abstract class BaseFragmentLegacy extends Fragment
      */
     protected void onEventsDataRefreshed() {
         // Default implementation - subclasses can override
-        Log.v(TAG, String.format("Events data refreshed for %s", getClass().getSimpleName()));
+        Log.d(TAG, String.format("onEventsDataRefreshed: ✅ Events data refreshed for %s", getClass().getSimpleName()));
     }
 
     /**
@@ -2479,17 +2485,46 @@ public abstract class BaseFragmentLegacy extends Fragment
     // ==================== DEBUG METHODS ====================
 
     /**
-     * Debug method to verify events integration
+     * DEBUG: Verify events integration
      */
     public void debugEventsIntegration() {
-        Log.d(TAG, "=== EVENTS INTEGRATION DEBUG ===");
-        Log.d(TAG, "Fragment: " + getFragmentDescription());
-        Log.d(TAG, "Is Active: " + isFragmentActive());
-        Log.d(TAG, "Is Registered: " + mIsRegisteredForEventsRefresh);
-        Log.d(TAG, "Database: " + (mDatabase != null ? "initialized" : "null"));
-        Log.d(TAG, "Events Cache Size: " + mEventsCache.size());
-        Log.d(TAG, "Adapter: " + (getFragmentAdapter() != null ? "initialized" : "null"));
-        Log.d(TAG, "=== END DEBUG ===");
+        try {
+            Log.d(TAG, "=== EVENTS INTEGRATION DEBUG ===");
+            Log.d(TAG, "Fragment: " + getFragmentDescription());
+            Log.d(TAG, "Is Active: " + isFragmentActive());
+            Log.d(TAG, "Is Registered: " + mIsRegisteredForEventsRefresh);
+            Log.d(TAG, "Database: " + (mDatabase != null ? "initialized" : "null"));
+            Log.d(TAG, "Today position calculated: " + mTodayPosition);
+            Log.d(TAG, "Events Cache Size: " + mEventsCache.size());
+            Log.d(TAG, "Adapter: " + (getFragmentAdapter() != null ? "initialized" : "null"));
+            Log.d(TAG, "=== END DEBUG ===");
+        } catch (Exception e) {
+            Log.e(TAG, "debugEventsIntegration: ❌", e);
+        }
     }
 
+    /**
+     * DEBUG: Add logging to identify what's causing the scroll reset
+     */
+    public class debugScrollListener extends RecyclerView.OnScrollListener {
+
+        private int mLastPosition = -1;
+
+        @Override
+        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            int currentPosition = getCurrentVisiblePosition();
+
+            if (currentPosition != mLastPosition && currentPosition != RecyclerView.NO_POSITION) {
+                Log.w("SCROLL_DEBUG", "Position changed from " + mLastPosition + " to " + currentPosition +
+                        " dx=" + dx + " dy=" + dy + " thread=" + Thread.currentThread().getName());
+
+                // Print stack trace to see who triggered the scroll
+                Log.w("SCROLL_DEBUG", "Stack trace:" + new Exception("Scroll trigger"));
+
+                mLastPosition = currentPosition;
+            }
+        }
+    }
 }

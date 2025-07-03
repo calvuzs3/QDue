@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.shared;
+package net.calvuz.qdue.ui.shared.interfaces;
 
 /**
  * Interface for Fragment to Activity communication.

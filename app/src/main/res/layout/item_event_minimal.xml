@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- =========================================================================
+     2. NUOVO: item_event_minimal.xml
+     Evento in formato minimal (solo titolo + ora)
+     ========================================================================= -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="2dp"
+    android:paddingHorizontal="4dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Indicator piccolissimo -->
+    <View
+        android:id="@+id/v_event_indicator_minimal"
+        android:layout_width="2dp"
+        android:layout_height="12dp"
+        android:layout_marginEnd="6dp"
+        android:background="?attr/colorPrimary" />
+
+    <!-- Contenuto evento compatto -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Titolo evento (troncato) -->
+        <TextView
+            android:id="@+id/tv_event_title_minimal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurface"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Manutenzione" />
+<!--        android:textSize="12sp"-->
+
+        <!-- Ora (opzionale, solo se evento ha ora specifica) -->
+        <TextView
+            android:id="@+id/tv_event_time_minimal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone"
+            tools:text="14:30"
+            tools:visibility="visible" />
+<!--        android:textSize="10sp"-->
+
+    </LinearLayout>
+
+</LinearLayout>

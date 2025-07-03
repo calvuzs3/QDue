@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
@@ -16,9 +17,11 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.BaseClickFragmentLegacy;
+import net.calvuz.qdue.ui.shared.DaysListEventsPreview;
 import net.calvuz.qdue.ui.shared.EventsPreviewManager;
-import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.ui.shared.ToolbarAction;
+import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -178,30 +181,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
 
     @Override
     public String getFragmentDescription() {
-        return "DaysListViewFragment (Legacy with BaseClickFragment)";
-    }
-
-    // ==================== CORREZIONE 3: ENHANCED EVENTS DATA NOTIFICATION ====================
-
-    /**
-     * OVERRIDE: Enhanced events data notification with DaysList specifics
-     */
-    @Override
-    protected void notifyEventsDataChanged() {
-        final String mTAG = "notifyEventsDataChanged: ";
-        Log.d(TAG, mTAG + "called for DaysListFragment");
-
-        try {
-            // Call parent implementation
-            super.notifyEventsDataChanged();
-
-            // Additional DaysList-specific notification
-            updateAdapterWithEvents();
-
-            Log.d(TAG, mTAG + "✅ DaysList events notification completed");
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in DaysList events notification: " + e.getMessage());
-        }
+        return "DaysListViewFragment (Legacy)";
     }
 
     // ==================== CLICK SUPPORT ====================
@@ -210,6 +190,10 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     // Override BaseClickFragmentLegacy Methods for DaysList Specifics
     // ===========================================
 
+    /**
+     * Open event editor for a specific date
+     * @param date The date for which to open the editor
+     */
     @Override
     protected void onOpenEventEditor(LocalDate date) {
         Log.d(TAG, "DaysList: Opening event editor for date: " + date);
@@ -222,6 +206,11 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         // Example: Pass additional context like selected shift, etc.
     }
 
+    /**
+     * Show events dialog for a specific date
+     * @param date The date for which to show the events dialog
+     * @param events The list of events to display
+     */
     @Override
     protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
         Log.d(TAG, "DaysList: Showing events dialog for date: " + date);
@@ -235,17 +224,23 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         }
     }
 
+    /**
+     * Create a quick event for a specific date
+     * @param action The type of quick event to create
+     * @param date The date for which to create the quick event
+     */
     @Override
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
         Log.d(TAG, "DaysList: Quick event created: " + action + " for date: " + date);
 
-        // Refresh events data after quick event creation
-        refreshEventsDataDelayed();
-
         // DaysList-specific post-creation handling
-        updateAdapterWithEventsDelayed();
+//        updateAdapterWithEventsDelayed();
     }
 
+    /**
+     * Update UI based on selection state
+     * @param hasSelection Whether selection mode is active
+     */
     @Override
     protected void updateSelectionDependentUI(boolean hasSelection) {
         // DaysList-specific UI updates based on selection
@@ -270,17 +265,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         showEventsListDialog(date, events);
     }
 
-    /**
-     * Refresh events data with delay for thread safety
-     */
-    private void refreshEventsDataDelayed() {
-        if (mMainHandler != null) {
-            mMainHandler.postDelayed(() -> {
-                loadEventsForCurrentPeriod();
-                Log.d(TAG, "Delayed events data refresh completed");
-            }, 200);
-        }
-    }
 
     /**
      * Update adapter with events using delayed execution
@@ -364,66 +348,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return false;
     }
 
-    // ===========================================
-    // Public API Methods
-    // ===========================================
-
-    /**
-     * Public method for external events data updates
-     * Enhanced with selection mode awareness
-     */
-    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
-        final String mTAG = "updateEventsData: ";
-        Log.d(TAG, mTAG + "External events data update requested");
-
-        if (eventsMap != null && !eventsMap.isEmpty()) {
-            // Update internal cache
-            updateEventsCache(eventsMap);
-
-            // Update adapter
-            updateAdapterWithEvents();
-
-            Log.d(TAG, mTAG + "✅ External events data update completed");
-        } else {
-            Log.w(TAG, mTAG + "Empty or null events map provided");
-        }
-    }
-
-    /**
-     * Public method to force refresh events
-     * Enhanced with selection mode handling
-     */
-    public void refreshEvents() {
-        Log.d(TAG, "refreshEvents: External refresh request");
-
-        // Exit selection mode before refreshing to avoid inconsistencies
-        if (mIsSelectionMode) {
-            exitSelectionMode();
-        }
-
-        onForceEventsRefresh();
-    }
-
-    // ===========================================
-    // Back Press Handling
-    // ===========================================
-
-    /**
-     * Enhanced back press handling with selection mode priority
-     */
-    @Override
-    public boolean onBackPressed() {
-        // First check if we can handle it in BaseClickFragmentLegacy
-        boolean handled = super.onBackPressed();
-        if (handled) {
-            return true;
-        }
-
-        // If not handled by parent, check DaysList-specific handling
-        // (currently none, but could be added for future features)
-
-        return false; // Not consumed
-    }
 
     // ===========================================
     // Menu Integration
@@ -449,15 +373,10 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
      */
     public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
         // First try parent handling
-        boolean handled = super.onOptionsItemSelected(item);
-        if (handled) {
-            return true;
-        }
+        return super.onOptionsItemSelected(item);
 
         // Handle DaysList-specific menu items
         // TODO: Add DaysList-specific menu handling
-
-        return false;
     }
 
     // ===========================================
@@ -465,16 +384,76 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     // ===========================================
 
     /**
-     * Abstract method for subclasses to specify their view type
+     * events preview setup
      */
     @Override
     protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
-        return null;
+
+        return EventsPreviewManager.ViewType.DAYS_LIST;
+    }
+
+    // Add method to handle back press for expansion
+    @Override
+    public boolean onBackPressed() {
+        // First check if any card is expanded
+        if (mEventsPreviewManager != null) {
+            if (mEventsPreviewManager.getCurrentImplementation() instanceof DaysListEventsPreview daysListPreview) {
+                if (daysListPreview.hasExpandedCard()) {
+                    daysListPreview.collapseAll();
+                    return true; // Consumed
+                }
+            }
+        }
+
+        // Then delegate to parent
+        return super.onBackPressed();
+    }
+
+
+    /**
+     * Setup Phase 3 specific integration
+     */
+    private void setupPhase3Integration() {
+        Log.d(TAG, "Setting up Phase 3 DaysList expansion integration");
+
+        // Ensure RecyclerView settings support smooth expansion
+        if (mRecyclerView != null) {
+            // Disable item animator to prevent conflicts with expansion animations
+            mRecyclerView.setItemAnimator(null);
+
+            // Ensure nested scrolling is handled correctly
+            mRecyclerView.setNestedScrollingEnabled(true);
+
+            // Add scroll listener to handle expansion during scroll
+            mRecyclerView.addOnScrollListener(new ExpansionScrollListener());
+        }
+
+        // NEW: Configure compact mode for DaysList
+        if (mEventsPreviewManager != null) {
+            EventsPreviewInterface impl = mEventsPreviewManager.getCurrentImplementation();
+            if (impl instanceof DaysListEventsPreview daysListPreview) {
+                daysListPreview.setUseCompactMode(true); // Enable compact mode
+                Log.d(TAG, "Compact mode enabled for DaysList expansion");
+            }
+        }
+
+        Log.d(TAG, "Phase 3 integration setup completed");
     }
 
     // ===========================================
     // Lifecycle Enhanced
     // ===========================================
+
+    /**
+     * Phase 3 setup
+     */
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Phase 3 specific setup
+        setupPhase3Integration();
+    }
 
     @Override
     public void onResume() {
@@ -562,6 +541,37 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
     }
 
+
+    // Add method to test expansion functionality
+    public void testExpansionFunctionality() {
+        Log.d(TAG, "=== TESTING EXPANSION FUNCTIONALITY ===");
+
+        // Test expansion on today
+        LocalDate today = LocalDate.now();
+        List<LocalEvent> todayEvents = getEventsForDate(today);
+
+        Log.d(TAG, "Testing expansion for today: " + today);
+        Log.d(TAG, "Today has " + todayEvents.size() + " events");
+
+        if (mEventsPreviewManager != null) {
+            // Find a view for today (simplified)
+            View anchorView = mRecyclerView != null ? mRecyclerView : getView();
+            mEventsPreviewManager.showEventsPreview(today, todayEvents, anchorView);
+
+            Log.d(TAG, "Expansion test triggered");
+
+            // Auto-collapse after 5 seconds
+            if (mMainHandler != null) {
+                mMainHandler.postDelayed(() -> {
+                    mEventsPreviewManager.hideEventsPreview();
+                    Log.d(TAG, "Expansion test auto-collapsed");
+                }, 5000);
+            }
+        }
+
+        Log.d(TAG, "=== END EXPANSION TEST ===");
+    }
+
     // ===========================================
     // Debug Methods Enhanced
     // ===========================================
@@ -612,8 +622,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
             Log.d(TAG, "Cleared events cache");
         }
 
-        // Force reload
-        loadEventsForCurrentPeriod();
 
         // Schedule adapter update
         if (mMainHandler != null) {
@@ -655,4 +663,31 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
     }
 
+
+    // ===========================================
+    // Expansion Support
+    // ===========================================
+
+    /**
+     * Scroll listener to handle expansion during scroll
+     */
+    private class ExpansionScrollListener extends RecyclerView.OnScrollListener {
+
+        @Override
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+
+            // Collapse expanded cards when user starts scrolling
+            if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                if (mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing()) {
+                    if (mEventsPreviewManager.getCurrentImplementation() instanceof DaysListEventsPreview daysListPreview) {
+                        if (daysListPreview.hasExpandedCard()) {
+                            Log.d(TAG, "Collapsing expanded card due to scroll start");
+                            daysListPreview.collapseAll();
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

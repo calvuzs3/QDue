@@ -21,12 +21,27 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.navigationrail.NavigationRailView;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
+import net.calvuz.qdue.ui.shared.interfaces.FragmentCommunicationInterface;
+import net.calvuz.qdue.ui.shared.interfaces.NotifyUpdatesInterface;
 import net.calvuz.qdue.utils.Log;
 import net.calvuz.qdue.utils.TimeChangeReceiver;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Base Activity for all QDue activities.
+ * implements:
+ * - FragmentCommunicationInterface
+ * - TimeChangeReceiver.TimeChangeListener
+ * - SharedPreferences.OnSharedPreferenceChangeListener
+ */
 public abstract class BaseActivity extends AppCompatActivity implements
         FragmentCommunicationInterface,
         TimeChangeReceiver.TimeChangeListener,
@@ -50,6 +65,9 @@ public abstract class BaseActivity extends AppCompatActivity implements
     protected NavigationView sidebarNavigation;
     protected NavController navController;
 
+    // Fragment registration system
+    protected final Set<EventsRefreshInterface> mRegisteredEventsFragments =
+            Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Detect which navigation components are available in current layout.
@@ -72,18 +90,46 @@ public abstract class BaseActivity extends AppCompatActivity implements
      */
     protected abstract void setupNavController();
 
-    /**
-     * Enum to track current navigation mode for proper handling
-     */
-    protected enum NavigationMode {
-        PHONE_PORTRAIT,      // BottomNavigation + FAB separato
-        TABLET_PORTRAIT,     // NavigationRail + FAB integrato
-        LANDSCAPE_SMALL,     // NavigationRail espanso + Extended FAB
-        LANDSCAPE_LARGE      // NavigationRail + Drawer
-    }
-
     // ===========================================================
 
+
+    /**
+     * Register a fragment for events refresh notifications
+     * Called by fragments in their onResume()
+     */
+    protected void registerEventsRefreshFragment(EventsRefreshInterface fragment) {
+        if (fragment != null) {
+            mRegisteredEventsFragments.add(fragment);
+            Log.d(TAG, String.format(QDue.getLocale(), "Registered fragment: %s (Total: %d)",
+                    fragment.getFragmentDescription(), mRegisteredEventsFragments.size()));
+        }
+    }
+
+    /**
+     * Unregister a fragment from events refresh notifications
+     * Called by fragments in their onPause()
+     */
+    protected void unregisterEventsRefreshFragment(EventsRefreshInterface fragment) {
+        if (fragment != null) {
+            boolean removed = mRegisteredEventsFragments.remove(fragment);
+            Log.d(TAG, String.format(QDue.getLocale(), "Unregistered fragment: %s (Removed: %s, Total: %d)",
+                    fragment.getFragmentDescription(), removed, mRegisteredEventsFragments.size()));
+        }
+    }
+
+    /**
+     * Clear all registered fragments (on activity destroy)
+     */
+    private void clearAllRegisteredFragments() {
+        Log.d(TAG, String.format(QDue.getLocale(), "Clearing %d registered fragments", mRegisteredEventsFragments.size()));
+        mRegisteredEventsFragments.clear();
+    }
+
+    /**
+     * Initialize TimeChangeReceiver and SharedPreferences.
+     *
+     * @param savedInstanceState bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,15 +144,24 @@ public abstract class BaseActivity extends AppCompatActivity implements
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Register TimeChangeReceiver
+     * (#notify updates on resume).
+     */
     @Override
     protected void onResume() {
         super.onResume();
         Log.v(TAG, "onResume: called.");
 
         registerTimeChangeReceiver();
-        notifyUpdates();
+
+        // Try not to call it
+//        notifyUpdates();
     }
 
+    /**
+     * Unregister TimeChangeReceiver
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -115,6 +170,11 @@ public abstract class BaseActivity extends AppCompatActivity implements
         unregisterTimeChangeReceiver();
     }
 
+    /**
+     * Unregister TimeChangeReceiver
+     * Unregister SharedPreferences
+     * Unregister registered fragments
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -124,16 +184,18 @@ public abstract class BaseActivity extends AppCompatActivity implements
         if (sharedPreferences != null) {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
         }
+
+        // Clear registered fragments
+        clearAllRegisteredFragments();
     }
 
     // ===========================================================
 
     /**
-     * Setup Phone Portrait navigation (BottomNavigation + separate FAB).
+     * Setup Navigation Controller with fallback error handling.
      */
     protected void setupPhonePortraitNavigation() {
-        final String mTAG = "setupPhonePortraitNavigation: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, "setupPhonePortraitNavigation: called.");
 
         // Setup BottomNavigation for primary navigation
         if (bottomNavigation != null && navController != null) {
@@ -159,15 +221,13 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
             }
         }
-
     }
 
     /**
      * Setup Tablet Portrait navigation (NavigationRail + integrated FAB).
      */
     protected void setupTabletPortraitNavigation() {
-        final String mTAG = "setupTabletPortraitNavigation: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, "setupTabletPortraitNavigation: called.");
 
         if (navigationRail != null && navController != null) {
             NavigationUI.setupWithNavController(navigationRail, navController);
@@ -187,8 +247,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
      * Setup Landscape Small navigation (NavigationRail expanded + Extended FAB).
      */
     protected void setupLandscapeSmallNavigation() {
-        final String mTAG = "setupLandscapeSmallNavigation: ";
-        Log.v(TAG, mTAG + "called.");
+        Log.v(TAG, "setupLandscapeSmallNavigation: called.");
 
         if (navigationRail != null && navController != null) {
             NavigationUI.setupWithNavController(navigationRail, navController);
@@ -264,15 +323,15 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 if (fragment instanceof NotifyUpdatesInterface && fragment.isVisible()) {
                     ((NotifyUpdatesInterface) fragment).notifyUpdates();
 
-                    Log.i(TAG, mTAG + "Fragment notified for changes");
+                    Log.d(TAG, mTAG + "✅ Fragment notified for changes");
                 } else {
 
-                    Log.e(TAG, mTAG + "Fragment not found");
+                    Log.e(TAG, mTAG + "❌ Fragment not found");
                 }
             }
         } catch (Exception e) {
 
-            Log.e(TAG, mTAG + "Error during notifyUpdates: " + e.getMessage());
+            Log.e(TAG, mTAG + "❌ Error during notifyUpdates: " + e.getMessage());
         }
     }
 
@@ -292,12 +351,15 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error controlling loading indicator: " + e.getMessage());
+            Log.e(TAG, mTAG + "❌ Error controlling loading indicator: " + e.getMessage());
         }
     }
 
     // ===========================================================
 
+    /**
+     * Register TimeChangeReceiver
+     */
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private void registerTimeChangeReceiver() {
         if (!receiverRegistered && timeChangeReceiver != null) {
@@ -306,44 +368,55 @@ public abstract class BaseActivity extends AppCompatActivity implements
                 registerReceiver(timeChangeReceiver, filter);
                 receiverRegistered = true;
             } catch (Exception e) {
-                Log.e(TAG, "registerTimeChangeReceiver: Error registering TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "❌ registerTimeChangeReceiver: Error registering TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
 
+    /**
+     * Unregister TimeChangeReceiver
+     */
     private void unregisterTimeChangeReceiver() {
         if (receiverRegistered && timeChangeReceiver != null) {
             try {
                 unregisterReceiver(timeChangeReceiver);
                 receiverRegistered = false;
             } catch (Exception e) {
-                Log.e(TAG, "unregisterTimeChangeReceiver: Error unregistering TimeChangeReceiver: " + e.getMessage());
+                Log.e(TAG, "❌ unregisterTimeChangeReceiver: Error unregistering TimeChangeReceiver: " + e.getMessage());
             }
         }
     }
 
-    // TimeChangeListener implementation
+    /**
+     * TimeChangeReceiver.TimeChangeListener implementation
+     */
     @Override
     public void onTimeChanged() {
-        Log.d(TAG, "onTimeChanged - updating interface");
+        Log.d(TAG, "onTimeChanged: ✅");
         runOnUiThread(() -> {
             notifyUpdates();
             Toast.makeText(this, "System time updated", Toast.LENGTH_SHORT).show();
         });
     }
 
+    /**
+     * TimeChangeReceiver.TimeChangeListener implementation
+     */
     @Override
     public void onDateChanged() {
-        Log.d(TAG, "onDateChanged - updating interface");
+        Log.d(TAG, "onDateChanged: ✅");
         runOnUiThread(() -> {
             notifyUpdates();
             Toast.makeText(this, "System date updated", Toast.LENGTH_SHORT).show();
         });
     }
 
+    /**
+     * TimeChangeReceiver.TimeChangeListener implementation
+     */
     @Override
     public void onTimezoneChanged() {
-        Log.d(TAG, "onTimezoneChanged - updating interface");
+        Log.d(TAG, "onTimezoneChanged: ✅");
         runOnUiThread(() -> {
             notifyUpdates();
             Toast.makeText(this, "Timezone updated", Toast.LENGTH_SHORT).show();
@@ -352,9 +425,10 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     // ===========================================================
 
-
     /**
      * Handle configuration changes (orientation, screen size).
+     *
+     * @param newConfig New configuration
      */
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -362,7 +436,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         final String mTAG = "onConfigurationChanged: ";
         Log.v(TAG, mTAG + "called.");
 
-        Log.d(TAG, mTAG + "Configuration changed - orientation: " + (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Landscape" : "Portrait"));
+        Log.d(TAG, mTAG + "onConfigurationChanged: ✅ orientation: " + (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Landscape" : "Portrait"));
 
         // Note: Navigation components will be automatically reconfigured
         // when the activity recreates with the new layout
@@ -370,9 +444,15 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     // ===========================================================
 
+    /**
+     * SharedPreferences.OnSharedPreferenceChangeListener implementation
+     *
+     * @param sharedPreferences SharedPreferences
+     * @param key               Paramenter
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, @Nullable String
             key) {
-        Log.d(TAG, "onSharedPreferenceChanged: " + key);
+        Log.d(TAG, "onSharedPreferenceChanged: ✅  " + key);
     }
 }

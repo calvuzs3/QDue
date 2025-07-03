@@ -7,8 +7,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.ui.shared.interfaces.DayLongClickListener;
+import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,6 +29,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
     // Selection mode support
     protected boolean mIsSelectionMode = false;
+    protected boolean mHasSelectionHiddenFab = false;
     protected boolean previousMode = false;
 
     protected MenuItem mSelectAllMenuItem;
@@ -40,6 +44,112 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // Events Preview Integration
     protected EventsPreviewManager mEventsPreviewManager;
     protected boolean mEventsPreviewEnabled = true;
+
+
+    // ===========================================
+    // Lifecycle
+    // ===========================================
+
+    /**
+     * Enhanced onPause with events preview cleanup
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.onPause();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // LongClick
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            adapter.onDestroy();
+        }
+
+        // Events Preview Click
+        if (mEventsPreviewManager != null) {
+            mEventsPreviewManager.onDestroy();
+            mEventsPreviewManager = null;
+        }
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Setup long-click listener in adapter if available
+        setupAdapterLongClickListener();
+
+        // Initialize events preview after base setup
+        initializeEventsPreview();
+
+
+        // NEW: Setup regular click listener for events preview
+        setupAdapterRegularClickListener();
+    }
+
+
+    /**
+     * Setup regular click listener for events preview
+     */
+    protected void setupAdapterRegularClickListener() {
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            // Setup regular click listener for events preview
+            adapter.setRegularClickListener(new BaseClickAdapterLegacy.DayRegularClickListener() {
+                @Override
+                public void onDayRegularClick(Day day, LocalDate date, View itemView, int position) {
+                    handleDayRegularClick(day, date, itemView, position);
+                }
+            });
+
+            Log.d(TAG, getFragmentName() + ": Regular click listener setup in adapter");
+        }
+    }
+
+
+    /**
+     * Handle regular click on day (non-selection mode)
+     */
+    protected void handleDayRegularClick(Day day, LocalDate date, View itemView, int position) {
+        Log.d(TAG, getFragmentName() + ": Regular click on date: " + date);
+
+        if (!mEventsPreviewEnabled) {
+            Log.v(TAG, "Events preview disabled, ignoring click");
+            return;
+        }
+
+        // Get events for this date
+        List<LocalEvent> events = getEventsForDate(date);
+
+        if (events.isEmpty()) {
+            // No events - show "add event" option or ignore
+            handleNoEventsClick(date, itemView);
+        } else {
+            // Has events - show preview
+            if (mEventsPreviewManager != null) {
+                mEventsPreviewManager.showEventsPreview(date, events, itemView);
+            }
+        }
+    }
+
+    /**
+     * Setup long-click listener in adapter
+     */
+    protected void setupAdapterLongClickListener() {
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            adapter.setLongClickListener(this);
+            Log.d(TAG, getFragmentName() + ": Long-click listener setup in adapter");
+        }
+    }
+
 
     // ===========================================
     // DayLongClickListener Implementation
@@ -210,14 +320,10 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * Hide FAB during selection mode
      */
     protected void hideFabForSelection() {
+
         if (mFabGoToToday != null && mFabGoToToday.getVisibility() == View.VISIBLE) {
-            mFabGoToToday.animate()
-                    .alpha(0f)
-                    .scaleX(0f)
-                    .scaleY(0f)
-                    .setDuration(200)
-                    .withEndAction(() -> mFabGoToToday.setVisibility(View.GONE))
-                    .start();
+            mHasSelectionHiddenFab = true;
+            toggleFabVisibility(mFabGoToToday);
         }
     }
 
@@ -225,14 +331,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * Show FAB after exiting selection mode
      */
     protected void showFabAfterSelection() {
-        if (mFabGoToToday != null) {
-            mFabGoToToday.setVisibility(View.VISIBLE);
-            mFabGoToToday.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(200)
-                    .start();
+        if (mFabGoToToday != null && mHasSelectionHiddenFab) {
+            mHasSelectionHiddenFab = false;
+            toggleFabVisibility(mFabGoToToday);
         }
     }
 
@@ -516,60 +617,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         return false;
     }
 
-    // ===========================================
-    // Lifecycle
-    // ===========================================
-
-    /**
-     * Enhanced onPause with events preview cleanup
-     */
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (mEventsPreviewManager != null) {
-            mEventsPreviewManager.onPause();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        // LongClick
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            adapter.onDestroy();
-        }
-
-        // Events Preview Click
-        if (mEventsPreviewManager != null) {
-            mEventsPreviewManager.onDestroy();
-            mEventsPreviewManager = null;
-        }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Setup long-click listener in adapter if available
-        setupAdapterLongClickListener();
-
-        // Initialize events preview after base setup
-        initializeEventsPreview();
-    }
-
-    /**
-     * Setup long-click listener in adapter
-     */
-    protected void setupAdapterLongClickListener() {
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            adapter.setLongClickListener(this);
-            Log.d(TAG, getFragmentName() + ": Long-click listener setup in adapter");
-        }
-    }
 
     // ===========================================
     // Public API Methods
@@ -672,30 +719,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      */
     protected abstract EventsPreviewManager.ViewType getEventsPreviewViewType();
 
-    /**
-     * Handle regular click on day (non-selection mode)
-     */
-    protected void handleDayRegularClick(Day day, LocalDate date, View itemView, int position) {
-        Log.d(TAG, getFragmentName() + ": Regular click on date: " + date);
-
-        if (!mEventsPreviewEnabled) {
-            Log.v(TAG, "Events preview disabled, ignoring click");
-            return;
-        }
-
-        // Get events for this date
-        List<LocalEvent> events = getEventsForDate(date);
-
-        if (events.isEmpty()) {
-            // No events - show "add event" option or ignore
-            handleNoEventsClick(date, itemView);
-        } else {
-            // Has events - show preview
-            if (mEventsPreviewManager != null) {
-                mEventsPreviewManager.showEventsPreview(date, events, itemView);
-            }
-        }
-    }
 
     /**
      * Handle click on date with no events
@@ -703,8 +726,8 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     protected void handleNoEventsClick(LocalDate date, View itemView) {
         Log.d(TAG, getFragmentName() + ": Click on date with no events: " + date);
 
-        // Default: offer to add event
-        showAddEventOption(date);
+        // TODO: offer to add event
+//        showAddEventOption(date);
     }
 
     /**

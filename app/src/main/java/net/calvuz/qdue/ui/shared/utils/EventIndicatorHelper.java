@@ -1,8 +1,7 @@
-package net.calvuz.qdue.ui.shared;
+package net.calvuz.qdue.ui.shared.utils;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
@@ -13,7 +12,6 @@ import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**

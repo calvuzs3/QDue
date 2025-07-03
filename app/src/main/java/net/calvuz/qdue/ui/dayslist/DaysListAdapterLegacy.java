@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,10 +22,10 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
-import net.calvuz.qdue.ui.shared.EventIndicatorHelper;
-import net.calvuz.qdue.ui.shared.HighlightingHelper;
-import net.calvuz.qdue.ui.shared.SharedViewModels;
-import net.calvuz.qdue.ui.shared.ToolbarAction;
+import net.calvuz.qdue.ui.shared.utils.EventIndicatorHelper;
+import net.calvuz.qdue.ui.shared.utils.HighlightingHelper;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -58,6 +59,9 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     private final QDueDatabase mEventsDatabase;
     private final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
 
+    // Add expansion support flag
+    private boolean mSupportsExpansion;
+
     /// //////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -71,6 +75,9 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     public DaysListAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
                                  HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);
+
+        // Set support expansion
+        boolean mSupportsExpansion = true;
 
         // Initialize event helper
         mEventHelper = new EventIndicatorHelper(context);
@@ -115,6 +122,17 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         // Only add our enhancements if it's our ViewHolder
         if (dayHolder instanceof DayslistDayViewHolder dayslistHolder) {
 
+            // Validate expansion support
+            if (!dayslistHolder.supportsExpansion()) {
+                Log.w(TAG, "ViewHolder does not support expansion - check layout structure");
+            }
+
+            // Setup expansion-aware click handling
+            setupExpansionAwareClicks(dayslistHolder, dayItem, position);
+
+            // Apply expansion state if this card was previously expanded
+            restoreExpansionState(dayslistHolder, dayItem);
+
             // NEW: Setup long-click and selection support
             setupLongClickSupport(dayslistHolder, dayItem, position);
 
@@ -146,6 +164,61 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
                     ", date: " + (dayItem.day != null ? dayItem.day.getLocalDate() : "null") +
                     ", ViewHolder: DayslistDayViewHolder");
         }
+    }
+
+    private LinearLayout getExpandableContainer(MaterialCardView cardView) {
+        try {
+            if (cardView.getChildCount() == 0) return null;
+
+            View firstChild = cardView.getChildAt(0);
+            if (firstChild instanceof LinearLayout layout) {
+                return layout.getOrientation() == LinearLayout.VERTICAL ? layout : null;
+            }
+            return null;
+        } catch (Exception e) {
+            Log.e(TAG, "Error: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Setup expansion-aware click handling
+     */
+    private void setupExpansionAwareClicks(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
+        // This enhances the existing click setup with expansion awareness
+
+        // Add subtle visual feedback for clickable cards with events
+        List<LocalEvent> events = getEventsForDate(dayItem.day.getLocalDate());
+        if (!events.isEmpty()) {
+            // Add ripple effect or subtle indication that card is expandable
+//            holder.itemView.setBackgroundResource(R.drawable.expandable_card_background);
+        }
+    }
+
+    /**
+     * Restore expansion state for recycled ViewHolders
+     */
+    private void restoreExpansionState(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
+        // This would check if this date was previously expanded and restore state
+        // For now, ensure all cards start in collapsed state
+
+        // Reset any expansion artifacts from recycled views
+        ViewGroup cardContainer = (ViewGroup) getExpandableContainer((MaterialCardView) holder.itemView) ;
+        if (cardContainer instanceof LinearLayout linearContainer) {
+
+            // Remove any previously added expanded content (from recycling)
+            if (linearContainer.getChildCount() > 1) {
+                // Remove extra children (should only have the original row content)
+                for (int i = linearContainer.getChildCount() - 1; i > 0; i--) {
+                    linearContainer.removeViewAt(i);
+                }
+            }
+        }
+
+        // Reset card height to wrap_content
+        ViewGroup.LayoutParams params = holder.itemView.getLayoutParams();
+        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        holder.itemView.setLayoutParams(params);
     }
 
     // ===========================================
@@ -754,6 +827,31 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
     /// /////////////////////////////////////////////////////////////////////////////////////
 
+    // Add validation method to adapter
+    private void validateExpansionSupport() {
+        // This method can be called during adapter initialization
+        // to ensure all ViewHolders support expansion
+        Log.d(TAG, "Validating expansion support for DaysList rows");
+
+        // The validation happens in ViewHolder constructor
+        // This method serves as a placeholder for future checks
+    }
+
+    // Update setupLongClickSupport to include expansion support check
+    @Override
+    protected void setupLongClickSupport(DayViewHolder holder, SharedViewModels.DayItem dayItem, int position) {
+        super.setupLongClickSupport(holder, dayItem, position);
+
+        // Additional check for expansion support
+        if (holder instanceof DayslistDayViewHolder dayslistHolder) {
+            if (!dayslistHolder.supportsExpansion()) {
+                Log.w(TAG, "ViewHolder at position " + position + " does not support expansion");
+            }
+        }
+    }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * DayslistDayViewHolder
      */
@@ -766,12 +864,31 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
             // Events Indicator
             eventsIndicator = itemView.findViewById(R.id.tv_events_indicator);
 
+            // Ensure the card layout supports expansion
+            View childLayout = itemView.getChildAt(0);
+            if (!(childLayout instanceof LinearLayout linearLayout)) {
+                Log.w(TAG, "DayslistDayViewHolder: Child layout is not LinearLayout, expansion may not work properly");
+                mSupportsExpansion = false;
+            } else {
+                if (linearLayout.getOrientation() != LinearLayout.VERTICAL) {
+                    Log.w(TAG, "DayslistDayViewHolder: LinearLayout is not vertical, expansion may not work properly");
+                    mSupportsExpansion = false;
+                }
+            }
+
             // Hide by default
             if (eventsIndicator != null) {
                 eventsIndicator.setVisibility(View.GONE);
             }
 
             Log.d(TAG, "DayslistDayViewHolder: initialized");
+        }
+
+        /**
+         * API: Check if expansion is supported
+         */
+        public boolean supportsExpansion() {
+            return mSupportsExpansion;
         }
     }
 }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- =========================================================================
+     2. item_event_compact_inline.xml
+     Layout compatto per eventi nella lista espansa (più piccolo del bottom sheet)
+     ========================================================================= -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Event Type Indicator -->
+    <View
+        android:id="@+id/v_event_type_indicator"
+        android:layout_width="3dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_rectangle"
+        tools:backgroundTint="@color/event_type_general" />
+
+    <!-- Event Content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Event Title -->
+        <TextView
+            android:id="@+id/tv_event_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Riunione Team" />
+
+        <!-- Event Time -->
+        <TextView
+            android:id="@+id/tv_event_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:maxLines="1"
+            tools:text="14:30 - 16:00" />
+
+    </LinearLayout>
+
+    <!-- Priority Indicator -->
+    <ImageView
+        android:id="@+id/iv_priority_indicator"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_rounded_priority_high_24"
+        android:visibility="gone"
+        tools:visibility="visible"
+        tools:tint="@color/priority_high" />
+
+</LinearLayout>
+

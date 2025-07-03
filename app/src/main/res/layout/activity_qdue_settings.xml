@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24"
             app:title="@string/menu_title_settings"
             app:titleTextAppearance="@style/TextAppearance.QDue.Toolbar.Title"
        />

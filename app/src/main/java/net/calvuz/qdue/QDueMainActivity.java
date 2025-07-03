@@ -32,8 +32,8 @@ import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
 import net.calvuz.qdue.ui.shared.BaseActivity;
+import net.calvuz.qdue.ui.shared.enums.NavigationMode;
 import net.calvuz.qdue.ui.welcome.WelcomeActivity;
-import net.calvuz.qdue.ui.welcome.WelcomeInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
@@ -74,22 +74,9 @@ public class QDueMainActivity extends BaseActivity {
     // Toolbar
     private MaterialToolbar toolbar;
 
-    // NEW: Fragment registration system
-    private final Set<EventsRefreshInterface> mRegisteredEventsFragments =
-            Collections.synchronizedSet(new HashSet<>());
 
-    // NEW: Enhanced activity launcher
+    // Enhanced activity launcher
     private ActivityResultLauncher<Intent> mEventsActivityLauncher;
-
-    /**
-     * Enum to track current navigation mode for proper handling
-     */
-    private enum NavigationMode {
-        PHONE_PORTRAIT,      // BottomNavigation + FAB separato
-        TABLET_PORTRAIT,     // NavigationRail + FAB integrato
-        LANDSCAPE_SMALL,     // NavigationRail espanso + Extended FAB
-        LANDSCAPE_LARGE      // NavigationRail + Drawer
-    }
 
     // ======================= METHODS ============================
 
@@ -154,9 +141,6 @@ public class QDueMainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        // Clear registered fragments
-        clearAllRegisteredFragments();
 
         // Cleanup enhanced data manager
         if (enhancedDataManager != null) {
@@ -737,13 +721,13 @@ public class QDueMainActivity extends BaseActivity {
         // Add registered fragments
         synchronized (mRegisteredEventsFragments) {
             allFragments.addAll(mRegisteredEventsFragments);
-            Log.d(TAG, String.format("Added %d registered fragments", mRegisteredEventsFragments.size()));
+            Log.d(TAG, String.format(QDue.getLocale() ,"Added %d registered fragments", mRegisteredEventsFragments.size()));
         }
 
         // Add discovered fragments (fallback method)
         List<EventsRefreshInterface> discoveredFragments = getEventsRefreshFragmentsByDiscovery();
         allFragments.addAll(discoveredFragments);
-        Log.d(TAG, String.format("Added %d discovered fragments", discoveredFragments.size()));
+        Log.d(TAG, String.format(QDue.getLocale(), "Added %d discovered fragments", discoveredFragments.size()));
 
         return new ArrayList<>(allFragments);
     }
@@ -772,7 +756,7 @@ public class QDueMainActivity extends BaseActivity {
             for (Fragment fragment : allFragments) {
                 if (fragment.getChildFragmentManager() != null) {
                     List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
-                    Log.d(TAG, String.format("Checking %d child fragments of %s",
+                    Log.d(TAG, String.format(QDue.getLocale(),"Checking %d child fragments of %s",
                             childFragments.size(), fragment.getClass().getSimpleName()));
 
                     for (Fragment childFragment : childFragments) {
@@ -1419,38 +1403,6 @@ public class QDueMainActivity extends BaseActivity {
         return fabGoToToday;
     }
 
-
-    /**
-     * Register a fragment for events refresh notifications
-     * Called by fragments in their onResume()
-     */
-    public void registerEventsRefreshFragment(EventsRefreshInterface fragment) {
-        if (fragment != null) {
-            mRegisteredEventsFragments.add(fragment);
-            Log.d(TAG, String.format(QDue.getLocale(), "Registered fragment: %s (Total: %d)",
-                    fragment.getFragmentDescription(), mRegisteredEventsFragments.size()));
-        }
-    }
-
-    /**
-     * Unregister a fragment from events refresh notifications
-     * Called by fragments in their onPause()
-     */
-    public void unregisterEventsRefreshFragment(EventsRefreshInterface fragment) {
-        if (fragment != null) {
-            boolean removed = mRegisteredEventsFragments.remove(fragment);
-            Log.d(TAG, String.format(QDue.getLocale(), "Unregistered fragment: %s (Removed: %s, Total: %d)",
-                    fragment.getFragmentDescription(), removed, mRegisteredEventsFragments.size()));
-        }
-    }
-
-    /**
-     * Clear all registered fragments (on activity destroy)
-     */
-    private void clearAllRegisteredFragments() {
-        Log.d(TAG, String.format(QDue.getLocale(), "Clearing %d registered fragments", mRegisteredEventsFragments.size()));
-        mRegisteredEventsFragments.clear();
-    }
 
     /**
      * Show success message to user

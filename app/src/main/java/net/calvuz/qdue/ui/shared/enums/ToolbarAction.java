@@ -1,6 +1,6 @@
 
 // ToolbarAction.java
-package net.calvuz.qdue.ui.shared;
+package net.calvuz.qdue.ui.shared.enums;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;

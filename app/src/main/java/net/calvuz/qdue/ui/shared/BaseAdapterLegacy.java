@@ -24,6 +24,8 @@ import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
+import net.calvuz.qdue.ui.shared.utils.EventIndicatorHelper;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;

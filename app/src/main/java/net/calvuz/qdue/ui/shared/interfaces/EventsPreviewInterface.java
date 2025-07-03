@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.shared;
+package net.calvuz.qdue.ui.shared.interfaces;
 
 import net.calvuz.qdue.events.models.LocalEvent;
 import java.time.LocalDate;

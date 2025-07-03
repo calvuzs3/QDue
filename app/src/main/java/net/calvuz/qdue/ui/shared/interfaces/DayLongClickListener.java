@@ -1,8 +1,10 @@
-package net.calvuz.qdue.ui.shared;
+package net.calvuz.qdue.ui.shared.interfaces;
 
 import android.view.View;
 
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
+
 import java.time.LocalDate;
 
 /**

@@ -9,8 +9,11 @@ import androidx.annotation.NonNull;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.ui.shared.interfaces.DayLongClickListener;
+import net.calvuz.qdue.ui.shared.models.SharedViewModels;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -26,11 +29,16 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
     private static final String TAG = "BaseClickAdapter";
 
+
+    // NEW: Regular click support
+    protected DayRegularClickListener mRegularClickListener;
+
     // Long-click and selection support
     protected DayLongClickListener mLongClickListener; // Fragment callback
     protected boolean mIsSelectionMode = false;
     protected Set<LocalDate> mSelectedDates = new HashSet<>();
     protected FloatingDayToolbar mFloatingToolbar;
+
 
     public BaseClickAdapterLegacy(Context context, List<SharedViewModels.ViewItem> items,
                                   HalfTeam userHalfTeam, int numShifts) {
@@ -40,6 +48,15 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         mFloatingToolbar = new FloatingDayToolbar(context);
 
         Log.d(TAG, "BaseClickAdapterLegacy: ✅ initialized with long-click support");
+    }
+
+
+    /**
+     * Set the regular click listener for events preview
+     */
+    public void setRegularClickListener(DayRegularClickListener listener) {
+        mRegularClickListener = listener;
+        Log.d(TAG, "Regular click listener set: " + (listener != null ? "active" : "null"));
     }
 
     /**
@@ -60,6 +77,9 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
         // Bind day data to holder for callbacks
         longClickHolder.bindDayData(dayItem.day, dayItem.day.getLocalDate(), position, this);
+
+        // NEW: Setup regular click listener
+        longClickHolder.setRegularClickListener(mRegularClickListener);
 
         // Update selection mode state
         longClickHolder.setSelectionMode(mIsSelectionMode);
@@ -384,19 +404,19 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
      * Aggiornare questa classe in DaysListAdapterLegacy.java
      */
     public class BaseMaterialDayViewHolder extends DayViewHolder implements BaseClickAdapterLegacy.LongClickCapable {
-        final String mTAG = "BaseMaterialDayViewHolder: ";
-
         // Existing fields
         public TextView eventsIndicator;
+
+
+        // 🔧 NEW: Regular click support (calendar view  overrides it)
+        private DayRegularClickListener mRegularClickListener;
 
         // Selection support fields
         private boolean mIsSelectionMode = false;
         private boolean mIsSelected = false;
         private DayLongClickListener mLongClickListener;
 
-        // 🔧 NEW: Regular click support (calendar view  overrides it)
-        private DayRegularClickListener mRegularClickListener;
-
+        // View holder data
         private Day mCurrentDay;
         private LocalDate mCurrentDate;
         private int mCurrentPosition;
@@ -413,20 +433,36 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
             // Setup listeners immediately in constructor
             setupLongClickListener();
             setupClickListener(); // Enhanced to handle both modes
-
-            Log.v(TAG, mTAG + "initialized");
         }
 
         // ===========================================
-        // Enhanced LongClick Listener Setup
+        // Click and  LongClick Listener Setup
         // ===========================================
+
+
+        /**
+         * Enhanced setup regular click listener for both selection and normal mode
+         */
+        private void setupClickListener() {
+            itemView.setOnClickListener(v -> {
+                Log.d(TAG, "Click detected - selection mode: " + mIsSelectionMode);
+
+                if (mIsSelectionMode) {
+                    // Selection mode: toggle selection
+                    handleSelectionModeClick();
+                } else {
+                    // Normal mode: show events preview
+                    handleRegularModeClick();
+                }
+            });
+        }
 
         /**
          * Setup long click listener for toolbar activation
          */
         private void setupLongClickListener() {
             itemView.setOnLongClickListener(v -> {
-                Log.d(TAG, mTAG + "Long click detected!");
+                Log.d(TAG,  "Long click detected!");
 
                 if (mLongClickListener != null && mCurrentDay != null) {
                     // Provide haptic feedback
@@ -435,41 +471,17 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
                     // Trigger callback
                     mLongClickListener.onDayLongClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
 
-                    Log.d(TAG, mTAG + "Long click callback triggered for date: " + mCurrentDate);
+                    Log.d(TAG,  "Long click callback triggered for date: " + mCurrentDate);
                     return true;
                 } else {
-                    Log.w(TAG, mTAG + "Long click ignored - listener: " +
+                    Log.w(TAG,  "Long click ignored - listener: " +
                             (mLongClickListener != null ? "OK" : "NULL") +
                             ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
                 }
                 return false;
             });
-
-            Log.d(TAG, mTAG + "Long click listener setup completed");
         }
 
-        // ===========================================
-        // Enhanced Click Listener Setup
-        // ===========================================
-
-        /**
-         * Enhanced setup regular click listener for both selection and normal mode
-         */
-        private void setupClickListener() {
-            itemView.setOnClickListener(v -> {
-                Log.d(TAG, mTAG + "Click detected - selection mode: " + mIsSelectionMode);
-
-                if (mIsSelectionMode) {
-                    // Selection mode: toggle selection
-                    handleSelectionModeClick();
-                } else {
-                    // Normal mode: show events preview or handle as regular click
-                    handleRegularModeClick();
-                }
-            });
-
-            Log.d(TAG, mTAG + "Enhanced click listener setup completed");
-        }
 
         /**
          * Handle click in selection mode
@@ -482,9 +494,9 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
                 // Notify listener
                 mLongClickListener.onDaySelectionChanged(mCurrentDay, mCurrentDate, mIsSelected);
 
-                Log.d(TAG, mTAG + "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
+                Log.d(TAG,  "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
             } else {
-                Log.w(TAG, mTAG + "Selection mode click ignored - missing data or listener");
+                Log.w(TAG,  "Selection mode click ignored - missing data or listener");
             }
         }
 
@@ -496,9 +508,9 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
                 // Trigger regular click callback for events preview
                 mRegularClickListener.onDayRegularClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
 
-                Log.d(TAG, mTAG + "Regular click triggered for date: " + mCurrentDate);
+                Log.d(TAG,  "Regular click triggered for date: " + mCurrentDate);
             } else {
-                Log.v(TAG, mTAG + "Regular click ignored - listener: " +
+                Log.v(TAG,  "Regular click ignored - listener: " +
                         (mRegularClickListener != null ? "OK" : "NULL") +
                         ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
             }
@@ -510,18 +522,13 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
         @Override
         public void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener) {
-            Log.d(TAG, mTAG + "bindDayData called for date: " + date);
+            Log.d(TAG, "bindDayData called for date: " + date);
 
             // Store day data for callbacks
             mCurrentDay = day;
             mCurrentDate = date;
             mCurrentPosition = position;
             mLongClickListener = listener;
-
-            // Debug verification
-            Log.d(TAG, mTAG + "Data bound - Day: " + (day != null ? "OK" : "NULL") +
-                    ", Listener: " + (listener != null ? "OK" : "NULL") +
-                    ", Date: " + date);
 
             // Update visual state
             updateSelectionVisual();
@@ -530,13 +537,10 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         @Override
         public void setRegularClickListener(DayRegularClickListener listener) {
             mRegularClickListener = listener;
-            Log.d(TAG, mTAG + "Regular click listener set: " + (listener != null ? "OK" : "NULL"));
         }
 
         @Override
         public void setSelectionMode(boolean isSelectionMode) {
-            Log.d(TAG, mTAG + "setSelectionMode: " + isSelectionMode + " (was: " + mIsSelectionMode + ")");
-
             mIsSelectionMode = isSelectionMode;
 
             // Update visual state
@@ -550,15 +554,12 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
         @Override
         public void setSelected(boolean isSelected) {
-            Log.d(TAG, mTAG + "setSelected: " + isSelected + " (was: " + mIsSelected + ")");
-
             mIsSelected = isSelected;
 
             // Update MaterialCardView checked state
             if (itemView instanceof MaterialCardView) {
                 MaterialCardView cardView = (MaterialCardView) itemView;
                 cardView.setChecked(isSelected);
-                Log.d(TAG, mTAG + "MaterialCardView.setChecked(" + isSelected + ")");
             }
 
             updateSelectionVisual();
@@ -577,11 +578,7 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
          * Enhanced update UI based on selection state and click mode
          */
         private void updateSelectionVisual() {
-            if (itemView instanceof MaterialCardView) {
-                MaterialCardView cardView = (MaterialCardView) itemView;
-
-                Log.v(TAG, mTAG + "updateSelectionVisual - SelectionMode: " + mIsSelectionMode +
-                        ", Selected: " + mIsSelected);
+            if (itemView instanceof MaterialCardView cardView) {
 
                 // Enable/disable checkable state based on selection mode
                 cardView.setCheckable(mIsSelectionMode);
@@ -594,16 +591,12 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
                     // Optional: Add selection mode visual cues
                     //updateSelectionModeVisuals(cardView);
-
-                    Log.v(TAG, mTAG + "Selection mode elevation set: " + (mIsSelected ? "8f" : "4f"));
                 } else {
                     // Normal mode: standard elevation with subtle hover effect
                     cardView.setCardElevation(2f);
 
                     // Optional: Add clickable visual cues for events preview
                     //updateNormalModeVisuals(cardView);
-
-                    Log.v(TAG, mTAG + "Normal mode elevation set: 2f");
                 }
             }
         }
