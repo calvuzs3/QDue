@@ -3,8 +3,12 @@ package net.calvuz.qdue.ui.shared;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
@@ -13,6 +17,7 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.utils.Log;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,24 +32,33 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
     private static final String TAG = "BaseClickFragment";
 
-    // Selection mode support
-    protected boolean mIsSelectionMode = false;
-    protected boolean mHasSelectionHiddenFab = false;
-    protected boolean previousMode = false;
+    // Bottom Selection Toolbar
+    protected BottomSelectionToolbar mBottomToolbar;
 
+    // Views
+    protected CoordinatorLayout mCoordinatorLayout; // to attach the bottom toolbar
+
+    // Selection mode support
+    protected boolean mHasSelectionHiddenFab = false;
     protected MenuItem mSelectAllMenuItem;
     protected MenuItem mClearSelectionMenuItem;
     protected MenuItem mExitSelectionMenuItem;
+
+    // Events Preview Integration
+    protected EventsPreviewManager mEventsPreviewManager;
+    protected boolean mEventsPreviewEnabled = true;
 
     // Abstract methods for subclasses to implement
     protected abstract BaseClickAdapterLegacy getClickAdapter();
 
     protected abstract String getFragmentName();
 
-    // Events Preview Integration
-    protected EventsPreviewManager mEventsPreviewManager;
-    protected boolean mEventsPreviewEnabled = true;
-
+    /**
+     * @return CoordinatorLayout to attach the bottom toolbar
+     */
+    protected ViewGroup getToolbarContainer() {
+        return mCoordinatorLayout; // try
+    }
 
     // ===========================================
     // Lifecycle
@@ -57,6 +71,12 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     public void onPause() {
         super.onPause();
 
+        // Force exit selection on pause per UX
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null && adapter.isSelectionMode()) {
+            adapter.setSelectionMode(false);
+        }
+
         if (mEventsPreviewManager != null) {
             mEventsPreviewManager.onPause();
         }
@@ -66,7 +86,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     public void onDestroy() {
         super.onDestroy();
 
-        // LongClick
+        // Cleanup delegato all'adapter
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null) {
             adapter.onDestroy();
@@ -81,7 +101,15 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
+        // Initialize bottom toolbar first
+        setupBottomToolbar();
+
+        // Super call
         super.onViewCreated(view, savedInstanceState);
+
+        // Setup regular click listener for events preview
+        setupAdapterRegularClickListener();
 
         // Setup long-click listener in adapter if available
         setupAdapterLongClickListener();
@@ -89,11 +117,31 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // Initialize events preview after base setup
         initializeEventsPreview();
 
+        // DEBUG
+        debugSelectionState();
 
-        // NEW: Setup regular click listener for events preview
-        setupAdapterRegularClickListener();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Clean up bottom toolbar
+        if (mBottomToolbar != null) {
+            mBottomToolbar.destroy();
+            mBottomToolbar = null;
+        }
+    }
+
+    /**
+     * Initialize bottom selection toolbar
+     */
+    private void setupBottomToolbar() {
+        if (getContext() == null) return;
+
+        mBottomToolbar = new BottomSelectionToolbar(getContext());
+        Log.d(TAG, "setupBottomToolbar: ✅ Bottom toolbar initialized");
+    }
 
     /**
      * Setup regular click listener for events preview
@@ -110,32 +158,8 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             });
 
             Log.d(TAG, getFragmentName() + ": Regular click listener setup in adapter");
-        }
-    }
-
-
-    /**
-     * Handle regular click on day (non-selection mode)
-     */
-    protected void handleDayRegularClick(Day day, LocalDate date, View itemView, int position) {
-        Log.d(TAG, getFragmentName() + ": Regular click on date: " + date);
-
-        if (!mEventsPreviewEnabled) {
-            Log.v(TAG, "Events preview disabled, ignoring click");
-            return;
-        }
-
-        // Get events for this date
-        List<LocalEvent> events = getEventsForDate(date);
-
-        if (events.isEmpty()) {
-            // No events - show "add event" option or ignore
-            handleNoEventsClick(date, itemView);
         } else {
-            // Has events - show preview
-            if (mEventsPreviewManager != null) {
-                mEventsPreviewManager.showEventsPreview(date, events, itemView);
-            }
+            Log.e(TAG, "setupAdapterRegularClickListener: ❌ Adapter is null, cannot setup regular click listener");
         }
     }
 
@@ -146,10 +170,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null) {
             adapter.setLongClickListener(this);
-            Log.d(TAG, getFragmentName() + ": Long-click listener setup in adapter");
+            Log.d(TAG, "setupAdapterLongClickListener: ✅ Long-click listener setup in adapter");
+        } else {
+            Log.e(TAG, "setupAdapterLongClickListener: ❌ Adapter is null, cannot setup long-click listener ");
         }
     }
-
 
     // ===========================================
     // DayLongClickListener Implementation
@@ -157,25 +182,21 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
     @Override
     public void onDayLongClick(Day day, LocalDate date, View itemView, int position) {
-        Log.d(TAG, getFragmentName() + ": Day long-clicked: " + date);
+        Log.d(TAG, "onDayLongClick: Day long-clicked: " + date);
+
+        // ❌ remove: enterSelectionMode()
+        // ✅ ONLY feedback UI non-state
+        updateSelectionUI(); // Update UI, no state change
 
         // Show selection mode UI if needed
-        if (!mIsSelectionMode) {
-            enterSelectionMode();
-        }
-
-        // Update FAB or other UI elements based on selection
-        updateSelectionUI();
-
-        // Provide haptic feedback
-        if (itemView != null) {
-            itemView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-        }
+//        if (!mIsSelectionMode) {
+//            enterSelectionMode();
+//        }
     }
 
     @Override
     public void onToolbarActionSelected(ToolbarAction action, Day day, LocalDate date) {
-        Log.d(TAG, getFragmentName() + ": Toolbar action selected: " + action + " for date: " + date);
+        Log.d(TAG, "onToolbarActionSelected: Toolbar action selected: " + action + " for date: " + date);
 
         switch (action) {
             case ADD_EVENT:
@@ -207,29 +228,54 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         Log.d(TAG, getFragmentName() + ": Selection mode changed: " + isSelectionMode +
                 ", count: " + selectedCount);
 
-        // 🔧 FIX: Store previous mode before updating
-        boolean previousMode = mIsSelectionMode;
-        mIsSelectionMode = isSelectionMode;
+        // ✅ SOLO UI UPDATES
+        // selectedCount is still 0.. ( && selectedCount > 0 )
+        if (isSelectionMode) {
 
-        if (isSelectionMode && !previousMode) {
-            // Entering selection mode
-            Log.d(TAG, getFragmentName() + ": Entering selection mode");
             enterSelectionMode();
-        } else if (!isSelectionMode && previousMode) {
-            // Exiting selection mode
-            Log.d(TAG, getFragmentName() + ": Exiting selection mode");
+
+            Log.d(TAG, "UI updated: (true) " + selectedCount);
+        } else {
             exitSelectionMode();
+            Log.d(TAG, "UI updated: (false) " + selectedCount);
         }
 
-        updateSelectionUI();
-        updateActionBarTitle(selectedCount);
+//
+//        // 🔧 FIX: Store previous mode before updating
+//        boolean previousMode = mIsSelectionMode;
+//        mIsSelectionMode = isSelectionMode;
 
-        // 🔧 FIX: Special handling for auto-exit (now previousMode is correctly defined)
-        if (!isSelectionMode && previousMode && selectedCount == 0) {
-            Log.d(TAG, getFragmentName() + ": Auto-exit from selection mode detected (no items selected)");
-            // Additional cleanup or notifications can be added here
-            onAutoExitSelectionMode();
-        }
+//        if (isSelectionMode && selectedCount > 0) {
+//            // Enter/update selection mode
+//            if (!mIsSelectionMode) {
+//                enterSelectionMode();
+//            }
+//            updateBottomToolbar();
+//        } else {
+//            // Exit selection mode
+//            exitSelectionMode();
+//        }
+//    }
+
+//        if (isSelectionMode && !previousMode) {
+//            // Entering selection mode
+//            Log.d(TAG, getFragmentName() + ": Entering selection mode");
+//            enterSelectionMode();
+//        } else if (!isSelectionMode && previousMode) {
+//            // Exiting selection mode
+//            Log.d(TAG, getFragmentName() + ": Exiting selection mode");
+//            exitSelectionMode();
+//        }
+//
+//        updateSelectionUI();
+//        updateActionBarTitle(selectedCount);
+//
+//        // 🔧 FIX: Special handling for auto-exit (now previousMode is correctly defined)
+//        if (!isSelectionMode && previousMode && selectedCount == 0) {
+//            Log.d(TAG, getFragmentName() + ": Auto-exit from selection mode detected (no items selected)");
+//            // Additional cleanup or notifications can be added here
+//            onAutoExitSelectionMode();
+//        }
     }
 
     /**
@@ -249,63 +295,46 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
     }
 
-    @Override
-    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
-        Log.d(TAG, getFragmentName() + ": Day selection changed: " + date + " -> " + isSelected);
-
-        // Update UI based on selection changes
-        updateSelectionUI();
-
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            int selectedCount = adapter.getSelectedCount();
-            updateActionBarTitle(selectedCount);
-
-            // 🔧 NEW: Log selection count for debugging
-            Log.d(TAG, getFragmentName() + ": Current selection count: " + selectedCount);
-        }
-    }
+//        BaseClickAdapterLegacy adapter = getClickAdapter();
+//        if (adapter != null) {
+//            int selectedCount = adapter.getSelectedCount();
+//            updateActionBarTitle(selectedCount);
+//
+//            // 🔧 NEW: Log selection count for debugging
+//            Log.d(TAG, getFragmentName() + ": Current selection count: " + selectedCount);
+//        }
+//    }
 
     // ===========================================
     // Selection Mode UI Management
     // ===========================================
 
     /**
-     * Enter selection mode - update UI accordingly
+     * Proxy for ADAPTER: Enter selection mode (update UI accordingly?)
      */
     protected void enterSelectionMode() {
-        if (mIsSelectionMode) return;
-
-        mIsSelectionMode = true;
-
-        // Update action bar/toolbar if available
-        updateActionBarForSelection(true);
-
-        // Hide FAB during selection
-        hideFabForSelection();
-
-        // Enable selection mode in adapter
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null && !adapter.isSelectionMode()) {
             adapter.setSelectionMode(true);
         }
 
-        Log.d(TAG, getFragmentName() + ": Entered selection mode");
+        hideFabForSelection();
+        showBottomToolbar();
+        updateActionBarForSelection(isSelectionMode());
+        updateBottomToolbar();
+        // TODO: update fab visibility
+        //toggleFabVisibility(mFabGoToToday);
+        updateActionBarTitle(getCurrentSelectionCount());
+
+        Log.d(TAG, "enterSelectionMode: Entered selection mode");
     }
 
     /**
      * Exit selection mode - restore normal UI
      */
     protected void exitSelectionMode() {
-        if (!mIsSelectionMode) return;
-
-        mIsSelectionMode = false;
-
-        // Clear adapter selection
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            adapter.exitSelectionMode();
-        }
+        // Exit if in selection mode
+        if (isSelectionMode()) return;
 
         // Update action bar/toolbar
         updateActionBarForSelection(false);
@@ -313,7 +342,50 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // Show FAB again
         showFabAfterSelection();
 
-        Log.d(TAG, getFragmentName() + ": Exited selection mode");
+        // Hide bottom toolbar
+        hideBottomToolbar();
+
+        // Disable selection mode in adapter
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null && adapter.isSelectionMode()) {
+            adapter.setSelectionMode(false);
+            adapter.clearSelections();
+        }
+
+        Log.d(TAG, "exitSelectionMode: Exited selection mode");
+    }
+
+    /**
+     * Show bottom toolbar with current selection
+     */
+    private void showBottomToolbar() {
+        if (mBottomToolbar == null) {
+            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null");
+            return;
+        }
+
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter == null) return;
+
+        ViewGroup container = getToolbarContainer();
+        if (container == null) {
+            Log.e(TAG, "showBottomToolbar: ❌ No toolbar container available");
+            return;
+        }
+
+        Set<LocalDate> selectedDates = adapter.getSelectedDates();
+        mBottomToolbar.show(container, selectedDates, this);
+    }
+
+    /**
+     * Hide bottom toolbar
+     */
+    private void hideBottomToolbar() {
+        if (mBottomToolbar != null) {
+            mBottomToolbar.hide();
+        } else {
+            Log.e(TAG, "hideBottomToolbar: ❌ Bottom toolbar is null");
+        }
     }
 
     /**
@@ -338,12 +410,78 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     }
 
     /**
+     * Setup action bar for selection mode
+     * mock default implementation
+     */
+    protected void setupSelectionActionBar(QDueMainActivity mainActivity) {
+        // Subclasses can override for specific selection action bar setup
+        // For now, just update the title
+
+        updateActionBarTitle(getCurrentSelectionCount());
+
+    }
+
+    /**
+     * Restore normal action bar
+     * mock default implementation
+     */
+    protected void restoreNormalActionBar(QDueMainActivity mainActivity) {
+        // Subclasses can override for specific action bar restoration
+        // For now, just reset the title
+
+        if (getActivity() != null && getActivity().getActionBar() != null) {
+            getActivity().getActionBar().setTitle(getFragmentName());
+        }
+    }
+
+    // ===========================================
+    // UI Update Methods
+    // ===========================================
+
+    /**
+     * Update UI elements based on current selection state
+     */
+    protected void updateSelectionUI() {
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter == null) return;
+
+        int selectedCount = adapter.getSelectedCount();
+
+        // Update toolbar
+        updateBottomToolbar();
+
+        // Update action bar title
+        updateActionBarTitle(selectedCount);
+
+        // Update any other UI elements
+        updateToolbarMenuItems();
+    }
+
+    /**
+     * Update action bar title with selection count
+     */
+    protected void updateActionBarTitle(int selectedCount) {
+        if (isSelectionMode() && getActivity() != null) {
+            String title = selectedCount > 0 ?
+                    String.format(QDue.getLocale(), "%d selezionati", selectedCount) :
+                    "Seleziona";
+
+            // Update action bar title
+            if (getActivity().getActionBar() != null) {
+                getActivity().getActionBar().setTitle(title);
+            }
+
+            Log.d(TAG, "Updated action bar title: " + title);
+        }
+    }
+
+    /**
      * Update action bar for selection mode
      */
     protected void updateActionBarForSelection(boolean isSelectionMode) {
-        if (getActivity() instanceof QDueMainActivity) {
-            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+        if (getActivity() instanceof QDueMainActivity mainActivity) {
 
+            // Custom action bar if needed
             if (isSelectionMode) {
                 // Show selection action bar
                 setupSelectionActionBar(mainActivity);
@@ -357,75 +495,31 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     }
 
     /**
-     * Setup action bar for selection mode
+     * Update toolbar menu items
      */
-    protected void setupSelectionActionBar(QDueMainActivity mainActivity) {
-        // Subclasses can override for specific selection action bar setup
-        // For now, just update the title
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            updateActionBarTitle(adapter.getSelectedCount());
-        }
-    }
-
-    /**
-     * Restore normal action bar
-     */
-    protected void restoreNormalActionBar(QDueMainActivity mainActivity) {
-        // Subclasses can override for specific action bar restoration
-        // For now, just reset the title
-        if (getActivity() != null && getActivity().getActionBar() != null) {
-            getActivity().getActionBar().setTitle(getFragmentName());
-        }
-    }
-
-    /**
-     * Update action bar title with selection count
-     */
-    protected void updateActionBarTitle(int selectedCount) {
-        if (mIsSelectionMode && getActivity() != null) {
-            String title = selectedCount > 0 ?
-                    String.format(QDue.getLocale(), "%d giorni selezionati", selectedCount) :
-                    "Seleziona giorni";
-
-            // Update action bar title
-            if (getActivity().getActionBar() != null) {
-                getActivity().getActionBar().setTitle(title);
-            }
-
-            Log.d(TAG, "Updated action bar title: " + title);
-        }
-    }
-
-    /**
-     * Update UI elements based on current selection state
-     */
-    protected void updateSelectionUI() {
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        boolean hasSelection = adapter != null && adapter.getSelectedCount() > 0;
-
-        Log.v(TAG, getFragmentName() + ": updateSelectionUI - hasSelection: " + hasSelection +
-                ", selectionMode: " + mIsSelectionMode);
-
-        // Enable/disable menu items based on selection
+    protected void updateToolbarMenuItems() {
+        // Update menu items based on selection state
         if (mSelectAllMenuItem != null) {
-            mSelectAllMenuItem.setEnabled(mIsSelectionMode);
+            mSelectAllMenuItem.setVisible(isSelectionMode());
         }
-
         if (mClearSelectionMenuItem != null) {
-            mClearSelectionMenuItem.setEnabled(mIsSelectionMode && hasSelection);
+            mClearSelectionMenuItem.setVisible(isSelectionMode());
         }
-
         if (mExitSelectionMenuItem != null) {
-            mExitSelectionMenuItem.setEnabled(mIsSelectionMode);
+            mExitSelectionMenuItem.setVisible(isSelectionMode());
         }
+    }
 
-        // Update other UI elements as needed
-        updateSelectionDependentUI(hasSelection);
+    /**
+     * Update bottom toolbar with current selection
+     */
+    private void updateBottomToolbar() {
+        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
 
-        // 🔧 NEW: Update action bar title when selection changes
+        BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null) {
-            updateActionBarTitle(adapter.getSelectedCount());
+            Set<LocalDate> selectedDates = adapter.getSelectedDates();
+            mBottomToolbar.updateSelection(selectedDates);
         }
     }
 
@@ -437,9 +531,8 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // Default implementation - subclasses can override
     }
 
-
 // ===========================================
-// 🔧 NEW: Additional Helper Methods
+// Helper Methods
 // ===========================================
 
     /**
@@ -447,7 +540,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      */
     public boolean hasActiveSelection() {
         BaseClickAdapterLegacy adapter = getClickAdapter();
-        return mIsSelectionMode && adapter != null && adapter.getSelectedCount() > 0;
+        return isSelectionMode() && adapter != null && adapter.getSelectedCount() > 0;
     }
 
     /**
@@ -458,64 +551,139 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         return adapter != null ? adapter.getSelectedCount() : 0;
     }
 
-
     // ===========================================
-    // Action Handling
+    // Event Handling Methods
     // ===========================================
-
-
 
     /**
      * Show events dialog for the specified date
      */
     protected void showEventsDialog(LocalDate date) {
-        Log.d(TAG, "Showing events dialog for date: " + date);
-
         // Get events for this date
-        Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
-        List<LocalEvent> events = eventsCache.get(date);
-
-        if (events == null || events.isEmpty()) {
-            // Show "no events" message
-            showNoEventsMessage(date);
-        } else {
-            // Show events list dialog
-            showEventsListDialog(date, events);
-        }
-
-        // Delegate to subclass for specific handling
+        List<LocalEvent> events = getEventsForDate(date);
         onShowEventsDialog(date, events);
     }
+//        Log.d(TAG, "Showing events dialog for date: " + date);
+//
+//        // Get events for this date
+//        Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+//        List<LocalEvent> events = eventsCache.get(date);
+//
+//        if (events == null || events.isEmpty()) {
+//            // Show "no events" message
+//            showNoEventsMessage(date);
+//        } else {
+//            // Show events list dialog
+//            showEventsListDialog(date, events);
+//        }
+//
+//        // Delegate to subclass for specific handling
+//        onShowEventsDialog(date, events);
+//    }
 
     /**
      * Show confirmation for quick event creation
+     * TODO: delete mock toast
      */
     protected void showQuickEventConfirmation(ToolbarAction action, LocalDate date) {
-        if (getContext() == null) return;
-
-        String eventType = getEventTypeName(action);
-        String message = String.format(QDue.getLocale(),
-                "Evento '%s' creato per %s", eventType, date);
-
-        android.widget.Toast.makeText(getContext(), message, android.widget.Toast.LENGTH_SHORT).show();
-
-        Log.d(TAG, "Quick event confirmation shown: " + eventType + " for " + date);
-
-        // Delegate to subclass
+        // Default implementation - can be overridden
         onQuickEventCreated(action, date);
+    }
+//        if (getContext() == null) return;
+//
+//        String eventType = ToolbarAction.getEventTypeName(action);
+//        String message = String.format(QDue.getLocale(),
+//                "Evento '%s' creato per %s", eventType, date);
+//
+//        android.widget.Toast.makeText(getContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+//
+//        Log.d(TAG, "Quick event confirmation shown: " + eventType + " for " + date);
+//
+//        // Delegate to subclass
+//        onQuickEventCreated(action, date);
+//    }
+
+    /**
+     * Get events for a specific date from cache
+     * default implementation -  sub classes should override
+     */
+    protected List<LocalEvent> getEventsForDate(LocalDate date) {
+        Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+        List<LocalEvent> events = eventsCache.get(date);
+        return events != null ? events : new ArrayList<>();
+    }
+
+    // ===========================================
+    // Template Methods for Subclasses
+    // ===========================================
+
+    /**
+     * Called when event editor should be opened
+     * Subclasses should override for specific navigation
+     */
+    protected void onOpenEventEditor(LocalDate date) {
+        Log.d(TAG, "Opening event editor for date: " + date);
+        // Default implementation - subclasses can override
     }
 
     /**
-     * Get user-friendly event type name
+     * Called when events dialog should be shown
      */
-    protected String getEventTypeName(ToolbarAction action) {
-        switch (action) {
-            case FERIE: return "Ferie";
-            case MALATTIA: return "Malattia";
-            case LEGGE_104: return "Legge 104";
-            case PERMESSO: return "Permesso";
-            default: return action.name();
+    protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
+        Log.d(TAG, "Showing events dialog for date: " + date);
+        // Default implementation - subclasses can override
+    }
+
+    /**
+     * Called when a quick event is created
+     */
+    protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
+        Log.d(TAG, "Quick event created: " + action + " for date: " + date);
+        // Default implementation - subclasses can override
+    }
+
+    // ===========================================
+    // Menu Handling
+    // ===========================================
+
+    /**
+     * Handle options menu item selection for selection mode
+     */
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter == null) return false;
+
+        // Handle selection mode menu items
+        int itemId = item.getItemId();
+
+        // These would be defined in menu XML
+        /*
+        if (itemId == R.id.action_select_all) {
+
+        for (LocalDate date : getAllAvailableDates()) {
+        if (!mSelectedDates.contains(date)) {
+            toggleDateSelection(date);
         }
+    }
+
+            //adapter.selectAllDays();
+            return true;
+        } else if (itemId == R.id.action_clear_selection) {
+        if (!mSelectedDates.isEmpty()) {
+        Set<LocalDate> toDeselect = new HashSet<>(mSelectedDates);
+        for (LocalDate date : toDeselect) {
+            toggleDateSelection(date);
+        }
+    }
+            //adapter.clearSelections();
+            return true;
+        } else if (itemId == R.id.action_exit_selection) {
+            exitSelectionMode();
+            return true;
+        }
+        */
+
+        return false;
     }
 
     // ===========================================
@@ -556,69 +724,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     }
 
     // ===========================================
-    // Abstract/Virtual Methods for Subclasses
-    // ===========================================
-
-    /**
-     * Called when event editor should be opened
-     * Subclasses should override for specific navigation
-     */
-    protected void onOpenEventEditor(LocalDate date) {
-        Log.d(TAG, "Opening event editor for date: " + date);
-        // Default implementation - subclasses can override
-    }
-
-    /**
-     * Called when events dialog should be shown
-     * Subclasses should override for specific dialog implementation
-     */
-    protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
-        Log.d(TAG, "Showing events dialog for date: " + date);
-        // Default implementation - subclasses can override
-    }
-
-    /**
-     * Called when a quick event is created
-     * Subclasses should override for specific handling
-     */
-    protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
-        Log.d(TAG, "Quick event created: " + action + " for date: " + date);
-        // Default implementation - subclasses can override
-    }
-
-    // ===========================================
-    // Menu Handling
-    // ===========================================
-
-    /**
-     * Handle options menu item selection for selection mode
-     */
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter == null) return false;
-
-        // Handle selection mode menu items
-        int itemId = item.getItemId();
-
-        // These would be defined in menu XML
-        /*
-        if (itemId == R.id.action_select_all) {
-            adapter.selectAllDays();
-            return true;
-        } else if (itemId == R.id.action_clear_selection) {
-            adapter.clearSelections();
-            return true;
-        } else if (itemId == R.id.action_exit_selection) {
-            exitSelectionMode();
-            return true;
-        }
-        */
-
-        return false;
-    }
-
-
-    // ===========================================
     // Public API Methods
     // ===========================================
 
@@ -631,10 +736,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     }
 
     /**
-     * Public method to check if in selection mode
+     * Proxy for ADAPTER: check if it's in selection mode
      */
     public boolean isSelectionMode() {
-        return mIsSelectionMode;
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        return adapter != null && adapter.isSelectionMode();
     }
 
     /**
@@ -645,14 +751,13 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         return adapter != null ? adapter.getSelectedCount() : 0;
     }
 
-
     /**
      * 🔧 NEW: Force exit selection mode (public method for external calls)
      */
     public void forceExitSelectionMode() {
         Log.d(TAG, getFragmentName() + ": Force exit selection mode requested");
 
-        if (mIsSelectionMode) {
+        if (isSelectionMode()) {
             BaseClickAdapterLegacy adapter = getClickAdapter();
             if (adapter != null) {
                 adapter.deselectAll(); // This will trigger auto-exit
@@ -689,16 +794,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " LONG-CLICK DEBUG ===");
     }
 
-
-
     /// ////////////////////////////////////////////////////////////////////////////////////
-
-
 
     // ===========================================
     // NUOVO: Events Preview Integration
     // ===========================================
-
 
     /**
      * Initialize events preview manager in onCreate or onViewCreated
@@ -719,6 +819,30 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      */
     protected abstract EventsPreviewManager.ViewType getEventsPreviewViewType();
 
+    /**
+     * Handle regular click on day (non-selection mode)
+     */
+    protected void handleDayRegularClick(Day day, LocalDate date, View itemView, int position) {
+        Log.d(TAG, getFragmentName() + ": Regular click on date: " + date);
+
+        if (!mEventsPreviewEnabled) {
+            Log.v(TAG, "Events preview disabled, ignoring click");
+            return;
+        }
+
+        // Get events for this date
+        List<LocalEvent> events = getEventsForDate(date);
+
+        if (events.isEmpty()) {
+            // No events - show "add event" option or ignore
+            handleNoEventsClick(date, itemView);
+        } else {
+            // Has events - show preview
+            if (mEventsPreviewManager != null) {
+                mEventsPreviewManager.showEventsPreview(date, events, itemView);
+            }
+        }
+    }
 
     /**
      * Handle click on date with no events
@@ -739,15 +863,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             String message = "Nessun evento per " + date + ". Tocca a lungo per aggiungere.";
             android.widget.Toast.makeText(getContext(), message, android.widget.Toast.LENGTH_SHORT).show();
         }
-    }
-
-    /**
-     * Get events for a specific date from cache
-     */
-    protected List<LocalEvent> getEventsForDate(LocalDate date) {
-        Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
-        List<LocalEvent> events = eventsCache.get(date);
-        return events != null ? events : new ArrayList<>();
     }
 
 // ===========================================
@@ -936,8 +1051,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
     }
 
-
-
 // ===========================================
 // Public API Methods
 // ===========================================
@@ -977,47 +1090,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     }
 
 // ===========================================
-// Enhanced Back Press Handling
-// ===========================================
-
-    /**
-     * Enhanced back press handling with events preview
-     */
-    public boolean onBackPressed() {
-        // First check if events preview is showing
-        if (mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing()) {
-            mEventsPreviewManager.hideEventsPreview();
-            return true; // Consumed
-        }
-
-        // Then check selection mode
-        //return super.onBackPressed();
-
-        if (mIsSelectionMode) {
-            Log.d(TAG, getFragmentName() + ": Back press in selection mode");
-
-            BaseClickAdapterLegacy adapter = getClickAdapter();
-            if (adapter != null && adapter.getSelectedCount() > 0) {
-                // Has selections - clear them (this will auto-exit)
-                adapter.deselectAll();
-                Log.d(TAG, getFragmentName() + ": Cleared selections on back press");
-            } else {
-                // No selections - just exit mode
-                exitSelectionMode();
-                Log.d(TAG, getFragmentName() + ": Exited selection mode on back press");
-            }
-            return true; // Consumed
-        }
-
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            return adapter.onBackPressed();
-        }
-
-        return false; // Not consumed
-    }
-
-// ===========================================
 // Debug Methods Enhanced
 // ===========================================
 
@@ -1026,7 +1098,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      */
     public void debugSelectionState() {
         Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " SELECTION STATE DEBUG ===");
-        Log.d(TAG, "Fragment Selection Mode: " + mIsSelectionMode);
+        Log.d(TAG, "Fragment Selection Mode: " + isSelectionMode());
 
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null) {
@@ -1036,11 +1108,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             Log.d(TAG, "Has Active Selection: " + hasActiveSelection());
 
             // 🔧 NEW: Check for inconsistencies
-            if (mIsSelectionMode != adapter.isSelectionMode()) {
+            if (isSelectionMode() != adapter.isSelectionMode()) {
                 Log.w(TAG, "⚠️ INCONSISTENCY: Fragment and Adapter selection mode mismatch!");
             }
 
-            if (mIsSelectionMode && adapter.getSelectedCount() == 0) {
+            if (isSelectionMode() && adapter.getSelectedCount() == 0) {
                 Log.w(TAG, "⚠️ WARNING: In selection mode but no items selected (should auto-exit)");
             }
         } else {

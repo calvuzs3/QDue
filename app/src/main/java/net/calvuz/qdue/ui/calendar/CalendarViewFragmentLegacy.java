@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
 
-    private static final String TAG = "CalendarLgsFrg";
+    private static final String TAG = "Calendar";
 
     // Keep existing adapter reference for compatibility
     private CalendarAdapterLegacy mLegacyAdapter;
@@ -59,10 +59,17 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_calendar_view, container, false);
+
     }
 
     @Override
     protected void findViews(View rootView) {
+        mCoordinatorLayout = rootView.findViewById(R.id.coordinator_layout_calendar);
+
+        if (mCoordinatorLayout == null) {
+            Log.e(TAG, "CoordinatorLayout not found - bottom toolbar may not position correctly");
+        }
+
         mRecyclerView = rootView.findViewById(R.id.rv_calendar);
         mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
     }
@@ -108,9 +115,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
      * Enhanced legacy adapter setup with full click integration
      */
     protected void setupLegacyAdapter() {
-        final String mTAG = "setupLegacyAdapter: ";
-        Log.v(TAG, mTAG + "called.");
-
         // Create adapter with click support
         mLegacyAdapter = new CalendarAdapterLegacy(
                 getContext(),
@@ -118,16 +122,13 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
                 QDue.getQuattrodue().getUserHalfTeam()
         );
 
-        // Setup click listeners BEFORE setting adapter
-//        setupClickListeners();
-
         // Set adapter to RecyclerView
         mRecyclerView.setAdapter(mLegacyAdapter);
 
         // Update with events if available
         updateAdapterWithEvents();
 
-        Log.d(TAG, mTAG + "✅ Legacy adapter setup completed");
+        Log.d(TAG, "setupLegacyAdapter: ✅ Legacy adapter setup completed");
     }
 
 //    /**
@@ -154,7 +155,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
 //
 //        Log.d(TAG, mTAG + "✅ Click listeners setup completed");
 //    }
-
 
     // ==================== FAB VISIBILITY ====================
 
@@ -312,7 +312,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
 
     // ==================== HELPER METHODS ====================
 
-
     /**
      * Check if fragment is currently in Calendar view (vs DaysList view)
      */
@@ -382,8 +381,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
         // For now, use base implementation
         showEventsListDialog(date, events);
     }
-
-
 
     /**
      * Update adapter with events using delayed execution
@@ -470,7 +467,6 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
             Log.d(TAG, "Cleared events cache");
         }
 
-
         // Schedule adapter update
         if (mMainHandler != null) {
             mMainHandler.postDelayed(() -> {
@@ -485,4 +481,15 @@ public class CalendarViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "=== END DEBUG FORCE RELOAD (CALENDAR) ===");
     }
 
+    /**
+     * Called when day selection changes in multi-select mode
+     *
+     * @param day        The Day object
+     * @param date       The LocalDate
+     * @param isSelected Whether the day is now selected
+     */
+    @Override
+    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
+
+    }
 }

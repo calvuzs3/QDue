@@ -209,7 +209,7 @@ public abstract class BaseFragmentLegacy extends Fragment implements
         super.onCreate(savedInstanceState);
 
         final String mTAG = "onCreate: ";
-        Log.v(mTAG, mTAG + getClass().getSimpleName());
+        Log.v(TAG, mTAG + getClass().getSimpleName());
 
         // Initialize handlers for async operations
         mMainHandler = new Handler(Looper.getMainLooper());
@@ -568,14 +568,17 @@ public abstract class BaseFragmentLegacy extends Fragment implements
 
         } catch (Exception e) {
             Log.e(TAG, mTAG + "❌ Error during infinite scrolling setup: " + e.getMessage());
+            return;
         }
 
         try {
             // NUOVO: Verifica prerequisites
             if (!areComponentsReady()) {
-                Log.w(TAG, mTAG + "Components not ready, deferring infinite scroll setup");
+                Log.e(TAG, mTAG + "❌ Components not ready, deferring infinite scroll setup");
                 scheduleInfiniteScrollingSetup();
                 return;
+            } else {
+                Log.d(TAG, mTAG + "✅ Components ready, starting infinite scroll setup");
             }
 
             // 1. Calcola la posizione di today
@@ -602,7 +605,7 @@ public abstract class BaseFragmentLegacy extends Fragment implements
             }
 
         } catch (Exception e) {
-            Log.e("TAG", mTAG + "Error in setupInfiniteScrolling: " + e.getMessage());
+            Log.e("TAG", mTAG + "❌ Error in setupInfiniteScrolling: " + e.getMessage());
         }
     }
 
@@ -612,22 +615,22 @@ public abstract class BaseFragmentLegacy extends Fragment implements
 
         // Here every fragment implements its own adapter, so we ask for it
         if (getFragmentAdapter() == null) {
-            Log.w(TAG, mTAG + "getFragmentAdapter() is null");
+            Log.e(TAG, mTAG + "❌ getFragmentAdapter() is null");
             return false;
         }
 
         if (mItemsCache == null) {
-            Log.w(TAG, mTAG + "mmItemsCache is null");
+            Log.e(TAG, mTAG + "❌ mmItemsCache is null");
             return false;
         }
 
         if (mRecyclerView == null) {
-            Log.w(TAG, mTAG + "mRecyclerView is null");
+            Log.e(TAG, mTAG + "❌ mRecyclerView is null");
             return false;
         }
 
         if (mGridLayoutManager == null) {
-            Log.w(TAG, mTAG + "mGridLayoutManager is null");
+            Log.e(TAG, mTAG + "❌ mGridLayoutManager is null");
             return false;
         }
 

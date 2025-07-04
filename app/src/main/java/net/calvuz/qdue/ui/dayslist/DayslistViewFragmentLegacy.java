@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
@@ -45,12 +47,62 @@ import java.util.Map;
 
 public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
 
-    private final String TAG = "DayslistLgsFrg";
+    // TAG
+    private final String TAG = "DaysList";
 
-    // Keep existing adapter reference for compatibility
+    // Adapter
     private DaysListAdapterLegacy mLegacyAdapter;
 
     // ==================== ABSTRACT METHOD IMPLEMENTATION ====================
+
+    // ===========================================
+    // Fragment Lifecycle
+    // ===========================================
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_dayslist_view, container, false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+//        // Ensure selection state consistency
+//        if (mLegacyAdapter != null && mIsSelectionMode != mLegacyAdapter.isSelectionMode()) {
+//            Log.w(TAG, "Selection mode inconsistency detected, syncing...");
+//            mIsSelectionMode = mLegacyAdapter.isSelectionMode();
+//            updateSelectionUI();
+//        }
+
+        testEventsPreview();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Exit selection mode when fragment is paused to avoid confusion
+        if (isSelectionMode()) {
+            Log.d(TAG, "Exiting selection mode due to fragment pause");
+            exitSelectionMode();
+        }
+    }
+
+
+    /**
+     * Load days list data
+     */
+    private void loadDaysListData() {
+        // TODO: Implement data loading
+        // This should load the actual days data and update the adapter
+        Log.d(TAG, "Loading days list data - TODO: implement");
+    }
+
+    // ===========================================
+    // BaseClickFragmentLegacy Implementation
+    // ===========================================
 
     @Override
     protected BaseClickAdapterLegacy getClickAdapter() {
@@ -62,18 +114,30 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return "DaysListViewFragment";
     }
 
-    // ==================== EXISTING FRAGMENT IMPLEMENTATION ====================
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_dayslist_view, container, false);
+    protected String getOriginalTitle() {
+        return getString(R.string.view_dayslist_title);
     }
 
     @Override
-    protected void findViews(View view) {
-        mRecyclerView = view.findViewById(R.id.rv_dayslist);
-        mFabGoToToday = view.findViewById(R.id.fab_go_to_today);
+    protected ViewGroup getToolbarContainer() {
+        // Return the CoordinatorLayout as the container for the bottom toolbar
+        // This allows the toolbar to be positioned at the bottom of the screen
+        return mCoordinatorLayout;
+    }
+
+    // ===========================================
+    //  Methods
+    // ===========================================
+
+    @Override
+    protected void findViews(View rootView) {
+        mCoordinatorLayout = rootView.findViewById(R.id.coordinator_layout_dayslist);
+
+        if (mCoordinatorLayout == null) {
+            Log.e(TAG, "CoordinatorLayout not found - bottom toolbar may not position correctly");
+        }
+        mRecyclerView = rootView.findViewById(R.id.rv_dayslist);
+        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
     }
 
     @Override
@@ -160,7 +224,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         if (mFabGoToToday == null) return;
 
         // Don't update FAB visibility if in selection mode
-        if (mIsSelectionMode) return;
+        if (isSelectionMode()) return;
 
         boolean showFab = true;
         if (mTodayPosition >= 0) {
@@ -184,14 +248,13 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return "DaysListViewFragment (Legacy)";
     }
 
-    // ==================== CLICK SUPPORT ====================
-
     // ===========================================
     // Override BaseClickFragmentLegacy Methods for DaysList Specifics
     // ===========================================
 
     /**
      * Open event editor for a specific date
+     *
      * @param date The date for which to open the editor
      */
     @Override
@@ -208,7 +271,8 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
 
     /**
      * Show events dialog for a specific date
-     * @param date The date for which to show the events dialog
+     *
+     * @param date   The date for which to show the events dialog
      * @param events The list of events to display
      */
     @Override
@@ -226,19 +290,23 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
 
     /**
      * Create a quick event for a specific date
+     *
      * @param action The type of quick event to create
-     * @param date The date for which to create the quick event
+     * @param date   The date for which to create the quick event
      */
     @Override
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
         Log.d(TAG, "DaysList: Quick event created: " + action + " for date: " + date);
 
+        // Refresh data to show the new event
+        loadDaysListData();
         // DaysList-specific post-creation handling
 //        updateAdapterWithEventsDelayed();
     }
 
     /**
      * Update UI based on selection state
+     *
      * @param hasSelection Whether selection mode is active
      */
     @Override
@@ -264,7 +332,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         // For now, use base implementation
         showEventsListDialog(date, events);
     }
-
 
     /**
      * Update adapter with events using delayed execution
@@ -348,7 +415,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         return false;
     }
 
-
     // ===========================================
     // Menu Integration
     // ===========================================
@@ -360,7 +426,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         super.onCreateOptionsMenu(menu, inflater);
 
         // Add selection mode menu items if needed
-        if (mIsSelectionMode) {
+        if (isSelectionMode()) {
             // TODO: Inflate selection mode menu
             // inflater.inflate(R.menu.menu_dayslist_selection, menu);
             // mSelectAllMenuItem = menu.findItem(R.id.action_select_all);
@@ -373,10 +439,12 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
      */
     public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
         // First try parent handling
-        return super.onOptionsItemSelected(item);
+        boolean handled = super.onOptionsItemSelected(item);
 
         // Handle DaysList-specific menu items
         // TODO: Add DaysList-specific menu handling
+
+        return handled;
     }
 
     // ===========================================
@@ -393,7 +461,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
     }
 
     // Add method to handle back press for expansion
-    @Override
     public boolean onBackPressed() {
         // First check if any card is expanded
         if (mEventsPreviewManager != null) {
@@ -406,15 +473,15 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         }
 
         // Then delegate to parent
-        return super.onBackPressed();
+//        return super.onBackPressed();
+        return false;
     }
 
-
     /**
-     * Setup Phase 3 specific integration
+     * Setup RegularClick specific integration
      */
-    private void setupPhase3Integration() {
-        Log.d(TAG, "Setting up Phase 3 DaysList expansion integration");
+    private void setupRegularClickIntegration() {
+        Log.d(TAG, "Setting up Regular Click DaysList expansion integration");
 
         // Ensure RecyclerView settings support smooth expansion
         if (mRecyclerView != null) {
@@ -437,47 +504,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
             }
         }
 
-        Log.d(TAG, "Phase 3 integration setup completed");
-    }
-
-    // ===========================================
-    // Lifecycle Enhanced
-    // ===========================================
-
-    /**
-     * Phase 3 setup
-     */
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Phase 3 specific setup
-        setupPhase3Integration();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Ensure selection state consistency
-        if (mLegacyAdapter != null && mIsSelectionMode != mLegacyAdapter.isSelectionMode()) {
-            Log.w(TAG, "Selection mode inconsistency detected, syncing...");
-            mIsSelectionMode = mLegacyAdapter.isSelectionMode();
-            updateSelectionUI();
-        }
-
-        testEventsPreview();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        // Exit selection mode when fragment is paused to avoid confusion
-        if (mIsSelectionMode) {
-            Log.d(TAG, "Exiting selection mode due to fragment pause");
-            exitSelectionMode();
-        }
+        Log.d(TAG, "Regular click integration setup completed");
     }
 
     // ===========================================
@@ -496,7 +523,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         }
 
         // Test selection mode toggle
-        boolean wasInSelectionMode = mIsSelectionMode;
+        boolean wasInSelectionMode = isSelectionMode();
 
         if (!wasInSelectionMode) {
             enterSelectionMode();
@@ -540,7 +567,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         List<LocalEvent> testEvents = getEventsForDate(testDate);
         // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
     }
-
 
     // Add method to test expansion functionality
     public void testExpansionFunctionality() {
@@ -593,7 +619,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "RecyclerView: " + (mRecyclerView != null ? "initialized" : "null"));
         Log.d(TAG, "Items Cache Size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
         Log.d(TAG, "In DaysList View: " + isCurrentlyInDaysListView());
-        Log.d(TAG, "Fragment Selection Mode: " + mIsSelectionMode);
+        Log.d(TAG, "Fragment Selection Mode: " + isSelectionMode());
 
         if (mLegacyAdapter != null) {
             Log.d(TAG, "Adapter Selection Mode: " + mLegacyAdapter.isSelectionMode());
@@ -611,7 +637,7 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "=== DEBUG FORCE EVENTS RELOAD (DAYSLIST + BaseClickFragment) ===");
 
         // Exit selection mode to avoid conflicts
-        if (mIsSelectionMode) {
+        if (isSelectionMode()) {
             Log.d(TAG, "Exiting selection mode before reload");
             exitSelectionMode();
         }
@@ -621,7 +647,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
             mEventsCache.clear();
             Log.d(TAG, "Cleared events cache");
         }
-
 
         // Schedule adapter update
         if (mMainHandler != null) {
@@ -663,6 +688,17 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
         Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
     }
 
+    /**
+     * Called when day selection changes in multi-select mode
+     *
+     * @param day        The Day object
+     * @param date       The LocalDate
+     * @param isSelected Whether the day is now selected
+     */
+    @Override
+    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
+
+    }
 
     // ===========================================
     // Expansion Support

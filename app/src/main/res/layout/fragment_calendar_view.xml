@@ -2,18 +2,17 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/coordinator_layout_calendar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.calendar.CalendarViewFragmentLegacy">
 
-<!--
-    &lt;!&ndash; AppBarMain &ndash;&gt;
-    <include
-        android:id="@+id/appbar_main"
-        layout="@layout/appbar_main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
--->
+<!--    &lt;!&ndash; AppBarMain &ndash;&gt;-->
+<!--    <include-->
+<!--        android:id="@+id/appbar_main"-->
+<!--        layout="@layout/appbar_main"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content" />-->
 
     <!-- Header fisso -->
     <com.google.android.material.appbar.AppBarLayout
@@ -48,3 +47,259 @@
         tools:listitem="@layout/item_calendar_month" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+<!-- res/layout/fragment_calendar_view.xml -->
+<!-- Updated layout for CalendarFragment with bottom toolbar support -->
+<!--<androidx.coordinatorlayout.widget.CoordinatorLayout-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/coordinator_layout_calendar"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:fitsSystemWindows="true"-->
+<!--    tools:context=".ui.calendar.CalendarViewFragmentLegacy">-->
+
+<!--    &lt;!&ndash; Main Content Area &ndash;&gt;-->
+<!--    <androidx.core.widget.NestedScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:fillViewport="true"-->
+<!--        android:scrollbars="vertical"-->
+<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical">-->
+
+<!--            &lt;!&ndash; Calendar Header Section &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:id="@+id/calendar_header_section"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                android:background="?attr/colorSurface"-->
+<!--                android:elevation="2dp"-->
+<!--                android:paddingStart="16dp"-->
+<!--                android:paddingEnd="16dp"-->
+<!--                android:paddingTop="12dp"-->
+<!--                android:paddingBottom="12dp">-->
+
+<!--                &lt;!&ndash; Month/Year Header &ndash;&gt;-->
+<!--                <LinearLayout-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="horizontal"-->
+<!--                    android:gravity="center_vertical"-->
+<!--                    android:layout_marginBottom="8dp">-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/tv_month_year"-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="Gennaio 2025"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"-->
+<!--                        android:textColor="?attr/colorOnSurface"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    &lt;!&ndash; Navigation Buttons &ndash;&gt;-->
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:id="@+id/btn_prev_month"-->
+<!--                        style="@style/Widget.Material3.Button.TextButton"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        app:icon="@drawable/ic_rounded_chevron_left_24"-->
+<!--                        app:iconTint="?attr/colorOnSurface"-->
+<!--                        app:iconSize="24dp"-->
+<!--                        android:minWidth="48dp"-->
+<!--                        android:contentDescription="Mese precedente" />-->
+
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:id="@+id/btn_next_month"-->
+<!--                        style="@style/Widget.Material3.Button.TextButton"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        app:icon="@drawable/ic_rounded_chevron_right_24"-->
+<!--                        app:iconTint="?attr/colorOnSurface"-->
+<!--                        app:iconSize="24dp"-->
+<!--                        android:minWidth="48dp"-->
+<!--                        android:contentDescription="Prossimo Mese" />-->
+
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:id="@+id/btn_today"-->
+<!--                        style="@style/Widget.Material3.Button.TextButton"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="Oggi"-->
+<!--                        android:textColor="?attr/colorPrimary"-->
+<!--                        android:minWidth="0dp"-->
+<!--                        android:layout_marginStart="8dp"-->
+<!--                        android:contentDescription="@string/go_to_today" />-->
+
+<!--                </LinearLayout>-->
+
+<!--                &lt;!&ndash; Days of Week Header &ndash;&gt;-->
+<!--                <LinearLayout-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="horizontal"-->
+<!--                    android:layout_marginTop="8dp">-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="L"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="M"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="M"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="G"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="V"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="S"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="0dp"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:text="D"-->
+<!--                        android:textAppearance="@style/TextAppearance.Material3.LabelSmall"-->
+<!--                        android:textColor="?attr/colorError"-->
+<!--                        android:gravity="center"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                </LinearLayout>-->
+
+<!--            </LinearLayout>-->
+
+<!--            &lt;!&ndash; Calendar Grid RecyclerView &ndash;&gt;-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/recycler_view_calendar"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:clipToPadding="false"-->
+<!--                android:paddingTop="8dp"-->
+<!--                android:paddingBottom="80dp"-->
+<!--                android:paddingStart="8dp"-->
+<!--                android:paddingEnd="8dp"-->
+<!--                android:scrollbarStyle="outsideOverlay"-->
+<!--                android:scrollbars="vertical"-->
+<!--                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"-->
+<!--                app:spanCount="7"-->
+<!--                tools:listitem="@layout/item_calendar_day"-->
+<!--                tools:itemCount="42" />-->
+
+<!--            &lt;!&ndash; Empty State &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:id="@+id/empty_state_layout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:orientation="vertical"-->
+<!--                android:padding="32dp"-->
+<!--                android:visibility="gone">-->
+
+<!--                <ImageView-->
+<!--                    android:layout_width="96dp"-->
+<!--                    android:layout_height="96dp"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:layout_marginBottom="16dp"-->
+<!--                    android:src="@drawable/ic_rounded_empty_dashboard_24"-->
+<!--                    app:tint="?attr/colorOnSurfaceVariant"-->
+<!--                    android:contentDescription="@string/text_dayslist_empty_state" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:text="Nessun dato disponibile"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"-->
+<!--                    android:textColor="?attr/colorOnSurface"-->
+<!--                    android:layout_marginBottom="8dp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:text="@string/text_dayslist_empty_state_check_configuration"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
+<!--                    android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                    android:textAlignment="center" />-->
+
+<!--            </LinearLayout>-->
+
+<!--        </LinearLayout>-->
+
+<!--    </androidx.core.widget.NestedScrollView>-->
+
+<!--    &lt;!&ndash; Loading State &ndash;&gt;-->
+<!--    <ProgressBar-->
+<!--        android:id="@+id/progress_bar"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:visibility="gone"-->
+<!--        style="?attr/progressBarStyle" />-->
+
+<!--    &lt;!&ndash; Bottom Selection Toolbar Container &ndash;&gt;-->
+<!--    &lt;!&ndash; This is where the BottomSelectionToolbar will be dynamically added &ndash;&gt;-->
+<!--    <FrameLayout-->
+<!--        android:id="@+id/bottom_toolbar_container"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        android:layout_marginStart="0dp"-->
+<!--        android:layout_marginEnd="0dp"-->
+<!--        android:layout_marginBottom="0dp"-->
+<!--        android:visibility="gone" />-->
+
+<!--</androidx.coordinatorlayout.widget.CoordinatorLayout>-->

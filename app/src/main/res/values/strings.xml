@@ -962,6 +962,11 @@
     <string name="desc_day_long_click">Tocco prolungato per azioni rapide</string>
     <string name="desc_day_selected">Giorno selezionato</string>
     <string name="desc_selection_mode">Modalità selezione attiva</string>
+    <string name="text_action_save">Salva</string>
+    <string name="text_action_cancel">Annulla</string>
+    <string name="text_dayslist_empty_state">Nessun giorno disponibile</string>
+    <string name="text_dayslist_empty_state_check_configuration">Controlla la configurazione del calendario</string>
+    <string name="action_straordinario">straordinario</string>
 
     <!-- ======================================================================= -->
 

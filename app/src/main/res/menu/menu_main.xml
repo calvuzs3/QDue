@@ -7,14 +7,14 @@
     <item
         android:id="@+id/action_settings"
         android:title="@string/menu_title_settings"
-        android:icon="@drawable/ic_settings"
+        android:icon="@drawable/ic_rounded_settings_24"
         app:showAsAction="never"
         android:contentDescription="@string/menu_title_settings" />
 
     <item
         android:id="@+id/action_about"
         android:title="@string/menu_title_about"
-        android:icon="@drawable/ic_info"
+        android:icon="@drawable/ic_rounded_info_24"
         app:showAsAction="never"
         android:contentDescription="@string/menu_title_about"/>
 

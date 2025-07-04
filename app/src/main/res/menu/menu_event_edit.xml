@@ -6,15 +6,15 @@
     <!-- Save Event -->
     <item
         android:id="@+id/action_save_event"
-        android:title="Salva"
-        android:icon="@android:drawable/ic_menu_save"
+        android:title="@string/text_action_save"
+        android:icon="@drawable/ic_rounded_save_24"
         app:showAsAction="ifRoom" />
 
     <!-- Cancel Edit -->
     <item
         android:id="@+id/action_cancel_edit"
-        android:title="Annulla"
-        android:icon="@android:drawable/ic_menu_revert"
+        android:title="@string/text_action_cancel"
+        android:icon="@drawable/ic_rounded_cancel_24"
         app:showAsAction="never" />
 
 </menu>

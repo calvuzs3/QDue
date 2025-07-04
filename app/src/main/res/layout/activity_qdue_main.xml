@@ -18,10 +18,11 @@
             android:id="@+id/appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:background="@drawable/appbar_gradient_background"
-            app:elevation="4dp"
-            app:liftOnScroll="true">
+                    android:background="@drawable/appbar_gradient_background"
+                    app:elevation="4dp"
+                    app:liftOnScroll="true"
+            android:fitsSystemWindows="true" >
+
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
@@ -36,7 +37,7 @@
                 app:titleMarginStart="12dp"
                 app:navigationIcon="@drawable/ic_rounded_menu_24"
                 app:navigationIconTint="?attr/colorOnPrimary"
-                app:menu="@menu/toolbar_menu"
+                app:menu="@menu/menu_main"
                 app:theme="@style/ThemeOverlay.QDue.Toolbar" />
 
         </com.google.android.material.appbar.AppBarLayout>

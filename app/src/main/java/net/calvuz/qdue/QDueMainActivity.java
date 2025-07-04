@@ -37,7 +37,6 @@ import net.calvuz.qdue.ui.welcome.WelcomeActivity;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1278,7 +1277,7 @@ public class QDueMainActivity extends BaseActivity {
 //            if (shouldShowMenu && !hasExtendedDrawer) {
             if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer
-                getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+                getMenuInflater().inflate(R.menu.menu_main, menu);
                 Log.d(TAG, mTAG + "Menu created for mode without drawer");
                 return true;
             }

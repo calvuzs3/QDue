@@ -2,11 +2,12 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout_dayslist"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.dayslist.DayslistViewFragmentLegacy">
 
-<!--    &lt;!&ndash; AppBarMain &ndash;&gt;
+    <!-- AppBarMain
     <include
         android:id="@+id/appbar_main"
         layout="@layout/appbar_main"
@@ -46,3 +47,136 @@
         tools:listitem="@layout/item_dayslist_row" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+<!--&lt;!&ndash; res/layout/fragment_dayslist_view.xml &ndash;&gt;-->
+<!--&lt;!&ndash; Updated layout for DaysListFragment with bottom toolbar support &ndash;&gt;-->
+<!--<androidx.coordinatorlayout.widget.CoordinatorLayout-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:id="@+id/coordinator_layout_dayslist"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:fitsSystemWindows="true"-->
+<!--    tools:context=".ui.dayslist.DaysListViewFragmentLegacy">-->
+
+<!--    &lt;!&ndash; Main Content Area &ndash;&gt;-->
+<!--    <androidx.core.widget.NestedScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:fillViewport="true"-->
+<!--        android:scrollbars="vertical"-->
+<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical">-->
+
+<!--            &lt;!&ndash; Header Section (optional) &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:id="@+id/header_section"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                android:padding="16dp"-->
+<!--                android:visibility="gone">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/tv_header_title"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Lista Giorni"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"-->
+<!--                    android:textColor="?attr/colorOnSurface"-->
+<!--                    android:layout_marginBottom="8dp" />-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/tv_header_subtitle"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Seleziona uno o più giorni per azioni rapide"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
+<!--                    android:textColor="?attr/colorOnSurfaceVariant" />-->
+
+<!--            </LinearLayout>-->
+
+<!--            &lt;!&ndash; Days List RecyclerView &ndash;&gt;-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/recycler_view_dayslist"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:clipToPadding="false"-->
+<!--                android:paddingTop="8dp"-->
+<!--                android:paddingBottom="80dp"-->
+<!--                android:scrollbarStyle="outsideOverlay"-->
+<!--                android:scrollbars="vertical"-->
+<!--                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--                tools:listitem="@layout/item_day_row"-->
+<!--                tools:itemCount="30" />-->
+
+<!--            &lt;!&ndash; Empty State &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:id="@+id/empty_state_layout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:orientation="vertical"-->
+<!--                android:padding="32dp"-->
+<!--                android:visibility="gone">-->
+
+<!--                <ImageView-->
+<!--                    android:layout_width="96dp"-->
+<!--                    android:layout_height="96dp"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:layout_marginBottom="16dp"-->
+<!--                    android:src="@drawable/ic_rounded_empty_dashboard_24"-->
+<!--                    app:tint="?attr/colorOnSurfaceVariant"-->
+<!--                    android:contentDescription="@string/text_dayslist_empty_state" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:text="@string/text_dayslist_empty_state"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"-->
+<!--                    android:textColor="?attr/colorOnSurface"-->
+<!--                    android:layout_marginBottom="8dp" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_gravity="center_horizontal"-->
+<!--                    android:text="@string/text_dayslist_empty_state_check_configuration"-->
+<!--                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
+<!--                    android:textColor="?attr/colorOnSurfaceVariant"-->
+<!--                    android:textAlignment="center" />-->
+
+<!--            </LinearLayout>-->
+
+<!--        </LinearLayout>-->
+
+<!--    </androidx.core.widget.NestedScrollView>-->
+
+<!--    &lt;!&ndash; Loading State &ndash;&gt;-->
+<!--    <ProgressBar-->
+<!--        android:id="@+id/progress_bar"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:visibility="gone"-->
+<!--        style="?attr/progressBarStyle" />-->
+
+<!--    &lt;!&ndash; Bottom Selection Toolbar Container &ndash;&gt;-->
+<!--    &lt;!&ndash; This is where the BottomSelectionToolbar will be dynamically added &ndash;&gt;-->
+<!--    <FrameLayout-->
+<!--        android:id="@+id/bottom_toolbar_container"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        android:layout_marginStart="0dp"-->
+<!--        android:layout_marginEnd="0dp"-->
+<!--        android:layout_marginBottom="0dp"-->
+<!--        android:visibility="gone" />-->
+
+<!--</androidx.coordinatorlayout.widget.CoordinatorLayout>-->
