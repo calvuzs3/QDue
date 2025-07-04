@@ -17,7 +17,7 @@ import java.util.UUID;
 /**
  * Entity representing exceptions to the standard 4-2 shift pattern.
  * Stores user-specific modifications like vacation days, overtime, sick leave, etc.
- *
+ * <p>
  * Integration with Virtual Scrolling:
  * - Exceptions are merged with base pattern during data loading
  * - Supports reversible changes (delete exception = restore original pattern)
@@ -92,7 +92,9 @@ public class TurnException {
         VACATION("Ferie"),
         SICK_LEAVE("Malattia"),
         OVERTIME("Straordinario"),
+        PERMIT("Permesso"),
         PERMIT_104("Permesso 104"),
+        PERMIT_SYNDICATE("Permesso sindacale"),
         TRAINING("Formazione"),
         PERSONAL_LEAVE("Permesso personale"),
         COMPENSATION("Recupero"),
@@ -178,7 +180,9 @@ public class TurnException {
         return exceptionType == ExceptionType.VACATION ||
                 exceptionType == ExceptionType.SICK_LEAVE ||
                 exceptionType == ExceptionType.PERSONAL_LEAVE ||
-                exceptionType == ExceptionType.PERMIT_104;
+                exceptionType == ExceptionType.PERMIT_104 ||
+                exceptionType == ExceptionType.PERMIT ||
+                exceptionType == ExceptionType.PERMIT_SYNDICATE;
     }
 
     /**

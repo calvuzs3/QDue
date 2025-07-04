@@ -936,6 +936,9 @@
     <!-- ======================================================================= -->
 
     <!-- Toolbar Actions -->
+    <string name="action_straordinario">Straordinario</string>
+    <string name="action_formazione">Formazione</string>
+    <string name="action_emergenza">Emergenza</string>
     <string name="action_ferie">Ferie</string>
     <string name="action_malattia">Malattia</string>
     <string name="action_legge_104">Legge 104</string>
@@ -966,7 +969,6 @@
     <string name="text_action_cancel">Annulla</string>
     <string name="text_dayslist_empty_state">Nessun giorno disponibile</string>
     <string name="text_dayslist_empty_state_check_configuration">Controlla la configurazione del calendario</string>
-    <string name="action_straordinario">straordinario</string>
 
     <!-- ======================================================================= -->
 

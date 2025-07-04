@@ -1,6 +1,8 @@
 package net.calvuz.qdue.ui.shared;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 
@@ -8,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.google.android.material.card.MaterialCardView;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.quattrodue.models.Day;
@@ -39,7 +42,25 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
     protected boolean mIsSelectionMode = false;
     protected Set<LocalDate> mSelectedDates = new HashSet<>();
 
-    //protected FloatingDayToolbar mFloatingToolbar;
+    // ✅ NEW: Loop prevention flag
+    private boolean mUpdatingSelectionInternally = false;
+
+    // ✅ NEW: Handler per auto-exit con cleanup
+    private Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private Runnable mAutoExitRunnable;
+
+    /**
+     * ✅ NEW: Multiple selection enabled flag
+     * true = multiple selection (default behavior)
+     * false = single selection (max 1 item)
+     */
+    private boolean mMultipleSelectionEnabled = false;
+
+    /**
+     * ✅ NEW: Currently selected item in single selection mode
+     * Used for quick access and smooth transitions
+     */
+    private LocalDate mSingleSelectedDate = null;
 
     /**
      * Handle toolbar action execution - subclasses should implement
@@ -88,7 +109,11 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         longClickHolder.bindDayData(dayItem.day, dayItem.day.getLocalDate(), position, this);
 
         // NEW: Setup regular click listener
+        // TODO: find the correct way to implement RegularClickListener
         longClickHolder.setRegularClickListener(mRegularClickListener);
+
+        // Update selection mode state
+        longClickHolder.setSelectionMode(mIsSelectionMode);
 
         // Update selection mode state
         longClickHolder.setSelectionMode(mIsSelectionMode);
@@ -98,21 +123,679 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         boolean isSelected = mSelectedDates.contains(date);
         longClickHolder.setSelected(isSelected);
 
-        Log.v(TAG, "Long-click support setup for date: " + date +
-                ", selectionMode: " + mIsSelectionMode +
-                ", selected: " + isSelected);
+        Log.v(TAG, "setupLongClickSupport: " + date +
+                " selectionMode=" + mIsSelectionMode +
+                " selected=" + isSelected);
     }
+
+    // ==================== ✅ UNICO PUNTO DI MODIFICA CACHE ====================
+
+    /**
+     * ✅ METODO CENTRALE - UNICO PUNTO dove mSelectedDates viene modificato
+     * Tutti gli altri metodi DEVONO chiamare questo per modificare la selezione
+     */
+    private void updateSelectionSet(SelectionOperation operation, LocalDate date) {
+        if (mUpdatingSelectionInternally) {
+            Log.v(TAG, "updateSelectionSet: Skip - already updating internally");
+            return;
+        }
+
+        mUpdatingSelectionInternally = true;
+
+        try {
+            boolean changed = false;
+            int previousSize = mSelectedDates.size();
+
+            // ✅ Capture previous selection for selective updates
+            Set<LocalDate> previousSelection = new HashSet<>(mSelectedDates);
+
+            switch (operation) {
+                case CLEAR_ALL:
+                    if (!mSelectedDates.isEmpty()) {
+                        Log.d(TAG, "updateSelectionSet: CLEAR_ALL - clearing " + mSelectedDates.size() + " items");
+                        mSelectedDates.clear();
+                        mSingleSelectedDate = null; // ✅ Clear single selection tracking
+                        changed = true;
+                    }
+                    break;
+
+                case ADD_SINGLE:
+                    if (mMultipleSelectionEnabled) {
+                        // ✅ MULTIPLE MODE: Add to set if not present
+                        if (!mSelectedDates.contains(date)) {
+                            Log.d(TAG, "updateSelectionSet: ADD_SINGLE (multiple) - adding " + date);
+                            mSelectedDates.add(date);
+                            changed = true;
+                        }
+                    } else {
+                        // ✅ SINGLE MODE: Replace current selection
+                        LocalDate previousSingle = mSingleSelectedDate;
+                        if (!date.equals(previousSingle)) {
+                            Log.d(TAG, "updateSelectionSet: ADD_SINGLE (single) - replacing " +
+                                    previousSingle + " with " + date);
+
+                            mSelectedDates.clear();
+                            mSelectedDates.add(date);
+                            mSingleSelectedDate = date;
+
+                            // Update previous selection for UI update
+                            if (previousSingle != null) {
+                                previousSelection.clear();
+                                previousSelection.add(previousSingle);
+                            }
+
+                            changed = true;
+                        }
+                    }
+                    break;
+
+                case REMOVE_SINGLE:
+                    if (date != null && mSelectedDates.contains(date)) {
+                        Log.d(TAG, "updateSelectionSet: REMOVE_SINGLE - removing " + date);
+                        mSelectedDates.remove(date);
+
+                        // ✅ Update single selection tracking
+                        if (date.equals(mSingleSelectedDate)) {
+                            mSingleSelectedDate = null;
+                        }
+
+                        changed = true;
+                    }
+                    break;
+
+                case ADD_ALL_VISIBLE:
+                    if (mMultipleSelectionEnabled && mItems != null) {
+                        Log.d(TAG, "updateSelectionSet: ADD_ALL_VISIBLE");
+                        for (SharedViewModels.ViewItem item : mItems) {
+                            if (item instanceof SharedViewModels.DayItem) {
+                                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
+                                if (dayItem.day != null) {
+                                    LocalDate itemDate = dayItem.day.getLocalDate();
+                                    if (!mSelectedDates.contains(itemDate)) {
+                                        mSelectedDates.add(itemDate);
+                                        changed = true;
+                                    }
+                                }
+                            }
+                        }
+                        // ✅ Clear single selection tracking in multiple mode
+                        mSingleSelectedDate = null;
+                    } else if (!mMultipleSelectionEnabled) {
+                        Log.w(TAG, "updateSelectionSet: ADD_ALL_VISIBLE ignored in single selection mode");
+                    }
+                    break;
+            }
+
+            if (changed) {
+                int newSize = mSelectedDates.size();
+                Log.d(TAG, "updateSelectionSet: Selection changed " + previousSize + " → " + newSize);
+
+                // ✅ SELECTIVE UI UPDATE instead of notifyDataSetChanged()
+                performOptimalUIUpdate(operation, date, previousSelection);
+
+                // ✅ Notify callback
+                onSelectionModeChanged(mIsSelectionMode, newSize);
+
+                // ✅ Auto-exit check
+                if (mIsSelectionMode && newSize == 0) {
+                    scheduleAutoExit();
+                }
+            } else {
+                Log.v(TAG, "updateSelectionSet: No change needed for " + operation);
+            }
+
+        } finally {
+            mUpdatingSelectionInternally = false;
+        }
+    }
+
+    /**
+     * ✅ Enum per operazioni supportate
+     */
+    private enum SelectionOperation {
+        CLEAR_ALL,
+        ADD_SINGLE,
+        REMOVE_SINGLE,
+        ADD_ALL_VISIBLE,
+        MODE_CHANGE_ONLY
+    }
+
+    // ==================== ✅ NEW: TRANSITION HELPERS ====================
+
+    /**
+     * ✅ NEW: Handle transition from multiple to single selection
+     */
+    private void transitionToSingleSelection() {
+        if (mSelectedDates.size() <= 1) {
+            // 0 or 1 items selected - no change needed
+            if (mSelectedDates.size() == 1) {
+                mSingleSelectedDate = mSelectedDates.iterator().next();
+                Log.d(TAG, "transitionToSingleSelection: Kept single item: " + mSingleSelectedDate);
+            } else {
+                mSingleSelectedDate = null;
+                Log.d(TAG, "transitionToSingleSelection: No items selected");
+            }
+            return;
+        }
+
+        // Multiple items selected - keep only the first one (or most recent)
+        LocalDate itemToKeep = mSelectedDates.iterator().next(); // Get first item
+
+        Log.d(TAG, "transitionToSingleSelection: Multiple items selected, keeping " + itemToKeep +
+                " and clearing " + (mSelectedDates.size() - 1) + " others");
+
+        // Store items to clear for UI update
+        Set<LocalDate> itemsToClear = new HashSet<>(mSelectedDates);
+        itemsToClear.remove(itemToKeep);
+
+        // Update selection
+        mSelectedDates.clear();
+        mSelectedDates.add(itemToKeep);
+        mSingleSelectedDate = itemToKeep;
+
+        // Update UI for cleared items
+        if (!itemsToClear.isEmpty()) {
+            updateMultipleItems(itemsToClear, "transitionToSingle");
+        }
+
+        // Notify change
+        onSelectionModeChanged(mIsSelectionMode, 1);
+    }
+
+    // ==================== ✅ REFACTORED PUBLIC API WITH SELECTIVE UPDATES ====================
+
+    /**
+     * ✅ REFACTORED: Clear all selections - ora usa metodo centrale
+     */
+    public void clearSelections() {
+        Log.d(TAG, "clearSelections: Requested");
+        updateSelectionSet(SelectionOperation.CLEAR_ALL, null);
+    }
+
+    /**
+     * ✅ REFACTORED: Toggle single day selection - ora usa metodo centrale
+     */
+    protected void toggleDaySelection(LocalDate date, boolean isSelected) {
+        Log.d(TAG, "toggleDaySelection: " + date + " → " + isSelected);
+
+        if (isSelected) {
+            updateSelectionSet(SelectionOperation.ADD_SINGLE, date);
+        } else {
+            updateSelectionSet(SelectionOperation.REMOVE_SINGLE, date);
+        }
+    }
+
+    /**
+     * ✅ REFACTORED: Select all days - ora usa metodo centrale
+     */
+    public void selectAllDays() {
+        if (!mMultipleSelectionEnabled) {
+            Log.w(TAG, "selectAllDays: Ignored in single selection mode");
+            return;
+        }
+
+        Log.d(TAG, "selectAllDays: Requested (multiple mode)");
+        updateSelectionSet(SelectionOperation.ADD_ALL_VISIBLE, null);
+    }
+
+    /**
+     * ✅ REFACTORED: Deselect all - ora usa metodo centrale
+     */
+    public void deselectAll() {
+        Log.d(TAG, "deselectAll: Requested");
+
+        if (!mSelectedDates.isEmpty()) {
+            updateSelectionSet(SelectionOperation.CLEAR_ALL, null);
+        } else if (mIsSelectionMode) {
+            // ✅ Già vuoto ma ancora in selection mode - force exit senza clear
+            setSelectionModeInternal(false);
+        }
+    }
+
+
+    /**
+     * ✅ NEW: Select specific date (works in both modes)
+     */
+    public void selectDate(LocalDate date) {
+        if (date != null) {
+            Log.d(TAG, "selectDate: " + date + " (mode: " +
+                    (mMultipleSelectionEnabled ? "MULTIPLE" : "SINGLE") + ")");
+
+            if (!mIsSelectionMode) {
+                setSelectionMode(true);
+            }
+
+            updateSelectionSet(SelectionOperation.ADD_SINGLE, date);
+        }
+    }
+
+
+    /**
+     * ✅ NEW: Toggle date selection with mode awareness
+     */
+    public void toggleDateSelection(LocalDate date) {
+        if (date == null) return;
+
+        if (mSelectedDates.contains(date)) {
+            // Deselect
+            updateSelectionSet(SelectionOperation.REMOVE_SINGLE, date);
+        } else {
+            // Select
+            updateSelectionSet(SelectionOperation.ADD_SINGLE, date);
+        }
+    }
+
+    /**
+     * ✅ NEW: Force update specific date (useful for external state changes)
+     */
+    public void refreshDateSelection(LocalDate date) {
+        if (date != null) {
+            updateSingleItem(date, "refreshDateSelection");
+        }
+    }
+
+    /**
+     * ✅ NEW: Force update multiple dates
+     */
+    public void refreshDatesSelection(Set<LocalDate> dates) {
+        if (dates != null && !dates.isEmpty()) {
+            updateMultipleItems(dates, "refreshDatesSelection");
+        }
+    }
+
+    /**
+     * ✅ NEW: Get compact selection state for debugging
+     * ✅ ENHANCED: Get selection summary with mode info
+     */
+    public String getSelectionStateSummary() {
+        return String.format(QDue.getLocale(),
+                "SelectionState{mode=%s, count=%d, type=%s, single=%s}",
+                mIsSelectionMode ? "ON" : "OFF",
+                mSelectedDates.size(),
+                mMultipleSelectionEnabled ? "MULTIPLE" : "SINGLE",
+                mSingleSelectedDate != null ? mSingleSelectedDate.toString() : "null");
+    }
+
+    /**
+     * ✅ NEW: Check if date can be selected (considering mode and current state)
+     */
+    public boolean canSelectDate(LocalDate date) {
+        if (date == null) return false;
+
+        if (mMultipleSelectionEnabled) {
+            // Multiple mode: can always select if not already selected
+            return !mSelectedDates.contains(date);
+        } else {
+            // Single mode: can select if different from current
+            return !date.equals(mSingleSelectedDate);
+        }
+    }
+
+    /**
+     * ✅ NEW: Get max selection count based on mode
+     */
+    public int getMaxSelectionCount() {
+        return mMultipleSelectionEnabled ? Integer.MAX_VALUE : 1;
+    }
+
+    /**
+     * ✅ NEW: Check if selection is at maximum capacity
+     */
+    public boolean isSelectionAtMaxCapacity() {
+        return !mMultipleSelectionEnabled && mSelectedDates.size() >= 1;
+    }
+
+    /**
+     * ✅ NEW: Enable/disable multiple selection
+     * @param enabled true for multiple selection, false for single selection
+     */
+    public void setMultipleSelectionEnabled(boolean enabled) {
+        if (mMultipleSelectionEnabled == enabled) {
+            Log.v(TAG, "setMultipleSelectionEnabled: Already " + enabled);
+            return;
+        }
+
+        Log.d(TAG, "setMultipleSelectionEnabled: " + mMultipleSelectionEnabled + " → " + enabled);
+
+        boolean wasMultiple = mMultipleSelectionEnabled;
+        mMultipleSelectionEnabled = enabled;
+
+        // Handle transition from multiple to single
+        if (wasMultiple && !enabled) {
+            transitionToSingleSelection();
+        }
+        // Transition from single to multiple doesn't need special handling
+
+        Log.d(TAG, "setMultipleSelectionEnabled: Selection mode changed to " +
+                (enabled ? "MULTIPLE" : "SINGLE"));
+    }
+
+    /**
+     * ✅ NEW: Check if multiple selection is enabled
+     */
+    public boolean isMultipleSelectionEnabled() {
+        return mMultipleSelectionEnabled;
+    }
+
+    /**
+     * ✅ NEW: Get currently selected item in single selection mode
+     */
+    public LocalDate getSingleSelectedDate() {
+        return mSingleSelectedDate;
+    }
+
+    // ==================== ✅ SELECTION MODE MANAGEMENT REFACTORED ====================
+
+    /**
+     * ✅ REFACTORED: Set selection mode - eliminato clear diretto
+     */
+    public void setSelectionMode(boolean isSelectionMode) {
+        setSelectionModeInternal(isSelectionMode);
+    }
+
+    /**
+     * ✅ NEW: Internal selection mode setter senza loop
+     * ✅ ENHANCED: Selection mode with selective updates
+     */
+    private void setSelectionModeInternal(boolean isSelectionMode) {
+        if (mIsSelectionMode == isSelectionMode) {
+            Log.v(TAG, "setSelectionModeInternal: Already " + isSelectionMode);
+            return;
+        }
+
+        Log.d(TAG, "setSelectionModeInternal: " + mIsSelectionMode + " → " + isSelectionMode);
+
+        boolean wasSelectionMode = mIsSelectionMode;
+        mIsSelectionMode = isSelectionMode;
+
+        if (!isSelectionMode && wasSelectionMode && !mSelectedDates.isEmpty()) {
+            // ✅ Exiting with selections - clear via central method (selective update)
+            Log.d(TAG, "setSelectionModeInternal: Exiting with selections - clearing");
+            updateSelectionSet(SelectionOperation.CLEAR_ALL, null);
+        } else {
+            // ✅ Mode change without selection change - need full UI update for visual mode
+            Log.d(TAG, "setSelectionModeInternal: Mode change only - full UI update");
+            performOptimalUIUpdate(SelectionOperation.MODE_CHANGE_ONLY, null, null);
+            onSelectionModeChanged(isSelectionMode, mSelectedDates.size());
+        }
+
+        if (isSelectionMode) {
+            cancelAutoExit();
+        }
+    }
+    // ==================== ✅ INDIVIDUAL ITEM UPDATE METHODS ====================
+
+    /**
+     * ✅ NEW: Update individual ViewHolder selection state (called from ViewHolder)
+     * Used when ViewHolder needs to update its own state without going through central method
+     */
+    public void updateViewHolderSelectionState(LocalDate date, boolean isSelected, String reason) {
+        Log.v(TAG, "updateViewHolderSelectionState: " + date + " → " + isSelected + " (" + reason + ")");
+        updateSingleItem(date, "ViewHolder: " + reason);
+    }
+
+    /**
+     * ✅ ENHANCED: Existing method now uses selective update
+     */
+    protected void updateViewHolderSelection(LocalDate date, boolean isSelected) {
+        updateSingleItem(date, "updateViewHolderSelection");
+    }
+
+    // ==================== ✅ HELPER METHODS PER SELECTIVE UPDATE ====================
+
+    /**
+     * ✅ NEW: Update single item by date
+     */
+    private void updateSingleItem(LocalDate date, String reason) {
+        int position = findPositionForDate(date);
+        if (position >= 0) {
+            Log.v(TAG, "updateSingleItem: " + date + " at position " + position + " (" + reason + ")");
+            notifyItemChanged(position);
+        } else {
+            Log.w(TAG, "updateSingleItem: Date " + date + " not found in adapter");
+        }
+    }
+
+    /**
+     * ✅ NEW: Update multiple items by date set
+     */
+    private void updateMultipleItems(Set<LocalDate> dates, String reason) {
+        if (dates == null || dates.isEmpty()) return;
+
+        Log.d(TAG, "updateMultipleItems: Updating " + dates.size() + " items (" + reason + ")");
+
+        for (LocalDate date : dates) {
+            int position = findPositionForDate(date);
+            if (position >= 0) {
+                Log.v(TAG, "updateMultipleItems: " + date + " at position " + position);
+                notifyItemChanged(position);
+            }
+        }
+    }
+
+    /**
+     * ✅ NEW: Selective vs Full update decision
+     * ✅ ENHANCED: UI update with single selection awareness
+     */
+    private void performOptimalUIUpdate(SelectionOperation operation, LocalDate affectedDate,
+                                        Set<LocalDate> previousSelection) {
+
+        switch (operation) {
+            case ADD_SINGLE:
+                if (!mMultipleSelectionEnabled && previousSelection != null && !previousSelection.isEmpty()) {
+                    // ✅ SINGLE MODE: Update both old and new selection
+                    Set<LocalDate> datesToUpdate = new HashSet<>(previousSelection);
+                    if (affectedDate != null) {
+                        datesToUpdate.add(affectedDate);
+                    }
+                    updateMultipleItems(datesToUpdate, "SINGLE_REPLACE");
+                } else {
+                    // ✅ MULTIPLE MODE or no previous selection: update only affected item
+                    if (affectedDate != null) {
+                        updateSingleItem(affectedDate, operation.name());
+                    }
+                }
+                break;
+
+            case REMOVE_SINGLE:
+                // ✅ Same logic for both modes
+                if (affectedDate != null) {
+                    updateSingleItem(affectedDate, operation.name());
+                }
+                break;
+
+            case CLEAR_ALL:
+                // ✅ Clear all - update only previously selected items
+                if (previousSelection != null && !previousSelection.isEmpty()) {
+                    updateMultipleItems(previousSelection, "CLEAR_ALL");
+                } else {
+                    Log.v(TAG, "performOptimalUIUpdate: CLEAR_ALL with no previous selection");
+                }
+                break;
+
+            case ADD_ALL_VISIBLE:
+                // ✅ Select all - only available in multiple mode
+                if (mMultipleSelectionEnabled) {
+                    Log.d(TAG, "performOptimalUIUpdate: ADD_ALL_VISIBLE - full update");
+                    notifyDataSetChanged();
+                } else {
+                    Log.w(TAG, "performOptimalUIUpdate: ADD_ALL_VISIBLE ignored in single mode");
+                }
+                break;
+
+            case MODE_CHANGE_ONLY:
+                // ✅ Mode change without selection change
+                Log.d(TAG, "performOptimalUIUpdate: MODE_CHANGE_ONLY - full update");
+                notifyDataSetChanged();
+                break;
+        }
+    }
+
+    // ==================== ✅ AUTO-EXIT MANAGEMENT MIGLIORATO ====================
+
+    /**
+     * ✅ NEW: Schedule auto-exit con handler cleanup
+     */
+    private void scheduleAutoExit() {
+        // ✅ Cancel previous auto-exit
+        cancelAutoExit();
+
+        if (mIsSelectionMode && mSelectedDates.isEmpty()) {
+            Log.d(TAG, "scheduleAutoExit: Scheduling auto-exit in 800ms");
+
+            mAutoExitRunnable = () -> {
+                if (mIsSelectionMode && mSelectedDates.isEmpty()) {
+                    Log.d(TAG, "scheduleAutoExit: Executing auto-exit");
+                    setSelectionModeInternal(false);
+                } else {
+                    Log.d(TAG, "scheduleAutoExit: Conditions changed - skipping auto-exit");
+                }
+                mAutoExitRunnable = null;
+            };
+
+            mMainHandler.postDelayed(mAutoExitRunnable, 800); // Manteniamo delay richiesto
+        }
+    }
+
+    /**
+     * ✅ NEW: Cancel auto-exit scheduled
+     */
+    private void cancelAutoExit() {
+        if (mAutoExitRunnable != null) {
+            Log.v(TAG, "cancelAutoExit: Cancelling scheduled auto-exit");
+            mMainHandler.removeCallbacks(mAutoExitRunnable);
+            mAutoExitRunnable = null;
+        }
+    }
+
+    // ==================== ✅ CALLBACK METHODS LOOP-SAFE ====================
+
+    @Override
+    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
+        if (mUpdatingSelectionInternally) {
+            Log.v(TAG, "onDaySelectionChanged: Skip - updating internally");
+            return; // ✅ Prevent callback loop
+        }
+
+        Log.d(TAG, "onDaySelectionChanged: " + date + " → " + isSelected);
+
+        // ✅ Update state via central method
+        toggleDaySelection(date, isSelected);
+
+        // ✅ Forward to fragment listener (outside internal update)
+        if (mLongClickListener != null) {
+            mLongClickListener.onDaySelectionChanged(day, date, isSelected);
+        }
+    }
+
+    // ==================== ✅ CLEANUP MIGLIORATO ====================
+
+    /**
+     * ✅ REFACTORED: Cleanup con handler cleanup
+     */
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy: Cleaning up");
+
+        // ✅ Cancel scheduled auto-exit
+        cancelAutoExit();
+
+        // ✅ Clear selections via central method
+        if (!mSelectedDates.isEmpty()) {
+            updateSelectionSet(SelectionOperation.CLEAR_ALL, null);
+        }
+
+        // ✅ Clear references
+        mRegularClickListener = null;
+        mLongClickListener = null;
+        mMainHandler = null;
+
+        // ✅ Cleanup other resources
+    }
+
+    // ==================== ✅ METODI READONLY (non modificano state) ====================
+
+    /**
+     * ✅ Get selected dates (defensive copy)
+     */
+    public Set<LocalDate> getSelectedDates() {
+        return new HashSet<>(mSelectedDates);
+    }
+
+    /**
+     * ✅ Get selection count
+     */
+    public int getSelectedCount() {
+        return mSelectedDates.size();
+    }
+
+    /**
+     * ✅ Check selection mode
+     */
+    public boolean isSelectionMode() {
+        return mIsSelectionMode;
+    }
+
+    /**
+     * ✅ Check if date is selected
+     */
+    public boolean isDateSelected(LocalDate date) {
+        return mSelectedDates.contains(date);
+    }
+
+    // ==================== ✅ PUBLIC API METHODS ====================
+
+    /**
+     * ✅ Public method to exit selection mode
+     */
+    public void exitSelectionMode() {
+        setSelectionMode(false);
+    }
+
+    /**
+     * ✅ Handle back press
+     */
+    public boolean onBackPressed() {
+        if (mIsSelectionMode) {
+            Log.d(TAG, "onBackPressed: Exiting selection mode");
+            setSelectionMode(false);
+            return true;
+        }
+        return false;
+    }
+
+    // ==================== ✅ LOGGING OPTIMIZATION ====================
+
+    /**
+     * ✅ NEW: Concise selection state logging
+     * ✅ ENHANCED: Enhanced logging with mode info
+     */
+    private void logSelectionSummary(String context) {
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "%s: mode=%s, count=%d, type=%s, dates=%s",
+                context,
+                mIsSelectionMode ? "ON" : "OFF",
+                mSelectedDates.size(),
+                mMultipleSelectionEnabled ? "MULTI" : "SINGLE",
+                mSelectedDates.size() <= 3 ? mSelectedDates.toString() :
+                        "[" + mSelectedDates.size() + " dates]"
+        ));
+    }
+
+    // Existing methods remain unchanged...
+    // (setupLongClickSupport, clearSelections, deselectAll, etc.)
+
+
+
+
+/// ///////////////////////////////////////////////////////////////////////////////////
 
     // ===========================================
     // DayLongClickListener Implementation
     // ===========================================
-
     @Override
     public void onDayLongClick(Day day, LocalDate date, View itemView, int position) {
-        Log.d(TAG, "onDayLongClick: " + date);
-
-        // Show floating toolbar
-//        mFloatingToolbar.show(itemView, day, date, this);
+        Log.d(TAG, "onDayLongClick: " + date + " (mode: " +
+                (mMultipleSelectionEnabled ? "MULTIPLE" : "SINGLE") + ")");
 
         // Enter selection mode if not already
         if (!mIsSelectionMode) {
@@ -144,20 +827,6 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
 
         // Action is handled by fragment, selection mode will be exited there
     }
-//        // Hide toolbar
-//        mFloatingToolbar.hide();
-//
-//        // Handle action
-//        handleToolbarAction(action, day, date);
-//
-//        // Notify fragment/activity
-//        if (mLongClickListener != null) {
-//            mLongClickListener.onToolbarActionSelected(action, day, date);
-//        }
-//
-//        // Exit selection mode after action
-//        setSelectionMode(false);
-//    }
 
     @Override
     public void onSelectionModeChanged(boolean isSelectionMode, int selectedCount) {
@@ -174,163 +843,13 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
         if (mLongClickListener != null) {
             mLongClickListener.onSelectionModeChanged(isSelectionMode, selectedCount);
         }
-
-        // Refresh UI
-//        notifyDataSetChanged();
-    }
-
-    @Override
-    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
-        Log.d(TAG, "onDaySelectionChanged: " + date + ", selected: " + isSelected);
-
-        // Update internal selection state
-        toggleDaySelection(date, isSelected); // try
-
-        // Forward to fragment listener
-        if (mLongClickListener != null) {
-            mLongClickListener.onDaySelectionChanged(day, date, isSelected);
-        }
-        // Note: checkAndExitSelectionIfEmpty() is called by toggleDaySelection()
     }
 
     // ===========================================
     // Selection Management
     // ===========================================
 
-    /**
-     * Toggle selection for a specific date
-     */
-    public void toggleDateSelection(LocalDate date) {
-        if (mSelectedDates.contains(date)) {
-            mSelectedDates.remove(date);
-        } else {
-            mSelectedDates.add(date);
-        }
 
-        // Get day object for callback
-        Day day = findDayForDate(date);
-
-        // Notify about selection change
-        boolean isSelected = mSelectedDates.contains(date);
-        onDaySelectionChanged(day, date, isSelected);
-
-        // Update UI for this specific item
-        updateItemSelection(date, isSelected);
-
-        Log.d(TAG, "Date " + date + " selection toggled to: " + isSelected +
-                ", total selected: " + mSelectedDates.size());
-    }
-
-    /**
-     * Set selection mode state
-     */
-    public void setSelectionMode(boolean isSelectionMode) {
-        if (mIsSelectionMode == isSelectionMode) {
-            Log.v(TAG, "Selection mode already " + (isSelectionMode ? "enabled" : "disabled"));
-            return;
-        }
-
-        Log.d(TAG, "Selection mode changing: " + mIsSelectionMode + " -> " + isSelectionMode);
-
-        boolean wasSelectionMode = mIsSelectionMode;
-        mIsSelectionMode = isSelectionMode;
-
-        // If exiting selection mode, clear all selections
-        if (!isSelectionMode && wasSelectionMode) {
-            clearSelections();
-        }
-
-        // Notify about mode change
-        onSelectionModeChanged(isSelectionMode, mSelectedDates.size());
-
-        // Update all visible ViewHolders
-        notifyDataSetChanged();
-
-        Log.d(TAG, "Selection mode changed to: " + isSelectionMode);
-    }
-
-    /**
-     * Clear all selections
-     */
-    public void clearSelections() {
-        if (mSelectedDates.isEmpty()) return;
-
-        Log.d(TAG, "Clearing " + mSelectedDates.size() + " selections");
-
-        // Notify about each deselection
-        for (LocalDate date : mSelectedDates) {
-            Day day = findDayForDate(date);
-            onDaySelectionChanged(day, date, false);
-        }
-
-        mSelectedDates.clear();
-
-        // Update UI
-        notifyDataSetChanged();
-
-        // Auto-exit selection mode if no items selected
-        if (mIsSelectionMode && mSelectedDates.isEmpty()) {
-            setSelectionMode(false);
-        }
-    }
-//    /**
-//     * Public method to clear all selections
-//     */
-//    public void clearSelections() {
-//        Log.d(TAG, "Clearing all selections (" + mSelectedDates.size() + " items)");
-//
-//        mSelectedDates.clear();
-//        notifyDataSetChanged();
-//
-//        // Notify selection changed with 0 count
-//        onSelectionModeChanged(mIsSelectionMode, 0);
-//
-//        // 🔧 NEW: Auto-exit after clearing
-//        checkAndExitSelectionIfEmpty();
-//    }
-
-    /**
-     * Select all available days
-     */
-    public void selectAllDays() {
-        if (mItems == null) return;
-
-        Log.d(TAG, "Selecting all days");
-
-        // Add all day dates to selection
-        for (SharedViewModels.ViewItem item : mItems) {
-            if (item instanceof SharedViewModels.DayItem) {
-                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
-                if (dayItem.day != null) {
-                    LocalDate date = dayItem.day.getLocalDate();
-                    if (!mSelectedDates.contains(date)) {
-                        mSelectedDates.add(date);
-                        onDaySelectionChanged(dayItem.day, date, true);
-                    }
-                }
-            }
-        }
-
-        // Update UI
-        notifyDataSetChanged();
-
-        Log.d(TAG, "Selected " + mSelectedDates.size() + " days");
-    }
-
-    /**
-     * 🔧 NEW: Manual deselect all with auto-exit
-     * This method can be called from UI or programmatically
-     */
-    public void deselectAll() {
-        Log.d(TAG, "Deselecting all items manually");
-
-        if (!mSelectedDates.isEmpty()) {
-            clearSelections(); // This will trigger auto-exit
-        } else if (mIsSelectionMode) {
-            // Already empty but still in selection mode - force exit
-            setSelectionMode(false);
-        }
-    }
 
     /**
      * Update UI for a specific item's selection state
@@ -376,142 +895,6 @@ public abstract class BaseClickAdapterLegacy extends BaseAdapterLegacy implement
             }
         }
         return null;
-    }
-
-    // ===========================================
-    // Public API Methods
-    // ===========================================
-
-    /**
-     * Get currently selected dates
-     */
-    public Set<LocalDate> getSelectedDates() {
-        return new HashSet<>(mSelectedDates);
-    }
-
-    /**
-     * Get count of selected dates
-     */
-    public int getSelectedCount() {
-        return mSelectedDates.size();
-    }
-
-    /**
-     * Check if we're in selection mode
-     */
-    public boolean isSelectionMode() {
-        return mIsSelectionMode;
-    }
-
-    /**
-     * Check if a specific date is selected
-     */
-    public boolean isDateSelected(LocalDate date) {
-        return mSelectedDates.contains(date);
-    }
-
-    // ===========================================
-    // Back Press Handling
-    // ===========================================
-
-    /**
-     * Handle back press - exit selection mode if active
-     */
-    public boolean onBackPressed() {
-        if (mIsSelectionMode) {
-            Log.d(TAG, "Back press in selection mode - exiting");
-            setSelectionMode(false);
-            return true; // Consumed
-        }
-        return false; // Not consumed
-    }
-
-    // ===========================================
-    // Lifecycle and Cleanup
-    // ===========================================
-
-    /**
-     * Cleanup resources
-     */
-    public void onDestroy() {
-        // Clear selections
-        mSelectedDates.clear();
-
-        // Clear listener
-        mLongClickListener = null;
-
-        // FloatingDayToolbar cleanup removed since it's no longer used
-        // if (mFloatingToolbar != null) {
-        //     mFloatingToolbar.hide();
-        //     mFloatingToolbar = null;
-        // }
-
-        Log.d(TAG, "BaseClickAdapter destroyed");
-    }
-
-    /**
-     * Toggle selection state for a specific date
-     */
-    protected void toggleDaySelection(LocalDate date, boolean isSelected) {
-        boolean wasSelected = mSelectedDates.contains(date);
-
-        if (isSelected) {
-            mSelectedDates.add(date);
-            Log.d(TAG, "Day selected: " + date + " (total selected: " + mSelectedDates.size() + ")");
-        } else {
-            mSelectedDates.remove(date);
-            Log.d(TAG, "Day deselected: " + date + " (total selected: " + mSelectedDates.size() + ")");
-        }
-
-        // Find and update the corresponding ViewHolder
-        updateViewHolderSelection(date, isSelected);
-
-        // 🔧 NEW: Auto-exit selection mode if no items selected
-        checkAndExitSelectionIfEmpty();
-    }
-
-    /**
-     * 🔧 NEW: Check if selection is empty and auto-exit if needed
-     */
-    private void checkAndExitSelectionIfEmpty() {
-        if (mIsSelectionMode && mSelectedDates.isEmpty()) {
-            Log.d(TAG, "checkAndExitSelectionIfEmpty: if reaches 0, auto-exiting selection mode with delay of 800");
-
-            // 🔧 FIX: Use Android's main thread posting instead of mMainHandler
-            // Exit selection mode with a small delay to allow for smooth UI transition
-            android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
-            mainHandler.postDelayed(() -> {
-                if (mIsSelectionMode && mSelectedDates.isEmpty()) { // Double-check in case something was selected in the meantime
-                    setSelectionMode(false);
-
-                    // Forward to fragment listener
-                    if (mLongClickListener != null) {
-                        mLongClickListener.onSelectionModeChanged(false, 0);
-                    }
-
-                    Log.d(TAG, "checkAndExitSelectionIfEmpty: Auto-exit completed");
-                } else {
-                    Log.d(TAG, "checkAndExitSelectionIfEmpty: Auto-exit NOT completed");
-                }
-            }, 800); // Small delay for smooth UX
-        }
-    }
-
-    /**
-     * Update ViewHolder selection state without full refresh
-     */
-    protected void updateViewHolderSelection(LocalDate date, boolean isSelected) {
-        // Find the position of this date in the adapter
-        for (int i = 0; i < getItemCount(); i++) {
-            SharedViewModels.ViewItem item = mItems.get(i);
-            if (item instanceof SharedViewModels.DayItem) {
-                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
-                if (dayItem.day != null && dayItem.day.getLocalDate().equals(date)) {
-                    notifyItemChanged(i);
-                    break;
-                }
-            }
-        }
     }
 
     // ===========================================

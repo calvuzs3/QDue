@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,15 +11,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.shared.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
-import net.calvuz.qdue.ui.shared.quickevents.QuickEventConfirmationDialog;
-import net.calvuz.qdue.ui.shared.quickevents.QuickEventTemplate;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
@@ -28,19 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Base fragment with long-click and selection support
- * Enhanced with Quick Events creation system
  * Intermediate layer between BaseFragmentLegacy and specific implementations
- *
- * RECENT ENHANCEMENTS:
- * ✅ Quick Events Integration with QuickEventTemplate and UserEventLogicAdapter
- * ✅ Enhanced error handling and validation
- * ✅ Business logic delegation to adapter classes
- * ✅ User feedback improvements
- * ✅ Template-based event creation
  */
 public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy implements DayLongClickListener {
 
@@ -62,17 +48,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     protected EventsPreviewManager mEventsPreviewManager;
     protected boolean mEventsPreviewEnabled = true;
 
-    // ==================== NEW: Quick Events Integration ====================
-
-    // Quick Events Templates Cache
-    private Map<ToolbarAction, QuickEventTemplate> mQuickEventTemplates;
-    private boolean mQuickEventsInitialized = false;
-
-    // User context for event creation
-    private Long mCurrentUserId = null; // Will be set by subclass or user session
-
-    // ==================== Abstract Methods ====================
-
     // Abstract methods for subclasses to implement
     protected abstract BaseClickAdapterLegacy getClickAdapter();
 
@@ -82,7 +57,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
      * @return CoordinatorLayout to attach the bottom toolbar
      */
     protected ViewGroup getToolbarContainer() {
-        return mCoordinatorLayout;
+        return mCoordinatorLayout; // try
     }
 
     // ===========================================
@@ -122,9 +97,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             mEventsPreviewManager.onDestroy();
             mEventsPreviewManager = null;
         }
-
-        // ✅ NEW: Quick Events cleanup
-        cleanupQuickEventsSystem();
     }
 
     @Override
@@ -132,9 +104,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
         // Initialize bottom toolbar first
         setupBottomToolbar();
-
-        // ✅ NEW: Initialize Quick Events system
-        initializeQuickEventsSystem();
 
         // Super call
         super.onViewCreated(view, savedInstanceState);
@@ -163,105 +132,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             mBottomToolbar = null;
         }
     }
-
-
-    /**
-     * ✅ REFACTORED: Back press - semplificato
-     */
-    public boolean onBackPressed() {
-        if (isSelectionMode()) {
-            Log.d(TAG, getFragmentName() + ": Back press in selection mode");
-
-            BaseClickAdapterLegacy adapter = getClickAdapter();
-            if (adapter != null) {
-                // ✅ Un solo punto di exit
-                adapter.setSelectionMode(false);
-            } else {
-                exitSelectionMode(); // ✅ Fallback
-            }
-
-            return true; // Consumed
-        }
-
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            return adapter.onBackPressed();
-        }
-
-        return false; // Not consumed
-    }
-
-
-    // ==================== NEW: Quick Events System Initialization ====================
-
-    /**
-     * ✅ NEW: Initialize Quick Events system
-     * Sets up templates and validates configuration
-     */
-    private void initializeQuickEventsSystem() {
-        try {
-            Log.d(TAG, "Initializing Quick Events system...");
-
-            // Load all quick event templates
-            mQuickEventTemplates = QuickEventTemplate.getAllTemplates();
-
-            // Validate templates
-            if (QuickEventTemplate.validateAllTemplates()) {
-                mQuickEventsInitialized = true;
-                Log.d(TAG, "✅ Quick Events system initialized successfully with " +
-                        mQuickEventTemplates.size() + " templates");
-            } else {
-                Log.e(TAG, "❌ Quick Events template validation failed");
-                mQuickEventsInitialized = false;
-            }
-
-            // Initialize user context (can be overridden by subclasses)
-            initializeUserContext();
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to initialize Quick Events system: " + e.getMessage());
-            mQuickEventsInitialized = false;
-        }
-    }
-
-    /**
-     * ✅ NEW: Initialize user context for event creation
-     * Subclasses can override to provide specific user context
-     */
-    protected void initializeUserContext() {
-        // Default implementation - get user from session/preferences
-        // Subclasses should override with specific user management logic
-        mCurrentUserId = getCurrentUserId();
-
-        Log.d(TAG, "User context initialized: userId=" + mCurrentUserId);
-    }
-
-    /**
-     * ✅ NEW: Get current user ID
-     * Subclasses should override with actual user management integration
-     */
-    protected Long getCurrentUserId() {
-        // TODO: Integrate with actual user session management
-        // For now, return a default user ID or null
-        return null; // Will be handled gracefully by UserEventLogicAdapter
-    }
-
-    /**
-     * ✅ NEW: Cleanup Quick Events system
-     */
-    private void cleanupQuickEventsSystem() {
-        if (mQuickEventTemplates != null) {
-            mQuickEventTemplates.clear();
-            mQuickEventTemplates = null;
-        }
-        mQuickEventsInitialized = false;
-        Log.d(TAG, "Quick Events system cleaned up");
-    }
-
-    // ===========================================
-    // Setup Methods (Enhanced)
-    // ===========================================
-
 
     /**
      * Initialize bottom selection toolbar
@@ -317,6 +187,11 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // ❌ remove: enterSelectionMode()
         // ✅ ONLY feedback UI non-state
         updateSelectionUI(); // Update UI, no state change
+
+        // Show selection mode UI if needed
+//        if (!mIsSelectionMode) {
+//            enterSelectionMode();
+//        }
     }
 
     @Override
@@ -332,15 +207,13 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
                 showEventsDialog(date);
                 break;
 
-            // ✅ ENHANCED: Quick Event Actions with proper integration
             case FERIE:
             case MALATTIA:
             case LEGGE_104:
             case PERMESSO:
-            case PERMESSO_SINDACALE:
-            case STRAORDINARIO:
                 // These are handled by adapter, but we can show confirmation
-                handleQuickEventCreation(action, date);                break;
+                showQuickEventConfirmation(action, date);
+                break;
 
             default:
                 Log.w(TAG, "Unhandled toolbar action: " + action);
@@ -358,7 +231,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // ✅ SOLO UI UPDATES
         // selectedCount is still 0.. ( && selectedCount > 0 )
         if (isSelectionMode) {
+
             enterSelectionMode();
+
             Log.d(TAG, "UI updated: (true) " + selectedCount);
         } else {
             exitSelectionMode();
@@ -430,193 +305,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 //        }
 //    }
 
-
-    // ==================== NEW: Quick Event Creation Logic ====================
-
-    /**
-     * ✅ ENHANCED: Handle quick event creation with confirmation dialog
-     * Main entry point for toolbar action → confirmation dialog → actual event creation
-     */
-    private void handleQuickEventCreation(ToolbarAction action, LocalDate date) {
-        Log.d(TAG, "handleQuickEventCreation: Creating quick event " + action + " for date " + date);
-
-        // Validate Quick Events system initialization
-        if (!mQuickEventsInitialized) {
-            Log.e(TAG, "❌ Quick Events system not initialized");
-            showQuickEventError("Sistema eventi rapidi non disponibile", action, date);
-            return;
-        }
-
-        // Get template for this action
-        QuickEventTemplate template = mQuickEventTemplates.get(action);
-        if (template == null) {
-            Log.e(TAG, "❌ No template found for action: " + action);
-            showQuickEventError("Template non trovato per " + action.getEventDisplayName(), action, date);
-            return;
-        }
-
-        // Validate template can be used on this date
-        if (!template.canUseOnDate(date, mCurrentUserId)) {
-            Log.w(TAG, "⚠️ Template cannot be used on date: " + date + " for action: " + action);
-            String eventName = template.getDisplayName();
-            showQuickEventError("Impossibile creare '" + eventName + "' per " + date, action, date);
-            return;
-        }
-
-        // ✅ NEW: Show confirmation dialog instead of creating event directly
-        showQuickEventConfirmationDialog(action, date, template);
-    }
-
-    /**
-     * ✅ NEW: Show confirmation dialog for quick event creation
-     * Provides preview and editing capabilities before final creation
-     */
-    private void showQuickEventConfirmationDialog(ToolbarAction action, LocalDate date, QuickEventTemplate template) {
-        Log.d(TAG, "showQuickEventConfirmationDialog: Showing dialog for " + action + " on " + date);
-
-        try {
-            // Create and show confirmation dialog with event creation listener
-            QuickEventConfirmationDialog.showConfirmationDialog(
-                    getContext(),
-                    action,
-                    date,
-                    mCurrentUserId,
-                    template,
-                    new QuickEventConfirmationDialogListener()
-            );
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to show confirmation dialog: " + e.getMessage());
-            showQuickEventError("Errore nell'apertura del dialog: " + e.getMessage(), action, date);
-        }
-    }
-
-    /**
-     * ✅ NEW: Event creation listener for confirmation dialog callbacks
-     * Handles results from the confirmation dialog
-     */
-    private class QuickEventConfirmationDialogListener implements QuickEventConfirmationDialog.EventCreationListener {
-
-        @Override
-        public void onEventCreated(LocalEvent createdEvent, ToolbarAction sourceAction, LocalDate date) {
-            Log.d(TAG, "onEventCreated: Event created successfully via dialog: " + createdEvent.getTitle());
-
-            // Trigger fragment-level event handling
-            onQuickEventCreated(sourceAction, date);
-
-            // Analytics or additional tracking can be added here
-            trackQuickEventCreation(sourceAction, date, true);
-        }
-
-
-        @Override
-        public void onEventCreationCancelled(ToolbarAction sourceAction, LocalDate date) {
-            Log.d(TAG, "onEventCreationCancelled: User cancelled event creation for " + sourceAction + " on " + date);
-
-            // Optional: Analytics tracking for cancellations
-            trackQuickEventCreation(sourceAction, date, false);
-        }
-
-        @Override
-        public void onEventCreationFailed(ToolbarAction sourceAction, LocalDate date, String errorMessage) {
-            Log.e(TAG, "onEventCreationFailed: " + errorMessage + " for " + sourceAction + " on " + date);
-
-            // Show error to user (confirmation dialog already shows Toast, but we can add more here)
-            onQuickEventCreationError(sourceAction, date, errorMessage);
-        }
-
-        @Override
-        public void onEventsRefreshNeeded() {
-            Log.d(TAG, "onEventsRefreshNeeded: Triggering events refresh");
-
-            // Trigger events refresh in the fragment
-            onForceEventsRefresh();
-        }
-    }
-
-    /**
-     * ✅ NEW: Handle quick event creation error
-     * Called when event creation fails for any reason
-     */
-    protected void onQuickEventCreationError(ToolbarAction action, LocalDate date, String errorMessage) {
-        Log.e(TAG, "Quick event creation error: " + errorMessage + " for " + action + " on " + date);
-
-        // Subclasses can override for specific error handling
-        // Default implementation: just log (error Toast already shown by dialog)
-    }
-
-    /**
-     * ✅ NEW: Track quick event creation for analytics
-     * Optional analytics tracking for usage patterns
-     */
-    protected void trackQuickEventCreation(ToolbarAction action, LocalDate date, boolean success) {
-        // Subclasses can override for analytics integration
-        // Default implementation: just log
-        Log.d(TAG, "Quick event tracking: " + action + " for " + date + " success=" + success);
-    }
-
-    /**
-     * ✅ DEPRECATED: Old method - now redirects to new confirmation dialog system
-     * Keeping for backward compatibility
-     */
-    @Deprecated
-    protected boolean saveQuickEvent(LocalEvent event, ToolbarAction action, LocalDate date) {
-        Log.w(TAG, "saveQuickEvent: This method is deprecated. Use QuickEventConfirmationDialog instead.");
-
-        // This method is now handled by QuickEventConfirmationDialog
-        // Keeping minimal implementation for backward compatibility
-        return false;
-    }
-
-    /**
-     * ✅ DEPRECATED: Old method - now handled by confirmation dialog
-     * Keeping for backward compatibility
-     */
-    @Deprecated
-    private void showQuickEventSuccess(LocalEvent event, ToolbarAction action, LocalDate date) {
-        Log.w(TAG, "showQuickEventSuccess: This method is deprecated. Use QuickEventConfirmationDialog instead.");
-
-        // Success feedback is now handled by QuickEventConfirmationDialog
-    }
-
-    /**
-     * ✅ NEW: Show error message for quick event creation
-     */
-    private void showQuickEventError(String errorMessage, ToolbarAction action, LocalDate date) {
-        if (getContext() == null) return;
-
-        String message = "❌ " + errorMessage;
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-
-        Log.e(TAG, "Quick event error shown: " + errorMessage + " for action " + action + " on " + date);
-    }
-
-    /**
-     * ✅ NEW: Format date for user display
-     * Can be overridden for localized formatting
-     */
-    protected String formatDateForUser(LocalDate date) {
-        // Simple formatting - can be enhanced with proper localization
-        return date.toString(); // TODO: Use DateTimeFormatter with locale
-    }
-
-
-    // ==================== ENHANCED: Event Creation Methods ====================
-
-    /**
-     * ✅ ENHANCED: Show quick event confirmation with template preview
-     * Replaces the simple Toast implementation
-     */
-    protected void showQuickEventConfirmation(ToolbarAction action, LocalDate date) {
-        // This method is now handled by handleQuickEventCreation
-        // Keeping for backward compatibility
-        handleQuickEventCreation(action, date);
-        //onQuickEventCreated(action, date);
-    }
-
-
-
-
     // ===========================================
     // Selection Mode UI Management
     // ===========================================
@@ -641,55 +329,31 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         Log.d(TAG, "enterSelectionMode: Entered selection mode");
     }
 
-
     /**
-     * ✅ REFACTORED: Exit selection mode - eliminato clear diretto
+     * Exit selection mode - restore normal UI
      */
     protected void exitSelectionMode() {
-        if (isSelectionMode()) return; // false is ok(already updated)
+        // Exit if in selection mode
+        if (isSelectionMode()) return;
 
-        // ✅ Update action bar/toolbar
+        // Update action bar/toolbar
         updateActionBarForSelection(false);
 
-        // ✅ Show FAB again
+        // Show FAB again
         showFabAfterSelection();
 
-        // ✅ Hide bottom toolbar
+        // Hide bottom toolbar
         hideBottomToolbar();
 
-        // ✅ SOLO setSelectionMode - il clear è gestito dall'adapter
+        // Disable selection mode in adapter
         BaseClickAdapterLegacy adapter = getClickAdapter();
         if (adapter != null && adapter.isSelectionMode()) {
-            adapter.setSelectionMode(false); // ✅ Questo gestirà automaticamente il clear se necessario
+            adapter.setSelectionMode(false);
+            adapter.clearSelections();
         }
 
         Log.d(TAG, "exitSelectionMode: Exited selection mode");
     }
-//    /**
-//     * Exit selection mode - restore normal UI
-//     */
-//    protected void exitSelectionMode() {
-//        // Exit if in selection mode
-//        if (!isSelectionMode()) return;
-//
-//        // Update action bar/toolbar
-//        updateActionBarForSelection(false);
-//
-//        // Show FAB again
-//        showFabAfterSelection();
-//
-//        // Hide bottom toolbar
-//        hideBottomToolbar();
-//
-//        // Disable selection mode in adapter
-//        BaseClickAdapterLegacy adapter = getClickAdapter();
-//        if (adapter != null && adapter.isSelectionMode()) {
-//            adapter.setSelectionMode(false);
-//            adapter.clearSelections();
-//        }
-//
-//        Log.d(TAG, "exitSelectionMode: Exited selection mode");
-//    }
 
     /**
      * Show bottom toolbar with current selection
@@ -732,7 +396,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         if (mFabGoToToday != null && mFabGoToToday.getVisibility() == View.VISIBLE) {
             mHasSelectionHiddenFab = true;
             toggleFabVisibility(mFabGoToToday);
-            mFabGoToToday.hide();
         }
     }
 
@@ -743,7 +406,6 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         if (mFabGoToToday != null && mHasSelectionHiddenFab) {
             mHasSelectionHiddenFab = false;
             toggleFabVisibility(mFabGoToToday);
-            mFabGoToToday.show();
         }
     }
 
@@ -861,10 +523,17 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
     }
 
+    /**
+     * Update UI elements that depend on selection state
+     * Subclasses can override for specific UI updates
+     */
+    protected void updateSelectionDependentUI(boolean hasSelection) {
+        // Default implementation - subclasses can override
+    }
 
-    // ===========================================
-    // Helper Methods
-    // ===========================================
+// ===========================================
+// Helper Methods
+// ===========================================
 
     /**
      * Check if currently in selection mode with items selected
@@ -912,7 +581,27 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 //        onShowEventsDialog(date, events);
 //    }
 
-
+    /**
+     * Show confirmation for quick event creation
+     * TODO: delete mock toast
+     */
+    protected void showQuickEventConfirmation(ToolbarAction action, LocalDate date) {
+        // Default implementation - can be overridden
+        onQuickEventCreated(action, date);
+    }
+//        if (getContext() == null) return;
+//
+//        String eventType = ToolbarAction.getEventTypeName(action);
+//        String message = String.format(QDue.getLocale(),
+//                "Evento '%s' creato per %s", eventType, date);
+//
+//        android.widget.Toast.makeText(getContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+//
+//        Log.d(TAG, "Quick event confirmation shown: " + eventType + " for " + date);
+//
+//        // Delegate to subclass
+//        onQuickEventCreated(action, date);
+//    }
 
     /**
      * Get events for a specific date from cache
@@ -945,26 +634,12 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         // Default implementation - subclasses can override
     }
 
-      /**
-     * ✅ ENHANCED: Called when a quick event is created
-     * Now includes actual event creation logic
+    /**
+     * Called when a quick event is created
      */
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
         Log.d(TAG, "Quick event created: " + action + " for date: " + date);
-
-        // Notify subclasses that an event was created
-        // Subclasses can override for specific handling (analytics, notifications, etc.)
-    }
-
-    /**
-     * ✅ NEW: Called when quick events system needs user context
-     * Subclasses can override to provide specific user ID logic
-     */
-    protected void onQuickEventsUserContextNeeded() {
-        Log.d(TAG, "Quick events system requesting user context");
-
-        // Re-initialize user context
-        initializeUserContext();
+        // Default implementation - subclasses can override
     }
 
     // ===========================================
@@ -1000,7 +675,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             toggleDateSelection(date);
         }
     }
-            //adapter.clearSelections(); // avoid this -> adapter.setSelectionMode(false)
+            //adapter.clearSelections();
             return true;
         } else if (itemId == R.id.action_exit_selection) {
             exitSelectionMode();
@@ -1076,9 +751,8 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         return adapter != null ? adapter.getSelectedCount() : 0;
     }
 
-
     /**
-     * ✅ REFACTORED: Force exit - eliminato clear diretto
+     * 🔧 NEW: Force exit selection mode (public method for external calls)
      */
     public void forceExitSelectionMode() {
         Log.d(TAG, getFragmentName() + ": Force exit selection mode requested");
@@ -1086,53 +760,39 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         if (isSelectionMode()) {
             BaseClickAdapterLegacy adapter = getClickAdapter();
             if (adapter != null) {
-                adapter.setSelectionMode(false); // ✅ Questo gestirà tutto automaticamente
+                adapter.deselectAll(); // This will trigger auto-exit
             } else {
-                exitSelectionMode(); // ✅ Fallback
+                // Fallback: exit directly
+                exitSelectionMode();
             }
         }
     }
-//    /**
-//     * 🔧 NEW: Force exit selection mode (public method for external calls)
-//     */
-//    public void forceExitSelectionMode() {
-//        Log.d(TAG, getFragmentName() + ": Force exit selection mode requested");
-//
-//        if (isSelectionMode()) {
-//            BaseClickAdapterLegacy adapter = getClickAdapter();
-//            if (adapter != null) {
-//                adapter.deselectAll(); // This will trigger auto-exit
-//            } else {
-//                // Fallback: exit directly
-//                exitSelectionMode();
-//            }
-//        }
-//    }
 
+    // ===========================================
+    // Debug Methods
+    // ===========================================
 
     /**
-     * ✅ NEW: Get quick event template for action
+     * Debug long-click integration
      */
-    public QuickEventTemplate getQuickEventTemplate(ToolbarAction action) {
-        return mQuickEventTemplates != null ? mQuickEventTemplates.get(action) : null;
+    public void debugLongClickIntegration() {
+        Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " LONG-CLICK INTEGRATION DEBUG ===");
+
+        debugSelectionState();
+
+        BaseClickAdapterLegacy adapter = getClickAdapter();
+        if (adapter != null) {
+            // Call adapter debug if available
+            try {
+                java.lang.reflect.Method debugMethod = adapter.getClass().getMethod("debugSelectionState");
+                debugMethod.invoke(adapter);
+            } catch (Exception e) {
+                Log.d(TAG, "Adapter debug method not available: " + e.getMessage());
+            }
+        }
+
+        Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " LONG-CLICK DEBUG ===");
     }
-
-    /**
-     * ✅ NEW: Check if quick events system is available
-     */
-    public boolean isQuickEventsAvailable() {
-        return mQuickEventsInitialized && mQuickEventTemplates != null;
-    }
-
-    /**
-     * ✅ NEW: Get preview for quick event creation
-     */
-    public QuickEventTemplate.EventPreview getQuickEventPreview(ToolbarAction action, LocalDate date) {
-        QuickEventTemplate template = getQuickEventTemplate(action);
-        return template != null ? template.getPreview(date) : null;
-    }
-
-
 
     /// ////////////////////////////////////////////////////////////////////////////////////
 
@@ -1277,9 +937,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
     }
 
-    // ===========================================
-    // Event Action Handlers
-    // ===========================================
+// ===========================================
+// Event Action Handlers
+// ===========================================
 
     /**
      * Open event editor for existing event
@@ -1316,6 +976,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
 
         if (getContext() == null) return;
 
+        // Show confirmation dialog
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("Elimina evento")
                 .setMessage("Vuoi eliminare l'evento \"" + event.getTitle() + "\"?")
@@ -1428,252 +1089,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         return mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing();
     }
 
-
-    // ==================== NEW: Bulk Quick Events Creation ====================
-
-
-    /**
-     * ✅ ENHANCED: Handle bulk quick event creation with confirmation
-     * Now shows preview and confirmation for bulk operations
-     */
-    public void handleBulkQuickEventCreation(ToolbarAction action, Set<LocalDate> selectedDates) {
-        if (selectedDates == null || selectedDates.isEmpty()) {
-            Log.w(TAG, "No dates selected for bulk event creation");
-            return;
-        }
-
-        Log.d(TAG, "handleBulkQuickEventCreation: Creating " + action + " for " + selectedDates.size() + " dates");
-
-        if (!mQuickEventsInitialized) {
-            showQuickEventError("Sistema eventi rapidi non disponibile", action, null);
-            return;
-        }
-
-        QuickEventTemplate template = mQuickEventTemplates.get(action);
-        if (template == null) {
-            showQuickEventError("Template non trovato per " + action.getEventDisplayName(), action, null);
-            return;
-        }
-
-        // ✅ ENHANCED: Show bulk confirmation dialog with better preview
-        showBulkEventConfirmationDialog(action, selectedDates, template);
-    }
-
-    /**
-     * ✅ ENHANCED: Show confirmation dialog for bulk event creation with validation preview
-     */
-    private void showBulkEventConfirmationDialog(ToolbarAction action, Set<LocalDate> selectedDates, QuickEventTemplate template) {
-        if (getContext() == null) return;
-
-        String eventName = template.getDisplayName();
-        int totalDates = selectedDates.size();
-        int validDates = getValidDatesCount(action, selectedDates);
-        int invalidDates = totalDates - validDates;
-
-        // Build confirmation message with validation info
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append(String.format("Creare evento '%s' per:", eventName));
-        messageBuilder.append("\n\n");
-        messageBuilder.append("✅ ").append(validDates).append(" date valide");
-
-        if (invalidDates > 0) {
-            messageBuilder.append("\n❌ ").append(invalidDates).append(" date non disponibili");
-            messageBuilder.append("\n\nGli eventi saranno creati solo per le date valide.");
-        }
-
-        String title = String.format("Conferma %d eventi", validDates);
-
-        new androidx.appcompat.app.AlertDialog.Builder(getContext())
-                .setTitle(title)
-                .setMessage(messageBuilder.toString())
-                .setPositiveButton("Crea", (dialog, which) -> {
-                    if (validDates > 0) {
-                        executeBulkEventCreation(action, selectedDates, template);
-                    }
-                })
-                .setNegativeButton("Annulla", (dialog, which) -> {
-                    trackQuickEventCreation(action, null, false);
-                })
-                .setIcon(template.getEventType().getEmoji().codePointAt(0)) // Use emoji as icon
-                .show();
-    }
-
-    /**
-     * ✅ ENHANCED: Execute bulk event creation with proper database integration
-     * Now uses real EventDao for persistence
-     */
-    private void executeBulkEventCreation(ToolbarAction action, Set<LocalDate> selectedDates, QuickEventTemplate template) {
-        Log.d(TAG, "executeBulkEventCreation: Creating events for " + selectedDates.size() + " dates");
-
-        // Get database access
-        EventDao eventDao = QDueDatabase.getInstance(getContext()).eventDao();
-
-        // Execute in background thread
-        CompletableFuture.runAsync(() -> {
-            int successCount = 0;
-            int errorCount = 0;
-            List<String> errors = new ArrayList<>();
-            List<LocalEvent> createdEvents = new ArrayList<>();
-
-            for (LocalDate date : selectedDates) {
-                try {
-                    if (template.canUseOnDate(date, mCurrentUserId)) {
-                        LocalEvent event = template.createEvent(date, mCurrentUserId);
-
-                        if (event != null) {
-                            // Save to database using EventDao
-                            long rowId = eventDao.insertEvent(event);
-
-                            if (rowId > 0) {
-                                successCount++;
-                                createdEvents.add(event);
-                                Log.d(TAG, "✅ Bulk event created: " + event.getTitle() + " for " + date);
-                            } else {
-                                errorCount++;
-                                errors.add("Errore salvataggio per " + date);
-                            }
-                        } else {
-                            errorCount++;
-                            errors.add("Errore creazione per " + date);
-                        }
-                    } else {
-                        errorCount++;
-                        errors.add("Non disponibile per " + date);
-                    }
-                } catch (Exception e) {
-                    errorCount++;
-                    errors.add("Errore per " + date + ": " + e.getMessage());
-                    Log.e(TAG, "Error creating bulk event for date " + date, e);
-                }
-            }
-
-            final int finalSuccessCount = successCount;
-            final int finalErrorCount = errorCount;
-            final List<String> finalErrors = errors;
-
-            // Switch back to main thread for UI updates
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> {
-                    // Show results
-                    showBulkEventResults(action, finalSuccessCount, finalErrorCount, errors);
-
-                    // Refresh events if any were created successfully
-                    if (finalSuccessCount > 0) {
-                        onForceEventsRefresh();
-                        exitSelectionMode(); // Exit selection mode after successful bulk creation
-
-                        // Track successful bulk creation
-                        trackQuickEventCreation(action, null, true);
-                    } else {
-                        // Track failed bulk creation
-                        trackQuickEventCreation(action, null, false);
-                    }
-                });
-            }
-        });
-    }
-
-    /**
-     * ✅ NEW: Show results of bulk event creation
-     */
-    private void showBulkEventResults(ToolbarAction action, int successCount, int errorCount, List<String> errors) {
-        if (getContext() == null) return;
-
-        String eventName = action.getEventDisplayName();
-
-        if (errorCount == 0) {
-            // All successful
-            String message = String.format(QDue.getLocale(),
-                    "✅ %d eventi '%s' creati con successo", successCount, eventName);
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-
-        } else if (successCount == 0) {
-            // All failed
-            String message = "❌ Nessun evento creato. Errori riscontrati.";
-            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-
-        } else {
-            // Mixed results
-            String message = String.format(QDue.getLocale(),
-                    "⚠️ %d eventi creati, %d errori", successCount, errorCount);
-            Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-        }
-
-        Log.d(TAG, String.format(QDue.getLocale(), "Bulk event results: %d success, %d errors for action %s",
-                successCount, errorCount, action));
-    }
-
-
-    // ==================== NEW: Quick Events Validation ====================
-
-    /**
-     * ✅ NEW: Validate quick event creation before showing UI
-     * Can be used by toolbars/adapters to enable/disable actions
-     */
-    public boolean canCreateQuickEvent(ToolbarAction action, LocalDate date) {
-        if (!mQuickEventsInitialized) return false;
-
-        QuickEventTemplate template = mQuickEventTemplates.get(action);
-        if (template == null) return false;
-
-        return template.canUseOnDate(date, mCurrentUserId);
-    }
-
-    /**
-     * ✅ NEW: Validate bulk quick event creation
-     */
-    public boolean canCreateBulkQuickEvents(ToolbarAction action, Set<LocalDate> dates) {
-        if (!mQuickEventsInitialized || dates == null || dates.isEmpty()) return false;
-
-        QuickEventTemplate template = mQuickEventTemplates.get(action);
-        if (template == null) return false;
-
-        // Check if at least one date is valid
-        return dates.stream().anyMatch(date -> template.canUseOnDate(date, mCurrentUserId));
-    }
-
-    /**
-     * ✅ NEW: Get count of valid dates for bulk creation
-     */
-    public int getValidDatesCount(ToolbarAction action, Set<LocalDate> dates) {
-        if (!mQuickEventsInitialized || dates == null) return 0;
-
-        QuickEventTemplate template = mQuickEventTemplates.get(action);
-        if (template == null) return 0;
-
-        return (int) dates.stream()
-                .filter(date -> template.canUseOnDate(date, mCurrentUserId))
-                .count();
-    }
-
-
-
-
-    // ===========================================
-    // Debug Methods Enhanced
-    // ===========================================
-
-    /**
-     * Debug long-click integration
-     */
-    public void debugLongClickIntegration() {
-        Log.d(TAG, "=== " + getFragmentName().toUpperCase() + " LONG-CLICK INTEGRATION DEBUG ===");
-
-        debugSelectionState();
-
-        BaseClickAdapterLegacy adapter = getClickAdapter();
-        if (adapter != null) {
-            // Call adapter debug if available
-            try {
-                java.lang.reflect.Method debugMethod = adapter.getClass().getMethod("debugSelectionState");
-                debugMethod.invoke(adapter);
-            } catch (Exception e) {
-                Log.d(TAG, "Adapter debug method not available: " + e.getMessage());
-            }
-        }
-
-        Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " LONG-CLICK DEBUG ===");
-    }
+// ===========================================
+// Debug Methods Enhanced
+// ===========================================
 
     /**
      * Enhanced debug with events preview state
@@ -1716,36 +1134,5 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
 
         Log.d(TAG, "=== END " + getFragmentName().toUpperCase() + " EVENTS PREVIEW DEBUG ===");
-    }
-
-
-    /**
-     * ✅ NEW: Debug quick events system specifically
-     */
-    public void debugQuickEventsSystem() {
-        Log.d(TAG, "=== QUICK EVENTS SYSTEM DEBUG ===");
-        Log.d(TAG, "System Initialized: " + mQuickEventsInitialized);
-        Log.d(TAG, "Templates Count: " + (mQuickEventTemplates != null ? mQuickEventTemplates.size() : 0));
-        Log.d(TAG, "User Context: " + mCurrentUserId);
-
-        if (mQuickEventTemplates != null) {
-            Log.d(TAG, "Available Templates:");
-            for (ToolbarAction action : mQuickEventTemplates.keySet()) {
-                QuickEventTemplate template = mQuickEventTemplates.get(action);
-                Log.d(TAG, "  " + action + " -> " + (template != null ? template.getDisplayName() : "NULL"));
-            }
-        }
-
-        // Test validation for today
-        LocalDate today = LocalDate.now();
-        Log.d(TAG, "Validation test for today (" + today + "):");
-        if (mQuickEventTemplates != null) {
-            for (ToolbarAction action : ToolbarAction.getQuickEventActions()) {
-                boolean canCreate = canCreateQuickEvent(action, today);
-                Log.d(TAG, "  " + action + ": " + (canCreate ? "✅" : "❌"));
-            }
-        }
-
-        Log.d(TAG, "=== END QUICK EVENTS DEBUG ===");
     }
 }

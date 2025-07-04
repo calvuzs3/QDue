@@ -309,7 +309,6 @@ public class DayslistViewFragmentLegacy extends BaseClickFragmentLegacy {
      *
      * @param hasSelection Whether selection mode is active
      */
-    @Override
     protected void updateSelectionDependentUI(boolean hasSelection) {
         // DaysList-specific UI updates based on selection
         Log.v(TAG, "DaysList: Updating selection-dependent UI, hasSelection: " + hasSelection);
