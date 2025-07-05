@@ -1,4 +1,4 @@
-package net.calvuz.qdue.events.backup;
+package net.calvuz.qdue.core.backup;
 
 import android.content.Context;
 import android.net.Uri;

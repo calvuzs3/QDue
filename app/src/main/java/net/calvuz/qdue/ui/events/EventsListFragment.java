@@ -20,7 +20,7 @@ import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.backup.BackupIntegration;
+import net.calvuz.qdue.core.backup.BackupIntegration;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;

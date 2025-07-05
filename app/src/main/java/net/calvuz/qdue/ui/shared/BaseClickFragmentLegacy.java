@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.shared;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,8 +13,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.ui.events.EventsActivity;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
@@ -21,10 +24,13 @@ import net.calvuz.qdue.ui.shared.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.shared.quickevents.QuickEventConfirmationDialog;
 import net.calvuz.qdue.ui.shared.quickevents.QuickEventTemplate;
+import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +42,7 @@ import java.util.concurrent.CompletableFuture;
  * Intermediate layer between BaseFragmentLegacy and specific implementations
  *
  * RECENT ENHANCEMENTS:
- * ✅ Quick Events Integration with QuickEventTemplate and UserEventLogicAdapter
+ * ✅ Quick Events Integration with QuickEventTemplate and QuickEventLogicAdapter
  * ✅ Enhanced error handling and validation
  * ✅ Business logic delegation to adapter classes
  * ✅ User feedback improvements
@@ -243,7 +249,7 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     protected Long getCurrentUserId() {
         // TODO: Integrate with actual user session management
         // For now, return a default user ID or null
-        return null; // Will be handled gracefully by UserEventLogicAdapter
+        return null; // Will be handled gracefully by QuickEventLogicAdapter
     }
 
     /**
@@ -1220,6 +1226,9 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
             Log.d(TAG, getFragmentName() + ": Event quick action: " + action + " for event: " + event.getTitle());
 
             switch (action) {
+                case VIEW_DETAIL:
+                    openEventDetail(event, date);
+                    break;
                 case EDIT:
                     openEventEditor(event, date);
                     break;
@@ -1282,112 +1291,537 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
     // ===========================================
 
     /**
+     * 🆕 NEW: Open event detail view with proper navigation stack
+     * This creates the desired flow: Detail → EventsList → MainActivity
+     *
+     * @param event The event to view in detail
+     * @param date The source date context
+     */
+    protected void openEventDetail(@NonNull LocalEvent event, LocalDate date) {
+        final String mTAG = "openEventDetail: ";
+        Log.d(TAG, mTAG + "Opening detail for event: " + event.getTitle());
+
+        if (event.getId() == null) {
+            Log.e(TAG, mTAG + "Event or event ID is null");
+            Library.showToast(getContext(), "Errore: evento non valido");
+            return;
+        }
+
+        try {
+            // Create intent for EventsActivity with detail navigation
+            Intent eventsIntent = createEventDetailIntent(event, date);
+
+            // Start activity
+            if (getActivity() != null) {
+                getActivity().startActivity(eventsIntent);
+                Log.d(TAG, mTAG + "✅ EventsActivity started for event detail: " + event.getId());
+            } else {
+                Log.e(TAG, mTAG + "Activity is null, cannot start EventsActivity");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error opening event detail: " + e.getMessage());
+            Library.showToast(getContext(), "Errore nell'apertura del dettaglio evento");
+        }
+    }
+
+    /**
      * Open event editor for existing event
      */
     protected void openEventEditor(LocalEvent event, LocalDate date) {
         Log.d(TAG, "Opening event editor for event: " + event.getTitle());
+        final String mTAG = "openEventEditor: ";
+        Log.d(TAG, mTAG + "Opening editor for event: " + event.getTitle());
 
-        // TODO: Implement navigation to event editor with event data
-        // For now, delegate to base implementation
-        onOpenEventEditor(date);
+        if (event == null || event.getId() == null) {
+            Log.e(TAG, mTAG + "Event or event ID is null");
+            Library.showToast(getContext(), "Errore: evento non valido");
+            return;
+        }
+
+        try {
+            // Create intent for EventsActivity with editor navigation
+            Intent eventsIntent = createEventEditorIntent(event, date);
+
+            // Start activity
+            if (getActivity() != null) {
+                getActivity().startActivity(eventsIntent);
+                Log.d(TAG, mTAG + "✅ EventsActivity started for event editor: " + event.getId());
+            } else {
+                Log.e(TAG, mTAG + "Activity is null, cannot start EventsActivity");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error opening event editor: " + e.getMessage());
+            Library.showToast(getContext(), "Errore nell'apertura dell'editor evento");
+        }
     }
 
+
+
     /**
-     * Open event editor for new event on date
+     * 🆕 NEW: Open event editor for new event creation on specific date
+     * This overload handles creation of new events from preview
+     *
+     * @param date The date for the new event
      */
     protected void openEventEditor(LocalDate date) {
-        Log.d(TAG, "Opening event editor for new event on date: " + date);
+        final String mTAG = "openEventEditor(date): ";
+        Log.d(TAG, mTAG + "Opening editor for new event on date: " + date);
 
-        // TODO: Navigate to event editor with pre-filled date
-        // Example using Navigation Component or Intent
+        try {
+            // Create intent for EventsActivity with new event creation
+            Intent eventsIntent = createNewEventEditorIntent(date);
 
-        // For now, show a toast and delegate to subclass
-        showEventEditorPlaceholder(date);
+            // Start activity
+            if (getActivity() != null) {
+                getActivity().startActivity(eventsIntent);
+                Log.d(TAG, mTAG + "✅ EventsActivity started for new event creation on: " + date);
+            } else {
+                Log.e(TAG, mTAG + "Activity is null, cannot start EventsActivity");
+            }
 
-        // Delegate to base implementation
-        onOpenEventEditor(date);
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error opening event editor for new event: " + e.getMessage());
+            Library.showToast(getContext(), "Errore nell'apertura dell'editor per nuovo evento");
+        }
     }
 
+
     /**
-     * Confirm and delete event
+     * 🔄 ENHANCED: Confirm and delete event
+     * Replaces mock implementation with proper dialog and database operation
+     *
+     * @param event The event to delete
+     * @param date The source date context
      */
     protected void confirmDeleteEvent(LocalEvent event, LocalDate date) {
-        Log.d(TAG, "Confirming delete for event: " + event.getTitle());
+        final String mTAG = "confirmDeleteEvent: ";
+        Log.d(TAG, mTAG + "Confirming deletion for event: " + event.getTitle());
 
-        if (getContext() == null) return;
+        if (event == null || event.getId() == null) {
+            Log.e(TAG, mTAG + "Event or event ID is null");
+            Library.showToast(getContext(), "Errore: evento non valido");
+            return;
+        }
 
+        if (getContext() == null) {
+            Log.e(TAG, mTAG + "Context is null, cannot show dialog");
+            return;
+        }
+
+        // Create confirmation dialog
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
-                .setTitle("Elimina evento")
-                .setMessage("Vuoi eliminare l'evento \"" + event.getTitle() + "\"?")
-                .setPositiveButton("Elimina", (dialog, which) -> deleteEvent(event, date))
-                .setNegativeButton("Annulla", null)
+                .setTitle("Elimina Evento")
+                .setMessage("Sei sicuro di voler eliminare \"" + event.getTitle() + "\"?")
+                .setIcon(R.drawable.ic_rounded_delete_24)
+                .setPositiveButton("Elimina", (dialog, which) -> {
+                    Log.d(TAG, mTAG + "User confirmed deletion");
+                    performEventDeletion(event, date);
+                })
+                .setNegativeButton("Annulla", (dialog, which) -> {
+                    Log.d(TAG, mTAG + "User cancelled deletion");
+                    dialog.dismiss();
+                })
                 .show();
     }
 
+
+
     /**
-     * Delete event
+     * 🆕 NEW: Perform actual event deletion
+     *
+     * @param event The event to delete
+     * @param date The source date context
      */
-    protected void deleteEvent(LocalEvent event, LocalDate date) {
-        Log.d(TAG, "Deleting event: " + event.getTitle());
+    private void performEventDeletion(LocalEvent event, LocalDate date) {
+        final String mTAG = "performEventDeletion: ";
+        Log.d(TAG, mTAG + "Performing deletion for event: " + event.getId());
 
-        // TODO: Implement actual event deletion
-        // For now, show placeholder
-        if (getContext() != null) {
-            android.widget.Toast.makeText(getContext(),
-                    "Evento \"" + event.getTitle() + "\" eliminato",
-                    android.widget.Toast.LENGTH_SHORT).show();
-        }
+        // Use background thread for database operation
+        CompletableFuture.runAsync(() -> {
+            try {
+                QDueDatabase database = QDueDatabase.getInstance(requireContext());
+                EventDao eventDao = database.eventDao();
+                eventDao.deleteEvent(event);
 
-        // Refresh events
-        onForceEventsRefresh();
+                Log.d(TAG, mTAG + "✅ Event deleted successfully: " + event.getId());
+
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Database error during deletion: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }).thenRun(() -> {
+            // Back to main thread for UI updates
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Library.showToast(getContext(),"Evento eliminato: " + event.getTitle());
+
+                    // Refresh events in current view
+                    onForceEventsRefresh();
+
+                    Log.d(TAG, mTAG + "✅ UI updated after deletion");
+                });
+            }
+        }).exceptionally(throwable -> {
+            Log.e(TAG, mTAG + "Error during deletion: " + throwable.getMessage());
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Library.showToast(getContext(),"Errore durante l'eliminazione");
+                });
+            }
+            return null;
+        });
     }
 
+
     /**
-     * Duplicate event
+     * 🔄 ENHANCED: Duplicate event with proper implementation
+     * Replaces mock implementation with actual duplication logic
+     *
+     * @param event The event to duplicate
+     * @param date The source date context
      */
     protected void duplicateEvent(LocalEvent event, LocalDate date) {
-        Log.d(TAG, "Duplicating event: " + event.getTitle());
+        final String mTAG = "duplicateEvent: ";
+        Log.d(TAG, mTAG + "Duplicating event: " + event.getTitle());
 
-        // TODO: Implement event duplication
-        if (getContext() != null) {
-            android.widget.Toast.makeText(getContext(),
-                    "Evento \"" + event.getTitle() + "\" duplicato",
-                    android.widget.Toast.LENGTH_SHORT).show();
+        if (event == null || event.getId() == null) {
+            Log.e(TAG, mTAG + "Event or event ID is null");
+            Library.showToast(getContext(),"Errore: evento non valido");
+            return;
         }
 
-        // Refresh events
-        onForceEventsRefresh();
+        try {
+            // Create duplicate with modified properties
+            LocalEvent duplicatedEvent = createDuplicateEvent(event, date);
+
+            // Save duplicate to database
+            saveDuplicatedEvent(duplicatedEvent, event);
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error duplicating event: " + e.getMessage());
+            Library.showToast(getContext(),"Errore durante la duplicazione");
+        }
     }
 
     /**
-     * Toggle event completion status
+     * 🆕 NEW: Create duplicate event with modified properties
+     *
+     * @param originalEvent The original event to duplicate
+     * @param targetDate The target date for the duplicate
+     * @return New LocalEvent with duplicated data
      */
-    protected void toggleEventComplete(LocalEvent event, LocalDate date) {
-        Log.d(TAG, "Toggling completion for event: " + event.getTitle());
+    private LocalEvent createDuplicateEvent(LocalEvent originalEvent, LocalDate targetDate) {
+        LocalEvent duplicate = new LocalEvent();
 
-        // TODO: Implement completion toggle
-        if (getContext() != null) {
-            android.widget.Toast.makeText(getContext(),
-                    "Stato evento \"" + event.getTitle() + "\" cambiato",
-                    android.widget.Toast.LENGTH_SHORT).show();
+        // Generate new ID
+        duplicate.setId(java.util.UUID.randomUUID().toString());
+
+        // Copy basic properties
+        duplicate.setTitle(originalEvent.getTitle() + " (Copia)");
+        duplicate.setDescription(originalEvent.getDescription());
+        duplicate.setLocation(originalEvent.getLocation());
+        duplicate.setAllDay(originalEvent.isAllDay());
+
+        // Adjust dates - maintain time but change date
+        if (originalEvent.getStartTime() != null) {
+            LocalDateTime originalStart = originalEvent.getStartTime();
+            LocalDateTime newStart = targetDate.atTime(originalStart.toLocalTime());
+            duplicate.setStartTime(newStart);
         }
 
-        // Refresh events
-        onForceEventsRefresh();
+        if (originalEvent.getEndTime() != null) {
+            LocalDateTime originalEnd = originalEvent.getEndTime();
+            // Calculate duration and apply to new date
+            if (originalEvent.getStartTime() != null) {
+                java.time.Duration duration = java.time.Duration.between(
+                        originalEvent.getStartTime(), originalEvent.getEndTime());
+                duplicate.setEndTime(duplicate.getStartTime().plus(duration));
+            } else {
+                LocalDateTime newEnd = targetDate.atTime(originalEnd.toLocalTime());
+                duplicate.setEndTime(newEnd);
+            }
+        }
+
+        // Copy other properties
+        duplicate.setEventType(originalEvent.getEventType());
+        duplicate.setPriority(originalEvent.getPriority());
+        duplicate.setCustomProperties(originalEvent.getCustomProperties());
+        duplicate.setPackageId(originalEvent.getPackageId());
+        duplicate.setSourceUrl(originalEvent.getSourceUrl());
+        duplicate.setPackageVersion(originalEvent.getPackageVersion());
+
+        Log.d(TAG, "Created duplicate event: " + duplicate.getTitle() + " for date: " + targetDate);
+
+        return duplicate;
     }
+
+    /**
+     * 🆕 NEW: Save duplicated event to database
+     *
+     * @param duplicatedEvent The duplicated event to save
+     * @param originalEvent The original event (for logging)
+     */
+    private void saveDuplicatedEvent(LocalEvent duplicatedEvent, LocalEvent originalEvent) {
+        final String mTAG = "saveDuplicatedEvent: ";
+
+        // Use background thread for database operation
+        CompletableFuture.runAsync(() -> {
+            try {
+                QDueDatabase database = QDueDatabase.getInstance(requireContext());
+                EventDao eventDao = database.eventDao();
+                eventDao.insertEvent(duplicatedEvent);
+
+                Log.d(TAG, mTAG + "✅ Duplicated event saved: " + duplicatedEvent.getId());
+
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Database error during duplication save: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }).thenRun(() -> {
+            // Back to main thread for UI updates
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Library.showToast(getContext(),"Evento duplicato: " + duplicatedEvent.getTitle());
+
+                    // Refresh events in current view
+                    onForceEventsRefresh();
+
+                    Log.d(TAG, mTAG + "✅ UI updated after duplication");
+                });
+            }
+        }).exceptionally(throwable -> {
+            Log.e(TAG, mTAG + "Error during duplication save: " + throwable.getMessage());
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Library.showToast(getContext(),"Errore durante il salvataggio della copia");
+                });
+            }
+            return null;
+        });
+    }
+
+
+/**
+ * 🔄 ENHANCED: Toggle event completion status
+ * Replaces mock implementation with actual status toggle
+ *
+         * @param event The event to toggle
+ * @param date The source date context
+ */
+    protected void toggleEventComplete(LocalEvent event, LocalDate date) {
+        final String mTAG = "toggleEventComplete: ";
+        Log.d(TAG, mTAG + "Toggling completion for event: " + event.getTitle());
+
+        if (event == null || event.getId() == null) {
+            Log.e(TAG, mTAG + "Event or event ID is null");
+            Library.showToast(getContext(),"Errore: evento non valido");
+            return;
+        }
+
+        // Check if event has custom properties for completion status
+        Map<String, String> customProps = event.getCustomProperties();
+        if (customProps == null) {
+            customProps = new HashMap<>();
+        }
+
+        // Toggle completion status
+        String currentStatus = customProps.get("completed");
+        boolean isCompleted = "true".equals(currentStatus);
+        boolean newStatus = !isCompleted;
+
+        customProps.put("completed", String.valueOf(newStatus));
+        customProps.put("completion_date", newStatus ? LocalDate.now().toString() : null);
+
+        event.setCustomProperties(customProps);
+
+        // Save updated event to database
+        saveEventCompletionStatus(event, newStatus);
+    }
+
+    /**
+     * 🆕 NEW: Save event completion status to database
+     *
+     * @param event The event with updated completion status
+     * @param isCompleted The new completion status
+     */
+    private void saveEventCompletionStatus(LocalEvent event, boolean isCompleted) {
+        final String mTAG = "saveEventCompletionStatus: ";
+
+        // Use background thread for database operation
+        CompletableFuture.runAsync(() -> {
+            try {
+                QDueDatabase database = QDueDatabase.getInstance(requireContext());
+                EventDao eventDao = database.eventDao();
+                eventDao.updateEvent(event);
+
+                Log.d(TAG, mTAG + "✅ Event completion status updated: " + event.getId() + " -> " + isCompleted);
+
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Database error during completion update: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }).thenRun(() -> {
+            // Back to main thread for UI updates
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    String statusMessage = isCompleted ? "completato" : "rimosso dai completati";
+                    Library.showToast(getContext(), "Evento " + statusMessage + ": " + event.getTitle());
+
+                    // Refresh events in current view
+                    onForceEventsRefresh();
+
+                    Log.d(TAG, mTAG + "✅ UI updated after completion toggle");
+                });
+            }
+        }).exceptionally(throwable -> {
+            Log.e(TAG, mTAG + "Error during completion update: " + throwable.getMessage());
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Library.showToast(getContext(), "Errore durante l'aggiornamento dello stato");
+                });
+            }
+            return null;
+        });
+    }
+
 
     /**
      * Navigate to events activity
      */
     protected void navigateToEventsActivity(LocalDate date) {
-        Log.d(TAG, "Navigating to events activity for date: " + date);
+        final String mTAG = "navigateToEventsActivity: ";
+        Log.d(TAG, mTAG + "Opening EventsActivity for date: " + date);
 
-        // TODO: Implement navigation to events activity
-        if (getContext() != null) {
-            android.widget.Toast.makeText(getContext(),
-                    "Apertura eventi per " + date,
-                    android.widget.Toast.LENGTH_SHORT).show();
+        try {
+            Intent eventsIntent = new Intent(getActivity(), EventsActivity.class);
+
+            // General navigation (not direct to detail)
+            eventsIntent.putExtra("action", "view_list");
+            eventsIntent.putExtra("focus_date", date.toString());
+            eventsIntent.putExtra("source_fragment", getFragmentName());
+
+            if (getActivity() != null) {
+                getActivity().startActivity(eventsIntent);
+                Log.d(TAG, mTAG + "✅ EventsActivity started for general navigation");
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Error opening EventsActivity: " + e.getMessage());
+            Library.showToast(getContext(), "Errore nell'apertura della lista eventi");
         }
+    }
+
+
+
+    /**
+     * 🆕 HELPER: Create intent for EventsActivity with detail navigation parameters
+     *
+     * @param event The target event
+     * @param date The source date context
+     * @return Configured Intent for EventsActivity
+     */
+    private Intent createEventDetailIntent(LocalEvent event, LocalDate date) {
+        Intent eventsIntent = new Intent(getActivity(), EventsActivity.class);
+
+        // Navigation action: direct to detail
+        eventsIntent.putExtra("action", "view_detail");
+        eventsIntent.putExtra("event_id", event.getId());
+
+        // Source context for proper back navigation
+        eventsIntent.putExtra("source_date", date.toString());
+        eventsIntent.putExtra("source_fragment", getFragmentName());
+        eventsIntent.putExtra("source_view_type", getEventsPreviewViewType().name());
+
+        // Additional context that might be useful
+        eventsIntent.putExtra("source_activity", "MainActivity");
+        eventsIntent.putExtra("navigation_timestamp", System.currentTimeMillis());
+
+        Log.d(TAG, "Created intent with parameters:");
+        Log.d(TAG, "- action: view_detail");
+        Log.d(TAG, "- event_id: " + event.getId());
+        Log.d(TAG, "- source_date: " + date);
+        Log.d(TAG, "- source_fragment: " + getFragmentName());
+        Log.d(TAG, "- source_view_type: " + getEventsPreviewViewType().name());
+
+        return eventsIntent;
+    }
+
+    /**
+     * 🆕 NEW: Create intent for EventsActivity with event editor navigation parameters
+     *
+     * @param event The target event to edit
+     * @param date The source date context
+     * @return Configured Intent for EventsActivity with editor parameters
+     */
+    private Intent createEventEditorIntent(LocalEvent event, LocalDate date) {
+        Intent eventsIntent = new Intent(getActivity(), EventsActivity.class);
+
+        // Navigation action: edit existing event
+        eventsIntent.putExtra("action", "edit_event");
+        eventsIntent.putExtra("event_id", event.getId());
+
+        // Source context for proper back navigation
+        eventsIntent.putExtra("source_date", date.toString());
+        eventsIntent.putExtra("source_fragment", getFragmentName());
+        eventsIntent.putExtra("source_view_type", getEventsPreviewViewType().name());
+
+        // Additional context for editor
+        eventsIntent.putExtra("source_activity", "MainActivity");
+        eventsIntent.putExtra("edit_mode", "existing_event");
+        eventsIntent.putExtra("navigation_timestamp", System.currentTimeMillis());
+
+        // Event context for pre-population if needed
+        eventsIntent.putExtra("event_title", event.getTitle());
+        eventsIntent.putExtra("event_start_date", event.getStartTime() != null ?
+                event.getStartTime().toLocalDate().toString() : date.toString());
+
+        Log.d(TAG, "Created editor intent with parameters:");
+        Log.d(TAG, "- action: edit_event");
+        Log.d(TAG, "- event_id: " + event.getId());
+        Log.d(TAG, "- source_date: " + date);
+        Log.d(TAG, "- source_fragment: " + getFragmentName());
+        Log.d(TAG, "- source_view_type: " + getEventsPreviewViewType().name());
+        Log.d(TAG, "- edit_mode: existing_event");
+
+        return eventsIntent;
+    }
+
+    /**
+     * 🆕 NEW: Create intent for EventsActivity with new event creation parameters
+     *
+     * @param date The date for the new event
+     * @return Configured Intent for EventsActivity with new event parameters
+     */
+    private Intent createNewEventEditorIntent(LocalDate date) {
+        Intent eventsIntent = new Intent(getActivity(), EventsActivity.class);
+
+        // Navigation action: create new event
+        eventsIntent.putExtra("action", "create_event");
+        eventsIntent.putExtra("target_date", date.toString());
+
+        // Source context for proper back navigation
+        eventsIntent.putExtra("source_date", date.toString());
+        eventsIntent.putExtra("source_fragment", getFragmentName());
+        eventsIntent.putExtra("source_view_type", getEventsPreviewViewType().name());
+
+        // Additional context for editor
+        eventsIntent.putExtra("source_activity", "MainActivity");
+        eventsIntent.putExtra("edit_mode", "new_event");
+        eventsIntent.putExtra("navigation_timestamp", System.currentTimeMillis());
+
+        // Pre-population context
+        eventsIntent.putExtra("default_start_date", date.toString());
+        eventsIntent.putExtra("creation_source", "preview_add_button");
+
+        Log.d(TAG, "Created new event editor intent with parameters:");
+        Log.d(TAG, "- action: create_event");
+        Log.d(TAG, "- target_date: " + date);
+        Log.d(TAG, "- source_fragment: " + getFragmentName());
+        Log.d(TAG, "- edit_mode: new_event");
+
+        return eventsIntent;
     }
 
 // ===========================================
@@ -1747,5 +2181,23 @@ public abstract class BaseClickFragmentLegacy extends BaseFragmentLegacy impleme
         }
 
         Log.d(TAG, "=== END QUICK EVENTS DEBUG ===");
+    }
+
+
+    /**
+     * Enhanced logging for editor operations
+     *
+     * @param operation The operation being performed
+     * @param event The target event (can be null for new events)
+     * @param date The date context
+     */
+    private void debugEditorOperation(String operation, LocalEvent event, LocalDate date) {
+        Log.d(TAG, "=== EDITOR OPERATION ===");
+        Log.d(TAG, "Operation: " + operation);
+        Log.d(TAG, "Date: " + date);
+        Log.d(TAG, "Event: " + (event != null ? event.getTitle() + " (" + event.getId() + ")" : "NEW"));
+        Log.d(TAG, "Fragment: " + getFragmentName());
+        Log.d(TAG, "View Type: " + getEventsPreviewViewType().name());
+        Log.d(TAG, "========================");
     }
 }

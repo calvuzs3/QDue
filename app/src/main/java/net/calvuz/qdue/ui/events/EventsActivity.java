@@ -38,7 +38,7 @@ import net.calvuz.qdue.core.file.EventsImportAdapter;
 import net.calvuz.qdue.core.permissions.PermissionManager;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.events.backup.BackupIntegration;
+import net.calvuz.qdue.core.backup.BackupIntegration;
 import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.validation.JsonSchemaValidator;
@@ -48,9 +48,12 @@ import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
+import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * EventsActivity - Main activity for events management
@@ -147,6 +150,10 @@ public class EventsActivity extends AppCompatActivity implements
 
         // Set up interfaces
 //        mEventsOperationListener = (EventsOperationListener) this;
+
+        // 🆕 ENHANCED: Handle intent with direct navigation support
+        handleIntentWithNavigation(getIntent());
+
         // Initialize events state
         checkInitialEventsState();
     }
@@ -187,12 +194,6 @@ public class EventsActivity extends AppCompatActivity implements
         // Ensure final notification is sent before finishing
         Log.d(TAG, "Activity finishing - ensuring MainActivity notification");
         super.finish();
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        handleIntent(intent);
     }
 
     /**
@@ -463,6 +464,383 @@ public class EventsActivity extends AppCompatActivity implements
                 .setPositiveButton("Clear All", (dialog, which) -> deleteAllEvents())
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    /**
+     * 🆕 NEW: Enhanced intent handling with direct navigation support
+     * Supports both general navigation and direct detail navigation
+     *
+     * @param intent The intent that started this activity
+     */
+    private void handleIntentWithNavigation(Intent intent) {
+        final String mTAG = "handleIntentWithNavigation: ";
+        Log.d(TAG, mTAG + "Processing intent");
+
+        if (intent == null) {
+            Log.d(TAG, mTAG + "No intent provided, using default navigation");
+            return;
+        }
+
+        String action = intent.getStringExtra("action");
+        Log.d(TAG, mTAG + "Intent action: " + action);
+
+        if ("view_detail".equals(action)) {
+            // Direct navigation to event detail
+            handleDirectDetailNavigation(intent);
+        } else if ("edit_event".equals(action)) {
+            // 🆕 NEW: Direct navigation to event editor
+            handleDirectEditorNavigation(intent);
+        } else if ("create_event".equals(action)) {
+            // 🆕 NEW: Direct navigation to new event creation
+            handleNewEventCreation(intent);
+        } else if ("view_list".equals(action)) {
+            // Navigation to events list with optional focus
+            handleListNavigationWithFocus(intent);
+        } else {
+            // Default behavior - handle existing intent logic
+            handleIntent(intent);
+        }
+    }
+
+    /**
+     * 🆕 NEW: Handle direct navigation to event detail
+     * Creates the proper navigation stack: EventsList → EventDetail
+     *
+     * @param intent Intent containing event detail parameters
+     */
+    private void handleDirectDetailNavigation(Intent intent) {
+        final String mTAG = "handleDirectDetailNavigation: ";
+
+        String eventId = intent.getStringExtra("event_id");
+        String sourceDate = intent.getStringExtra("source_date");
+        String sourceFragment = intent.getStringExtra("source_fragment");
+        String action = intent.getStringExtra("action");
+
+        Log.d(TAG, mTAG + "Event ID: " + eventId);
+        Log.d(TAG, mTAG + "Source Date: " + sourceDate);
+        Log.d(TAG, mTAG + "Source Fragment: " + sourceFragment);
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Log.e(TAG, mTAG + "Event ID is null or empty, cannot navigate to detail");
+            Library.showToast(this, "Errore: ID evento non valido");
+            return;
+        }
+
+        // Verify event exists before navigation
+        verifyEventAndNavigate(eventId, sourceDate, sourceFragment, action);
+    }
+
+    /**
+     * 🆕 NEW: Handle direct navigation to event editor
+     * Creates the proper navigation stack: EventsList → EventEdit
+     *
+     * @param intent Intent containing event editor parameters
+     */
+    private void handleDirectEditorNavigation(Intent intent) {
+        final String mTAG = "handleDirectEditorNavigation: ";
+
+        String eventId = intent.getStringExtra("event_id");
+        String sourceDate = intent.getStringExtra("source_date");
+        String sourceFragment = intent.getStringExtra("source_fragment");
+        String editMode = intent.getStringExtra("edit_mode");
+        String action = intent.getStringExtra("action");
+
+        Log.d(TAG, mTAG + "Event ID: " + eventId);
+        Log.d(TAG, mTAG + "Source Date: " + sourceDate);
+        Log.d(TAG, mTAG + "Source Fragment: " + sourceFragment);
+        Log.d(TAG, mTAG + "Edit Mode: " + editMode);
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Log.e(TAG, mTAG + "Event ID is null or empty, cannot navigate to editor");
+            Library.showToast(this, "Errore: ID evento non valido");
+            return;
+        }
+
+        // Verify event exists before navigation to editor
+        verifyEventAndNavigate(eventId, sourceDate, sourceFragment, action);
+    }
+
+    /**
+     * 🆕 NEW: Handle navigation to new event creation
+     * Creates the proper navigation stack: EventsList → EventEdit (new)
+     *
+     * @param intent Intent containing new event creation parameters
+     */
+    private void handleNewEventCreation(Intent intent) {
+        final String mTAG = "handleNewEventCreation: ";
+
+        String targetDate = intent.getStringExtra("target_date");
+        String sourceFragment = intent.getStringExtra("source_fragment");
+        String editMode = intent.getStringExtra("edit_mode");
+
+        Log.d(TAG, mTAG + "Target Date: " + targetDate);
+        Log.d(TAG, mTAG + "Source Fragment: " + sourceFragment);
+        Log.d(TAG, mTAG + "Edit Mode: " + editMode);
+
+        if (targetDate == null || targetDate.trim().isEmpty()) {
+            Log.e(TAG, mTAG + "Target date is null or empty, using today");
+            targetDate = LocalDate.now().toString();
+        }
+
+        // Navigate directly to new event creation
+        navigateToNewEventCreation(targetDate, sourceFragment);
+    }
+
+    // ==================== NAVIGATE FUNCTIONALITY ====================
+
+    /**
+     * 🆕 NEW: Verify event exists and navigate to detail
+     *
+     * @param eventId        The event ID to verify and navigate to
+     * @param sourceDate     The source date context
+     * @param sourceFragment The source fragment name
+     */
+    private void verifyEventAndNavigate(String eventId, String sourceDate, String sourceFragment) {
+        final String mTAG = "verifyEventAndNavigate: ";
+
+        // Use background thread for database operation
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                EventDao eventDao = mDatabase.eventDao();
+                LocalEvent event = eventDao.getEventById(eventId);
+                return event;
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Database error: " + e.getMessage());
+                return null;
+            }
+        }).thenAccept(event -> {
+            // Back to main thread for UI operations
+            runOnUiThread(() -> {
+                if (event != null) {
+                    Log.d(TAG, mTAG + "✅ Event found: " + event.getTitle());
+                    navigateToEventDetail(eventId, sourceDate, sourceFragment);
+                } else {
+                    Log.e(TAG, mTAG + "❌ Event not found with ID: " + eventId);
+                    Library.showToast(this, "Evento non trovato");
+                    // Fall back to events list
+                    // (Navigation component will show EventsListFragment by default)
+                }
+            });
+        }).exceptionally(throwable -> {
+            Log.e(TAG, mTAG + "Error verifying event: " + throwable.getMessage());
+            runOnUiThread(() -> Library.showToast(this, "Errore nel caricamento dell'evento"));
+            return null;
+        });
+    }
+
+    /**
+     * 🆕 NEW: Verify event exists and navigate to detail
+     *
+     * @param eventId        The event ID to verify and navigate to
+     * @param sourceDate     The source date context
+     * @param sourceFragment The source fragment name
+     */
+    private void verifyEventAndNavigate(String eventId, String sourceDate, String sourceFragment, String action) {
+        final String mTAG = "verifyEventAndNavigate: ";
+
+        // Use background thread for database operation
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                EventDao eventDao = mDatabase.eventDao();
+                LocalEvent event = eventDao.getEventById(eventId);
+                return event;
+            } catch (Exception e) {
+                Log.e(TAG, mTAG + "Database error: " + e.getMessage());
+                return null;
+            }
+        }).thenAccept(event -> {
+            // Back to main thread for UI operations
+            runOnUiThread(() -> {
+                if (event != null) {
+                    Log.d(TAG, mTAG + "✅ Event found: " + event.getTitle());
+                    switch (action) {
+                        case "edit_event":
+                            navigateToEventEditor(eventId, sourceDate, sourceFragment);
+                            break;
+                        case "view_detail":
+                            navigateToEventDetail(eventId, sourceDate, sourceFragment);
+                            break;
+                        default:
+                            Log.e(TAG, mTAG + "❌ Invalid action: " + action);
+                    }
+
+                } else {
+                    Log.e(TAG, mTAG + "❌ Event not found with ID: " + eventId);
+                    Library.showToast(this, "Evento non trovato");
+                    // Fall back to events list
+                    // (Navigation component will show EventsListFragment by default)
+                }
+            });
+        }).exceptionally(throwable -> {
+            Log.e(TAG, mTAG + "Error verifying event: " + throwable.getMessage());
+            runOnUiThread(() -> Library.showToast(this, "Errore nel caricamento dell'evento"));
+            return null;
+        });
+    }
+
+    /**
+     * 🆕 NEW: Navigate to event detail with proper back stack
+     * This ensures the back button goes: EventDetail → EventsList → MainActivity
+     *
+     * @param eventId        The event ID
+     * @param sourceDate     The source date context
+     * @param sourceFragment The source fragment name
+     */
+    private void navigateToEventDetail(String eventId, String sourceDate, String sourceFragment) {
+        final String mTAG = "navigateToEventDetail: ";
+        Log.d(TAG, mTAG + "Navigating to detail for event: " + eventId);
+
+        if (mNavController == null) {
+            Log.e(TAG, mTAG + "NavController is null, cannot navigate");
+            return;
+        }
+
+        try {
+            // Create bundle with event ID
+            Bundle args = new Bundle();
+            args.putString("eventId", eventId);
+
+            // Add source context for potential future use
+            args.putString("sourceDate", sourceDate);
+            args.putString("sourceFragment", sourceFragment);
+
+            // Navigate to detail fragment
+            // This automatically creates the proper back stack:
+            // EventDetailFragment (current) ← EventsListFragment (back) ← MainActivity (back)
+            mNavController.navigate(R.id.action_events_list_to_event_detail, args);
+
+            Log.d(TAG, mTAG + "✅ Navigation to event detail completed");
+            Log.d(TAG, mTAG + "Back stack: EventDetail ← EventsList ← MainActivity");
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Navigation error: " + e.getMessage());
+            Library.showToast(this, "Errore nella navigazione");
+        }
+    }
+
+    /**
+     * 🆕 NEW: Navigate to event editor with proper back stack
+     * This ensures the back button goes: EventEdit → EventsList → MainActivity
+     *
+     * @param eventId        The event ID to edit
+     * @param sourceDate     The source date context
+     * @param sourceFragment The source fragment name
+     */
+    private void navigateToEventEditor(String eventId, String sourceDate, String sourceFragment) {
+        final String mTAG = "navigateToEventEditor: ";
+        Log.d(TAG, mTAG + "Navigating to editor for event: " + eventId);
+
+        if (mNavController == null) {
+            Log.e(TAG, mTAG + "NavController is null, cannot navigate");
+            return;
+        }
+
+        try {
+            // First navigate to detail fragment
+            Bundle detailArgs = new Bundle();
+            detailArgs.putString("eventId", eventId);
+            detailArgs.putString("sourceDate", sourceDate);
+            detailArgs.putString("sourceFragment", sourceFragment);
+
+            mNavController.navigate(R.id.action_events_list_to_event_detail, detailArgs);
+
+            // Then navigate to edit fragment
+            Bundle editArgs = new Bundle();
+            editArgs.putString("eventId", eventId);
+            editArgs.putString("sourceDate", sourceDate);
+            editArgs.putString("sourceFragment", sourceFragment);
+            editArgs.putString("editMode", "existing_event");
+
+            // Small delay to ensure detail fragment is loaded
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    mNavController.navigate(R.id.action_event_detail_to_edit, editArgs);
+                    Log.d(TAG, mTAG + "✅ Navigation to event editor completed");
+                    Log.d(TAG, mTAG + "Back stack: EventEdit ← EventDetail ← EventsList ← MainActivity");
+                } catch (Exception e) {
+                    Log.e(TAG, mTAG + "Error navigating to edit: " + e.getMessage());
+                }
+            }, 100);
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Navigation error: " + e.getMessage());
+            Library.showToast(this, "Errore nella navigazione all'editor");
+        }
+    }
+
+    /**
+     * 🆕 NEW: Navigate to new event creation
+     *
+     * @param targetDate     The target date for the new event
+     * @param sourceFragment The source fragment name
+     */
+    private void navigateToNewEventCreation(String targetDate, String sourceFragment) {
+        final String mTAG = "navigateToNewEventCreation: ";
+        Log.d(TAG, mTAG + "Navigating to new event creation for date: " + targetDate);
+
+        if (mNavController == null) {
+            Log.e(TAG, mTAG + "NavController is null, cannot navigate");
+            return;
+        }
+
+        try {
+            // For new event creation, we might need a different approach
+            // depending on how EventEditFragment handles new vs existing events
+
+            // Option 1: Use existing edit fragment with special parameters
+            Bundle args = new Bundle();
+            args.putString("eventId", ""); // Empty ID indicates new event
+            args.putString("targetDate", targetDate);
+            args.putString("sourceFragment", sourceFragment);
+            args.putString("editMode", "new_event");
+
+            // Navigate directly to edit fragment for new event
+            // Note: This may need adjustment based on actual EventEditFragment implementation
+            Log.d(TAG, mTAG + "Creating new event for date: " + targetDate);
+            Log.d(TAG, mTAG + "TODO: Verify EventEditFragment supports new event creation");
+
+            // For now, show the events list (user can use FAB to create new event)
+            Log.d(TAG, mTAG + "Showing events list - user can use FAB for new event");
+
+        } catch (Exception e) {
+            Log.e(TAG, mTAG + "Navigation error: " + e.getMessage());
+            Library.showToast(this, "Errore nella creazione nuovo evento");
+        }
+    }
+
+    /**
+     * 🆕 NEW: Handle navigation to events list with optional focus
+     *
+     * @param intent Intent containing list navigation parameters
+     */
+    private void handleListNavigationWithFocus(Intent intent) {
+        final String mTAG = "handleListNavigationWithFocus: ";
+
+        String focusDate = intent.getStringExtra("focus_date");
+        String sourceFragment = intent.getStringExtra("source_fragment");
+
+        Log.d(TAG, mTAG + "Focus Date: " + focusDate);
+        Log.d(TAG, mTAG + "Source Fragment: " + sourceFragment);
+
+        // Events list is the default destination, so no special navigation needed
+        // Future enhancement: could scroll to events near focusDate
+        Log.d(TAG, mTAG + "Showing events list (default destination)");
+    }
+
+    /**
+     * 🆕 NEW: Enhanced onNewIntent to handle runtime navigation changes
+     *
+     * @param intent New intent received while activity is running
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        Log.d(TAG, "onNewIntent: Handling new intent");
+        setIntent(intent);
+
+        // Handle new intent with navigation support
+        handleIntentWithNavigation(intent);
     }
 
     // ==================== CREATE FUNCTIONALITY ====================
@@ -1686,5 +2064,32 @@ public class EventsActivity extends AppCompatActivity implements
         Log.d(TAG, "Test notification: " + testChangeType + " (" + testEventCount + " events)");
         notifyEventsChanged(testChangeType, testEventCount);
         Log.d(TAG, "=== END DEBUG FORCE NOTIFICATION ===");
+    }
+
+    /**
+     * 🔄 ENHANCED: Debug method with editor navigation info
+     */
+    public void debugNavigationState() {
+        Log.d(TAG, "=== EVENTS ACTIVITY NAVIGATION DEBUG ===");
+        Log.d(TAG, "NavController: " + (mNavController != null ? "available" : "null"));
+        Log.d(TAG, "Database: " + (mDatabase != null ? "available" : "null"));
+
+        if (mNavController != null) {
+            try {
+                Log.d(TAG, "Current Destination: " + mNavController.getCurrentDestination());
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting current destination: " + e.getMessage());
+            }
+        }
+
+        // Log intent parameters if available
+        Intent intent = getIntent();
+        if (intent != null) {
+            Log.d(TAG, "Current Intent Action: " + intent.getStringExtra("action"));
+            Log.d(TAG, "Current Intent Event ID: " + intent.getStringExtra("event_id"));
+            Log.d(TAG, "Current Intent Target Date: " + intent.getStringExtra("target_date"));
+        }
+
+        Log.d(TAG, "=== END NAVIGATION DEBUG ===");
     }
 }

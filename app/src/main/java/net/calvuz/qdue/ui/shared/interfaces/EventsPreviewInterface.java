@@ -54,7 +54,7 @@ public interface EventsPreviewInterface {
      * Quick actions that can be performed on individual events
      */
     enum EventQuickAction {
-        EDIT, DELETE, DUPLICATE, TOGGLE_COMPLETE
+        VIEW_DETAIL, EDIT, DELETE, DUPLICATE, TOGGLE_COMPLETE
     }
 
     /**

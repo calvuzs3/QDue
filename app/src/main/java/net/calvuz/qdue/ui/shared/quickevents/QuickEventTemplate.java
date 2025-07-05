@@ -12,19 +12,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * QuickEventTemplate - Simplified template system with UserEventLogicAdapter integration
+ * QuickEventTemplate - Simplified template system with QuickEventLogicAdapter integration
  *
  * EVOLUTION STRATEGY:
- * - Drastically simplified thanks to UserEventLogicAdapter
+ * - Drastically simplified thanks to QuickEventLogicAdapter
  * - Now focuses only on template structure and validation
- * - Business logic completely delegated to UserEventLogicAdapter
+ * - Business logic completely delegated to QuickEventLogicAdapter
  * - Maintains template concept for UI consistency and future extensions
  *
  * RESPONSABILITÀ RIDOTTE:
  * - Template structure definition and validation
  * - Preview/display logic for UI
  * - Factory pattern for template creation
- * - Integration bridge to UserEventLogicAdapter
+ * - Integration bridge to QuickEventLogicAdapter
  */
 public class QuickEventTemplate {
 
@@ -73,7 +73,7 @@ public class QuickEventTemplate {
 
     /**
      * ✅ SIMPLIFIED: Create template from ToolbarAction
-     * Much simpler now that business logic is in UserEventLogicAdapter
+     * Much simpler now that business logic is in QuickEventLogicAdapter
      */
     public static QuickEventTemplate fromToolbarAction(ToolbarAction action) {
         if (action == null) {
@@ -116,7 +116,7 @@ public class QuickEventTemplate {
 
     /**
      * ✅ MAIN METHOD: Create LocalEvent from this template
-     * Delegates all business logic to UserEventLogicAdapter
+     * Delegates all business logic to QuickEventLogicAdapter
      */
     public LocalEvent createEvent(LocalDate date, Long userId) {
         if (!isValid) {
@@ -128,12 +128,12 @@ public class QuickEventTemplate {
         }
 
         // Validate business rules
-        if (!UserEventLogicAdapter.canCreateEventOnDate(sourceAction, date, userId)) {
+        if (!QuickEventLogicAdapter.canCreateEventOnDate(sourceAction, date, userId)) {
             throw new IllegalArgumentException("Cannot create " + displayName + " on date: " + date);
         }
 
-        // Delegate to UserEventLogicAdapter for actual creation
-        LocalEvent event = UserEventLogicAdapter.createEventFromAction(sourceAction, date, userId);
+        // Delegate to QuickEventLogicAdapter for actual creation
+        LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userId);
 
         // Add template tracking to metadata
         addTemplateMetadata(event);
@@ -158,7 +158,7 @@ public class QuickEventTemplate {
 
         props.put("template_id", templateId);
         props.put("template_source", "quick_event_template");
-        props.put("template_version", "2.0"); // Version after UserEventLogicAdapter integration
+        props.put("template_version", "2.0"); // Version after QuickEventLogicAdapter integration
 
         event.setCustomProperties(props);
     }
@@ -188,18 +188,18 @@ public class QuickEventTemplate {
 
     /**
      * ✅ NEW: Check if template can be used on specific date
-     * Delegates validation to UserEventLogicAdapter
+     * Delegates validation to QuickEventLogicAdapter
      */
     public boolean canUseOnDate(LocalDate date, Long userId) {
-        return isValid && UserEventLogicAdapter.canCreateEventOnDate(sourceAction, date, userId);
+        return isValid && QuickEventLogicAdapter.canCreateEventOnDate(sourceAction, date, userId);
     }
 
     /**
      * ✅ NEW: Get recommended title for specific date
-     * Delegates to UserEventLogicAdapter for context-aware titles
+     * Delegates to QuickEventLogicAdapter for context-aware titles
      */
     public String getRecommendedTitle(LocalDate date) {
-        return UserEventLogicAdapter.getRecommendedTitle(sourceAction, date);
+        return QuickEventLogicAdapter.getRecommendedTitle(sourceAction, date);
     }
 
     // ==================== TEMPLATE PROPERTIES (Simplified) ====================
@@ -423,7 +423,7 @@ public class QuickEventTemplate {
 
 /**
  * ✅ SIMPLIFIED: Factory for QuickEventTemplate creation
- * Much simpler now that business logic is in UserEventLogicAdapter
+ * Much simpler now that business logic is in QuickEventLogicAdapter
  */
 class QuickEventTemplateFactory {
 

@@ -189,11 +189,26 @@ public abstract class BaseEventsPreview implements EventsPreviewInterface {
     }
 
     /**
-     * Utility method to check if an event can be edited
+     * Validate if event can be edited
+     *
+     * @param event The event to validate
+     * @return true if event can be edited
      */
     protected boolean canEditEvent(LocalEvent event) {
-        // Add business logic here (e.g., check permissions, event type, etc.)
-        return event != null;
+        if (event == null) {
+            Log.w(TAG, "Cannot edit null event");
+            return false;
+        }
+
+        if (event.getId() == null || event.getId().trim().isEmpty()) {
+            Log.w(TAG, "Cannot edit event with null/empty ID");
+            return false;
+        }
+
+        // Additional validation rules can be added here
+        // e.g., check if event is read-only, check permissions, etc.
+
+        return true;
     }
 
     /**

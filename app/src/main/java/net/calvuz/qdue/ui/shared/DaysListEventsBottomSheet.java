@@ -25,7 +25,7 @@ import java.util.Locale;
 
 /**
  * DaysListEventsBottomSheet - Bottom Sheet implementation for Calendar events preview
- *
+ * <p>
  * Features:
  * - Standard Bottom Sheet (non-modal) behavior
  * - Formatted date header with weekday
@@ -306,8 +306,8 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
                 public void onEventClick(LocalEvent event) {
                     Log.d(TAG, "Event clicked: " + event.getTitle());
 
-                    // Trigger edit action
-                    onEventQuickAction(EventQuickAction.EDIT, event, date);
+                    // Trigger view detail action - VIEW_DETAIL
+                    onEventQuickAction(EventQuickAction.VIEW_DETAIL, event, date);
                 }
 
                 @Override
@@ -379,7 +379,8 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
 
             new androidx.appcompat.app.AlertDialog.Builder(activity)
                     .setTitle(event.getTitle())
-                    .setItems(new String[]{"Modifica", "Elimina", "Duplica", "Completa"}, (dialog, which) -> {
+//                    .setItems(new String[]{"Modifica", "Elimina", "Duplica", "Completa"}, (dialog, which) -> {
+                    .setItems(new String[]{"Modifica", "Elimina"}, (dialog, which) -> {
                         switch (which) {
                             case 0: // Edit
                                 onEventQuickAction(EventQuickAction.EDIT, event, date);
@@ -400,6 +401,30 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
         }
     }
 
+    /**
+     * 🆕 NEW: Additional logging for DaysList-specific behavior
+     * This helps distinguish between Calendar and DaysList in debugging
+     */
+    @Override
+    public void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date) {
+        Log.d(TAG, "DaysList-specific event quick action triggered: " + action + " for: " + event.getTitle());
+
+        // Call parent implementation which forwards to listener
+        super.onEventQuickAction(action, event, date);
+    }
+
+    /**
+     * 🆕 NEW: DaysList-specific event handling method
+     * Future enhancement: Could implement DaysList-specific behavior here
+     */
+    private void handleDaysListEventClick(LocalEvent event, LocalDate date) {
+        Log.d(TAG, "DaysList-specific event handling for: " + event.getTitle());
+
+        // For now, use same behavior as Calendar
+        // Future: Could implement DaysList-specific preview or actions
+        onEventQuickAction(EventQuickAction.VIEW_DETAIL, event, date);
+    }
+
     // ==================== UTILITY METHODS ====================
 
     /**
@@ -407,13 +432,20 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
      */
     private String getStateString(int state) {
         switch (state) {
-            case BottomSheetBehavior.STATE_COLLAPSED: return "COLLAPSED";
-            case BottomSheetBehavior.STATE_EXPANDED: return "EXPANDED";
-            case BottomSheetBehavior.STATE_HIDDEN: return "HIDDEN";
-            case BottomSheetBehavior.STATE_DRAGGING: return "DRAGGING";
-            case BottomSheetBehavior.STATE_SETTLING: return "SETTLING";
-            case BottomSheetBehavior.STATE_HALF_EXPANDED: return "HALF_EXPANDED";
-            default: return "UNKNOWN(" + state + ")";
+            case BottomSheetBehavior.STATE_COLLAPSED:
+                return "COLLAPSED";
+            case BottomSheetBehavior.STATE_EXPANDED:
+                return "EXPANDED";
+            case BottomSheetBehavior.STATE_HIDDEN:
+                return "HIDDEN";
+            case BottomSheetBehavior.STATE_DRAGGING:
+                return "DRAGGING";
+            case BottomSheetBehavior.STATE_SETTLING:
+                return "SETTLING";
+            case BottomSheetBehavior.STATE_HALF_EXPANDED:
+                return "HALF_EXPANDED";
+            default:
+                return "UNKNOWN(" + state + ")";
         }
     }
 

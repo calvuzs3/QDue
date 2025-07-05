@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -271,5 +272,14 @@ public final class Library {
         Resources.Theme theme = context.getTheme();
         boolean got = theme.resolveAttribute(attr, typedValue, true);
         return got ? typedValue.data : Color.RED;
+    }
+
+    /**
+     * 🆕 NEW: Helper method for consistent toast messages
+     *
+     * @param message The message to show
+     */
+    public static void showToast(Context context, String message) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 }

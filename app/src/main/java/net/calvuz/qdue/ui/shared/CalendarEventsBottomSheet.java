@@ -27,7 +27,7 @@ import java.util.Locale;
 
 /**
  * CalendarEventsBottomSheet - Bottom Sheet implementation for Calendar events preview
- *
+ * <p>
  * Features:
  * - Standard Bottom Sheet (non-modal) behavior
  * - Formatted date header with weekday
@@ -309,8 +309,8 @@ public class CalendarEventsBottomSheet extends BaseEventsPreview {
                 public void onEventClick(LocalEvent event) {
                     Log.d(TAG, "Event clicked: " + event.getTitle());
 
-                    // Trigger edit action
-                    onEventQuickAction(EventQuickAction.EDIT, event, date);
+                    // Trigger view detail action - VIEW_DETAIL
+                    onEventQuickAction(EventQuickAction.VIEW_DETAIL, event, date);
                 }
 
                 @Override
@@ -382,7 +382,8 @@ public class CalendarEventsBottomSheet extends BaseEventsPreview {
 
             new androidx.appcompat.app.AlertDialog.Builder(activity)
                     .setTitle(event.getTitle())
-                    .setItems(new String[]{"Modifica", "Elimina", "Duplica", "Completa"}, (dialog, which) -> {
+//                    .setItems(new String[]{"Modifica", "Elimina", "Duplica", "Completa"}, (dialog, which) -> {
+                    .setItems(new String[]{"Modifica", "Elimina"}, (dialog, which) -> {
                         switch (which) {
                             case 0: // Edit
                                 onEventQuickAction(EventQuickAction.EDIT, event, date);
@@ -410,13 +411,20 @@ public class CalendarEventsBottomSheet extends BaseEventsPreview {
      */
     private String getStateString(int state) {
         switch (state) {
-            case BottomSheetBehavior.STATE_COLLAPSED: return "COLLAPSED";
-            case BottomSheetBehavior.STATE_EXPANDED: return "EXPANDED";
-            case BottomSheetBehavior.STATE_HIDDEN: return "HIDDEN";
-            case BottomSheetBehavior.STATE_DRAGGING: return "DRAGGING";
-            case BottomSheetBehavior.STATE_SETTLING: return "SETTLING";
-            case BottomSheetBehavior.STATE_HALF_EXPANDED: return "HALF_EXPANDED";
-            default: return "UNKNOWN(" + state + ")";
+            case BottomSheetBehavior.STATE_COLLAPSED:
+                return "COLLAPSED";
+            case BottomSheetBehavior.STATE_EXPANDED:
+                return "EXPANDED";
+            case BottomSheetBehavior.STATE_HIDDEN:
+                return "HIDDEN";
+            case BottomSheetBehavior.STATE_DRAGGING:
+                return "DRAGGING";
+            case BottomSheetBehavior.STATE_SETTLING:
+                return "SETTLING";
+            case BottomSheetBehavior.STATE_HALF_EXPANDED:
+                return "HALF_EXPANDED";
+            default:
+                return "UNKNOWN(" + state + ")";
         }
     }
 

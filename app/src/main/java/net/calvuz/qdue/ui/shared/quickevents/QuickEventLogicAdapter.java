@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * UserEventLogicAdapter - Business Logic Bridge per Eventi Utente
+ * QuickEventLogicAdapter - Business Logic Bridge per Eventi Utente
  *
  * STRATEGIA:
  * - Bridge pattern tra ToolbarAction e LocalEvent creation
@@ -28,9 +28,9 @@ import java.util.UUID;
  * - Gestire validazione e constraints specifici per tipo evento
  * - Fornire defaults intelligenti basati su EventType
  */
-public class UserEventLogicAdapter {
+public class QuickEventLogicAdapter {
 
-    private static final String TAG = "UserEventLogicAdapter";
+    private static final String TAG = "QuickEventLogicAdapter";
 
     // ==================== BUSINESS RULES CONSTANTS ====================
 
