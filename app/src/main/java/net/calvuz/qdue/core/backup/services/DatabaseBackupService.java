@@ -49,9 +49,9 @@ public class DatabaseBackupService {
 
     // ==================== CONSTRUCTOR ====================
 
-    public DatabaseBackupService(Context context) {
+    public DatabaseBackupService(Context context, QDueDatabase database) {
         this.mContext = context.getApplicationContext();
-        this.mDatabase = QDueDatabase.getInstance(context);
+        this.mDatabase = database;
 
         // Initialize all DAOs
         this.mEventDao = mDatabase.eventDao();

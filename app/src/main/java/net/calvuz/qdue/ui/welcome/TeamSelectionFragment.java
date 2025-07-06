@@ -17,13 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import kotlin.jvm.Throws;
 
 /**
  * Team Selection Fragment - Second step of welcome flow

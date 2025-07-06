@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.events.interfaces;
+package net.calvuz.qdue.core.interfaces;
 
 public interface EventsFileOperationsInterface {
 
@@ -11,4 +11,9 @@ public interface EventsFileOperationsInterface {
      * Trigger import events from URL
      */
     public void triggerImportEventsFromUrl();
+
+    /**
+     * Trigger export events to file
+     */
+    public void triggerExportEventsToFile();
 }

@@ -7,6 +7,7 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Main User entity with support for Google authentication and comprehensive profile data.
@@ -109,23 +110,23 @@ public class User {
     private boolean isActive;
 
     @ColumnInfo(name = "last_login")
-    private LocalDate lastLogin;
+    private LocalDateTime lastLogin;
 
     @ColumnInfo(name = "profile_completed")
     private boolean profileCompleted; // Track if user finished setup
 
     @ColumnInfo(name = "created_at")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @ColumnInfo(name = "updated_at")
-    private LocalDate updatedAt;
+    private LocalDateTime updatedAt;
 
     // Constructors
     public User() {
         this.isActive = true;
         this.profileCompleted = false;
-        this.createdAt = LocalDate.now();
-        this.updatedAt = LocalDate.now();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         this.authProvider = "manual";
     }
 
@@ -160,13 +161,13 @@ public class User {
     }
 
     public void updateLastLogin() {
-        this.lastLogin = LocalDate.now();
-        this.updatedAt = LocalDate.now();
+        this.lastLogin = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void markProfileCompleted() {
         this.profileCompleted = true;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -176,126 +177,126 @@ public class User {
     public String getGoogleId() { return googleId; }
     public void setGoogleId(String googleId) {
         this.googleId = googleId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getAuthProvider() { return authProvider; }
     public void setAuthProvider(String authProvider) {
         this.authProvider = authProvider;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) {
         this.firstName = firstName;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) {
         this.lastName = lastName;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) {
         this.nickname = nickname;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getEmail() { return email; }
     public void setEmail(String email) {
         this.email = email;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getProfileImageSource() { return profileImageSource; }
     public void setProfileImageSource(String profileImageSource) {
         this.profileImageSource = profileImageSource;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getEmployeeId() { return employeeId; }
     public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getJobTitle() { return jobTitle; }
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getJobLevel() { return jobLevel; }
     public void setJobLevel(String jobLevel) {
         this.jobLevel = jobLevel;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public LocalDate getHireDate() { return hireDate; }
     public void setHireDate(LocalDate hireDate) {
         this.hireDate = hireDate;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getPhoneWork() { return phoneWork; }
     public void setPhoneWork(String phoneWork) {
         this.phoneWork = phoneWork;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getPhonePersonal() { return phonePersonal; }
     public void setPhonePersonal(String phonePersonal) {
         this.phonePersonal = phonePersonal;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getEstablishmentId() { return establishmentId; }
     public void setEstablishmentId(Long establishmentId) {
         this.establishmentId = establishmentId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getMacroDepartmentId() { return macroDepartmentId; }
     public void setMacroDepartmentId(Long macroDepartmentId) {
         this.macroDepartmentId = macroDepartmentId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getSubDepartmentId() { return subDepartmentId; }
     public void setSubDepartmentId(Long subDepartmentId) {
         this.subDepartmentId = subDepartmentId;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getTeamName() { return teamName; }
     public void setTeamName(String teamName) {
         this.teamName = teamName;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) {
         isActive = active;
-        this.updatedAt = LocalDate.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDate getLastLogin() { return lastLogin; }
-    public void setLastLogin(LocalDate lastLogin) { this.lastLogin = lastLogin; }
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 
     public boolean isProfileCompleted() { return profileCompleted; }
     public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
 
-    public LocalDate getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public LocalDate getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDate updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

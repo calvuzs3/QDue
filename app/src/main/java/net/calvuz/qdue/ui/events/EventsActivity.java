@@ -43,10 +43,10 @@ import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.validation.JsonSchemaValidator;
 import net.calvuz.qdue.ui.events.interfaces.BackPressHandler;
-import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
-import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
@@ -88,7 +88,7 @@ import java.util.concurrent.CompletableFuture;
 public class EventsActivity extends AppCompatActivity implements
         EventsFileOperationsInterface,
         EventsDatabaseOperationsInterface,
-        EventsEventOperationsInterface,
+        EventsOperationsInterface,
         EventsUIStateInterface {
 
     private static final String TAG = "EventsActivity";
@@ -448,8 +448,18 @@ public class EventsActivity extends AppCompatActivity implements
      * Handle import events from URL
      */
     public void handleImportEventsFromUrl() {
-        // TODO: to implement
+        // TODO: to implement handleImportEventsFromUrl
         Log.d(TAG, "TODO: Handle import events from URL");
+        Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+        // Notify MainActivity
+    }
+
+    /**
+     * Handle import events from URL
+     */
+    public void handleExportEventsToFile() {
+        // TODO: to implement handleExportEventsToFile
+        Log.d(TAG, "TODO: Handle export events to file");
         Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
         // Notify MainActivity
     }
@@ -1532,6 +1542,12 @@ public class EventsActivity extends AppCompatActivity implements
         handleImportEventsFromUrl();
     }
 
+    /**
+     * Trigger export events to file
+     */
+    @Override
+    public void triggerExportEventsToFile() { handleExportEventsToFile(); }
+
     // ==================== HELPER METHODS ====================
 
     /**
@@ -1636,7 +1652,7 @@ public class EventsActivity extends AppCompatActivity implements
         exportEventsToFile();
     }
 
-    // ==================== IMPLEMENT EventsEventOperationsInterface ====================
+    // ==================== IMPLEMENT EventsOperationsInterface ====================
 
     @Override
     public void triggerEventDeletion(LocalEvent event, EventDeletionListener listener) {

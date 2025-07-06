@@ -75,13 +75,13 @@ public interface UserDao {
     List<User> getActiveUsers();
 
     @Query("UPDATE users SET last_login = :date, updated_at = :date WHERE id = :userId")
-    void updateLastLogin(long userId, java.time.LocalDate date);
+    void updateLastLogin(long userId, java.time.LocalDateTime date);
 
     @Query("UPDATE users SET profile_completed = 1, updated_at = :date WHERE id = :userId")
-    void markProfileCompleted(long userId, java.time.LocalDate date);
+    void markProfileCompleted(long userId, java.time.LocalDateTime date);
 
     @Query("UPDATE users SET is_active = :isActive, updated_at = :date WHERE id = :userId")
-    void updateUserStatus(long userId, boolean isActive, java.time.LocalDate date);
+    void updateUserStatus(long userId, boolean isActive, java.time.LocalDateTime date);
 
     // Organizational queries
     @Query("SELECT * FROM users WHERE establishment_id = :establishmentId")
@@ -120,10 +120,10 @@ public interface UserDao {
 
     // Data cleanup and maintenance
     @Query("DELETE FROM users WHERE is_active = 0 AND updated_at < :cutoffDate")
-    void deleteInactiveUsers(java.time.LocalDate cutoffDate);
+    void deleteInactiveUsers(java.time.LocalDateTime cutoffDate);
 
     @Query("UPDATE users SET profile_image_url = NULL, profile_image_source = 'none', updated_at = :date WHERE profile_image_source = 'local'")
-    void clearLocalProfileImages(java.time.LocalDate date);
+    void clearLocalProfileImages(java.time.LocalDateTime date);
 
     // Search and filtering
     @Query("SELECT * FROM users WHERE " +

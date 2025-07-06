@@ -23,9 +23,9 @@ import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.backup.BackupIntegration;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Log;
 
@@ -140,8 +140,8 @@ public class EventsListFragment extends Fragment implements
             mBtnEmptyCreateEvent.setOnClickListener(v -> {
                 Log.d(TAG, "Empty state create button clicked");
                 // Trigger the same action as FAB - delegate to activity
-                if (getActivity() instanceof EventsEventOperationsInterface) {
-                    ((EventsEventOperationsInterface) getActivity()).triggerCreateNewEvent();
+                if (getActivity() instanceof EventsOperationsInterface) {
+                    ((EventsOperationsInterface) getActivity()).triggerCreateNewEvent();
                 }
             });
         }

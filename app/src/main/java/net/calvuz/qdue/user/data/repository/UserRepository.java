@@ -9,7 +9,7 @@ import net.calvuz.qdue.user.data.models.GoogleAuthData;
 import net.calvuz.qdue.user.data.models.UserWithOrganization;
 import net.calvuz.qdue.utils.Log;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -184,7 +184,7 @@ public class UserRepository {
     public void markProfileCompleted(long userId, OnUserOperationListener listener) {
         executorService.execute(() -> {
             try {
-                userDao.markProfileCompleted(userId, LocalDate.now());
+                userDao.markProfileCompleted(userId, LocalDateTime.now());
                 User user = userDao.getUserById(userId);
                 if (listener != null) {
                     listener.onSuccess(user);
@@ -202,7 +202,7 @@ public class UserRepository {
     public void updateLastLogin(long userId) {
         executorService.execute(() -> {
             try {
-                userDao.updateLastLogin(userId, LocalDate.now());
+                userDao.updateLastLogin(userId, LocalDateTime.now());
                 Log.d(TAG, "Last login updated for user: " + userId);
             } catch (Exception e) {
                 Log.e(TAG, "Error updating last login: " + e.getMessage());

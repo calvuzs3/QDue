@@ -1,6 +1,7 @@
-package net.calvuz.qdue.ui.events.interfaces;
+package net.calvuz.qdue.core.listeners;
 
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.services.models.OperationResult;
 
 /**
  * Interface for communication between EventsActivity and EventsListFragment
@@ -91,6 +92,32 @@ public interface EventsOperationListener {
     void onEventCreated(LocalEvent event);
 
     /**
+     * Called when event is updated
+     * @param result Operation result with updated event
+     */
+    void onEventUpdated(OperationResult<LocalEvent> result);
+
+    /**
+     * Called when event is deleted
+     * @param result Operation result with deletion details
+     */
+    void onEventDeleted(OperationResult<String> result);
+
+    /**
+     * Called when events are imported
+     * @param result Operation result with import details
+     */
+    void onEventsImported(OperationResult<Integer> result);
+
+    /**
+     * Called when events list should be refreshed
+     * @param reason Reason for refresh
+     */
+    void onRefreshRequired(String reason);
+
+    // ==================== EVENT OPERATIONS DELEGATION ====================
+
+    /**
      * Delete specific event with confirmation and undo
      * @param event Event to delete
      * @param listener Callback for deletion status
@@ -121,12 +148,7 @@ public interface EventsOperationListener {
      */
     void triggerAddToCalendar(LocalEvent event);
 
-    /**
-     * Called when events list should be refreshed
-     * @param reason Reason for refresh
-     */
-    void onRefreshRequired(String reason);
-//
+
 //    // ==================== UI OPERATIONS ====================
 //
 //    /**

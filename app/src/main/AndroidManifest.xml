@@ -7,28 +7,28 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Add Google Calendar -->
-<!--    <uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
+    <!--    <uses-permission android:name="android.permission.GET_ACCOUNTS" />-->
 
     <application
         android:name=".QDue"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.QDue"
         tools:targetApi="31">
-<!--        android:enableOnBackInvokedCallback="true"-->
+        <!--        android:enableOnBackInvokedCallback="true"-->
 
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.welcome.WelcomeActivity"
-            android:theme="@style/Theme.QDue.Welcome"
+            android:exported="false"
             android:screenOrientation="portrait"
-            android:exported="false" />
+            android:theme="@style/Theme.QDue.Welcome" />
 
         <!-- MainActivity -->
         <activity
@@ -52,34 +52,105 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />
         </activity>
-<!--        android:theme="@style/Theme.QDue.Settings"-->
+        <!--        android:theme="@style/Theme.QDue.Settings"-->
 
         <activity
             android:name=".ui.events.EventsActivity"
+            android:exported="true"
             android:label="@string/nav_eventi"
-            android:theme="@style/Theme.QDue"
-            android:exported="true">
+            android:theme="@style/Theme.QDue">
 
             <!-- Standard activity launch -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
 
-            <!-- JSON file handling -->
+            <!-- Primary: JSON files via MIME type (Storage Access Framework) -->
             <intent-filter android:priority="100">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:mimeType="application/json" />
             </intent-filter>
 
-            <!-- Alternative JSON handling by extension -->
+            <!-- Secondary: Custom .qdue files with specific hosts -->
             <intent-filter android:priority="100">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="file" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.externalstorage.documents" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.providers.downloads.documents" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <!-- Fallback: JSON files with common document providers -->
+            <intent-filter android:priority="80">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.externalstorage.documents" />
                 <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <intent-filter android:priority="80">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.providers.downloads.documents" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <!-- Google Drive support -->
+            <intent-filter android:priority="75">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.google.android.apps.docs.storage" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <intent-filter android:priority="75">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.google.android.apps.docs.storage" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <!-- File provider support (your app's FileProvider) -->
+            <intent-filter android:priority="90">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="${applicationId}.fileprovider"
+                    android:scheme="content" />
             </intent-filter>
 
         </activity>
@@ -102,8 +173,9 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <meta-data android:name="com.google.android.gms.fonts"
-            android:resource="@array/com_google_android_gms_fonts_certs"/>
+        <meta-data
+            android:name="com.google.android.gms.fonts"
+            android:resource="@array/com_google_android_gms_fonts_certs" />
 
         <!-- Time changes -->
         <receiver

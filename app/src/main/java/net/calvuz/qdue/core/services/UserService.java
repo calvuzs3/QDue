@@ -1,6 +1,6 @@
-package net.calvuz.qdue.services;
+package net.calvuz.qdue.core.services;
 
-import net.calvuz.qdue.services.models.OperationResult;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.entities.User;
 
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Centralized service for ALL User operations
  * Ensures consistent backup, validation, and business logic
+ * ✅ REFACTORED: UserService - Complete OperationResult compliance
  */
 public interface UserService {
 
@@ -30,13 +31,13 @@ public interface UserService {
     CompletableFuture<OperationResult<String>> deleteUser(long userId);
     CompletableFuture<OperationResult<Integer>> deleteAllUsers();
 
-    // Query Operations
-    CompletableFuture<User> getUserById(long userId);
-    CompletableFuture<User> getUserByEmail(String email);
-    CompletableFuture<User> getUserByGoogleId(String googleId);
-    CompletableFuture<User> getUserByEmployeeId(String employeeId);
-    CompletableFuture<User> getActiveUser();
-    CompletableFuture<List<User>> getAllUsers();
+    // ✅ Query Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<User>> getUserById(long userId);
+    CompletableFuture<OperationResult<User>> getUserByEmail(String email);
+    CompletableFuture<OperationResult<User>> getUserByGoogleId(String googleId);
+    CompletableFuture<OperationResult<User>> getUserByEmployeeId(String employeeId);
+    CompletableFuture<OperationResult<User>> getActiveUser();
+    CompletableFuture<OperationResult<List<User>>> getAllUsers();
 
     // Authentication Operations
     CompletableFuture<OperationResult<User>> authenticateUser(String email, String provider);
@@ -46,17 +47,15 @@ public interface UserService {
 
     // Profile Operations
     CompletableFuture<OperationResult<User>> updateProfile(User user);
-    CompletableFuture<List<User>> getIncompleteProfiles();
+    CompletableFuture<OperationResult<List<User>>> getIncompleteProfiles();
     CompletableFuture<OperationResult<Void>> completeProfile(long userId);
 
     // Validation
     OperationResult<Void> validateUser(User user);
-    CompletableFuture<Boolean> userExists(String email);
-    CompletableFuture<Boolean> employeeIdExists(String employeeId);
+    CompletableFuture<OperationResult<Boolean>> userExists(String email);
+    CompletableFuture<OperationResult<Boolean>> employeeIdExists(String employeeId);
 
-    // Statistics
-    CompletableFuture<Integer> getUsersCount();
-    CompletableFuture<List<User>> getUsersByAuthProvider(String provider);
+    // ✅ Statistics - ALL converted to OperationResult
+    CompletableFuture<OperationResult<Integer>> getUsersCount();
+    CompletableFuture<OperationResult<List<User>>> getUsersByAuthProvider(String provider);
 }
-
-

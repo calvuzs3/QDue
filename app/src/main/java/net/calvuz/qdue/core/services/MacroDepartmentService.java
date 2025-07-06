@@ -1,6 +1,6 @@
-package net.calvuz.qdue.services;
+package net.calvuz.qdue.core.services;
 
-import net.calvuz.qdue.services.models.OperationResult;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.entities.MacroDepartment;
 import net.calvuz.qdue.user.data.entities.SubDepartment;
 
@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Centralized service for ALL MacroDepartment operations
  * Manages macro departments within establishments
+ * ✅ REFACTORED: MacroDepartmentService - Complete OperationResult compliance
  */
 public interface MacroDepartmentService {
 
@@ -33,21 +34,21 @@ public interface MacroDepartmentService {
     CompletableFuture<OperationResult<Integer>> deleteAllMacroDepartments();
     CompletableFuture<OperationResult<Integer>> deleteMacroDepartmentsByEstablishment(long establishmentId);
 
-    // Query Operations
-    CompletableFuture<MacroDepartment> getMacroDepartmentById(long macroDepartmentId);
-    CompletableFuture<List<MacroDepartment>> getAllMacroDepartments();
-    CompletableFuture<List<MacroDepartment>> getMacroDepartmentsByEstablishment(long establishmentId);
-    CompletableFuture<MacroDepartment> getMacroDepartmentByNameAndEstablishment(long establishmentId, String name);
+    // ✅ Query Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<MacroDepartment>> getMacroDepartmentById(long macroDepartmentId);
+    CompletableFuture<OperationResult<List<MacroDepartment>>> getAllMacroDepartments();
+    CompletableFuture<OperationResult<List<MacroDepartment>>> getMacroDepartmentsByEstablishment(long establishmentId);
+    CompletableFuture<OperationResult<MacroDepartment>> getMacroDepartmentByNameAndEstablishment(long establishmentId, String name);
 
     // Validation
     OperationResult<Void> validateMacroDepartment(MacroDepartment macroDepartment);
-    CompletableFuture<Boolean> macroDepartmentExists(long establishmentId, String name);
+    CompletableFuture<OperationResult<Boolean>> macroDepartmentExists(long establishmentId, String name);
 
-    // Statistics
-    CompletableFuture<Integer> getMacroDepartmentsCount();
-    CompletableFuture<Integer> getMacroDepartmentsCountByEstablishment(long establishmentId);
+    // ✅ Statistics - ALL converted to OperationResult
+    CompletableFuture<OperationResult<Integer>> getMacroDepartmentsCount();
+    CompletableFuture<OperationResult<Integer>> getMacroDepartmentsCountByEstablishment(long establishmentId);
 
-    // Hierarchy Operations
-    CompletableFuture<List<SubDepartment>> getSubDepartments(long macroDepartmentId);
+    // ✅ Hierarchy Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<List<SubDepartment>>> getSubDepartments(long macroDepartmentId);
     CompletableFuture<OperationResult<Integer>> deleteMacroDepartmentWithDependencies(long macroDepartmentId);
 }

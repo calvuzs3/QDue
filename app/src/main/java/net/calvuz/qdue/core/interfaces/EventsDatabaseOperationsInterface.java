@@ -1,6 +1,7 @@
-package net.calvuz.qdue.ui.events.interfaces;
+package net.calvuz.qdue.core.interfaces;
 
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.listeners.EventDeletionListener;
 
 public interface EventsDatabaseOperationsInterface {
 

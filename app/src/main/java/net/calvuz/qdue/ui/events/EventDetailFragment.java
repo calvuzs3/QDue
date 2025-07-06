@@ -26,12 +26,12 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.ui.events.interfaces.EventDeletionListener;
-import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -62,7 +62,7 @@ public class EventDetailFragment extends Fragment {
 
     // Non static
     private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
-    private EventsEventOperationsInterface mEventsEventOperationsInterface;
+    private EventsOperationsInterface mEventsOperationsInterface;
     private EventsFileOperationsInterface mFileOperationsInterface;
 
         // Date formatters for display
@@ -169,11 +169,11 @@ public class EventDetailFragment extends Fragment {
                 Log.e(TAG, mTAG + "Activity does not implement EventsDatabaseOperationsInterface");
             }
 
-            if (getActivity() instanceof EventsEventOperationsInterface) {
-                mEventsEventOperationsInterface = (EventsEventOperationsInterface) getActivity();
-                Log.d(TAG, mTAG + "EventsEventOperationsInterface initialized");
+            if (getActivity() instanceof EventsOperationsInterface) {
+                mEventsOperationsInterface = (EventsOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "EventsOperationsInterface initialized");
             } else {
-                Log.e(TAG, mTAG + "Activity does not implement EventsEventOperationsInterface");
+                Log.e(TAG, mTAG + "Activity does not implement EventsOperationsInterface");
             }
 
             if (getActivity() instanceof EventsFileOperationsInterface) {
@@ -782,8 +782,8 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, mTAG + "Triggering edit for event: " + mEvent.getTitle());
 
         // Use interface if available, otherwise fall back to navigation
-        if (mEventsEventOperationsInterface != null) {
-            mEventsEventOperationsInterface.triggerEventEdit(mEvent);
+        if (mEventsOperationsInterface != null) {
+            mEventsOperationsInterface.triggerEventEdit(mEvent);
         } else {
             // Fallback to direct navigation
             navigateToEdit();
@@ -817,8 +817,8 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, mTAG + "Triggering share for event: " + mEvent.getTitle());
 
         // Use interface if available, otherwise fall back to direct sharing
-        if (mEventsEventOperationsInterface != null) {
-            mEventsEventOperationsInterface.triggerEventShare(mEvent);
+        if (mEventsOperationsInterface != null) {
+            mEventsOperationsInterface.triggerEventShare(mEvent);
         } else {
             // Fallback to direct sharing
             performDirectShare();
@@ -854,8 +854,8 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, mTAG + "Triggering add to calendar for event: " + mEvent.getTitle());
 
         // Use interface if available, otherwise fall back to direct calendar
-        if (mEventsEventOperationsInterface != null) {
-            mEventsEventOperationsInterface.triggerAddToCalendar(mEvent);
+        if (mEventsOperationsInterface != null) {
+            mEventsOperationsInterface.triggerAddToCalendar(mEvent);
         } else {
             // Fallback to direct calendar integration
             performDirectAddToCalendar();
@@ -903,8 +903,8 @@ public class EventDetailFragment extends Fragment {
         }
 
         // Check if interface is available
-        if (mEventsEventOperationsInterface == null) {
-            Log.e(TAG, mTAG + "EventsEventOperationsInterface not available");
+        if (mEventsOperationsInterface == null) {
+            Log.e(TAG, mTAG + "EventsOperationsInterface not available");
             Toast.makeText(getContext(), "Errore: interfaccia eliminazione non disponibile", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -912,7 +912,7 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, mTAG + "Triggering deletion for event: " + mEvent.getTitle());
 
         // Use interface for deletion with enhanced listener
-        mEventsEventOperationsInterface.triggerEventDeletion(mEvent, new EventDeletionListener() {
+        mEventsOperationsInterface.triggerEventDeletion(mEvent, new EventDeletionListener() {
             @Override
             public void onDeletionRequested() {
                 Log.d(TAG, mTAG + "Deletion requested - navigating back");
@@ -953,8 +953,8 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, mTAG + "Triggering duplicate for event: " + mEvent.getTitle());
 
         // Use interface if available
-        if (mEventsEventOperationsInterface != null) {
-            mEventsEventOperationsInterface.triggerEventDuplicate(mEvent);
+        if (mEventsOperationsInterface != null) {
+            mEventsOperationsInterface.triggerEventDuplicate(mEvent);
         } else {
             Toast.makeText(getContext(), "Duplicazione non disponibile", Toast.LENGTH_SHORT).show();
         }
@@ -1140,7 +1140,7 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, "Event ID: " + mEventId);
         Log.d(TAG, "Event Loaded: " + (mEvent != null ? mEvent.getTitle() : "null"));
         Log.d(TAG, "Database Operations Interface: " + (mEventsDatabaseOperationsInterface != null ? "available" : "null"));
-        Log.d(TAG, "Event Operations Interface: " + (mEventsEventOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "Event Operations Interface: " + (mEventsOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "File Operations Interface: " + (mFileOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "=== END DEBUG ===");
     }

@@ -1,13 +1,14 @@
 
-package net.calvuz.qdue.ui.events.interfaces;
+package net.calvuz.qdue.core.interfaces;
 
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.listeners.EventDeletionListener;
 
 /**
  * Interface for event-specific operations (CRUD)
  * Extends the existing pattern with event management operations
  */
-public interface EventsEventOperationsInterface {
+public interface EventsOperationsInterface {
 
     /**
      * Delete specific event with confirmation and undo

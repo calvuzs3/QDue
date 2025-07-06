@@ -1,6 +1,6 @@
-package net.calvuz.qdue.services;
+package net.calvuz.qdue.core.services;
 
-import net.calvuz.qdue.services.models.OperationResult;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.entities.Establishment;
 import net.calvuz.qdue.user.data.entities.MacroDepartment;
 import net.calvuz.qdue.user.data.entities.SubDepartment;
@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Composite service that manages organizational hierarchy operations
  * Provides high-level operations across multiple organizational entities
+ * ✅ REFACTORED: OrganizationService - Complete OperationResult compliance
  */
 public interface OrganizationService {
 
@@ -32,12 +33,12 @@ public interface OrganizationService {
             List<MacroDepartment> macroDepartments,
             List<SubDepartment> subDepartments);
 
-    CompletableFuture<OrganizationHierarchy> getCompleteOrganizationHierarchy(long establishmentId);
+    CompletableFuture<OperationResult<OrganizationHierarchy>> getCompleteOrganizationHierarchy(long establishmentId);
 
     CompletableFuture<OperationResult<Integer>> deleteCompleteOrganization(long establishmentId);
 
-    // Search Operations
-    CompletableFuture<List<OrganizationSearchResult>> searchOrganization(String searchTerm);
+    // ✅ Search Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<List<OrganizationSearchResult>>> searchOrganization(String searchTerm);
 
     // Import/Export Operations
     CompletableFuture<OperationResult<OrganizationImportResult>> importOrganizationData(

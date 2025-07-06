@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.events.interfaces;
+package net.calvuz.qdue.core.listeners;
 
 /**
  * Listener interface for event deletion operations

@@ -41,8 +41,8 @@ public class SubDepartment {
     @ColumnInfo(name = "description")
     private String description;
 
-    @ColumnInfo(name = "supervisor_name")
-    private String supervisorName;
+    @ColumnInfo(name = "manager_name")
+    private String managerName;
 
     @ColumnInfo(name = "created_at")
     private LocalDate createdAt;
@@ -88,9 +88,9 @@ public class SubDepartment {
         this.updatedAt = LocalDate.now();
     }
 
-    public String getSupervisorName() { return supervisorName; }
-    public void setSupervisorName(String supervisorName) {
-        this.supervisorName = supervisorName;
+    public String getManagerName() { return managerName; }
+    public void setManagerName(String managerName) {
+        this.managerName = managerName;
         this.updatedAt = LocalDate.now();
     }
 

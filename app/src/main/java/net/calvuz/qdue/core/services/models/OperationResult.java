@@ -1,4 +1,4 @@
-package net.calvuz.qdue.services.models;
+package net.calvuz.qdue.core.services.models;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -226,6 +226,7 @@ public class OperationResult<T> {
         DUPLICATE("Duplicate"),
         VALIDATION("Validation"),
         SEARCH("Search"),
+        COUNT( "Count"),
 
         // Backup operations
         BACKUP("Backup"),

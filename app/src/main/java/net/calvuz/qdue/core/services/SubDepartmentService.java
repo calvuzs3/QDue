@@ -1,6 +1,6 @@
-package net.calvuz.qdue.services;
+package net.calvuz.qdue.core.services;
 
-import net.calvuz.qdue.services.models.OperationResult;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.entities.SubDepartment;
 
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Centralized service for ALL SubDepartment operations
  * Manages sub departments within macro departments
+ * ✅ REFACTORED: SubDepartmentService - Complete OperationResult compliance
  */
 public interface SubDepartmentService {
 
@@ -32,17 +33,17 @@ public interface SubDepartmentService {
     CompletableFuture<OperationResult<Integer>> deleteAllSubDepartments();
     CompletableFuture<OperationResult<Integer>> deleteSubDepartmentsByMacroDepartment(long macroDepartmentId);
 
-    // Query Operations
-    CompletableFuture<SubDepartment> getSubDepartmentById(long subDepartmentId);
-    CompletableFuture<List<SubDepartment>> getAllSubDepartments();
-    CompletableFuture<List<SubDepartment>> getSubDepartmentsByMacroDepartment(long macroDepartmentId);
-    CompletableFuture<SubDepartment> getSubDepartmentByNameAndMacroDepartment(long macroDepartmentId, String name);
+    // ✅ Query Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<SubDepartment>> getSubDepartmentById(long subDepartmentId);
+    CompletableFuture<OperationResult<List<SubDepartment>>> getAllSubDepartments();
+    CompletableFuture<OperationResult<List<SubDepartment>>> getSubDepartmentsByMacroDepartment(long macroDepartmentId);
+    CompletableFuture<OperationResult<SubDepartment>> getSubDepartmentByNameAndMacroDepartment(long macroDepartmentId, String name);
 
     // Validation
     OperationResult<Void> validateSubDepartment(SubDepartment subDepartment);
-    CompletableFuture<Boolean> subDepartmentExists(long macroDepartmentId, String name);
+    CompletableFuture<OperationResult<Boolean>> subDepartmentExists(long macroDepartmentId, String name);
 
-    // Statistics
-    CompletableFuture<Integer> getSubDepartmentsCount();
-    CompletableFuture<Integer> getSubDepartmentsCountByMacroDepartment(long macroDepartmentId);
+    // ✅ Statistics - ALL converted to OperationResult
+    CompletableFuture<OperationResult<Integer>> getSubDepartmentsCount();
+    CompletableFuture<OperationResult<Integer>> getSubDepartmentsCountByMacroDepartment(long macroDepartmentId);
 }

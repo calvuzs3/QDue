@@ -30,8 +30,8 @@ import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.ui.events.interfaces.BackPressHandler;
-import net.calvuz.qdue.ui.events.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.ui.events.interfaces.EventsEventOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -56,7 +56,7 @@ public class EventEditFragment extends Fragment implements
 
     // CORREZIONE 1: AGGIUNGERE INTERFACES
     private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
-    private EventsEventOperationsInterface mEventsEventOperationsInterface;
+    private EventsOperationsInterface mEventsOperationsInterface;
 
     // Date formatters
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -130,11 +130,11 @@ public class EventEditFragment extends Fragment implements
                 Log.w(TAG, mTAG + "Activity does not implement EventsDatabaseOperationsInterface");
             }
 
-            if (getActivity() instanceof EventsEventOperationsInterface) {
-                mEventsEventOperationsInterface = (EventsEventOperationsInterface) getActivity();
-                Log.d(TAG, mTAG + "EventsEventOperationsInterface initialized");
+            if (getActivity() instanceof EventsOperationsInterface) {
+                mEventsOperationsInterface = (EventsOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "EventsOperationsInterface initialized");
             } else {
-                Log.w(TAG, mTAG + "Activity does not implement EventsEventOperationsInterface");
+                Log.w(TAG, mTAG + "Activity does not implement EventsOperationsInterface");
             }
 
         } catch (Exception e) {
@@ -659,7 +659,7 @@ public class EventEditFragment extends Fragment implements
             }
 
             // Method 3: Direct interface notification if available
-            if (mEventsEventOperationsInterface != null) {
+            if (mEventsOperationsInterface != null) {
                 // Could add a method like triggerEventUpdated(LocalEvent event) to the interface
                 Log.d(TAG, mTAG + "Event operations interface available for future enhancements");
             }
@@ -884,7 +884,7 @@ public class EventEditFragment extends Fragment implements
         Log.d(TAG, "Start DateTime: " + mStartDateTime);
         Log.d(TAG, "End DateTime: " + mEndDateTime);
         Log.d(TAG, "Database Operations Interface: " + (mEventsDatabaseOperationsInterface != null ? "available" : "null"));
-        Log.d(TAG, "Event Operations Interface: " + (mEventsEventOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "Event Operations Interface: " + (mEventsOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "=== END DEBUG ===");
     }
 

@@ -1,6 +1,6 @@
-package net.calvuz.qdue.services;
+package net.calvuz.qdue.core.services;
 
-import net.calvuz.qdue.services.models.OperationResult;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.entities.Establishment;
 import net.calvuz.qdue.user.data.entities.MacroDepartment;
 
@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Centralized service for ALL Establishment operations
  * Manages company/establishment data with automatic backup
+ * ✅ REFACTORED: EstablishmentService - Complete OperationResult compliance
  */
 public interface EstablishmentService {
 
@@ -32,21 +33,21 @@ public interface EstablishmentService {
     CompletableFuture<OperationResult<String>> deleteEstablishment(long establishmentId);
     CompletableFuture<OperationResult<Integer>> deleteAllEstablishments();
 
-    // Query Operations
-    CompletableFuture<Establishment> getEstablishmentById(long establishmentId);
-    CompletableFuture<Establishment> getEstablishmentByName(String name);
-    CompletableFuture<Establishment> getEstablishmentByCode(String code);
-    CompletableFuture<List<Establishment>> getAllEstablishments();
+    // ✅ Query Operations - ALL converted to OperationResult
+    CompletableFuture<OperationResult<Establishment>> getEstablishmentById(long establishmentId);
+    CompletableFuture<OperationResult<Establishment>> getEstablishmentByName(String name);
+    CompletableFuture<OperationResult<Establishment>> getEstablishmentByCode(String code);
+    CompletableFuture<OperationResult<List<Establishment>>> getAllEstablishments();
 
     // Validation
     OperationResult<Void> validateEstablishment(Establishment establishment);
-    CompletableFuture<Boolean> establishmentExists(String name);
-    CompletableFuture<Boolean> establishmentCodeExists(String code);
+    CompletableFuture<OperationResult<Boolean>> establishmentExists(String name);
+    CompletableFuture<OperationResult<Boolean>> establishmentCodeExists(String code);
 
-    // Statistics
-    CompletableFuture<Integer> getEstablishmentsCount();
+    // ✅ Statistics - ALL converted to OperationResult
+    CompletableFuture<OperationResult<Integer>> getEstablishmentsCount();
 
-    // Organization Hierarchy
-    CompletableFuture<List<MacroDepartment>> getMacroDepartments(long establishmentId);
+    // ✅ Organization Hierarchy - ALL converted to OperationResult
+    CompletableFuture<OperationResult<List<MacroDepartment>>> getMacroDepartments(long establishmentId);
     CompletableFuture<OperationResult<Integer>> deleteEstablishmentWithDependencies(long establishmentId);
 }
