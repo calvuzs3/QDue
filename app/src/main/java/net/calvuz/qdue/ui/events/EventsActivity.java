@@ -36,13 +36,17 @@ import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.file.FileAccessAdapter;
 import net.calvuz.qdue.core.file.EventsImportAdapter;
 import net.calvuz.qdue.core.permissions.PermissionManager;
+import net.calvuz.qdue.core.ui.di.BackHandlerFactory;
+import net.calvuz.qdue.core.ui.di.BackHandlingModule;
+import net.calvuz.qdue.core.ui.interfaces.BackHandlingService;
+import net.calvuz.qdue.core.ui.interfaces.BackPressHandler;
+import net.calvuz.qdue.core.ui.interfaces.UnsavedChangesHandler;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.core.backup.BackupIntegration;
 import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.validation.JsonSchemaValidator;
-import net.calvuz.qdue.ui.events.interfaces.BackPressHandler;
 import net.calvuz.qdue.core.listeners.EventDeletionListener;
 import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
@@ -97,6 +101,10 @@ public class EventsActivity extends AppCompatActivity implements
     private NavController mNavController;
     private NavHostFragment mNavHostFragment;
 
+    // Back handling - Custom Dependency Injection (no external libraries)
+    private BackHandlerFactory mBackHandlerFactory;
+    private BackHandlingService mBackHandlingService;
+
     // UI Components
     private MaterialToolbar mToolbar;
     private FloatingActionButton mFabAddEvent;
@@ -142,8 +150,10 @@ public class EventsActivity extends AppCompatActivity implements
         mDatabase = QDueDatabase.getInstance(this);  // ✅ STESSO DATABASE
 
         initializeViews();
+        initializeDependencies();  // Back button handling 1 (after initViews)
         setupToolbar();
         setupNavigation();
+        setupBackHandling();  // Back button handling 2 (after setupNav)
         setupFab();
         setupFileOperations();
         handleIntent(getIntent());
@@ -162,13 +172,18 @@ public class EventsActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
 
-        // ADD THESE LINES to your existing onDestroy:
+        // ✅ File related handlers cleanup
         if (mFileAccessAdapter != null) {
             mFileAccessAdapter.clearPendingCallback();
         }
+
+        // ✅ Permission related handlers cleanup
         if (mPermissionManager != null) {
             mPermissionManager.clearPendingCallbacks();
         }
+
+        // ✅ Back handlers cleanup
+        mBackHandlingService.unregisterComponent(this);
     }
 
     @Override
@@ -189,6 +204,58 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
+
+    /*
+IDEA: Non chiamare mai handleBackPress() sull'activity,
+ma sempre sul fragment corrente
+*/
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "=== ON BACK PRESSED ===");
+
+        // ✅ STEP 1: Trova il fragment corrente
+        Fragment currentFragment = getCurrentFragment();
+
+        if (currentFragment != null) {
+            Log.d(TAG, "Found current fragment: " + currentFragment.getClass().getSimpleName());
+
+            // ✅ STEP 2: Chiama handleBackPress() sul FRAGMENT, non sull'activity
+            boolean handled = mBackHandlingService.handleBackPress(currentFragment);
+
+            if (handled) {
+                Log.d(TAG, "✅ Fragment handled back press");
+                return;
+            }
+        }
+
+        // ✅ STEP 3: Fallback - chiama sull'activity per handlers globali
+        Log.d(TAG, "No fragment handler, trying activity handlers");
+        boolean handled = mBackHandlingService.handleBackPress(this);
+
+        if (!handled) {
+            Log.d(TAG, "No handler processed back press, using default behavior");
+            super.onBackPressed();
+        }
+    }
+
+    /**
+     * ✅ HELPER: Trova il fragment corrente nel NavHostFragment
+     */
+    private Fragment getCurrentFragment() {
+        try {
+            if (mNavHostFragment != null) {
+                Fragment primaryFragment = mNavHostFragment.getChildFragmentManager()
+                        .getPrimaryNavigationFragment();
+                Log.d(TAG, "Primary navigation fragment: " +
+                        (primaryFragment != null ? primaryFragment.getClass().getSimpleName() : "null"));
+                return primaryFragment;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting current fragment: " + e.getMessage());
+        }
+        return null;
+    }
+
     @Override
     public void finish() {
         // Ensure final notification is sent before finishing
@@ -206,6 +273,19 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
+     * 🆕 NEW: Initialize dependencies using project's custom DI pattern
+     */
+    private void initializeDependencies() {
+        Log.d(TAG, "Initializing dependencies with custom DI pattern");
+
+        // Use project's ServiceLocator pattern
+        mBackHandlingService = BackHandlingModule.getBackHandlingService(this);
+        mBackHandlerFactory = BackHandlingModule.getBackHandlerFactory(this);
+
+        Log.d(TAG, "Dependencies initialized successfully");
+    }
+
+    /**
      * Setup toolbar with navigation and menu
      */
     private void setupToolbar() {
@@ -216,44 +296,23 @@ public class EventsActivity extends AppCompatActivity implements
             getSupportActionBar().setTitle(R.string.nav_eventi);
         }
 
-        // Handle navigation icon click (back to main activity)
-        // CORREZIONE: Sostituire setNavigationOnClickListener con check del fragment
+        // Use custom DI back handling service
         mToolbar.setNavigationOnClickListener(v -> {
             Log.d(TAG, "=== TOOLBAR NAVIGATION CLICKED ===");
 
-            // NUOVO: Check se siamo in EventEditFragment
-            if (mNavController != null && mNavController.getCurrentDestination() != null) {
-                int currentDest = mNavController.getCurrentDestination().getId();
-                Log.d(TAG, "Current destination: " + currentDest);
-
-                if (currentDest == R.id.nav_event_edit) {
-                    Log.d(TAG, "🎯 In EVENT EDIT - checking for unsaved changes");
-
-                    try {
-                        Fragment currentFragment = mNavHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
-                        if (currentFragment instanceof BackPressHandler) {
-                            Log.d(TAG, "🎯 Fragment implements BackPressHandler");
-                            boolean handled = ((BackPressHandler) currentFragment).onBackPressed();
-                            Log.d(TAG, "Fragment handled: " + handled);
-
-                            if (handled) {
-                                Log.d(TAG, "✋ Navigation BLOCKED by fragment");
-                                return; // DON'T navigate - fragment is handling it
-                            }
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error checking fragment: " + e.getMessage());
-                    }
-                }
-            }
-
-            Log.d(TAG, "🔄 Proceeding with normal navigation");
-
-            // ESISTENTE: Check if we can navigate back within the events navigation
-            if (mNavController != null && !mNavController.popBackStack()) {
-                // If no back stack, finish activity to return to main
-                finish();
-            }
+            // ✅ Usa la stessa logica fragment-centric
+            onBackPressed();
+//
+//            Log.d(TAG, "=== TOOLBAR NAVIGATION CLICKED ===");
+//
+//            // Use the custom DI service to handle back press
+//            boolean handled = mBackHandlingService.handleBackPress(this);
+//
+//            if (!handled) {
+//                // Fallback to default behavior
+//                Log.d(TAG, "No handler processed toolbar navigation, using default");
+//                finish();
+//            }
         });
     }
 
@@ -280,6 +339,21 @@ public class EventsActivity extends AppCompatActivity implements
         } catch (Exception e) {
             Log.e(TAG, "Error setting up navigation: " + e.getMessage());
         }
+    }
+
+    /**
+     * 🆕 NEW: Setup back button handling with custom DI service
+     */
+    private void setupBackHandling() {
+        Log.d(TAG, "Setting up back button handling with custom DI");
+
+        // Register activity-level navigation handler (low priority)
+        mBackHandlerFactory.forComponent(this)
+                .withPriority(10)
+                .withDescription("EventsActivity navigation handler")
+                .register(this::handleActivityNavigation);
+
+        Log.d(TAG, "Back handling setup completed with custom DI service");
     }
 
     /**
@@ -385,6 +459,61 @@ public class EventsActivity extends AppCompatActivity implements
             mCurrentListFragment = null;
         }
     }
+
+    /**
+     * 🆕 NEW: Convenience method for fragments with unsaved changes
+     */
+    public void registerFragmentUnsavedChanges(@NonNull Fragment fragment, @NonNull UnsavedChangesHandler handler) {
+        mBackHandlerFactory.forComponent(fragment)
+                .withPriority(100)
+                .withDescription(fragment.getClass().getSimpleName() + " unsaved changes")
+                .registerUnsavedChanges(handler);
+    }
+
+    /**
+     * 🆕 NEW: Register unsaved changes handler for fragments
+     * Call this when fragments enter edit mode
+     */
+    public void registerUnsavedChangesHandler(@NonNull Object component,
+                                              @NonNull UnsavedChangesHandler handler) {
+        mBackHandlerFactory.forComponent(component)
+                .withPriority(100)
+                .withDescription(component.getClass().getSimpleName() + " unsaved changes")
+                .registerUnsavedChanges(handler);
+
+        Log.d(TAG, "Registered unsaved changes handler for: " + component.getClass().getSimpleName());
+    }
+
+    /**
+     * 🆕 NEW: Register selection mode handler for fragments/adapters
+     * Call this for components that have selection modes
+     */
+    public void registerSelectionModeHandler(@NonNull Object component,
+                                             @NonNull BackPressHandler selectionHandler) {
+        mBackHandlerFactory.forComponent(component)
+                .withPriority(50)
+                .withDescription(component.getClass().getSimpleName() + " selection mode")
+                .register(selectionHandler);
+
+        Log.d(TAG, "Registered selection mode handler for: " + component.getClass().getSimpleName());
+    }
+
+    /**
+     * 🆕 NEW: Unregister handlers when components are destroyed
+     */
+    public void unregisterBackHandler(@NonNull Object component) {
+        mBackHandlingService.unregisterComponent(component);
+        Log.d(TAG, "Unregistered back handler for: " + component.getClass().getSimpleName());
+    }
+
+    /**
+     * 🆕 NEW: Check if any component has unsaved changes
+     */
+    public boolean hasAnyUnsavedChanges() {
+        // This could be enhanced to check all registered components
+        return mBackHandlingService.hasUnsavedChanges(this);
+    }
+
 
     // ==================== ACTION HANDLERS ====================
 
@@ -852,6 +981,67 @@ public class EventsActivity extends AppCompatActivity implements
         // Handle new intent with navigation support
         handleIntentWithNavigation(intent);
     }
+
+    /**
+     * 🆕 NEW: Handle back press when there are unsaved changes
+     */
+    private boolean handleUnsavedChangesBack() {
+        Log.d(TAG, "=== HANDLING UNSAVED CHANGES BACK ===");
+
+        // Check if we're in edit mode and there are unsaved changes
+        if (mNavController != null && mNavController.getCurrentDestination() != null) {
+            int currentDest = mNavController.getCurrentDestination().getId();
+
+            if (currentDest == R.id.nav_event_edit) {
+                Log.d(TAG, "🎯 In EVENT EDIT - checking for unsaved changes");
+
+                try {
+                    Fragment currentFragment = mNavHostFragment.getChildFragmentManager()
+                            .getPrimaryNavigationFragment();
+
+                    if (currentFragment instanceof BackPressHandler) {
+                        Log.d(TAG, "🎯 Fragment implements BackPressHandler");
+                        boolean handled = ((BackPressHandler) currentFragment).onBackPressed();
+                        Log.d(TAG, "Fragment handled back press: " + handled);
+
+                        if (handled) {
+                            Log.d(TAG, "✋ Back press HANDLED by fragment (unsaved changes)");
+                            return true; // Handled - don't proceed with navigation
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error checking fragment for unsaved changes: " + e.getMessage());
+                }
+            }
+        }
+
+        return false; // Not handled - proceed to next handler
+    }
+
+    /**
+     * 🆕 NEW: Handle activity-level navigation back press
+     */
+    private boolean handleActivityNavigation() {
+        boolean result = true;
+        Log.d(TAG, "=== HANDLING ACTIVITY NAVIGATION BACK ===");
+
+        // Check current navigation state
+        if (mNavController != null) {
+            if (mNavController.popBackStack()) {
+                Log.d(TAG, "🔄 Navigated back within Events navigation");
+            } else {
+                Log.d(TAG, "🔄 No back stack - finishing activity");
+                finish();
+            }
+            // Handled
+        } else {// Fallback - finish activity
+            Log.d(TAG, "🔄 NavController null - finishing activity");
+            finish();// Always handled at activity level
+        }
+
+        return result;
+    }
+
 
     // ==================== CREATE FUNCTIONALITY ====================
 
@@ -1551,7 +1741,7 @@ public class EventsActivity extends AppCompatActivity implements
     // ==================== HELPER METHODS ====================
 
     /**
-     * Create share text for event
+     * HELPER: Create share text for event
      */
     private String createEventShareText(LocalEvent event) {
         StringBuilder text = new StringBuilder();
@@ -1579,7 +1769,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
-     * Format event date for dialog display
+     * HELPER: Format event date for dialog display
      */
     private String formatEventDateForDialog(LocalEvent event) {
         if (event.getStartTime() == null) {
@@ -1614,7 +1804,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
-     * Trigger backup after successful deletion
+     * HELPER: Trigger backup after successful deletion
      */
     private void triggerBackupAfterDeletion(String deletedEventTitle) {
         if (mCurrentListFragment != null) {
@@ -1624,6 +1814,36 @@ public class EventsActivity extends AppCompatActivity implements
                     mCurrentListFragment.getEventsList(),
                     deletedEventTitle // 1 event deleted
             );
+        }
+    }
+
+    /**
+     * 🆕 HELPER: Check if currently in edit mode
+     */
+    private boolean isInEditMode() {
+        if (mNavController != null && mNavController.getCurrentDestination() != null) {
+            int currentDest = mNavController.getCurrentDestination().getId();
+            return currentDest == R.id.nav_event_edit;
+        }
+        return false;
+    }
+
+
+    /**
+     * 🆕 HELPER: Check if current fragment has unsaved changes
+     */
+    private boolean hasUnsavedChanges() {
+        try {
+            Fragment currentFragment = mNavHostFragment.getChildFragmentManager()
+                    .getPrimaryNavigationFragment();
+
+            // You could implement a more sophisticated check here
+            // For example, check if fragment implements an UnsavedChangesInterface
+            return isInEditMode(); // Simple check for now
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking unsaved changes: " + e.getMessage());
+            return false;
         }
     }
 
@@ -2054,7 +2274,7 @@ public class EventsActivity extends AppCompatActivity implements
     // ==================== DEBUG METHODS ====================
 
     /**
-     * Debug method to check activity state
+     * DEBUG: Check activity state
      */
     public void debugActivityState() {
         Log.d(TAG, "=== EVENTS ACTIVITY STATE DEBUG ===");
@@ -2073,7 +2293,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
-     * Debug method to force notification test
+     * DEBUG: Force notification test
      */
     public void debugForceNotification(String testChangeType, int testEventCount) {
         Log.d(TAG, "=== DEBUG FORCE NOTIFICATION ===");
@@ -2083,7 +2303,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     /**
-     * 🔄 ENHANCED: Debug method with editor navigation info
+     * 🔄 DEBUG: Editor navigation info
      */
     public void debugNavigationState() {
         Log.d(TAG, "=== EVENTS ACTIVITY NAVIGATION DEBUG ===");
@@ -2108,4 +2328,22 @@ public class EventsActivity extends AppCompatActivity implements
 
         Log.d(TAG, "=== END NAVIGATION DEBUG ===");
     }
+
+    /**
+     * 🆕 DEBUG: Back handlers info
+     */
+    public String getBackHandlingDebugInfo() {
+        return BackHandlingModule.getDebugInfo() + "\n" +
+                (mBackHandlingService instanceof net.calvuz.qdue.core.ui.services.BackHandlingServiceImpl ?
+                        ((net.calvuz.qdue.core.ui.services.BackHandlingServiceImpl) mBackHandlingService).getDebugInfo() :
+                        "Service debug info not available");
+    }
+
+    /**
+     * 🆕 DEBUG: Force back press handling
+     */
+    public boolean debugForceBackPress(@NonNull Object component) {
+        return mBackHandlingService.handleBackPress(component);
+    }
+
 }

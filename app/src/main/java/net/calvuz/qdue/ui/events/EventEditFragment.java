@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,13 +26,14 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.ui.interfaces.UnsavedChangesHandler;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.ui.events.interfaces.BackPressHandler;
 import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -49,9 +51,9 @@ import java.util.Calendar;
  * - Cancel with confirmation
  */
 public class EventEditFragment extends Fragment implements
-        BackPressHandler {
+        UnsavedChangesHandler {
 
-    private static final String TAG = "EventEditFrg";
+    private static final String TAG = "EventEdit";
     private static final String ARG_EVENT_ID = "eventId";
 
     // CORREZIONE 1: AGGIUNGERE INTERFACES
@@ -63,9 +65,9 @@ public class EventEditFragment extends Fragment implements
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // Views
-    private TextInputEditText mTitleEdit;
-    private TextInputEditText mDescriptionEdit;
-    private TextInputEditText mLocationEdit;
+    private TextInputEditText mEditTitle;
+    private TextInputEditText mEditDescription;
+    private TextInputEditText mEditLocation;
     private MaterialButton mStartDateButton;
     private MaterialButton mStartTimeButton;
     private MaterialButton mEndDateButton;
@@ -75,12 +77,15 @@ public class EventEditFragment extends Fragment implements
     private MaterialAutoCompleteTextView mPrioritySpinner;
 
     // Data
-    private LocalEvent mEvent;
     private LocalEvent mOriginalEvent; // NUOVO: per tracking changes
     private String mEventId;
     private LocalDateTime mStartDateTime;
     private LocalDateTime mEndDateTime;
-    private boolean mHasUnsavedChanges = false; // NUOVO: per confirmation dialog
+
+    // Data
+    private LocalEvent mEvent;
+    private boolean mHasUnsavedChanges = false;
+    private boolean mIsSaving = false;
 
     // Event types and priorities
     private static final String[] EVENT_TYPES = {
@@ -90,7 +95,6 @@ public class EventEditFragment extends Fragment implements
     private static final String[] PRIORITIES = {
             "NORMAL", "HIGH", "LOW"
     };
-
 
     /**
      * Factory method
@@ -113,6 +117,17 @@ public class EventEditFragment extends Fragment implements
 
         if (getArguments() != null) {
             mEventId = getArguments().getString(ARG_EVENT_ID);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // ✅ NUOVO: Unregister from back handling system
+        if (getActivity() instanceof EventsActivity activity) {
+            activity.unregisterBackHandler(this);
+            Log.d(TAG, "Unregistered back handler");
         }
     }
 
@@ -155,18 +170,19 @@ public class EventEditFragment extends Fragment implements
         super.onViewCreated(view, savedInstanceState);
 
         initializeViews(view);
+        //setupBackHandling();  // handle Back button - moved forward in setupChangeTracker()
         setupSpinners();
         setupDateTimePickers();
-        loadEventData();
+        loadEventData();  // call populateForm();
     }
 
     /**
      * Initialize view references
      */
     private void initializeViews(View view) {
-        mTitleEdit = view.findViewById(R.id.edit_event_title);
-        mDescriptionEdit = view.findViewById(R.id.edit_event_description);
-        mLocationEdit = view.findViewById(R.id.edit_event_location);
+        mEditTitle = view.findViewById(R.id.edit_event_title);
+        mEditDescription = view.findViewById(R.id.edit_event_description);
+        mEditLocation = view.findViewById(R.id.edit_event_location);
         mStartDateButton = view.findViewById(R.id.btn_start_date);
         mStartTimeButton = view.findViewById(R.id.btn_start_time);
         mEndDateButton = view.findViewById(R.id.btn_end_date);
@@ -174,6 +190,34 @@ public class EventEditFragment extends Fragment implements
         mAllDaySwitch = view.findViewById(R.id.switch_all_day);
         mEventTypeSpinner = view.findViewById(R.id.spinner_event_type);
         mPrioritySpinner = view.findViewById(R.id.spinner_priority);
+    }
+
+    /**
+     * Setup back handling with parent activity
+     */
+    private void setupBackHandling() {
+        Log.d(TAG, "Setting up unsaved changes back handling");
+
+        if (getActivity() instanceof EventsActivity) {
+            EventsActivity activity = (EventsActivity) getActivity();
+
+            try {
+                // Register this fragment for unsaved changes handling
+                //activity.registerFragmentUnsavedChanges(this, this);
+                // ✅ CORREZIONE: Usare il metodo corretto che esiste
+                activity.registerUnsavedChangesHandler(this, this);
+
+                Log.d(TAG, "Registered unsaved changes handler with EventsActivity");
+
+                // ✅ DEBUG: Verificare che la registrazione sia avvenuta
+                String debugInfo = activity.getBackHandlingDebugInfo();
+                Log.d(TAG, "Back handling debug info after registration:\n" + debugInfo);
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Error registering unsaved changes handler: " + e.getMessage());
+            }
+        } else {
+            Log.w(TAG, "Parent activity is not EventsActivity, cannot register back handler");
+        }
     }
 
     /**
@@ -301,7 +345,7 @@ public class EventEditFragment extends Fragment implements
 
         try {
             // Add text watchers to detect changes
-            android.text.TextWatcher textWatcher = new android.text.TextWatcher() {
+            TextWatcher textWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
@@ -316,9 +360,9 @@ public class EventEditFragment extends Fragment implements
                 }
             };
 
-            if (mTitleEdit != null) mTitleEdit.addTextChangedListener(textWatcher);
-            if (mDescriptionEdit != null) mDescriptionEdit.addTextChangedListener(textWatcher);
-            if (mLocationEdit != null) mLocationEdit.addTextChangedListener(textWatcher);
+            if (mEditTitle != null) mEditTitle.addTextChangedListener(textWatcher);
+            if (mEditDescription != null) mEditDescription.addTextChangedListener(textWatcher);
+            if (mEditLocation != null) mEditLocation.addTextChangedListener(textWatcher);
 
             // Add listeners to other controls
             if (mAllDaySwitch != null) {
@@ -340,6 +384,9 @@ public class EventEditFragment extends Fragment implements
                 });
             }
 
+            // ✅ HERE - after everything is set up
+            setupBackHandling();
+
             Log.d(TAG, mTAG + "Change tracking setup completed");
 
         } catch (Exception e) {
@@ -354,9 +401,9 @@ public class EventEditFragment extends Fragment implements
         if (mEvent == null) return;
 
         // Basic fields
-        mTitleEdit.setText(mEvent.getTitle());
-        mDescriptionEdit.setText(mEvent.getDescription());
-        mLocationEdit.setText(mEvent.getLocation());
+        mEditTitle.setText(mEvent.getTitle());
+        mEditDescription.setText(mEvent.getDescription());
+        mEditLocation.setText(mEvent.getLocation());
 
         // Date/time
         mStartDateTime = mEvent.getStartTime();
@@ -373,6 +420,9 @@ public class EventEditFragment extends Fragment implements
         if (mEvent.getPriority() != null) {
             mPrioritySpinner.setText(mEvent.getPriority().toString(), false);
         }
+
+        // Reset change flag after populating (already false btw)
+        mHasUnsavedChanges = false;
     }
 
     /**
@@ -536,15 +586,8 @@ public class EventEditFragment extends Fragment implements
      * Method called by EventsActivity
      */
     public void onHomePressed() {
-        // Same logic as back pressed
-        if (mHasUnsavedChanges) {
-            showUnsavedChangesDialog();
-        } else {
-            // If no active changes - let it go
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
-        }
+        // Same logic as cancelEdit()
+        cancelEdit();
     }
 
     @Override
@@ -589,6 +632,9 @@ public class EventEditFragment extends Fragment implements
         // Update event with form data
         updateEventFromForm();
 
+        // Flag mIsSaving
+        mIsSaving = true;
+
         // Save to database with enhanced error handling
         new Thread(() -> {
             try {
@@ -615,11 +661,11 @@ public class EventEditFragment extends Fragment implements
 
                             } else {
                                 Log.w(TAG, mTAG + "No rows affected during update");
-                                Toast.makeText(getContext(), "⚠️ Nessuna modifica salvata", Toast.LENGTH_SHORT).show();
+                                Library.showToast(getContext(), "⚠️ Nessuna modifica salvata", Toast.LENGTH_SHORT);
                             }
                         } catch (Exception e) {
                             Log.e(TAG, mTAG + "Error in UI update after save: " + e.getMessage());
-                            Toast.makeText(getContext(), "Errore post-salvataggio", Toast.LENGTH_SHORT).show();
+                            Library.showToast(getContext(), "⚠️ Errore post-salvataggio", Toast.LENGTH_SHORT);
                         }
                     });
                 } else {
@@ -691,9 +737,9 @@ public class EventEditFragment extends Fragment implements
 
         try {
             // Title required
-            if (mTitleEdit != null && TextUtils.isEmpty(mTitleEdit.getText())) {
-                mTitleEdit.setError("Titolo richiesto");
-                mTitleEdit.requestFocus();
+            if (mEditTitle != null && TextUtils.isEmpty(mEditTitle.getText())) {
+                mEditTitle.setError("Titolo richiesto");
+                mEditTitle.requestFocus();
                 isValid = false;
                 Log.w(TAG, mTAG + "Validation failed: Title is empty");
             }
@@ -746,9 +792,9 @@ public class EventEditFragment extends Fragment implements
     private void updateEventFromForm() {
         if (mEvent == null) return;
 
-        mEvent.setTitle(mTitleEdit.getText().toString().trim());
-        mEvent.setDescription(mDescriptionEdit.getText().toString().trim());
-        mEvent.setLocation(mLocationEdit.getText().toString().trim());
+        mEvent.setTitle(mEditTitle.getText().toString().trim());
+        mEvent.setDescription(mEditDescription.getText().toString().trim());
+        mEvent.setLocation(mEditLocation.getText().toString().trim());
         mEvent.setStartTime(mStartDateTime);
         mEvent.setEndTime(mEndDateTime);
         mEvent.setAllDay(mAllDaySwitch.isChecked());
@@ -785,38 +831,14 @@ public class EventEditFragment extends Fragment implements
 
         if (mHasUnsavedChanges) {
             Log.d(TAG, mTAG + "Has unsaved changes, showing confirmation dialog");
-            showUnsavedChangesDialog();
+            // showUnsavedChangesDialog();  // ❌ RIMUOVERE
+
+            // ✅ CORREZIONE: Usare direttamente l'interfaccia
+            handleUnsavedChanges(this::navigateBack, () -> {
+                Log.d(TAG, "User cancelled navigation");
+            });
         } else {
             Log.d(TAG, mTAG + "No unsaved changes, navigating back directly");
-            navigateBack();
-        }
-    }
-
-    /**
-     * NUOVO: Show confirmation dialog for unsaved changes
-     */
-    private void showUnsavedChangesDialog() {
-        try {
-            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Modifiche non salvate")
-                    .setMessage("Hai modifiche non salvate. Vuoi uscire senza salvare?")
-                    .setPositiveButton("Esci senza salvare", (dialog, which) -> {
-                        Log.d(TAG, "User chose to exit without saving");
-                        mHasUnsavedChanges = false; // Reset flag
-                        navigateBack();
-                    })
-                    .setNegativeButton("Continua modifica", (dialog, which) -> {
-                        Log.d(TAG, "User chose to continue editing");
-                        dialog.dismiss();
-                    })
-                    .setNeutralButton("Salva e esci", (dialog, which) -> {
-                        Log.d(TAG, "User chose to save and exit");
-                        saveEvent(); // This will navigate back on success
-                    })
-                    .show();
-        } catch (Exception e) {
-            Log.e(TAG, "Error showing unsaved changes dialog: " + e.getMessage());
-            // Fallback to direct navigation
             navigateBack();
         }
     }
@@ -889,14 +911,51 @@ public class EventEditFragment extends Fragment implements
     }
 
     /**
-     * @return true if there are unsaved changes, false otherwise
+     * Check if component has unsaved changes
+     *
+     * @return true if there are unsaved changes that would be lost on navigation
      */
     @Override
-    public boolean onBackPressed() {
-        if (mHasUnsavedChanges) {
-            showUnsavedChangesDialog();
-            return true; // Handled - non uscire
-        }
-        return false; // Non handled - può uscire
+    public boolean hasUnsavedChanges() {
+        return mHasUnsavedChanges;
     }
+
+    /**
+     * Handle unsaved changes with user confirmation
+     * <p>
+     * This method should present appropriate UI (dialog, snackbar, etc.) to let
+     * the user decide how to proceed with unsaved changes.
+     *
+     * @param onProceed Callback to execute if user wants to proceed (discard changes)
+     * @param onCancel  Callback to execute if user wants to cancel navigation
+     */
+    @Override
+    public void handleUnsavedChanges(@NonNull Runnable onProceed, @NonNull Runnable onCancel) {
+        try {
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Modifiche non salvate")
+                    .setMessage("Hai modifiche non salvate. Vuoi uscire senza salvare?")
+                    .setPositiveButton("Esci senza salvare", (dialog, which) -> {
+                        Log.d(TAG, "User chose to exit without saving");
+                        mHasUnsavedChanges = false; // Reset flag
+                        onProceed.run(); // Chiama il callback per procedere
+                    })
+                    .setNegativeButton("Continua modifica", (dialog, which) -> {
+                        Log.d(TAG, "User chose to continue editing");
+                        onCancel.run(); // Chiama il callback per annullare
+                    })
+                    .setNeutralButton("Salva e esci", (dialog, which) -> {
+                        Log.d(TAG, "User chose to save and exit");
+                        // Salva i dati e poi procedi
+                        saveEvent(); // This will navigate back on success
+                    })
+                    .setCancelable(false) // Impedisce la chiusura accidentale
+                    .show();
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing unsaved changes dialog: " + e.getMessage());
+            // Fallback to direct navigation
+            navigateBack();
+        }
+    }
+
 }

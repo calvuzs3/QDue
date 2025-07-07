@@ -8,6 +8,9 @@ import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.ui.di.BackHandlerFactory;
+import net.calvuz.qdue.core.ui.di.BackHandlingModule;
+import net.calvuz.qdue.core.ui.interfaces.BackHandlingService;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.utils.Log;
 
@@ -45,16 +48,20 @@ public class QDue extends Application {
         enableDynamicColors();
         Log.d(TAG, "=== DynamicColors initialized");
 
-        // Initialize ShiftTypeFactory
-//        Log.d(TAG, "=== ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
-
         // Initialize QuattroDue
         quattrodue = QuattroDue.getInstance(this);
         Log.d(TAG, "=== QuattroDue initialized");
 
+        // Initialize ShiftTypeFactory
+        //Log.d(TAG, "=== ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
+
         // Initialize unified database
         QDueDatabase.getInstance(this);
         Log.d(TAG, "=== QDueDatabase initialized");
+
+        // 🆕 Initialize back handling services early
+        BackHandlingModule.initialize(this);
+        Log.d(TAG, "=== BackHandling services initialized");
     }
 
     /* ===== GETTERS ===== */
@@ -195,6 +202,26 @@ public class QDue extends Application {
             Log.e(TAG, "Error enabling dynamic colors: " + e.getMessage());
             // Gracefully fallback to static theme
         }
+    }
+
+    /**
+     * 🆕 Get BackHandlingService for the entire app
+     *
+     * Usage anywhere in the app:
+     * BackHandlingService service = QDue.getBackHandlingService();
+     */
+    public static BackHandlingService getBackHandlingService() {
+        return BackHandlingModule.getBackHandlingService(INSTANCE);
+    }
+
+    /**
+     * 🆕 Get BackHandlerFactory for the entire app
+     *
+     * Usage anywhere in the app:
+     * BackHandlerFactory factory = QDue.getBackHandlerFactory();
+     */
+    public static BackHandlerFactory getBackHandlerFactory() {
+        return BackHandlingModule.getBackHandlerFactory(INSTANCE);
     }
 
 }

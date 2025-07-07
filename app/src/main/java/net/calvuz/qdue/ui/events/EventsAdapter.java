@@ -10,9 +10,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.utils.Log;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * EventsAdapter - RecyclerView adapter for events list with navigation support
@@ -37,6 +40,10 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
     // Data and listener
     private List<LocalEvent> mEvents;
     private OnEventClickListener mClickListener;
+
+    // Selection mode
+    private boolean mSelectionMode = false;
+    private Set<String> mSelectedEventIds = new HashSet<>();
 
     /**
      * Interface for event click handling
@@ -107,17 +114,88 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         notifyDataSetChanged();
     }
 
+    // ==================== SELECTION METHODS ====================
+
+    /**
+     * Set selection mode on/off
+     *
+     * @param selectionMode true to enable selection mode
+     */
+    public void setSelectionMode(boolean selectionMode) {
+        this.mSelectionMode = selectionMode;
+
+        // If exiting selection mode, clear selections
+        if (!selectionMode) {
+            mSelectedEventIds.clear();
+        }
+
+        Log.d("EventsAdapter", "Selection mode set to: " + selectionMode);
+    }
+
+    /**
+     * Check if adapter is in selection mode
+     *
+     * @return true if in selection mode
+     */
+    public boolean isInSelectionMode() {
+        return mSelectionMode;
+    }
+
+    /**
+     * Update selected event IDs
+     *
+     * @param selectedIds Set of selected event IDs
+     */
+    public void updateSelections(Set<String> selectedIds) {
+        this.mSelectedEventIds.clear();
+        if (selectedIds != null) {
+            this.mSelectedEventIds.addAll(selectedIds);
+        }
+        notifyDataSetChanged(); // Update all items to show/hide selection indicators
+    }
+
+    /**
+     * Clear all selections
+     */
+    public void clearSelections() {
+        mSelectedEventIds.clear();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Check if an event is selected
+     *
+     * @param eventId Event ID to check
+     * @return true if selected
+     */
+    public boolean isEventSelected(String eventId) {
+        return mSelectedEventIds.contains(eventId);
+    }
+
+    /**
+     * Get selected event IDs
+     *
+     * @return Set of selected event IDs
+     */
+    public Set<String> getSelectedEventIds() {
+        return new HashSet<>(mSelectedEventIds);
+    }
+
+    // ==================== VIEW HOLDER CLASS ====================
+
     /**
      * ViewHolder for event items
+     *
+     * TODO: implement selection mode (indicator goes with cardview)
      */
     public static class EventViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mTitleView;
-        private TextView mDescriptionView;
-        private TextView mTimeView;
-        private TextView mLocationView;
-        private TextView mStatusView;
-        private View mStatusIndicator;
+        private final TextView mTitleView;
+        private final TextView mDescriptionView;
+        private final TextView mTimeView;
+        private final TextView mLocationView;
+        private final TextView mStatusView;
+        private final View mStatusIndicator;
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);

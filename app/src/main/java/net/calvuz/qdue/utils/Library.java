@@ -275,11 +275,21 @@ public final class Library {
     }
 
     /**
-     * 🆕 NEW: Helper method for consistent toast messages
+     * HELPER: Wrapper for Show toast LENGTH_SHORT
      *
      * @param message The message to show
      */
     public static void showToast(Context context, String message) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            showToast(context, message, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * HELPER: Show toast
+     *
+     * @param message The message to show
+     * @param length The length of the toast
+     */
+    public static void showToast(Context context, String message, int length) {
+        Toast.makeText(context, message, length).show();
     }
 }

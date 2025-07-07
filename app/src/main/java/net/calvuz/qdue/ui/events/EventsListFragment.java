@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.backup.BackupIntegration;
+import net.calvuz.qdue.core.ui.interfaces.SelectionModeHandler;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
@@ -48,9 +49,10 @@ import java.util.Set;
  * - Click event → EventDetailFragment with eventId argument
  */
 public class EventsListFragment extends Fragment implements
-        EventsAdapter.OnEventClickListener {
+        EventsAdapter.OnEventClickListener,
+        SelectionModeHandler {
 
-    private static final String TAG = "EventsListFrg";
+    private static final String TAG = "EventsList";
 
     // Views
     private RecyclerView mEventsRecyclerView;
@@ -71,6 +73,10 @@ public class EventsListFragment extends Fragment implements
     // Deletions
     private Set<String> mPendingDeletionIds = new HashSet<>();
     private boolean mIsRefreshSuppressed = false;
+
+    // Selection mode state
+    private boolean mIsInSelectionMode = false;
+    private Set<String> mSelectedEventIds = new HashSet<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,7 +104,24 @@ public class EventsListFragment extends Fragment implements
 
         initializeViews(view);
         setupRecyclerView();
+        setupBackHandling();
         loadEvents();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Unregister back handler
+        if (getActivity() instanceof EventsActivity) {
+            ((EventsActivity) getActivity()).unregisterBackHandler(this);
+            Log.d(TAG, "Unregistered back handler from EventsActivity");
+        }
+
+        // Exit selection mode if active
+        if (mIsInSelectionMode) {
+            exitSelectionMode();
+        }
     }
 
     /**
@@ -121,6 +144,18 @@ public class EventsListFragment extends Fragment implements
         mEventsAdapter = new EventsAdapter(mEventsList, this);
         mEventsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mEventsRecyclerView.setAdapter(mEventsAdapter);
+    }
+
+    /**
+     * 🆕 Setup back handling for this fragment
+     */
+    private void setupBackHandling() {
+        if (getActivity() instanceof EventsActivity activity) {
+            activity.registerSelectionModeHandler(this, this);
+            Log.d(TAG, "Back handling registered for EventsActivity");
+        } else {
+            Log.w(TAG, "Parent activity is not EventsActivity, cannot register back handler");
+        }
     }
 
     /**
@@ -199,6 +234,184 @@ public class EventsListFragment extends Fragment implements
             showLoading(false);
         }
     }
+
+    // ==================== IMPLEMENTAZIONE SelectionModeHandler ====================
+
+    @Override
+    public boolean isInSelectionMode() {
+        return mIsInSelectionMode;
+    }
+
+    @Override
+    public boolean exitSelectionMode() {
+        if (mIsInSelectionMode) {
+            Log.d(TAG, "Exiting selection mode");
+
+            mIsInSelectionMode = false;
+            mSelectedEventIds.clear();
+
+            // Update UI - notify adapter to remove selection indicators
+            if (mEventsAdapter != null) {
+                mEventsAdapter.setSelectionMode(false);
+                mEventsAdapter.clearSelections();
+                mEventsAdapter.notifyDataSetChanged();
+            }
+
+            // Update toolbar/menu if needed
+            updateSelectionModeUI();
+
+            Log.d(TAG, "✅ Selection mode exited successfully");
+            return true;
+        }
+
+        Log.d(TAG, "Not in selection mode, nothing to exit");
+        return false;
+    }
+
+    @Override
+    public int getSelectedItemCount() {
+        return mSelectedEventIds.size();
+    }
+
+    /**
+     * 🆕 NEW: Enter selection mode (called when user long-presses an item)
+     */
+    public void enterSelectionMode() {
+        if (!mIsInSelectionMode) {
+            Log.d(TAG, "Entering selection mode");
+
+            mIsInSelectionMode = true;
+
+            // Update UI
+            if (mEventsAdapter != null) {
+                mEventsAdapter.setSelectionMode(true);
+                mEventsAdapter.notifyDataSetChanged();
+            }
+
+            updateSelectionModeUI();
+
+            Log.d(TAG, "✅ Selection mode entered successfully");
+        }
+    }
+
+    /**
+     * 🆕 NEW: Toggle selection for an event
+     */
+    public void toggleEventSelection(String eventId) {
+        if (eventId == null) return;
+
+        if (mSelectedEventIds.contains(eventId)) {
+            mSelectedEventIds.remove(eventId);
+            Log.d(TAG, "Deselected event: " + eventId);
+        } else {
+            mSelectedEventIds.add(eventId);
+            Log.d(TAG, "Selected event: " + eventId);
+        }
+
+        // If no items selected, exit selection mode
+        if (mSelectedEventIds.isEmpty() && mIsInSelectionMode) {
+            exitSelectionMode();
+        }
+
+        // Update UI
+        updateSelectionModeUI();
+
+        // Notify adapter about selection change
+        if (mEventsAdapter != null) {
+            mEventsAdapter.updateSelections(mSelectedEventIds);
+        }
+    }
+
+    /**
+     * 🆕 NEW: Check if an event is selected
+     */
+    public boolean isEventSelected(String eventId) {
+        return mSelectedEventIds.contains(eventId);
+    }
+
+    /**
+     * 🆕 NEW: Update UI based on selection mode state
+     */
+    private void updateSelectionModeUI() {
+        if (mIsInSelectionMode) {
+            // Could update toolbar, show selection count, etc.
+            Log.d(TAG, "Selection mode UI updated - " + mSelectedEventIds.size() + " items selected");
+
+            // Example: Update activity title with selection count
+            if (getActivity() != null) {
+                String title = mSelectedEventIds.size() + " selected";
+                getActivity().setTitle(title);
+            }
+        } else {
+            // Restore normal UI
+            Log.d(TAG, "Normal mode UI restored");
+
+            // Restore original title
+            if (getActivity() != null) {
+                getActivity().setTitle(R.string.nav_eventi);
+            }
+        }
+    }
+
+    // ==================== EVENT CLICK HANDLING ====================
+
+    /**
+     * Handle event item click - Navigate to detail fragment or handle selection
+     */
+    //@Override
+    public void onEventClick(LocalEvent event) {
+        Log.d(TAG, "onEventClick called for: " + (event != null ? event.getTitle() : "null"));
+
+        if (event == null || event.getId() == null) {
+            Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ✅ MODIFICA: Handle selection mode
+        if (mIsInSelectionMode) {
+            // In selection mode, toggle selection instead of navigating
+            toggleEventSelection(event.getId());
+            return;
+        }
+
+        // Normal mode: navigate to detail
+        debugLogCurrentEvents();
+
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId());
+
+        try {
+            Navigation.findNavController(requireView())
+                    .navigate(R.id.action_events_list_to_event_detail, args);
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation error: " + e.getMessage());
+            Toast.makeText(getContext(), "Errore navigazione", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Handle event long click - Enter selection mode
+     */
+    @Override
+    public void onEventLongClick(LocalEvent event) {
+        if (event == null || event.getId() == null) return;
+
+        Log.d(TAG, "onEventLongClick called for: " + event.getTitle());
+
+        // ✅ MODIFICA: Enter selection mode and select this item
+        if (!mIsInSelectionMode) {
+            enterSelectionMode();
+        }
+
+        // Select the long-clicked item
+        toggleEventSelection(event.getId());
+
+        // Only show context menu for a single event
+        // TODO: implements multile selection
+        showEventContextMenu(event);
+    }
+
+    // ==================== ACTION METHODS ====================
 
     /**
      * Filter out events that are pending deletion
@@ -372,47 +585,6 @@ public class EventsListFragment extends Fragment implements
 //        }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    // ==================== EVENT CLICK HANDLING ====================
-
-    /**
-     * Handle event item click - Navigate to detail fragment
-     */
-    @Override
-    public void onEventClick(LocalEvent event) {
-        Log.d(TAG, "onEventClick called for: " + (event != null ? event.getTitle() : "null"));
-
-        if (event == null || event.getId() == null) {
-            Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // DEBUG: Log current state before navigation
-        logCurrentEvents();
-
-        // Navigate to EventDetailFragment using Navigation Component
-        Bundle args = new Bundle();
-        args.putString("eventId", event.getId());
-
-        try {
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_events_list_to_event_detail, args);
-        } catch (Exception e) {
-            Log.e(TAG, "Navigation error: " + e.getMessage());
-            Toast.makeText(getContext(), "Errore navigazione", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Handle event long click - Show context menu
-     */
-    @Override
-    public void onEventLongClick(LocalEvent event) {
-        if (event == null) return;
-
-        // TODO: Show context menu with options (edit, delete, share, etc.)
-        showEventContextMenu(event);
     }
 
     // ==================== ACTION HANDLERS ====================
@@ -703,7 +875,7 @@ public class EventsListFragment extends Fragment implements
     // ==================== DEBUG METHODS ====================
 
     /**
-     * Enhanced debug method to check fragment state
+     * DEBUG: Check fragment state
      */
     public void debugFragmentState() {
         Log.d(TAG, "=== EVENTS LIST FRAGMENT STATE DEBUG ===");
@@ -711,12 +883,20 @@ public class EventsListFragment extends Fragment implements
         Log.d(TAG, "Pending Deletions: " + mPendingDeletionIds.size());
         Log.d(TAG, "Refresh Suppressed: " + mIsRefreshSuppressed);
 
-        // View visibility states
+        // ✅ AGGIUNGI: Selection mode debug info
+        Log.d(TAG, "Selection Mode Active: " + mIsInSelectionMode);
+        Log.d(TAG, "Selected Items Count: " + mSelectedEventIds.size());
+
+        if (!mSelectedEventIds.isEmpty()) {
+            Log.d(TAG, "Selected Event IDs: " + mSelectedEventIds);
+        }
+
+        // View visibility states (existing...)
         Log.d(TAG, "RecyclerView Visibility: " + getVisibilityString(mEventsRecyclerView));
         Log.d(TAG, "Empty State Visibility: " + getVisibilityString(mEmptyStateView));
         Log.d(TAG, "Loading State Visibility: " + getVisibilityString(mLoadingStateView));
 
-        // Interface states
+        // Interface states (existing...)
         Log.d(TAG, "File Operations Interface: " + (mFileOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "Data Operations Interface: " + (mDataOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "UI State Interface: " + (mUIStateInterface != null ? "available" : "null"));
@@ -725,9 +905,33 @@ public class EventsListFragment extends Fragment implements
     }
 
     /**
-     * DEBUG:
+     * 🆕 DEBUG: Test selection mode functionality
      */
-    public void logCurrentEvents() {
+    public void debugTestSelectionMode() {
+        Log.d(TAG, "=== TESTING SELECTION MODE ===");
+
+        if (!mEventsList.isEmpty()) {
+            LocalEvent firstEvent = mEventsList.get(0);
+            if (firstEvent != null) {
+                Log.d(TAG, "Testing with first event: " + firstEvent.getTitle());
+
+                // Simulate long click to enter selection mode
+                onEventLongClick(firstEvent);
+
+                Log.d(TAG, "Selection mode should now be active: " + mIsInSelectionMode);
+                Log.d(TAG, "Selected items: " + mSelectedEventIds.size());
+            }
+        } else {
+            Log.d(TAG, "No events available for selection mode test");
+        }
+
+        Log.d(TAG, "=== END SELECTION MODE TEST ===");
+    }
+
+    /**
+     * DEBUG: Log Current Events List
+     */
+    public void debugLogCurrentEvents() {
         Log.d(TAG, "=== CURRENT EVENTS LIST DEBUG ===");
         Log.d(TAG, "Total events: " + mEventsList.size());
         Log.d(TAG, "Should show empty state: " + mEventsList.isEmpty());

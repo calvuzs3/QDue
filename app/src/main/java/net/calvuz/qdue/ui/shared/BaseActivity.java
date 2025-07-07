@@ -31,7 +31,6 @@ import net.calvuz.qdue.utils.TimeChangeReceiver;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -92,7 +91,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
 
     // ===========================================================
 
-
     /**
      * Register a fragment for events refresh notifications
      * Called by fragments in their onResume()
@@ -142,6 +140,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
         // Register preference listener
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
     }
 
     /**
