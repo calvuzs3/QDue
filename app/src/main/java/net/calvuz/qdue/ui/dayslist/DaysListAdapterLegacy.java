@@ -122,50 +122,36 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         // Only add our enhancements if it's our ViewHolder
         if (dayHolder instanceof DayslistDayViewHolder dayslistHolder) {
 
-            // Validate expansion support
-            if (!dayslistHolder.supportsExpansion()) {
-                Log.w(TAG, "ViewHolder does not support expansion - check layout structure");
-            }
-
-            // The order is IMPORTANT
-
-            // Setup expansion-aware click handling
+            // ✅ STEP 1: Setup content (non-styling)
             setupExpansionAwareClicks(dayslistHolder, dayItem, position);
-
-            // Apply expansion state if this card was previously expanded
             restoreExpansionState(dayslistHolder, dayItem);
-
-            // NEW: Setup long-click and selection support
             setupLongClickSupport(dayslistHolder, dayItem, position);
 
-            // STEP 1: Reset visual state
+            // ✅ STEP 2: Reset and setup content
             resetDayslistCellState(dayslistHolder);
-
-            // STEP 2: Setup day number (top-left, smaller font)
-
-            // STEP 3: Setup events indicator (top-right, dot with badge)
             setupEventsIndicator(dayslistHolder, dayItem);
-
-            // STEP 4: Setup shift name and indicator (bottom-right area)
             setupShiftDisplay(dayslistHolder, dayItem);
-
-            // STEP 5: Apply today/special day styling
-            applySundaySpecialStyling(dayslistHolder, dayItem);
-
-            // STEP 6. Apply background styling (improved)
-            //applyMaterialBackground(dayslistHolder, dayItem);
-            applyMaterialBackgroundWithWhite(dayslistHolder, dayItem);
-
-            // STEP 7. Add events indicator
             addWorkingEventsIndicator(dayslistHolder, dayItem);
 
-            // STEP 8. Background Styling
-            applyBackgroundStyling(holder, dayItem);
+            // ✅ STEP 3: Apply text highlighting UNIFICATO
+            LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
+            if (date != null) {
+                HighlightingHelper.applyUnifiedTextHighlighting(mContext, date,
+                        dayslistHolder.tday, dayslistHolder.twday, dayslistHolder.ttR);
 
-            // 🔧 DEBUG: Log per verifica
-            Log.d(TAG, "bindDay completed for position " + position +
-                    ", date: " + (dayItem.day != null ? dayItem.day.getLocalDate() : "null") +
-                    ", ViewHolder: DayslistDayViewHolder");
+                // Apply to shift texts
+                for (TextView shiftText : dayslistHolder.shiftTexts) {
+                    HighlightingHelper.applyUnifiedTextHighlighting(mContext, date, shiftText);
+                }
+            }
+
+            // ✅ STEP 4: Apply background highlighting UNIFICATO (UNA SOLA CHIAMATA)
+            if (date != null) {
+                List<LocalEvent> events = getEventsForDate(date);
+                HighlightingHelper.applyUnifiedHighlighting(mContext,
+                        (MaterialCardView) dayslistHolder.itemView, date, events, mEventHelper);
+            }
+
         }
     }
 
@@ -206,7 +192,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         // For now, ensure all cards start in collapsed state
 
         // Reset any expansion artifacts from recycled views
-        ViewGroup cardContainer = (ViewGroup) getExpandableContainer((MaterialCardView) holder.itemView) ;
+        ViewGroup cardContainer = (ViewGroup) getExpandableContainer((MaterialCardView) holder.itemView);
         if (cardContainer instanceof LinearLayout linearContainer) {
 
             // Remove any previously added expanded content (from recycling)
@@ -322,50 +308,9 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
      * @param holder ViewHolder to reset
      */
     private void resetDayslistCellState(DayslistDayViewHolder holder) {
-        // FIX: Reset day number text to normal state
-        if (holder.tday != null) {
-            holder.tday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
-            holder.tday.setTypeface(Typeface.DEFAULT, Typeface.NORMAL);
-            holder.tday.setTextSize(14f); // Reset size if needed
-        }
-
-        // FIX: Reset day name text to normal state
-        if (holder.twday != null) {
-            holder.twday.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
-            holder.twday.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
-            holder.twday.setTextSize(14f); // Reset size if needed
-        }
-
-        // FIX: Reset shift TextViews to normal state
-        for (TextView shiftText : holder.shiftTexts) {
-            if (shiftText != null) {
-                shiftText.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
-                shiftText.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
-                shiftText.setTextSize(12f); // Reset size if needed
-            }
-        }
-
-        // FIX: Reset rest teams TextView
-        if (holder.ttR != null) {
-            holder.ttR.setTextColor(getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface));
-            holder.ttR.setTypeface(Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
-            holder.ttR.setTextSize(12f); // Reset size if needed
-        }
-
-        // FIX: Reset events indicator
+        // Reset content and visibility, NO styling
         if (holder.eventsIndicator != null) {
             holder.eventsIndicator.setVisibility(View.GONE);
-            holder.eventsIndicator.setTextColor(getColorByThemeAttr(mContext,
-                    androidx.appcompat.R.attr.colorPrimary));
-            holder.eventsIndicator.setBackgroundResource(R.drawable.events_indicator_background);
-        }
-
-        // Reset card styling - IMPORTANT: Reset all MaterialCardView properties
-        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
-            com.google.android.material.card.MaterialCardView cardView =
-                    (com.google.android.material.card.MaterialCardView) holder.itemView;
-
-            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
         }
     }
 
@@ -451,84 +396,6 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     }
 
     /**
-     * Apply background styling for visual hierarchy
-     * Provides subtle backgrounds for better calendar readability
-     *
-     * @param cardView View to apply styling to
-     * @param dayItem  Day item data to bind
-     */
-    private void applyBackgroundStyling(MaterialCardView cardView, SharedViewModels.DayItem dayItem) {
-
-        if (dayItem.day == null) return;
-
-        LocalDate date = dayItem.day.getLocalDate();
-        LocalDate today = LocalDate.now();
-
-        // NUOVO: Controllare se ci sono eventi per questa data
-        List<LocalEvent> events = getEventsForDate(date);
-
-        // Regular days: Standard subtle background
-        HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-
-        if (date.equals(today)) {
-            // Today: Special background with elevation
-            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-        }
-        if (date.getDayOfWeek().getValue() == 7) { // Sunday
-            // Sunday: Light background highlighting
-            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-        }
-        if (!events.isEmpty()) {
-            // Events: colored background
-            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
-        }
-            // Regular days: Standard subtle background
-            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-
-//        if (date.equals(today)) {
-//            // Today: Special background with elevation
-//            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-//        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
-//            // Sunday: Light background highlighting
-//            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-//        } else if (!events.isEmpty()) {
-//            // Events: colored background
-//            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
-//        } else {
-//            // Regular days: Standard subtle background
-//            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-//        }
-
-        if (date.isBefore(today)) {
-            // Past days - slightly faded
-            HighlightingHelper.setupOldDaysCardStyle(cardView);
-        }
-    }
-
-    /**
-     * Usare il blend con bianco nella applyMaterialBackground
-     *
-     * @param holder  DayslistViewHolder to apply styling to
-     * @param dayItem Day item data to bind
-     */
-    private void applyMaterialBackgroundWithWhite(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        com.google.android.material.card.MaterialCardView cardView =
-                (com.google.android.material.card.MaterialCardView) holder.itemView;
-        View rootView = holder.itemView;
-
-        LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
-        LocalDate today = LocalDate.now();
-
-        List<LocalEvent> events = date != null ? getEventsForDate(date) : new ArrayList<>();
-
-        // Apply TODAY STYLING
-        if (dayItem.isToday()) {
-            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-        }
-
-    }
-
-    /**
      * Working events indicator with improved colors.
      *
      * @param holder  ViewHolder to setup
@@ -577,42 +444,6 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
 
         double luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
         return luminance > 0.5 ? Color.BLACK : Color.WHITE;
-    }
-
-    /**
-     * Apply special styling for Sunday.
-     *
-     * @param holder  DayslistViewHolder to apply styling to
-     * @param dayItem Day item data to bind
-     */
-    private void applySundaySpecialStyling(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (!dayItem.isSunday()) return;
-
-        // Red text for Sunday day number
-        if (holder.tday != null) {
-            holder.tday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-            holder.tday.setTypeface(holder.tday.getTypeface(), android.graphics.Typeface.BOLD);
-        }
-
-        // Red text for Sunday day name
-        if (holder.twday != null) {
-            holder.twday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-            holder.twday.setTypeface(holder.twday.getTypeface(), android.graphics.Typeface.BOLD);
-        }
-
-        for (TextView shiftText : holder.shiftTexts){
-            // Red text for Sunday day name
-            if (shiftText != null) {
-                shiftText.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-                shiftText.setTypeface(shiftText.getTypeface(), android.graphics.Typeface.BOLD);
-            }
-        }
-
-        // Red text for Sunday day name
-        if (holder.ttR != null) {
-            holder.ttR.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-            holder.ttR.setTypeface(holder.ttR.getTypeface(), android.graphics.Typeface.BOLD);
-        }
     }
 
     /**

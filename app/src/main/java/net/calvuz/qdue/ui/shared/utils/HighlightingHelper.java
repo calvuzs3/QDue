@@ -3,6 +3,7 @@ package net.calvuz.qdue.ui.shared.utils;
 import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
 import android.content.Context;
+import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 
@@ -10,9 +11,20 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.utils.Log;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public final class HighlightingHelper {
+
+    /*
+    PRIORITÀ DEFINITA (dal più importante al meno importante):
+    1. TODAY (massima priorità)
+    2. EVENTS (media priorità)
+    3. SUNDAY (bassa priorità)
+    4. OLD_DAYS (overlay finale)
+    5. REGULAR (default)
+    */
+
 
     private static final String TAG = "HIGHLIGHTING";
 
@@ -25,6 +37,93 @@ public final class HighlightingHelper {
     private static final float EVENTS_ELEVATION = 2f;
 
     private static final float OLD_DAYS_ALPHA = 0.75f;
+
+    /**
+     * ✅ NUOVO: Metodo unificato per applicare tutti gli highlighting
+     * Gestisce automaticamente le priorità e evita conflitti
+     */
+    public static void applyUnifiedHighlighting(Context context,
+                                                com.google.android.material.card.MaterialCardView cardView,
+                                                LocalDate date,
+                                                List<LocalEvent> events,
+                                                EventIndicatorHelper eventHelper) {
+
+        LocalDate today = LocalDate.now();
+        boolean isToday = date.equals(today);
+        boolean isSunday = date.getDayOfWeek().getValue() == 7;
+        boolean hasEvents = events != null && !events.isEmpty();
+        boolean isOldDay = date.isBefore(today);
+
+        Log.d(TAG, String.format("Applying unified highlighting for %s: today=%s, sunday=%s, events=%s, old=%s",
+                date, isToday, isSunday, hasEvents, isOldDay));
+
+        // ✅ STEP 1: Reset to regular style (baseline)
+        setupRegularCardStyle(context, cardView);
+
+        // ✅ STEP 2: Apply styles in PRIORITY ORDER (lower priority first)
+
+        // Priority 3: Sunday (if not today and not events)
+        if (isSunday && !isToday && !hasEvents) {
+            setupSundayCardStyle(context, cardView);
+            Log.d(TAG, "Applied SUNDAY style");
+        }
+
+        // Priority 2: Events (if not today)
+        else if (hasEvents && !isToday) {
+            setupEventsCardStyle(context, eventHelper, cardView, events);
+            Log.d(TAG, "Applied EVENTS style");
+        }
+
+        // Priority 1: Today (ALWAYS wins)
+        if (isToday) {
+            setupTodayCardStyle(context, cardView);
+            Log.d(TAG, "Applied TODAY style (highest priority)");
+        }
+
+        // ✅ STEP 3: Apply old days overlay (if applicable)
+        if (isOldDay) {
+            applyOldDaysOverlay(cardView);
+            Log.d(TAG, "Applied OLD_DAYS overlay");
+        }
+    }
+
+    /**
+     * ✅ NUOVO: Metodo per applicare text highlighting unificato
+     * Gestisce colori del testo per domenica e today
+     */
+    public static void applyUnifiedTextHighlighting(Context context,
+                                                    LocalDate date,
+                                                    TextView... textViews) {
+
+        LocalDate today = LocalDate.now();
+        boolean isToday = date.equals(today);
+        boolean isSunday = date.getDayOfWeek().getValue() == 7;
+
+        for (TextView textView : textViews) {
+            if (textView == null) continue;
+
+            // ✅ Priority 1: Today text color
+            if (isToday) {
+                textView.setTextColor(getColorByThemeAttr(context,
+                        androidx.appcompat.R.attr.colorPrimary));
+                textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
+                Log.v(TAG, "Applied TODAY text style");
+            }
+            // ✅ Priority 2: Sunday text color (only if not today)
+            else if (isSunday) {
+                textView.setTextColor(ContextCompat.getColor(context,
+                        android.R.color.holo_red_dark));
+                textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
+                Log.v(TAG, "Applied SUNDAY text style");
+            }
+            // ✅ Default: Regular text
+            else {
+                textView.setTextColor(getColorByThemeAttr(context,
+                        com.google.android.material.R.attr.colorOnSurface));
+                textView.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
+            }
+        }
+    }
 
     /**
      * Setup card style for regular days
@@ -91,15 +190,14 @@ public final class HighlightingHelper {
     }
 
     /**
-     * Setup card style for today
+     * ✅ MIGLIORATO: Old days overlay (non sovrascrive, ma modifica)
      */
-    public static void setupOldDaysCardStyle(com.google.android.material.card.MaterialCardView cardView) {
-        cardView.setStrokeWidth(NORMAL_STROKE_WIDTH);
-        cardView.setCardElevation(NORMAL_ELEVATION);
-        cardView.setAlpha(OLD_DAYS_ALPHA); // initial 0.75
-
-        Log.v(TAG, "Old days card style applied");
+    private static void applyOldDaysOverlay(com.google.android.material.card.MaterialCardView cardView) {
+        // Non cambiare background o stroke, solo alpha
+        cardView.setAlpha(OLD_DAYS_ALPHA);
+        Log.v(TAG, "Old days overlay applied (alpha only)");
     }
+
 
     // ===================================== HELPER METHODS
 

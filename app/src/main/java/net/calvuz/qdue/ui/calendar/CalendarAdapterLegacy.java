@@ -114,29 +114,29 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
         ;
         CalendarDayViewHolder calendarHolder = (CalendarDayViewHolder) dayHolder;
 
-        // NEW: Setup long-click and selection support
+        // Setup long-click and selection support
         setupLongClickSupport(calendarHolder, dayItem, position);
 
-        // STEP 1: Reset visual state
-        resetCalendarCellState(calendarHolder); // ok
+        // ✅ STEP 1: Reset visual state
+        resetCalendarCellState(calendarHolder);
 
-        // STEP 2: Setup day number (top-left, smaller font)
-        setupDayNumber(calendarHolder, dayItem); // ok
+        // ✅ STEP 2: Setup content (non-styling)
+        setupDayNumber(calendarHolder, dayItem);
+        setupEventsIndicator(calendarHolder, dayItem);
+        setupShiftDisplay(calendarHolder, dayItem);
 
-        // STEP 3: Setup events indicator (top-right, dot with badge)
-        setupEventsIndicator(calendarHolder, dayItem); // ok
+        // ✅ STEP 3: Apply text highlighting UNIFICATO
+        LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
+        if (date != null) {
+            HighlightingHelper.applyUnifiedTextHighlighting(mContext, date,
+                    calendarHolder.tvDayNumber);
+        }
 
-        // STEP 4: Setup shift name and indicator (bottom-right area)
-        setupShiftDisplay(calendarHolder, dayItem); // ok
-
-        // STEP 5: Apply today/special day styling
-        applySpecialDayStyling(calendarHolder, dayItem); // ok
-
-        // STEP 6: Apply Sunday highlighting (NEW - missing from original)
-        applySundayHighlighting(calendarHolder, dayItem); // ok
-
-        // STEP 7: Apply background styling for better visual hierarchy
-        applyBackgroundStyling(holder, dayItem); // ok - the only one to touch cardview background
+        // ✅ STEP 4: Apply background highlighting UNIFICATO (UNA SOLA CHIAMATA)
+        if (date != null) {
+            List<LocalEvent> events = getEventsForDate(date);
+            HighlightingHelper.applyUnifiedHighlighting(mContext, holder, date, events, mEventHelper);
+        }
     }
 
     // ===========================================
@@ -218,17 +218,14 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
     /**
      * Reset all visual state for consistent appearance
      *
-     * @param holder ViewHolder to reset
+     * @param holder Calendar day view holder to reset
      */
     private void resetCalendarCellState(CalendarDayViewHolder holder) {
-        // Reset day number
+        // Reset content visibility and content
         if (holder.tvDayNumber != null) {
-            holder.tvDayNumber.setTextColor(getColorByThemeAttr(mContext,
-                    com.google.android.material.R.attr.colorOnSurface));
-            holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+            // NO text color reset - sarà gestito da applyUnifiedTextHighlighting
         }
 
-        // Reset events indicators
         if (holder.vEventsDot != null) {
             holder.vEventsDot.setVisibility(View.GONE);
         }
@@ -236,23 +233,14 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
             holder.tvEventsCount.setVisibility(View.GONE);
         }
 
-        // Reset shift elements
         if (holder.tvShiftName != null) {
             holder.tvShiftName.setVisibility(View.GONE);
-            holder.tvShiftName.setTextColor(getColorByThemeAttr(mContext,
-                    com.google.android.material.R.attr.colorOnSurface));
         }
         if (holder.vShiftIndicator != null) {
             holder.vShiftIndicator.setVisibility(View.INVISIBLE);
         }
 
-        // Reset card styling - IMPORTANT: Reset all MaterialCardView properties
-        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
-            com.google.android.material.card.MaterialCardView cardView =
-                    (com.google.android.material.card.MaterialCardView) holder.itemView;
-
-            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-        }
+        // ✅ NO card styling reset - sarà gestito da applyUnifiedHighlighting
     }
 
     /**
@@ -384,109 +372,6 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
             if (holder.vShiftIndicator != null) {
                 holder.vShiftIndicator.setVisibility(View.INVISIBLE);
             }
-        }
-    }
-
-    /**
-     * Apply Sunday highlighting - RED text and special background
-     * This restores the original calendar Sunday highlighting behavior
-     *
-     * @param holder  ViewHolder to setup
-     * @param dayItem Day item data to bind
-     */
-    private void applySundayHighlighting(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null) return;
-
-        LocalDate date = dayItem.day.getLocalDate();
-
-        // Check if this is Sunday (DayOfWeek.SUNDAY = 7)
-        if (date.getDayOfWeek().getValue() == 7) {
-            // Apply red text to day number for Sunday
-            if (holder.tvDayNumber != null) {
-                holder.tvDayNumber.setTextColor(
-                        ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-//                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-            }
-
-            // Apply red color to shift name if present
-            if (holder.tvShiftName != null && holder.tvShiftName.getVisibility() == View.VISIBLE) {
-                holder.tvShiftName.setTextColor(
-                        ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
-            }
-        }
-    }
-
-    /**
-     * Apply special styling for today and other important days
-     *
-     * @param holder  ViewHolder to setup
-     * @param dayItem Day item data to bind
-     */
-    private void applySpecialDayStyling(CalendarDayViewHolder holder, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null) return;
-
-        LocalDate date = dayItem.day.getLocalDate();
-        LocalDate today = LocalDate.now();
-
-        if (date.equals(today)) {
-            // Today styling - highlight day number and border
-            if (holder.tvDayNumber != null) {
-                holder.tvDayNumber.setTextColor(getColorByThemeAttr(mContext,
-                        androidx.appcompat.R.attr.colorPrimary));
-//                holder.tvDayNumber.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-            }
-        } else if (date.isBefore(today)) {
-            // Past days - slightly faded
-            HighlightingHelper.setupOldDaysCardStyle((MaterialCardView) holder.itemView);
-        }
-    }
-
-    /**
-     * Apply background styling for visual hierarchy
-     * Provides subtle backgrounds for better calendar readability
-     *
-     * @param cardView MaterialCardView to setup
-     * @param dayItem  Day item data to bind
-     */
-    private void applyBackgroundStyling(MaterialCardView cardView, SharedViewModels.DayItem dayItem) {
-        if (dayItem.day == null) return;
-
-        LocalDate date = dayItem.day.getLocalDate();
-        LocalDate today = LocalDate.now();
-
-        // NUOVO: Controllare se ci sono eventi per questa data
-        List<LocalEvent> events = getEventsForDate(date);
-
-        if (date.equals(today)) {
-            // Today: Special background with elevation
-            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-        }
-        if (date.getDayOfWeek().getValue() == 7) { // Sunday
-            // Sunday: Light background highlighting
-            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-        }
-        if (!events.isEmpty()) {
-            // Events: colored background
-            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
-        }
-//        if (date.equals(today)) {
-//            // Today: Special background with elevation
-//            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-//        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
-//            // Sunday: Light background highlighting
-//            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-//        } else if (!events.isEmpty()) {
-//            // Events: colored background
-//            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
-//        }
-//        else {
-//            // Regular days: Standard subtle background
-//            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-//        }
-
-        if (date.isBefore(today)) {
-            // Past days - slightly faded
-            HighlightingHelper.setupOldDaysCardStyle(cardView);
         }
     }
 
