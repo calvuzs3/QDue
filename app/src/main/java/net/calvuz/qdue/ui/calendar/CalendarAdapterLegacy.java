@@ -460,13 +460,25 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
         if (date.equals(today)) {
             // Today: Special background with elevation
             HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
+        }
+        if (date.getDayOfWeek().getValue() == 7) { // Sunday
             // Sunday: Light background highlighting
             HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-        } else if (!events.isEmpty()) {
+        }
+        if (!events.isEmpty()) {
             // Events: colored background
             HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
         }
+//        if (date.equals(today)) {
+//            // Today: Special background with elevation
+//            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
+//        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
+//            // Sunday: Light background highlighting
+//            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
+//        } else if (!events.isEmpty()) {
+//            // Events: colored background
+//            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
+//        }
 //        else {
 //            // Regular days: Standard subtle background
 //            HighlightingHelper.setupRegularCardStyle(mContext, cardView);

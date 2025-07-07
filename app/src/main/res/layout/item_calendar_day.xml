@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
-    android:layout_margin="@dimen/spacing_xxs"
+    android:layout_height="80dp"
+    android:layout_marginVertical="@dimen/spacing_s"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
@@ -23,18 +23,21 @@
         <!-- 1. Numero giorno - angolo alto sinistra, carattere più piccolo -->
         <TextView
             android:id="@+id/tv_day_number"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginStart="@dimen/spacing_xxs"
             android:layout_marginTop="@dimen/spacing_xxs"
-            android:fontFamily="@font/lato_black"
-            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-            android:textColor="?attr/colorOnSurface"
+            android:backgroundTint="?attr/colorOnSecondaryFixedVariant"
+            android:layout_alignWithParentIfMissing="true"
+            android:textAppearance="@style/TextAppearance.QDue.LabelMedium"
+            android:textColor="?attr/colorOnSecondaryFixedVariant"
             android:textSize="@dimen/text_number_size"
-            android:textStyle="bold"
             tools:text="15" />
+<!--        android:textStyle="bold"-->
+<!--        android:fontFamily="@font/lato_black"-->
+
 
         <!-- 2. Indicatore eventi - alto a destra, dot con badge numero -->
         <!-- Container largo mezza cella con 2dp padding -->
@@ -75,7 +78,7 @@
                 android:id="@+id/tv_events_count"
                 android:layout_width="@dimen/spacing_m"
                 android:layout_height="@dimen/spacing_m"
-                android:layout_gravity="top|end"
+                android:layout_gravity="top|center_horizontal"
                 android:background="@drawable/events_count_badge"
                 android:gravity="center"
                 android:textColor="?attr/colorOnPrimary"
@@ -93,26 +96,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/v_shift_indicator"
+            android:layout_below="@+id/events_container"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/spacing_xs"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:layout_marginEnd="@dimen/spacing_s"
             android:layout_marginBottom="@dimen/spacing_xxs"
-            android:fontFamily="@font/lato_black"
             android:gravity="center"
             android:textColor="?attr/colorOnSurface"
             android:textSize="@dimen/text_shift_name_size"
-            android:textStyle="bold"
             android:visibility="gone"
             tools:text="M"
             tools:visibility="visible" />
+<!--        android:fontFamily="@font/lato_black"-->
+<!--        android:textStyle="bold"-->
+
 
         <!-- 4. Indicatore turno - come prima, in basso -->
         <View
             android:id="@+id/v_shift_indicator"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/spacing_s"
+            android:layout_height="@dimen/spacing_sm"
             android:layout_alignParentBottom="true"
             android:layout_marginHorizontal="@dimen/spacing_xs"
-            android:layout_marginBottom="@dimen/spacing_xxs"
+            android:layout_marginVertical="@dimen/spacing_xxxs"
             android:background="@drawable/shift_indicator_rounded"
             android:visibility="invisible"
             tools:background="?attr/colorPrimary"

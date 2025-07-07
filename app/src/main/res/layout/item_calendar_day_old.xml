@@ -63,9 +63,9 @@
             android:layout_marginStart="4dp"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?attr/colorOnSurface"
-            android:textStyle="bold"
             android:gravity="center"
             tools:text="15" />
+<!--        android:textStyle="bold"-->
 
         <!-- Shift indicator (below day number) -->
         <TextView

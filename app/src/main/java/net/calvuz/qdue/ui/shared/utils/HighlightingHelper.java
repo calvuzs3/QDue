@@ -24,7 +24,7 @@ public final class HighlightingHelper {
     private static final float SUNDAY_ELEVATION = 2f;
     private static final float EVENTS_ELEVATION = 2f;
 
-    private static final float OLD_DAYS_ALPHA =0.75f;
+    private static final float OLD_DAYS_ALPHA = 0.75f;
 
     /**
      * Setup card style for regular days
@@ -61,8 +61,10 @@ public final class HighlightingHelper {
     public static void setupSundayCardStyle(Context context, com.google.android.material.card.MaterialCardView cardView) {
         cardView.setStrokeWidth(NORMAL_STROKE_WIDTH);
         cardView.setCardElevation(SUNDAY_ELEVATION);
-        cardView.setCardBackgroundColor(getColorByThemeAttr(context,
-                com.google.android.material.R.attr.colorSurfaceVariant));
+        cardView.setCardBackgroundColor(
+                blendEventColorWithWhite(
+                        getColorByThemeAttr(context,
+                                com.google.android.material.R.attr.colorSurfaceVariant)));
         cardView.setStrokeColor(
                 ContextCompat.getColor(context, android.R.color.holo_red_light));
 
@@ -122,8 +124,8 @@ public final class HighlightingHelper {
         int eventBlue = android.graphics.Color.blue(eventColor);
 
         // Blend con bianco (84% bianco, 16% evento) - stessi valori che funzionano in DaysList
-        float eventWeight = 0.16f;
-        float whiteWeight = 0.84f;
+        float eventWeight = 0.10f;
+        float whiteWeight = 0.90f;
 
         int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
         int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);

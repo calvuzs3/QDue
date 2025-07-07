@@ -127,6 +127,8 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
                 Log.w(TAG, "ViewHolder does not support expansion - check layout structure");
             }
 
+            // The order is IMPORTANT
+
             // Setup expansion-aware click handling
             setupExpansionAwareClicks(dayslistHolder, dayItem, position);
 
@@ -148,6 +150,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
             setupShiftDisplay(dayslistHolder, dayItem);
 
             // STEP 5: Apply today/special day styling
+            applySundaySpecialStyling(dayslistHolder, dayItem);
 
             // STEP 6. Apply background styling (improved)
             //applyMaterialBackground(dayslistHolder, dayItem);
@@ -464,19 +467,37 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         // NUOVO: Controllare se ci sono eventi per questa data
         List<LocalEvent> events = getEventsForDate(date);
 
+        // Regular days: Standard subtle background
+        HighlightingHelper.setupRegularCardStyle(mContext, cardView);
+
         if (date.equals(today)) {
             // Today: Special background with elevation
             HighlightingHelper.setupTodayCardStyle(mContext, cardView);
-        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
+        }
+        if (date.getDayOfWeek().getValue() == 7) { // Sunday
             // Sunday: Light background highlighting
             HighlightingHelper.setupSundayCardStyle(mContext, cardView);
-        } else if (!events.isEmpty()) {
+        }
+        if (!events.isEmpty()) {
             // Events: colored background
             HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
-        } else {
+        }
             // Regular days: Standard subtle background
             HighlightingHelper.setupRegularCardStyle(mContext, cardView);
-        }
+
+//        if (date.equals(today)) {
+//            // Today: Special background with elevation
+//            HighlightingHelper.setupTodayCardStyle(mContext, cardView);
+//        } else if (date.getDayOfWeek().getValue() == 7) { // Sunday
+//            // Sunday: Light background highlighting
+//            HighlightingHelper.setupSundayCardStyle(mContext, cardView);
+//        } else if (!events.isEmpty()) {
+//            // Events: colored background
+//            HighlightingHelper.setupEventsCardStyle(mContext, mEventHelper, cardView, events);
+//        } else {
+//            // Regular days: Standard subtle background
+//            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
+//        }
 
         if (date.isBefore(today)) {
             // Past days - slightly faded
@@ -499,11 +520,6 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
         LocalDate today = LocalDate.now();
 
         List<LocalEvent> events = date != null ? getEventsForDate(date) : new ArrayList<>();
-
-        // Apply special SUNDAY styling ONLY if it's Sunday
-        if (dayItem.isSunday()) {
-//            applySundaySpecialStyling(holder, dayItem);
-        }
 
         // Apply TODAY STYLING
         if (dayItem.isToday()) {
@@ -572,16 +588,30 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
     private void applySundaySpecialStyling(DayslistDayViewHolder holder, SharedViewModels.DayItem dayItem) {
         if (!dayItem.isSunday()) return;
 
-        // STEP 6 FIX: Red text for Sunday day number
+        // Red text for Sunday day number
         if (holder.tday != null) {
             holder.tday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
             holder.tday.setTypeface(holder.tday.getTypeface(), android.graphics.Typeface.BOLD);
         }
 
-        // STEP 6 FIX: Red text for Sunday day name
+        // Red text for Sunday day name
         if (holder.twday != null) {
             holder.twday.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
             holder.twday.setTypeface(holder.twday.getTypeface(), android.graphics.Typeface.BOLD);
+        }
+
+        for (TextView shiftText : holder.shiftTexts){
+            // Red text for Sunday day name
+            if (shiftText != null) {
+                shiftText.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
+                shiftText.setTypeface(shiftText.getTypeface(), android.graphics.Typeface.BOLD);
+            }
+        }
+
+        // Red text for Sunday day name
+        if (holder.ttR != null) {
+            holder.ttR.setTextColor(ContextCompat.getColor(mContext, android.R.color.holo_red_dark));
+            holder.ttR.setTypeface(holder.ttR.getTypeface(), android.graphics.Typeface.BOLD);
         }
     }
 

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="2dp"
+
     android:checkable="true"
     android:clickable="true"
     android:focusable="true"
@@ -32,14 +32,14 @@
 
             <TextView
                 android:id="@+id/tday"
-                android:layout_width="30dp"
+                android:layout_width="35dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:minWidth="18dp"
-                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
+                android:lineHeight="@dimen/spacing_ml"
                 tools:text="15" />
 
             <TextView
@@ -48,8 +48,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
                 android:layout_weight="6"
-                android:paddingStart="8dp"
-                android:textColor="?attr/colorOnSurface"
+                android:paddingStart="@dimen/spacing_s"
+                android:paddingEnd="@dimen/spacing_xxxs"
                 android:textSize="14sp"
                 tools:text="LUN" />
 
@@ -61,8 +61,9 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:minWidth="35dp"
+                android:lineHeight="@dimen/spacing_ml"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 tools:text="AB" />
 
             <TextView
@@ -73,8 +74,9 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:minWidth="35dp"
+                android:lineHeight="@dimen/spacing_ml"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 tools:text="CD" />
 
             <TextView
@@ -85,8 +87,9 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:minWidth="35dp"
+                android:lineHeight="@dimen/spacing_ml"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 tools:text="EF" />
 
             <TextView
@@ -97,14 +100,15 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:minWidth="35dp"
+                android:lineHeight="@dimen/spacing_ml"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 tools:text="GH" />
 
             <!-- Events indicator - SEMPLICE come prima -->
             <TextView
                 android:id="@+id/tv_events_indicator"
-                android:layout_width="@dimen/spacing_l"
+                android:layout_width="@dimen/spacing_ml"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginStart="@dimen/spacing_s"
@@ -112,9 +116,9 @@
                 android:background="@drawable/events_indicator_background"
                 android:gravity="center_horizontal|center_vertical"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 android:visibility="gone"
-                tools:text="2ev"
+                tools:text="2"
                 tools:visibility="visible" />
 
         </LinearLayout>

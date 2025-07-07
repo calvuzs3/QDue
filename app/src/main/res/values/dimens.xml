@@ -148,7 +148,7 @@
     <!-- Line spacing -->
     <dimen name="text_line_spacing">4dp</dimen>
     <dimen name="text_badge_size">10dp</dimen>
-    <dimen name="text_number_size">16dp</dimen>
+    <dimen name="text_number_size">16sp</dimen>
     <dimen name="text_shift_name_size">24dp</dimen>
 
     <!-- Icon and text spacing -->
@@ -205,5 +205,6 @@
     <dimen name="drawer_header_icon_size">48dp</dimen>
     <dimen name="drawer_header_icon_margin">12dp</dimen>
     <dimen name="drawer_header_icon_padding">8dp</dimen>
+    <dimen name="spacing_ml">20dp</dimen>
 
 </resources>
