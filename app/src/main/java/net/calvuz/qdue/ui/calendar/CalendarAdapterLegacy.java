@@ -111,13 +111,12 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
         Log.v(TAG, "bindDay: " + dayItem.day.getLocalDate());
 
         MaterialCardView holder = dayHolder.mView;
-        ;
         CalendarDayViewHolder calendarHolder = (CalendarDayViewHolder) dayHolder;
 
         // Setup long-click and selection support
         setupLongClickSupport(calendarHolder, dayItem, position);
 
-        // ✅ STEP 1: Reset visual state
+        // ✅ STEP 1: Reset visual state (SOLO ELEMENTI NON-TEXT)
         resetCalendarCellState(calendarHolder);
 
         // ✅ STEP 2: Setup content (non-styling)
@@ -125,18 +124,25 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
         setupEventsIndicator(calendarHolder, dayItem);
         setupShiftDisplay(calendarHolder, dayItem);
 
-        // ✅ STEP 3: Apply text highlighting UNIFICATO
+        // ✅ STEP 3: Apply text highlighting UNIFICATO (DOPO il setup content)
         LocalDate date = dayItem.day != null ? dayItem.day.getLocalDate() : null;
         if (date != null) {
-            HighlightingHelper.applyUnifiedTextHighlighting(mContext, date,
-                    calendarHolder.tvDayNumber);
+            // ✅ IMPORTANTE: Includere anche tvShiftName se visibile
+            if (calendarHolder.tvShiftName != null && calendarHolder.tvShiftName.getVisibility() == View.VISIBLE) {
+                HighlightingHelper.applyUnifiedTextHighlighting(mContext, date,
+                        calendarHolder.tvDayNumber, calendarHolder.tvShiftName);
+            } else {
+                HighlightingHelper.applyUnifiedTextHighlighting(mContext, date,
+                        calendarHolder.tvDayNumber);
+            }
         }
 
-        // ✅ STEP 4: Apply background highlighting UNIFICATO (UNA SOLA CHIAMATA)
+        // ✅ STEP 4: Apply background highlighting UNIFICATO
         if (date != null) {
             List<LocalEvent> events = getEventsForDate(date);
             HighlightingHelper.applyUnifiedHighlighting(mContext, holder, date, events, mEventHelper);
         }
+
     }
 
     // ===========================================
@@ -221,11 +227,9 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
      * @param holder Calendar day view holder to reset
      */
     private void resetCalendarCellState(CalendarDayViewHolder holder) {
-        // Reset content visibility and content
-        if (holder.tvDayNumber != null) {
-            // NO text color reset - sarà gestito da applyUnifiedTextHighlighting
-        }
+        // ❌ NON RESETTARE i colori del testo - lasciare che HighlightingHelper li gestisca
 
+        // Reset events indicators
         if (holder.vEventsDot != null) {
             holder.vEventsDot.setVisibility(View.GONE);
         }
@@ -233,14 +237,21 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
             holder.tvEventsCount.setVisibility(View.GONE);
         }
 
+        // Reset shift elements (visibility only, not colors)
         if (holder.tvShiftName != null) {
             holder.tvShiftName.setVisibility(View.GONE);
+            // ❌ NON FARE: holder.tvShiftName.setTextColor(...)
         }
         if (holder.vShiftIndicator != null) {
             holder.vShiftIndicator.setVisibility(View.INVISIBLE);
         }
 
-        // ✅ NO card styling reset - sarà gestito da applyUnifiedHighlighting
+        // Reset card styling
+        if (holder.itemView instanceof com.google.android.material.card.MaterialCardView) {
+            com.google.android.material.card.MaterialCardView cardView =
+                    (com.google.android.material.card.MaterialCardView) holder.itemView;
+            HighlightingHelper.setupRegularCardStyle(mContext, cardView);
+        }
     }
 
     /**

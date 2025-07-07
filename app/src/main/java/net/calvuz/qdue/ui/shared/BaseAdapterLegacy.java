@@ -50,11 +50,11 @@ import java.util.Map;
  * Features:
  * - Color theme support with cached theme colors
  * - User team highlighting
- * - Special day highlighting (today, Sunday)
  * - Extensible view type system for subclass customization
+ * - Uses HighlightingHelper for unified styling
  *
  * @author Updated with English comments and JavaDoc
- * @version 2.0
+ * @version 2.1 - Removed obsolete highlighting methods
  * @since 2025
  */
 public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -74,12 +74,8 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
     protected HalfTeam mUserHalfTeam;
     protected final int mNumShifts;
 
-    // CACHED THEME COLORS
+    // CACHED THEME COLORS (reduced set - highlighting now handled by HighlightingHelper)
     protected int mCachedNormalTextColor = 0;
-    protected int mCachedSundayTextColor = 0;
-    protected int mCachedTodayBackgroundColor = 0;
-    protected int mCachedUserShiftBackgroundColor = 0;
-    protected int mCachedUserShiftTextColor = 0;
 
     /**
      * Constructs a new BaseAdapterLegacy with the specified parameters.
@@ -102,15 +98,11 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
 
     /**
      * Initializes the color cache by retrieving theme colors.
-     * This optimization prevents repeated theme color lookups during binding.
+     * Reduced cache since HighlightingHelper handles most colors now.
      */
     protected void initializeColorCache() {
         if (mCachedNormalTextColor == 0) {
             mCachedNormalTextColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface);
-            mCachedSundayTextColor = getColorByThemeAttr(mContext, R.attr.colorOnSundayBackground);
-            mCachedTodayBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorTodayBackground);
-            mCachedUserShiftBackgroundColor = getColorByThemeAttr(mContext, R.attr.colorUserShiftBackground);
-            mCachedUserShiftTextColor = getColorByThemeAttr(mContext, R.attr.colorOnUserShift);
         }
     }
 
@@ -288,7 +280,7 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         return new DayViewHolder((MaterialCardView) view);
     }
 
-    // ===========================================================
+    // ==================== BINDING METHODS ====================
 
     /**
      * Binds data to a month header ViewHolder.
@@ -352,8 +344,6 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         }
     }
 
-// ===========================================================
-
     /**
      * Binds data to a loading indicator ViewHolder.
      *
@@ -377,13 +367,8 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
     }
 
     /**
-     * Binds data to a day ViewHolder with complete shift information.
-     * This is the main binding method that handles:
-     * - Day number and weekday name
-     * - Shift team assignments
-     * - Rest team information
-     * - User team highlighting
-     * - Special day colors (today, Sunday)
+     * ✅ SIMPLIFIED: Binds data to a day ViewHolder with basic content only.
+     * All highlighting is now handled by subclasses using HighlightingHelper.
      *
      * @param holder   ViewHolder to bind data to
      * @param dayItem  Day item data to bind
@@ -394,8 +379,6 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         if (day == null) return;
 
         android.content.res.Resources r = mContext.getResources();
-        boolean isSunday = dayItem.isSunday();
-        boolean isToday = dayItem.isToday();
 
         // Set day number
         holder.tday.setText(r.getString(R.string.str_scheme_num, day.getDayOfMonth()));
@@ -404,18 +387,15 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
 
         // Set shift texts
-        bindShiftsToDay(holder, day); // No background implied
+        bindShiftsToDay(holder, day);
 
         // Set rest teams text
         String restTeams = day.getOffWorkHalfTeamsAsString();
         holder.ttR.setText(restTeams != null && !restTeams.isEmpty() ?
                 r.getString(R.string.str_scheme, restTeams) : "");
 
-//        // Find and highlight user shift
-//        highlightUserShift(holder, day);
-//
-//        // Apply special day colors (today and Sunday)
-//        applySpecialDayColors(holder, isToday, isSunday);
+        // ✅ NOTE: All highlighting (today, Sunday, user shift, events) is now handled
+        // by subclasses using HighlightingHelper.applyUnifiedHighlighting()
 
         if (DEBUG_BASEADAPTER) {
             Log.d("DEBUG", "Day date: " + dayItem.day.getDate());
@@ -425,7 +405,7 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         }
     }
 
-// ==================== HELPER METHODS FOR BINDING ====================
+    // ==================== HELPER METHODS FOR BINDING ====================
 
     /**
      * Binds shift team information to the day ViewHolder.
@@ -451,7 +431,7 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
         }
     }
 
-// ===========================================================
+    // ==================== UTILITY METHODS ====================
 
     /**
      * Get seasonal or month-appropriate icon with fallback.
@@ -503,178 +483,6 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
             return fallbackResource;
         }
     }
-
-    /**
-     * Enhanced ViewHolder for month headers with self-managed animations.
-     * Encapsulates animation logic within the ViewHolder for better architecture.
-     */
-    public static class EnhancedMonthHeaderViewHolder extends MonthHeaderViewHolder {
-        public final TextView tvYear;
-        public final TextView tvDaysCount;
-        public final ImageView ivMonthIcon;
-
-        // Store animator reference directly in ViewHolder
-        private android.animation.ObjectAnimator currentAnimator;
-        private boolean isAnimating = false;
-
-        public EnhancedMonthHeaderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvYear = itemView.findViewById(R.id.tv_year);
-            tvDaysCount = itemView.findViewById(R.id.tv_days_count);
-            ivMonthIcon = itemView.findViewById(R.id.iv_month_icon);
-        }
-
-        /**
-         * Start subtle pulsing animation for current month.
-         * Creates a gentle alpha animation that pulses the month icon.
-         */
-        public void startAnimation() {
-            if (isAnimating) return; // Already animating
-
-            stopAnimation(); // Ensure clean state
-
-            try {
-                currentAnimator = android.animation.ObjectAnimator.ofFloat(
-                        ivMonthIcon, "alpha", 1.0f, 0.7f);
-                currentAnimator.setDuration(1500); // Slower, more subtle
-                currentAnimator.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
-                currentAnimator.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
-                currentAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
-
-                // Add listener to track animation state
-                currentAnimator.addListener(new android.animation.AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(android.animation.Animator animation) {
-                        isAnimating = true;
-                    }
-
-                    @Override
-                    public void onAnimationEnd(android.animation.Animator animation) {
-                        isAnimating = false;
-                    }
-
-                    @Override
-                    public void onAnimationCancel(android.animation.Animator animation) {
-                        isAnimating = false;
-                    }
-                });
-
-                currentAnimator.start();
-
-            } catch (Exception e) {
-                // Log error but don't crash
-                Log.e("EnhancedMonthHeader", "Error starting animation: " + e.getMessage());
-                isAnimating = false;
-            }
-        }
-
-        /**
-         * Stop animation and cleanup resources.
-         * Ensures proper cleanup to prevent memory leaks.
-         */
-        public void stopAnimation() {
-            try {
-                if (currentAnimator != null) {
-                    currentAnimator.cancel();
-                    currentAnimator = null;
-                }
-
-                // Clear any old-style animations as well
-                ivMonthIcon.clearAnimation();
-
-                // Reset to normal state
-                ivMonthIcon.setAlpha(1.0f);
-                isAnimating = false;
-
-            } catch (Exception e) {
-                // Log error but don't crash
-                Log.e("EnhancedMonthHeader", "Error stopping animation: " + e.getMessage());
-                isAnimating = false;
-            }
-        }
-
-        /**
-         * Check if currently animating.
-         * Useful for preventing multiple animations.
-         */
-        public boolean isAnimating() {
-            return isAnimating;
-        }
-
-        /**
-         * Cleanup when ViewHolder is recycled.
-         * Called automatically by RecyclerView.
-         */
-        @Override
-        protected void finalize() throws Throwable {
-            stopAnimation(); // Ensure cleanup
-            super.finalize();
-        }
-    }
-
-// ===========================================================
-
-    /**
-     * Highlights the user's shift with special background and text colors.
-     * Finds which shift the user's team is assigned to and applies highlighting.
-     *
-     * @param holder ViewHolder containing shift TextViews
-     * @param day    Day to search for user's team
-     */
-    protected void highlightUserShift(DayViewHolder holder, Day day) {
-        int userPosition = -1;
-        if (mUserHalfTeam != null) {
-            userPosition = day.getInWichTeamIsHalfTeam(mUserHalfTeam);
-        }
-
-        if (userPosition >= 0 && userPosition < mNumShifts && holder.shiftTexts[userPosition] != null) {
-            holder.shiftTexts[userPosition].setBackgroundColor(mCachedUserShiftBackgroundColor);
-            holder.shiftTexts[userPosition].setTextColor(mCachedUserShiftTextColor);
-        }
-    }
-
-    /**
-     * Applies special color schemes for today and Sunday.
-     *
-     * @param holder   ViewHolder to apply colors to
-     * @param isToday  Whether this day is today
-     * @param isSunday Whether this day is Sunday
-     */
-    protected void applySpecialDayColors(DayViewHolder holder, boolean isToday, boolean isSunday) {
-        if (isToday) {
-//            holder.mView.setBackgroundColor(mCachedTodayBackgroundColor);
-            setAllDayTextColors(holder, mCachedNormalTextColor);
-        } else if (isSunday) {
-            setAllDayTextColors(holder, mCachedSundayTextColor);
-        } else {
-            setAllDayTextColors(holder, mCachedNormalTextColor);
-        }
-    }
-
-    /**
-     * Sets text color for all day-related TextViews.
-     * Preserves highlighting for user shifts.
-     *
-     * @param holder ViewHolder containing TextViews
-     * @param color  Color to apply
-     */
-    protected void setAllDayTextColors(DayViewHolder holder, int color) {
-        holder.tday.setTextColor(color);
-        holder.twday.setTextColor(color);
-        holder.ttR.setTextColor(color);
-
-        for (TextView tv : holder.shiftTexts) {
-            if (tv != null) {
-                // Don't change color of highlighted shifts
-                if (tv.getBackground() == null ||
-                        ((android.graphics.drawable.ColorDrawable) tv.getBackground()).getColor() == Color.TRANSPARENT) {
-                    tv.setTextColor(color);
-                }
-            }
-        }
-    }
-
-    // ==================== UTILITY METHODS ====================
 
     /**
      * Finds the adapter position for a specific date.
@@ -799,8 +607,117 @@ public abstract class BaseAdapterLegacy extends RecyclerView.Adapter<RecyclerVie
     }
 
     /**
+     * Enhanced ViewHolder for month headers with self-managed animations.
+     * Encapsulates animation logic within the ViewHolder for better architecture.
+     */
+    public static class EnhancedMonthHeaderViewHolder extends MonthHeaderViewHolder {
+        public final TextView tvYear;
+        public final TextView tvDaysCount;
+        public final ImageView ivMonthIcon;
+
+        // Store animator reference directly in ViewHolder
+        private android.animation.ObjectAnimator currentAnimator;
+        private boolean isAnimating = false;
+
+        public EnhancedMonthHeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvYear = itemView.findViewById(R.id.tv_year);
+            tvDaysCount = itemView.findViewById(R.id.tv_days_count);
+            ivMonthIcon = itemView.findViewById(R.id.iv_month_icon);
+        }
+
+        /**
+         * Start subtle pulsing animation for current month.
+         * Creates a gentle alpha animation that pulses the month icon.
+         */
+        public void startAnimation() {
+            if (isAnimating) return; // Already animating
+
+            stopAnimation(); // Ensure clean state
+
+            try {
+                currentAnimator = android.animation.ObjectAnimator.ofFloat(
+                        ivMonthIcon, "alpha", 1.0f, 0.7f);
+                currentAnimator.setDuration(1500); // Slower, more subtle
+                currentAnimator.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
+                currentAnimator.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
+                currentAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+
+                // Add listener to track animation state
+                currentAnimator.addListener(new android.animation.AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(android.animation.Animator animation) {
+                        isAnimating = true;
+                    }
+
+                    @Override
+                    public void onAnimationEnd(android.animation.Animator animation) {
+                        isAnimating = false;
+                    }
+
+                    @Override
+                    public void onAnimationCancel(android.animation.Animator animation) {
+                        isAnimating = false;
+                    }
+                });
+
+                currentAnimator.start();
+
+            } catch (Exception e) {
+                // Log error but don't crash
+                Log.e("EnhancedMonthHeader", "Error starting animation: " + e.getMessage());
+                isAnimating = false;
+            }
+        }
+
+        /**
+         * Stop animation and cleanup resources.
+         * Ensures proper cleanup to prevent memory leaks.
+         */
+        public void stopAnimation() {
+            try {
+                if (currentAnimator != null) {
+                    currentAnimator.cancel();
+                    currentAnimator = null;
+                }
+
+                // Clear any old-style animations as well
+                ivMonthIcon.clearAnimation();
+
+                // Reset to normal state
+                ivMonthIcon.setAlpha(1.0f);
+                isAnimating = false;
+
+            } catch (Exception e) {
+                // Log error but don't crash
+                Log.e("EnhancedMonthHeader", "Error stopping animation: " + e.getMessage());
+                isAnimating = false;
+            }
+        }
+
+        /**
+         * Check if currently animating.
+         * Useful for preventing multiple animations.
+         */
+        public boolean isAnimating() {
+            return isAnimating;
+        }
+
+        /**
+         * Cleanup when ViewHolder is recycled.
+         * Called automatically by RecyclerView.
+         */
+        @Override
+        protected void finalize() throws Throwable {
+            stopAnimation(); // Ensure cleanup
+            super.finalize();
+        }
+    }
+
+    /**
      * ViewHolder for day items displaying shift information.
      * Contains TextViews for day number, day name, shift teams, and rest teams.
+     * ✅ SIMPLIFIED: No longer handles highlighting - that's done by subclasses.
      */
     public class DayViewHolder extends RecyclerView.ViewHolder {
         /**

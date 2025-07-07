@@ -2,7 +2,7 @@
 buildscript {
     ext {
         APP_REVISION = 6
-        APP_VERSION = '1.6.11'
+        APP_VERSION = '1.6.12'
 
         // release 1.4.1
 //        APP_REVISION = 5

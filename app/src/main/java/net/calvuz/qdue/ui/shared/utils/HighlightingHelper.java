@@ -16,16 +16,6 @@ import java.util.List;
 
 public final class HighlightingHelper {
 
-    /*
-    PRIORITÀ DEFINITA (dal più importante al meno importante):
-    1. TODAY (massima priorità)
-    2. EVENTS (media priorità)
-    3. SUNDAY (bassa priorità)
-    4. OLD_DAYS (overlay finale)
-    5. REGULAR (default)
-    */
-
-
     private static final String TAG = "HIGHLIGHTING";
 
     private static final int NORMAL_STROKE_WIDTH = 2;
@@ -36,11 +26,10 @@ public final class HighlightingHelper {
     private static final float SUNDAY_ELEVATION = 2f;
     private static final float EVENTS_ELEVATION = 2f;
 
-    private static final float OLD_DAYS_ALPHA = 0.75f;
+    private static final float OLD_DAYS_ALPHA = 0.6f;
 
     /**
-     * ✅ NUOVO: Metodo unificato per applicare tutti gli highlighting
-     * Gestisce automaticamente le priorità e evita conflitti
+     * ✅ SOLUTION: Force refresh universale per tutti i giorni
      */
     public static void applyUnifiedHighlighting(Context context,
                                                 com.google.android.material.card.MaterialCardView cardView,
@@ -54,75 +43,125 @@ public final class HighlightingHelper {
         boolean hasEvents = events != null && !events.isEmpty();
         boolean isOldDay = date.isBefore(today);
 
-        Log.d(TAG, String.format("Applying unified highlighting for %s: today=%s, sunday=%s, events=%s, old=%s",
+        Log.d(TAG, String.format("Highlighting %s: today=%s, sunday=%s, events=%s, old=%s",
                 date, isToday, isSunday, hasEvents, isOldDay));
 
         // ✅ STEP 1: Reset to regular style (baseline)
         setupRegularCardStyle(context, cardView);
 
-        // ✅ STEP 2: Apply styles in PRIORITY ORDER (lower priority first)
+        // ✅ STEP 2: Apply BACKGROUND styles in PRIORITY ORDER
 
-        // Priority 3: Sunday (if not today and not events)
+        // Priority 3: Sunday background (only if no events and not today)
         if (isSunday && !isToday && !hasEvents) {
             setupSundayCardStyle(context, cardView);
-            Log.d(TAG, "Applied SUNDAY style");
+            Log.d(TAG, "Applied SUNDAY background");
         }
 
-        // Priority 2: Events (if not today)
+        // Priority 2: Events background (if not today)
         else if (hasEvents && !isToday) {
             setupEventsCardStyle(context, eventHelper, cardView, events);
-            Log.d(TAG, "Applied EVENTS style");
+            Log.d(TAG, "Applied EVENTS background");
         }
 
-        // Priority 1: Today (ALWAYS wins)
+        // Priority 1: Today background (ALWAYS wins)
         if (isToday) {
             setupTodayCardStyle(context, cardView);
-            Log.d(TAG, "Applied TODAY style (highest priority)");
+            Log.d(TAG, "Applied TODAY background");
         }
 
-        // ✅ STEP 3: Apply old days overlay (if applicable)
+        // ✅ STEP 3: Apply overlay and UNIVERSAL force refresh
         if (isOldDay) {
-            applyOldDaysOverlay(cardView);
+            // Old days: alpha overlay
+            cardView.setAlpha(OLD_DAYS_ALPHA);
             Log.d(TAG, "Applied OLD_DAYS overlay");
+        } else {
+            // ✅ SOLUTION: Force refresh for ALL other days (future + today)
+            applyUniversalRefresh(cardView);
+            Log.d(TAG, "Applied UNIVERSAL refresh");
         }
     }
 
     /**
-     * ✅ NUOVO: Metodo per applicare text highlighting unificato
-     * Gestisce colori del testo per domenica e today
+     * ✅ SAME: Text highlighting (già funziona)
      */
     public static void applyUnifiedTextHighlighting(Context context,
                                                     LocalDate date,
                                                     TextView... textViews) {
 
+        if (textViews == null || textViews.length == 0) {
+            return;
+        }
+
         LocalDate today = LocalDate.now();
         boolean isToday = date.equals(today);
         boolean isSunday = date.getDayOfWeek().getValue() == 7;
 
-        for (TextView textView : textViews) {
+        Log.d(TAG, String.format("Text highlighting %s: today=%s, sunday=%s, views=%d",
+                date, isToday, isSunday, textViews.length));
+
+        for (int i = 0; i < textViews.length; i++) {
+            TextView textView = textViews[i];
             if (textView == null) continue;
 
             // ✅ Priority 1: Today text color
             if (isToday) {
-                textView.setTextColor(getColorByThemeAttr(context,
-                        androidx.appcompat.R.attr.colorPrimary));
+                int todayColor = getColorByThemeAttr(context, androidx.appcompat.R.attr.colorPrimary);
+                textView.setTextColor(todayColor);
                 textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
-                Log.v(TAG, "Applied TODAY text style");
+                Log.d(TAG, "Applied TODAY text to TextView[" + i + "]");
             }
-            // ✅ Priority 2: Sunday text color (only if not today)
+            // ✅ Priority 2: Sunday text color (SEMPRE applicato)
             else if (isSunday) {
-                textView.setTextColor(ContextCompat.getColor(context,
-                        android.R.color.holo_red_dark));
+                int sundayColor = ContextCompat.getColor(context, android.R.color.holo_red_dark);
+                textView.setTextColor(sundayColor);
                 textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
-                Log.v(TAG, "Applied SUNDAY text style");
+                Log.d(TAG, "Applied SUNDAY text to TextView[" + i + "] - RED");
             }
             // ✅ Default: Regular text
             else {
-                textView.setTextColor(getColorByThemeAttr(context,
-                        com.google.android.material.R.attr.colorOnSurface));
+                int regularColor = getColorByThemeAttr(context, com.google.android.material.R.attr.colorOnSurface);
+                textView.setTextColor(regularColor);
                 textView.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
+                Log.v(TAG, "Applied REGULAR text to TextView[" + i + "]");
             }
+
+            // ✅ UNIVERSAL: Force refresh EVERY TextView
+            forceTextViewRefresh(textView);
         }
+    }
+
+    /**
+     * ✅ NEW: Universal refresh per tutti i giorni (eccetto old days)
+     * Usa lo stesso "trucco alpha" che funziona per old days
+     */
+    private static void applyUniversalRefresh(com.google.android.material.card.MaterialCardView cardView) {
+        // Stesso identico meccanismo che funziona per old days
+        // Ma con alpha = 1.0 (quindi invisibile all'utente)
+
+        // Metodo 1: Force refresh con alpha trick
+        cardView.setAlpha(0.999f);  // Quasi impercettibile, ma forza refresh
+        cardView.post(() -> cardView.setAlpha(1.0f));
+
+        // Metodo 2: Backup invalidation
+        cardView.invalidate();
+        cardView.requestLayout();
+
+        Log.v(TAG, "Universal refresh applied");
+    }
+
+    /**
+     * ✅ NEW: Force refresh per TextView
+     */
+    private static void forceTextViewRefresh(TextView textView) {
+        // Force rendering refresh
+        textView.invalidate();
+
+        // Trigger layout pass
+        textView.requestLayout();
+
+        // Alpha trick for TextView (se necessario)
+        textView.setAlpha(0.999f);
+        textView.post(() -> textView.setAlpha(1.0f));
     }
 
     /**
@@ -133,8 +172,6 @@ public final class HighlightingHelper {
         cardView.setCardElevation(NORMAL_ELEVATION);
         cardView.setCardBackgroundColor(getColorByThemeAttr(context,
                 com.google.android.material.R.attr.colorSurface));
-//        cardView.setStrokeColor(getColorByThemeAttr(context,
-//                androidx.appcompat.R.attr.colorPrimary));
         cardView.setStrokeColor(getColorByThemeAttr(context,
                 com.google.android.material.R.attr.colorOutlineVariant));
 
@@ -180,7 +217,7 @@ public final class HighlightingHelper {
         // Applicare blend con bianco per background leggibile
         int lightBackground = blendEventColorWithWhite(eventColor);
 
-        cardView.setStrokeWidth(NORMAL_STROKE_WIDTH); // FIX: Bordo normale, non spesso
+        cardView.setStrokeWidth(NORMAL_STROKE_WIDTH);
         cardView.setCardElevation(EVENTS_ELEVATION);
         cardView.setCardBackgroundColor(lightBackground);
         cardView.setStrokeColor(getColorByThemeAttr(context,
@@ -189,41 +226,29 @@ public final class HighlightingHelper {
         Log.v(TAG, "Events card style applied");
     }
 
-    /**
-     * ✅ MIGLIORATO: Old days overlay (non sovrascrive, ma modifica)
-     */
-    private static void applyOldDaysOverlay(com.google.android.material.card.MaterialCardView cardView) {
-        // Non cambiare background o stroke, solo alpha
-        cardView.setAlpha(OLD_DAYS_ALPHA);
-        Log.v(TAG, "Old days overlay applied (alpha only)");
-    }
-
-
     // ===================================== HELPER METHODS
 
     /**
-     * ottenere colore dominante eventi:
+     * Ottenere colore dominante eventi
      */
     private static int getDominantEventTypeColor(Context context, EventIndicatorHelper helper, List<LocalEvent> events) {
         if (events == null || events.isEmpty()) {
             return ContextCompat.getColor(context, R.color.event_type_general);
         }
 
-        // Usare EventIndicatorHelper per ottenere colore priorità più alta
         return helper.getHighestPriorityColor(events);
     }
 
     /**
-     * AGGIUNGERE questo metodo in CalendarAdapterLegacy.java (copiato da DaysListAdapter funzionante):
+     * Blend event color with white for readable background
      */
     private static int blendEventColorWithWhite(int eventColor) {
         int eventRed = android.graphics.Color.red(eventColor);
         int eventGreen = android.graphics.Color.green(eventColor);
         int eventBlue = android.graphics.Color.blue(eventColor);
 
-        // Blend con bianco (84% bianco, 16% evento) - stessi valori che funzionano in DaysList
-        float eventWeight = 0.10f;
-        float whiteWeight = 0.90f;
+        float eventWeight = 0.20f;
+        float whiteWeight = 0.80f;
 
         int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
         int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);
