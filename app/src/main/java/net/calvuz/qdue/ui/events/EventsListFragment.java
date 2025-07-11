@@ -21,12 +21,12 @@ import com.google.android.material.button.MaterialButton;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.backup.BackupIntegration;
-import net.calvuz.qdue.core.ui.interfaces.SelectionModeHandler;
+import net.calvuz.qdue.ui.common.interfaces.SelectionModeHandler;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.ui.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Log;
 

@@ -1,6 +1,7 @@
 package net.calvuz.qdue.events.models;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
@@ -148,6 +149,11 @@ public class LocalEvent implements CalendarEvent {
 
     public LocalDateTime getLastUpdated() { return lastUpdated; }
     public void setLastUpdated(LocalDateTime lastUpdated) { this.lastUpdated = lastUpdated; }
+
+    @Nullable
+    public String getCustomProperty(String key) {
+        return customProperties != null ? customProperties.get(key) : null;
+    }
 
     /**
      * Check if this event can be updated (came from external source)

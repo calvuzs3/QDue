@@ -8,9 +8,9 @@ import android.os.Build;
 import com.google.android.material.color.DynamicColors;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.ui.di.BackHandlerFactory;
-import net.calvuz.qdue.core.ui.di.BackHandlingModule;
-import net.calvuz.qdue.core.ui.interfaces.BackHandlingService;
+import net.calvuz.qdue.ui.common.di.BackHandlerFactory;
+import net.calvuz.qdue.ui.common.di.BackHandlingModule;
+import net.calvuz.qdue.ui.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.utils.Log;
 

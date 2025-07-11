@@ -969,6 +969,25 @@
     <string name="text_action_cancel">Annulla</string>
     <string name="text_dayslist_empty_state">Nessun giorno disponibile</string>
     <string name="text_dayslist_empty_state_check_configuration">Controlla la configurazione del calendario</string>
+    <string name="text_added_details">Dettagli Aggiuntivi</string>
+    <string name="text_department">Dipartimento:</string>
+    <string name="text_center_of_cost">Centro di Costo:</string>
+    <string name="text_teams_involved">Team Coinvolti:</string>
+    <string name="text_responsible">Responsabile:</string>
+    <string name="text_email">Email:</string>
+    <string name="text_phone">Telefono:</string>
+    <string name="text_impact_level">Livello Impatto:</string>
+    <string name="text_tech_info">Informazioni Tecniche</string>
+    <string name="text_id_event">ID Evento:</string>
+    <string name="text_created">Creato:</string>
+    <string name="text_origin">Origine:</string>
+    <string name="text_metadata_package">Metadati Pacchetto</string>
+    <string name="text_package_id">ID Pacchetto:</string>
+    <string name="text_version">Versione:</string>
+    <string name="text_url_origin">URL Origine:</string>
+    <string name="text_package_name">Nome Pacchetto:</string>
+    <string name="text_author">Autore:</string>
+    <string name="text_advanced_features">Features Avanzate</string>
 
     <!-- ======================================================================= -->
 

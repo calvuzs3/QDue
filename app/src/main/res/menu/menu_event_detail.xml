@@ -8,7 +8,7 @@
     <item
         android:id="@+id/action_edit_event"
         android:title="@string/edit_event"
-        android:icon="@drawable/ic_rounded_edit_calendar_24"
+        android:icon="@drawable/ic_rounded_edit_24"
         app:showAsAction="ifRoom" />
 
     <!-- Share Event Action -->

@@ -386,7 +386,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Dettagli Aggiuntivi"
+                        android:text="@string/text_added_details"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
@@ -417,7 +417,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Dipartimento: "
+                                android:text="@string/text_department"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -456,7 +456,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Centro di Costo: "
+                                android:text="@string/text_center_of_cost"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -495,7 +495,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Team Coinvolti: "
+                                android:text="@string/text_teams_involved"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -534,7 +534,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Responsabile: "
+                                android:text="@string/text_responsible"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -573,7 +573,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Email: "
+                                android:text="@string/text_email"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -614,7 +614,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Telefono: "
+                                android:text="@string/text_phone"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -655,7 +655,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Livello Impatto: "
+                                android:text="@string/text_impact_level"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -700,7 +700,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Informazioni Tecniche"
+                        android:text="@string/text_tech_info"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
@@ -715,7 +715,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ID Evento: "
+                            android:text="@string/text_id_event"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -738,7 +738,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Creato: "
+                            android:text="@string/text_created"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -759,7 +759,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Origine: "
+                            android:text="@string/text_origin"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -792,7 +792,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Metadati Pacchetto"
+                        android:text="@string/text_metadata_package"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
@@ -822,7 +822,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="ID Pacchetto: "
+                                android:text="@string/text_package_id"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -860,7 +860,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Versione: "
+                                android:text="@string/text_version"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -898,7 +898,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="URL Origine: "
+                                android:text="@string/text_url_origin"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -927,7 +927,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Nome Pacchetto: "
+                            android:text="@string/text_package_name"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -950,7 +950,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Autore: "
+                            android:text="@string/text_author"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -983,7 +983,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Features Avanzate"
+                        android:text="@string/text_advanced_features"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />

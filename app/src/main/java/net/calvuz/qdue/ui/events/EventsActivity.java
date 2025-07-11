@@ -33,24 +33,25 @@ import com.google.android.material.snackbar.Snackbar;
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.file.FileAccessAdapter;
-import net.calvuz.qdue.core.file.EventsImportAdapter;
-import net.calvuz.qdue.core.permissions.PermissionManager;
-import net.calvuz.qdue.core.ui.di.BackHandlerFactory;
-import net.calvuz.qdue.core.ui.di.BackHandlingModule;
-import net.calvuz.qdue.core.ui.interfaces.BackHandlingService;
-import net.calvuz.qdue.core.ui.interfaces.BackPressHandler;
-import net.calvuz.qdue.core.ui.interfaces.UnsavedChangesHandler;
+import net.calvuz.qdue.ui.file.FileAccessAdapter;
+import net.calvuz.qdue.ui.file.EventsImportAdapter;
+import net.calvuz.qdue.ui.permissions.PermissionManager;
+import net.calvuz.qdue.ui.common.di.BackHandlerFactory;
+import net.calvuz.qdue.ui.common.di.BackHandlingModule;
+import net.calvuz.qdue.ui.common.interfaces.BackHandlingService;
+import net.calvuz.qdue.ui.common.interfaces.BackPressHandler;
+import net.calvuz.qdue.ui.common.interfaces.UnsavedChangesHandler;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.core.backup.BackupIntegration;
 import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.validation.JsonSchemaValidator;
-import net.calvuz.qdue.core.listeners.EventDeletionListener;
-import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.ui.common.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.ui.common.services.BackHandlingServiceImpl;
 import net.calvuz.qdue.ui.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
@@ -2334,8 +2335,8 @@ ma sempre sul fragment corrente
      */
     public String getBackHandlingDebugInfo() {
         return BackHandlingModule.getDebugInfo() + "\n" +
-                (mBackHandlingService instanceof net.calvuz.qdue.core.ui.services.BackHandlingServiceImpl ?
-                        ((net.calvuz.qdue.core.ui.services.BackHandlingServiceImpl) mBackHandlingService).getDebugInfo() :
+                (mBackHandlingService instanceof BackHandlingServiceImpl ?
+                        ((BackHandlingServiceImpl) mBackHandlingService).getDebugInfo() :
                         "Service debug info not available");
     }
 

@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,11 +21,13 @@ public final class HighlightingHelper {
     private static final int TODAY_STROKE_WIDTH = 0;
 
     private static final float NORMAL_ELEVATION = 0f;
-    private static final float TODAY_ELEVATION = 4f;
+    private static final float TODAY_ELEVATION = 6f;
     private static final float SUNDAY_ELEVATION = 2f;
     private static final float EVENTS_ELEVATION = 2f;
 
-    private static final float OLD_DAYS_ALPHA = 0.6f;
+    private static final float OLD_DAYS_ALPHA = 0.45f;
+
+    private static final float BLEND_WHITE_WEIGHT = 0.92f;
 
     /**
      * ✅ SOLUTION: Force refresh universale per tutti i giorni
@@ -43,8 +44,8 @@ public final class HighlightingHelper {
         boolean hasEvents = events != null && !events.isEmpty();
         boolean isOldDay = date.isBefore(today);
 
-        Log.d(TAG, String.format("Highlighting %s: today=%s, sunday=%s, events=%s, old=%s",
-                date, isToday, isSunday, hasEvents, isOldDay));
+//        Log.d(TAG, String.format("Highlighting %s: today=%s, sunday=%s, events=%s, old=%s",
+//                date, isToday, isSunday, hasEvents, isOldDay));
 
         // ✅ STEP 1: Reset to regular style (baseline)
         setupRegularCardStyle(context, cardView);
@@ -54,30 +55,30 @@ public final class HighlightingHelper {
         // Priority 3: Sunday background (only if no events and not today)
         if (isSunday && !isToday && !hasEvents) {
             setupSundayCardStyle(context, cardView);
-            Log.d(TAG, "Applied SUNDAY background");
+//            Log.d(TAG, "Applied SUNDAY background");
         }
 
         // Priority 2: Events background (if not today)
         else if (hasEvents && !isToday) {
             setupEventsCardStyle(context, eventHelper, cardView, events);
-            Log.d(TAG, "Applied EVENTS background");
+//            Log.d(TAG, "Applied EVENTS background");
         }
 
         // Priority 1: Today background (ALWAYS wins)
         if (isToday) {
             setupTodayCardStyle(context, cardView);
-            Log.d(TAG, "Applied TODAY background");
+//            Log.d(TAG, "Applied TODAY background");
         }
 
         // ✅ STEP 3: Apply overlay and UNIVERSAL force refresh
         if (isOldDay) {
             // Old days: alpha overlay
             cardView.setAlpha(OLD_DAYS_ALPHA);
-            Log.d(TAG, "Applied OLD_DAYS overlay");
+//            Log.d(TAG, "Applied OLD_DAYS overlay");
         } else {
             // ✅ SOLUTION: Force refresh for ALL other days (future + today)
             applyUniversalRefresh(cardView);
-            Log.d(TAG, "Applied UNIVERSAL refresh");
+//            Log.d(TAG, "Applied UNIVERSAL refresh");
         }
     }
 
@@ -96,8 +97,8 @@ public final class HighlightingHelper {
         boolean isToday = date.equals(today);
         boolean isSunday = date.getDayOfWeek().getValue() == 7;
 
-        Log.d(TAG, String.format("Text highlighting %s: today=%s, sunday=%s, views=%d",
-                date, isToday, isSunday, textViews.length));
+//        Log.i(TAG, String.format(QDue.getLocale(), "Text highlighting %s: today=%s, sunday=%s, views=%d",
+//                date, isToday, isSunday, textViews.length));
 
         for (int i = 0; i < textViews.length; i++) {
             TextView textView = textViews[i];
@@ -108,21 +109,21 @@ public final class HighlightingHelper {
                 int todayColor = getColorByThemeAttr(context, androidx.appcompat.R.attr.colorPrimary);
                 textView.setTextColor(todayColor);
                 textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
-                Log.d(TAG, "Applied TODAY text to TextView[" + i + "]");
+//                Log.v(TAG, "Applied TODAY text to TextView[" + i + "]");
             }
             // ✅ Priority 2: Sunday text color (SEMPRE applicato)
             else if (isSunday) {
                 int sundayColor = ContextCompat.getColor(context, android.R.color.holo_red_dark);
                 textView.setTextColor(sundayColor);
                 textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
-                Log.d(TAG, "Applied SUNDAY text to TextView[" + i + "] - RED");
+//                Log.v(TAG, "Applied SUNDAY text to TextView[" + i + "] - RED");
             }
             // ✅ Default: Regular text
             else {
                 int regularColor = getColorByThemeAttr(context, com.google.android.material.R.attr.colorOnSurface);
                 textView.setTextColor(regularColor);
                 textView.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL);
-                Log.v(TAG, "Applied REGULAR text to TextView[" + i + "]");
+//                Log.v(TAG, "Applied REGULAR text to TextView[" + i + "]");
             }
 
             // ✅ UNIVERSAL: Force refresh EVERY TextView
@@ -139,14 +140,14 @@ public final class HighlightingHelper {
         // Ma con alpha = 1.0 (quindi invisibile all'utente)
 
         // Metodo 1: Force refresh con alpha trick
-        cardView.setAlpha(0.999f);  // Quasi impercettibile, ma forza refresh
+        //cardView.setAlpha(0.95f);  // Quasi impercettibile, ma forza refresh
         cardView.post(() -> cardView.setAlpha(1.0f));
 
         // Metodo 2: Backup invalidation
         cardView.invalidate();
         cardView.requestLayout();
 
-        Log.v(TAG, "Universal refresh applied");
+//        Log.v(TAG, "Universal refresh applied");
     }
 
     /**
@@ -175,7 +176,7 @@ public final class HighlightingHelper {
         cardView.setStrokeColor(getColorByThemeAttr(context,
                 com.google.android.material.R.attr.colorOutlineVariant));
 
-        Log.v(TAG, "Regular card style applied");
+//        Log.v(TAG, "Regular card style applied");
     }
 
     /**
@@ -188,7 +189,7 @@ public final class HighlightingHelper {
         cardView.setStrokeColor(getColorByThemeAttr(context,
                 androidx.appcompat.R.attr.colorPrimary));
 
-        Log.v(TAG, "Today card style applied");
+//        Log.v(TAG, "Today card style applied");
     }
 
     /**
@@ -204,7 +205,7 @@ public final class HighlightingHelper {
         cardView.setStrokeColor(
                 ContextCompat.getColor(context, android.R.color.holo_red_light));
 
-        Log.v(TAG, "Sunday card style applied");
+//        Log.v(TAG, "Sunday card style applied");
     }
 
     /**
@@ -223,7 +224,7 @@ public final class HighlightingHelper {
         cardView.setStrokeColor(getColorByThemeAttr(context,
                 com.google.android.material.R.attr.colorOutlineVariant));
 
-        Log.v(TAG, "Events card style applied");
+//        Log.v(TAG, "Events card style applied");
     }
 
     // ===================================== HELPER METHODS
@@ -247,8 +248,8 @@ public final class HighlightingHelper {
         int eventGreen = android.graphics.Color.green(eventColor);
         int eventBlue = android.graphics.Color.blue(eventColor);
 
-        float eventWeight = 0.20f;
-        float whiteWeight = 0.80f;
+        float whiteWeight = BLEND_WHITE_WEIGHT;
+        float eventWeight = 1 - BLEND_WHITE_WEIGHT;
 
         int blendedRed = (int) (255 * whiteWeight + eventRed * eventWeight);
         int blendedGreen = (int) (255 * whiteWeight + eventGreen * eventWeight);

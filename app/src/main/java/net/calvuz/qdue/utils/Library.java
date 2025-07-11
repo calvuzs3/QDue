@@ -13,6 +13,8 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import kotlinx.serialization.descriptors.PrimitiveKind;
+
 /**
  * General-purpose utility library containing static helper functions and members.
  *
@@ -291,5 +293,43 @@ public final class Library {
      */
     public static void showToast(Context context, String message, int length) {
         Toast.makeText(context, message, length).show();
+    }
+
+    /**
+     * HELPER: Show Success toast (SHORT)
+     *
+     * @param message The message to show
+     */
+    public static void showSuccess(Context context, String message) {
+        showToast(context, message, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * HELPER: Show Success toast (SHORT)
+     *
+     * @param message The message to show
+     * @param length The length of the toast
+     */
+    public static void showSuccess(Context context, String message, int length) {
+        showToast(context, message, length);
+    }
+
+    /**
+     * HELPER: Show Error toast (SHORT)
+     *
+     * @param message The message to show
+     */
+    public static void showError(Context context, String message) {
+        showToast(context, message, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * HELPER: Show Error toast (LONG)
+     *
+     * @param message The message to show
+     * @param length The length of the toast
+     */
+    public static void showError(Context context, String message, int length) {
+        showToast(context,message,length);
     }
 }

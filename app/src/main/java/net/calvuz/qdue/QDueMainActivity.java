@@ -31,7 +31,7 @@ import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
-import net.calvuz.qdue.ui.shared.BaseActivity;
+import net.calvuz.qdue.ui.shared.base.BaseActivity;
 import net.calvuz.qdue.ui.shared.enums.NavigationMode;
 import net.calvuz.qdue.ui.welcome.WelcomeActivity;
 import net.calvuz.qdue.utils.Log;
@@ -59,6 +59,9 @@ import java.util.Set;
 public class QDueMainActivity extends BaseActivity {
     //TAG
     private static final String TAG = "QDueMainActivity";
+
+    // First Timme we launch the activity
+    private boolean mIsFirstLaunchApp = true;
 
     // UI
     protected ActivityQdueMainBinding binding;
@@ -133,6 +136,7 @@ public class QDueMainActivity extends BaseActivity {
             return;
         }
 
+        // TODO: Handle view mode changes from settings onl first time
         // Verify navigation state matches preferences
         verifyNavigationStateMatchesPreferences();
     }
@@ -232,6 +236,10 @@ public class QDueMainActivity extends BaseActivity {
      */
     private void verifyNavigationStateMatchesPreferences() {
         if (navController == null) return;
+        if (mIsFirstLaunchApp) {
+            mIsFirstLaunchApp = false;
+            return;
+        }
 
         try {
             String currentViewMode = QDuePreferences.getDefaultViewMode(this);
@@ -655,9 +663,9 @@ public class QDueMainActivity extends BaseActivity {
     }
 
     /**
-     * Enhanced refresh that combines registered fragments and discovery
+     * API: Enhanced refresh that combines registered fragments and discovery
      */
-    private void refreshEventsDisplayEnhanced(String changeType, int eventCount) {
+    public void refreshEventsDisplayEnhanced(String changeType, int eventCount) {
         final String mTAG = "refreshEventsDisplayEnhanced: ";
         Log.d(TAG, String.format(QDue.getLocale(),
                 "%sRefreshing events display: %s (%d events)", mTAG, changeType, eventCount));

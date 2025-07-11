@@ -204,6 +204,14 @@ public class OperationResult<T> {
         return sb.toString();
     }
 
+    /**
+     * Get simple error message (alias for getFormattedErrorMessage for API consistency)
+     */
+    @NonNull
+    public String getErrorMessage() {
+        return getFormattedErrorMessage();
+    }
+
     // ==================== OPERATION TYPE ENUM ====================
 
     /**

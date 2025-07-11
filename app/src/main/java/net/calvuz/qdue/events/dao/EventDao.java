@@ -125,7 +125,6 @@ public interface EventDao {
     /**
      * Get upcoming events from current time.
      * @param currentTime Current timestamp
-     * @param limit Maximum number of events to return
      * @return List of upcoming events
      */
     @Query("SELECT COUNT(*) FROM events WHERE start_time >= :currentTime ")
@@ -161,7 +160,7 @@ public interface EventDao {
     @Query("SELECT * FROM events WHERE " +
             "start_time <= :endDate AND end_time >= :startDate " +
             "ORDER BY start_time ASC")
-    List<LocalEvent> getEventsInDateRange(LocalDateTime startDate, LocalDateTime endDate);
+    List<LocalEvent> getEventsForDateRange(LocalDateTime startDate, LocalDateTime endDate);
 
     /**
      * Get upcoming events from current time.

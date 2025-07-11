@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseAdapterLegacy;
 import net.calvuz.qdue.ui.shared.models.SharedViewModels;
 import net.calvuz.qdue.utils.Log;
 

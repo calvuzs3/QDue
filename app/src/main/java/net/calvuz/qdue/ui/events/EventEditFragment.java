@@ -26,13 +26,13 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.ui.interfaces.UnsavedChangesHandler;
+import net.calvuz.qdue.ui.common.interfaces.UnsavedChangesHandler;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.utils.Library;
 import net.calvuz.qdue.utils.Log;
 

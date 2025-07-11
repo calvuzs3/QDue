@@ -1,7 +1,11 @@
 package net.calvuz.qdue.ui.shared.quickevents;
 
+import androidx.annotation.NonNull;
+
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
+import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
 import net.calvuz.qdue.utils.Log;
@@ -10,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * QuickEventTemplate - Simplified template system with QuickEventLogicAdapter integration
@@ -20,11 +25,19 @@ import java.util.Map;
  * - Business logic completely delegated to QuickEventLogicAdapter
  * - Maintains template concept for UI consistency and future extensions
  *
- * RESPONSABILITÀ RIDOTTE:
- * - Template structure definition and validation
- * - Preview/display logic for UI
- * - Factory pattern for template creation
- * - Integration bridge to QuickEventLogicAdapter
+ * REFACTORED VERSION:
+ * - ❌ REMOVED: All business logic (validation, event creation)
+ * - ❌ REMOVED: Database operations
+ * - ✅ KEPT: UI template structure and preview generation
+ * - ✅ KEPT: Factory pattern for template creation
+ * - ✅ NEW: Integration with service layer via DTOs
+ * - ✅ NEW: Clean separation between UI and business logic
+ *
+ * RESPONSIBILITIES (UI Only):
+ * - Template metadata management
+ * - UI preview generation
+ * - Request DTO creation for service layer
+ * - Display configuration
  */
 public class QuickEventTemplate {
 
@@ -44,12 +57,16 @@ public class QuickEventTemplate {
     // Template metadata
     public final String displayName;
     public final String description;
+       public final boolean isValid;
 
-    public boolean isValid() {
-        return isValid;
-    }
+    // ==================== UI DISPLAY PROPERTIES ====================
 
-    public final boolean isValid;
+    private final String iconResource;
+    private final int colorResource;
+    private final EventPriority defaultPriority;
+    private final boolean defaultAllDay;
+    private final LocalTime defaultStartTime;
+    private final LocalTime defaultEndTime;
 
     // ==================== CONSTRUCTOR ====================
 
@@ -64,7 +81,15 @@ public class QuickEventTemplate {
         // Derive properties from EventType (via ToolbarAction)
         this.displayName = sourceAction.getEventDisplayName();
         this.description = sourceAction.getDescription();
-        this.isValid = validateTemplate();
+        this.isValid = validateTemplateStructure();  // validateTemplate()
+
+        // ✅ UI display configuration
+        this.iconResource = getIconForEventType(eventType);
+        this.colorResource = getColorForEventType(eventType);
+        this.defaultPriority = getDefaultPriorityForEventType(eventType);
+        this.defaultAllDay = getDefaultAllDayForEventType(eventType);
+        this.defaultStartTime = getDefaultStartTimeForEventType(eventType);
+        this.defaultEndTime = getDefaultEndTimeForEventType(eventType);
 
         Log.v(TAG, "Template created: " + templateId + " (" + displayName + ")");
     }
@@ -110,6 +135,70 @@ public class QuickEventTemplate {
 
         Log.d(TAG, "Created " + templates.size() + " templates");
         return templates;
+    }
+
+    // ==================== 🆕 NEW: SERVICE INTEGRATION METHODS ====================
+
+    /**
+     * ✅ NEW: Create QuickEventRequest for service layer
+     * This replaces the old createEvent() method
+     */
+    public QuickEventRequest createEventRequest(LocalDate date, Long userId) {
+        if (date == null) {
+            throw new IllegalArgumentException("Date cannot be null");
+        }
+
+        try {
+            return QuickEventRequest.builder()
+                    .templateId(templateId)
+                    .sourceAction(sourceAction)
+                    .eventType(eventType)
+                    .date(date)
+                    .userId(userId)
+                    .displayName(displayName)
+                    .description(description)
+                    .priority(defaultPriority)
+                    .allDay(defaultAllDay)
+                    .startTime(defaultAllDay ? null : defaultStartTime)
+                    .endTime(defaultAllDay ? null : defaultEndTime)
+                    .customProperty("template_id", templateId)
+                    .customProperty("ui_created", "true")
+                    .build();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create event request: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to create event request", e);
+        }
+    }
+
+    /**
+     * ✅ NEW: Create EventPreview for UI display
+     * This replaces the old getPreview() method
+     */
+    public EventPreview getPreview(LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("Date cannot be null");
+        }
+
+        try {
+            return EventPreview.builder()
+                    .title(displayName)
+                    .description(description)
+                    .eventType(eventType)
+                    .priority(defaultPriority)
+                    .date(date)
+                    .allDay(defaultAllDay)
+                    .startTime(defaultAllDay ? null : defaultStartTime)
+                    .endTime(defaultAllDay ? null : defaultEndTime)
+                    .templateId(templateId)
+                    .iconResource(iconResource)
+                    .colorResource(colorResource)
+                    .build();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create preview: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to create preview", e);
+        }
     }
 
     // ==================== TEMPLATE USAGE ====================
@@ -165,26 +254,26 @@ public class QuickEventTemplate {
 
     // ==================== TEMPLATE PREVIEW/DISPLAY ====================
 
-    /**
-     * ✅ NEW: Get template preview for UI display
-     * Shows what the event would look like without creating it
-     */
-    public EventPreview getPreview(LocalDate date) {
-        if (eventType == null) return null;
-
-        return new EventPreview(
-                displayName,
-                description,
-                eventType.getEmoji(),
-                eventType.getColor(),
-                eventType.isDefaultAllDay(),
-                eventType.isDefaultAllDay() ? null : eventType.getDefaultStartTime(),
-                eventType.isDefaultAllDay() ? null : eventType.getDefaultEndTime(),
-                eventType.getDefaultPriority(),
-                eventType.affectsWorkSchedule(),
-                eventType.requiresApproval()
-        );
-    }
+//    /**
+//     * ✅ NEW: Get template preview for UI display
+//     * Shows what the event would look like without creating it
+//     */
+//    public EventPreview getPreview(LocalDate date) {
+//        if (eventType == null) return null;
+//
+//        return new EventPreview(
+//                displayName,
+//                description,
+//                eventType.getEmoji(),
+//                eventType.getColor(),
+//                eventType.isDefaultAllDay(),
+//                eventType.isDefaultAllDay() ? null : eventType.getDefaultStartTime(),
+//                eventType.isDefaultAllDay() ? null : eventType.getDefaultEndTime(),
+//                eventType.getDefaultPriority(),
+//                eventType.affectsWorkSchedule(),
+//                eventType.requiresApproval()
+//        );
+//    }
 
     /**
      * ✅ NEW: Check if template can be used on specific date
@@ -239,19 +328,6 @@ public class QuickEventTemplate {
         return eventType != null && eventType.affectsWorkSchedule();
     }
 
-    /**
-     * Check if creates all-day events by default (delegated to EventType)
-     */
-    public boolean isDefaultAllDay() {
-        return eventType != null && eventType.isDefaultAllDay();
-    }
-
-    /**
-     * Get default priority (delegated to EventType)
-     */
-    public EventPriority getDefaultPriority() {
-        return eventType != null ? eventType.getDefaultPriority() : EventPriority.NORMAL;
-    }
 
     // ==================== VALIDATION ====================
 
@@ -284,11 +360,14 @@ public class QuickEventTemplate {
         return true;
     }
 
-    /**
-     * Generate unique template ID
-     */
-    private static String generateTemplateId(ToolbarAction action) {
-        return "template_" + action.name().toLowerCase();
+    // ==================== GETTERS ====================
+
+    public String getTemplateId() {
+        return templateId;
+    }
+
+    public ToolbarAction getSourceAction() {
+        return sourceAction;
     }
 
     public EventType getEventType() {
@@ -296,71 +375,230 @@ public class QuickEventTemplate {
     }
 
     public String getDisplayName() {
-        return eventType.getDisplayName();
+        return displayName;
     }
 
-    // ==================== UTILITY CLASSES ====================
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public String getIconResource() {
+        return iconResource; // delegated to EventType
+    }
+
+    public int getColorResource() {
+        return colorResource; // delegated to EventType
+    }
+
+    public EventPriority getDefaultPriority() {
+        return defaultPriority; // delegated to EventType
+    }
+
+    public boolean isDefaultAllDay() {
+        return defaultAllDay; // delegated to EventType
+    }
+
+    public LocalTime getDefaultStartTime() {
+        return defaultStartTime; // delegated to EventType
+    }
+
+    public LocalTime getDefaultEndTime() {
+        return defaultEndTime; // delegated to EventType
+    }
+
+//    // ==================== UTILITY CLASSES ====================
+//
+//    /**
+//     * ✅ NEW: Event preview data class for UI display
+//     * Shows what the event would look like without creating it
+//     */
+//    public static class EventPreview {
+//        public final String title;
+//        public final String description;
+//        public final String emoji;
+//        public final int color;
+//        public final boolean allDay;
+//        public final LocalTime startTime; // null if allDay
+//        public final LocalTime endTime;   // null if allDay
+//        public final EventPriority priority;
+//        public final boolean affectsWork;
+//        public final boolean needsApproval;
+//
+//        public EventPreview(String title, String description, String emoji, int color,
+//                            boolean allDay, LocalTime startTime, LocalTime endTime,
+//                            EventPriority priority, boolean affectsWork, boolean needsApproval) {
+//            this.title = title;
+//            this.description = description;
+//            this.emoji = emoji;
+//            this.color = color;
+//            this.allDay = allDay;
+//            this.startTime = startTime;
+//            this.endTime = endTime;
+//            this.priority = priority;
+//            this.affectsWork = affectsWork;
+//            this.needsApproval = needsApproval;
+//        }
+//
+//        /**
+//         * Get formatted time string for display
+//         */
+//        public String getTimeString() {
+//            if (allDay) return "Tutto il giorno";
+//            if (startTime == null) return "";
+//            if (endTime == null) return startTime.toString();
+//            return startTime + " - " + endTime;
+//        }
+//
+//        /**
+//         * Get summary for UI tooltips
+//         */
+//        public String getSummary() {
+//            StringBuilder sb = new StringBuilder();
+//            sb.append(title);
+//            if (allDay) {
+//                sb.append(" (tutto il giorno)");
+//            } else {
+//                sb.append(" (").append(getTimeString()).append(")");
+//            }
+//            if (needsApproval) {
+//                sb.append(" - Richiede approvazione");
+//            }
+//            if (affectsWork) {
+//                sb.append(" - Assenza dal lavoro");
+//            }
+//            return sb.toString();
+//        }
+//    }
+
+
+    // ==================== UI HELPER METHODS ====================
 
     /**
-     * ✅ NEW: Event preview data class for UI display
-     * Shows what the event would look like without creating it
+     * ✅ UI-only validation (no business logic)
      */
-    public static class EventPreview {
-        public final String title;
-        public final String description;
-        public final String emoji;
-        public final int color;
-        public final boolean allDay;
-        public final LocalTime startTime; // null if allDay
-        public final LocalTime endTime;   // null if allDay
-        public final EventPriority priority;
-        public final boolean affectsWork;
-        public final boolean needsApproval;
+    private boolean validateTemplateStructure() {
+        return templateId != null && !templateId.trim().isEmpty() &&
+                sourceAction != null &&
+                eventType != null &&
+                displayName != null && !displayName.trim().isEmpty();
+    }
 
-        public EventPreview(String title, String description, String emoji, int color,
-                            boolean allDay, LocalTime startTime, LocalTime endTime,
-                            EventPriority priority, boolean affectsWork, boolean needsApproval) {
-            this.title = title;
-            this.description = description;
-            this.emoji = emoji;
-            this.color = color;
-            this.allDay = allDay;
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.priority = priority;
-            this.affectsWork = affectsWork;
-            this.needsApproval = needsApproval;
+    /**
+     * ✅ UI configuration methods
+     */
+    private String getIconForEventType(EventType eventType) {
+        if (eventType == null) return "ic_event_default";
+
+        switch (eventType) {
+            case STOP_PLANNED:
+            case STOP_UNPLANNED:
+                return "ic_stop";
+            case MAINTENANCE:
+                return "ic_maintenance";
+            case MEETING:
+                return "ic_meeting";
+            case GENERAL:
+            default:
+                return "ic_event_general";
+        }
+    }
+
+    private int getColorForEventType(EventType eventType) {
+        if (eventType == null) return 0;
+
+        switch (eventType) {
+            case STOP_PLANNED:
+                return android.R.color.holo_orange_light;
+            case STOP_UNPLANNED:
+                return android.R.color.holo_red_light;
+            case MAINTENANCE:
+                return android.R.color.holo_blue_light;
+            case MEETING:
+                return android.R.color.holo_green_light;
+            case GENERAL:
+            default:
+                return android.R.color.holo_purple;
+        }
+    }
+
+    private EventPriority getDefaultPriorityForEventType(EventType eventType) {
+        if (eventType == null) return EventPriority.NORMAL;
+
+        switch (eventType) {
+            case STOP_UNPLANNED:
+                return EventPriority.HIGH;
+            case STOP_PLANNED:
+            case MAINTENANCE:
+                return EventPriority.NORMAL;
+            case GENERAL, MEETING:
+            default:
+                return EventPriority.NORMAL;
+        }
+    }
+
+    private boolean getDefaultAllDayForEventType(EventType eventType) {
+        if (eventType == null) return true;
+
+        switch (eventType) {
+            case MEETING:
+                return false;
+            case GENERAL, STOP_PLANNED, STOP_UNPLANNED, MAINTENANCE:
+            default:
+                return true;
+        }
+    }
+
+    private LocalTime getDefaultStartTimeForEventType(EventType eventType) {
+        if (eventType == null) return LocalTime.of(8, 0);
+
+        switch (eventType) {
+            case MEETING:
+                return LocalTime.of(9, 0);
+            case STOP_PLANNED:
+            case STOP_UNPLANNED:
+            case GENERAL, MAINTENANCE:
+            default:
+                return LocalTime.of(8, 0);
+        }
+    }
+
+    private LocalTime getDefaultEndTimeForEventType(EventType eventType) {
+        if (eventType == null) return LocalTime.of(17, 0);
+
+        switch (eventType) {
+            case MEETING:
+                return LocalTime.of(10, 0);
+            case STOP_PLANNED:
+            case STOP_UNPLANNED:
+            case GENERAL, MAINTENANCE:
+            default:
+                return LocalTime.of(17, 0);
+        }
+    }
+
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Generate unique template ID
+     */
+    private static String generateTemplateId(ToolbarAction action) {
+        return "template_" + action.name().toLowerCase();
+    }
+
+    /**
+     * Check if template can create events for date (UI validation only)
+     */
+    public boolean canCreateForDate(LocalDate date) {
+        if (date == null) {
+            return false;
         }
 
-        /**
-         * Get formatted time string for display
-         */
-        public String getTimeString() {
-            if (allDay) return "Tutto il giorno";
-            if (startTime == null) return "";
-            if (endTime == null) return startTime.toString();
-            return startTime + " - " + endTime;
-        }
-
-        /**
-         * Get summary for UI tooltips
-         */
-        public String getSummary() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(title);
-            if (allDay) {
-                sb.append(" (tutto il giorno)");
-            } else {
-                sb.append(" (").append(getTimeString()).append(")");
-            }
-            if (needsApproval) {
-                sb.append(" - Richiede approvazione");
-            }
-            if (affectsWork) {
-                sb.append(" - Assenza dal lavoro");
-            }
-            return sb.toString();
-        }
+        // ✅ Basic UI validation only (no business logic)
+        return !date.isBefore(LocalDate.now()) && isValid;
     }
 
     // ==================== DEBUG & DEVELOPMENT ====================
@@ -407,23 +645,54 @@ public class QuickEventTemplate {
         }
     }
 
+    // ==================== OBJECT METHODS ====================
+
+    @NonNull
     @Override
     public String toString() {
         return "QuickEventTemplate{" +
-                "id='" + templateId + '\'' +
-                ", action=" + sourceAction +
+                "templateId='" + templateId + '\'' +
+                ", sourceAction=" + sourceAction +
                 ", eventType=" + eventType +
                 ", displayName='" + displayName + '\'' +
                 ", valid=" + isValid +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        QuickEventTemplate that = (QuickEventTemplate) o;
+
+        if (isValid != that.isValid) return false;
+        if (!Objects.equals(templateId, that.templateId))
+            return false;
+        if (sourceAction != that.sourceAction) return false;
+        if (eventType != that.eventType) return false;
+        return Objects.equals(displayName, that.displayName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = templateId != null ? templateId.hashCode() : 0;
+        result = 31 * result + (sourceAction != null ? sourceAction.hashCode() : 0);
+        result = 31 * result + (eventType != null ? eventType.hashCode() : 0);
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        result = 31 * result + (isValid ? 1 : 0);
+        return result;
+    }
 }
+
+
 
 // ==================== TEMPLATE FACTORY (Simplified) ====================
 
 /**
  * ✅ SIMPLIFIED: Factory for QuickEventTemplate creation
  * Much simpler now that business logic is in QuickEventLogicAdapter
+ * ✅ SIMPLIFIED: Factory for QuickEventTemplate creation (UI only)
  */
 class QuickEventTemplateFactory {
 
@@ -450,7 +719,7 @@ class QuickEventTemplateFactory {
     public static Map<ToolbarAction, QuickEventTemplate> getAllTemplates() {
         if (templateCache == null) {
             templateCache = QuickEventTemplate.getAllTemplates();
-            Log.d(TAG, "Template cache initialized with " + templateCache.size() + " templates");
+            Log.v(TAG, "Template cache initialized with " + templateCache.size() + " templates");
         }
         return new HashMap<>(templateCache); // Return copy for thread safety
     }
@@ -472,9 +741,21 @@ class QuickEventTemplateFactory {
     }
 
     /**
-     * Check if template exists for action
+     * Check if template exists for action (legacy support)
      */
     public static boolean hasTemplate(ToolbarAction action) {
-        return getTemplate(action) != null;
+        return hasTemplateSupport(action);
+    }
+
+    /**
+     * Check if action has template support
+     */
+    public static boolean hasTemplateSupport(ToolbarAction action) {
+        try {
+            QuickEventTemplate template = QuickEventTemplate.fromToolbarAction(action);
+            return template.isValid();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

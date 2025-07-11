@@ -4,7 +4,6 @@ import static net.calvuz.qdue.utils.Library.getColorByThemeAttr;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -14,7 +13,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
@@ -25,8 +23,8 @@ import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
-import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.models.SharedViewModels;
 import net.calvuz.qdue.ui.shared.utils.EventIndicatorHelper;
@@ -415,7 +413,7 @@ public class CalendarAdapterLegacy extends BaseClickAdapterLegacy {
                 java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
                 java.time.LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
 
                 Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;

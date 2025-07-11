@@ -24,13 +24,19 @@ public enum EventType {
     STOP_UNPLANNED("Non programmata", Color.parseColor("#D32F2F"), "\uD83D\uDEA8"),
     STOP_SHORTAGE("Carenza Ordini", Color.parseColor("#FF6B35"), "📦❌"),
 
-    // Shift-related events
-    SHIFT_CHANGE("Cambio Turno", Color.parseColor("#4ECDC4"), "🔄"),
-    OVERTIME("Straordinario", Color.parseColor("#7B1FA2"), "⏰"),
-
     // Safety and compliance
     SAFETY_DRILL("Prova Sicurezza", Color.parseColor("#96CEB4"), "🛡️"),
     AUDIT("Audit", Color.parseColor("#FFEAA7"), "📋"),
+
+    // ==================== WORK EVENTS (Shift-Related) ====================
+
+    // ✅ DOPO (corretto - include parametri business logic):
+    OVERTIME("Straordinario", Color.parseColor("#7B1FA2"), "⏰", false, true),
+
+    // Shift-related events (Turn Exceptions)
+    SHIFT_CHANGE("Cambio Turno", Color.parseColor("#4ECDC4"), "🔄"),
+    SHIFT_SWAP("Scambio Turno", Color.parseColor("#607D8B"), "🔄", false, true),
+    COMPENSATION("Recupero", Color.parseColor("#795548"), "⚖️", false, true),
 
     // ==================== NEW: USER ABSENCE EVENTS (from TurnException) ====================
 
@@ -48,10 +54,6 @@ public enum EventType {
 
     // ✅ NEW: TurnException.PERMIT_SYNDICATE → EventType.SYNDICATE_LEAVE
     SYNDICATE_LEAVE("Permesso Sindacale", Color.parseColor("#FF9800"), "🏛️", true, true),
-
-    // ✅ NEW: Additional TurnException types
-    COMPENSATION("Recupero", Color.parseColor("#795548"), "⚖️", false, true),
-    SHIFT_SWAP("Cambio Turno", Color.parseColor("#607D8B"), "🔄", false, true),
 
     // Custom/imported events
     IMPORTED("Importato", Color.parseColor("#DDA0DD"), "📥"),

@@ -7,8 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
@@ -16,11 +14,11 @@ import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.ui.shared.BaseAdapterLegacy;
-import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
-import net.calvuz.qdue.ui.shared.BaseClickFragmentLegacy;
-import net.calvuz.qdue.ui.shared.DaysListEventsPreview;
-import net.calvuz.qdue.ui.shared.EventsPreviewManager;
+import net.calvuz.qdue.ui.shared.base.BaseAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseClickAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseClickFragmentLegacy;
+import net.calvuz.qdue.ui.shared.components.DaysListEventsPreview;
+import net.calvuz.qdue.ui.shared.components.EventsPreviewManager;
 import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.shared.models.SharedViewModels;
 import net.calvuz.qdue.ui.shared.enums.ToolbarAction;

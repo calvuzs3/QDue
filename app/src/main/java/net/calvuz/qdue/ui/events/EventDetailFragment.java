@@ -26,12 +26,12 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.listeners.EventDeletionListener;
-import net.calvuz.qdue.core.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.interfaces.EventsFileOperationsInterface;
+import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.ui.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDateTime;
@@ -622,9 +622,16 @@ public class EventDetailFragment extends Fragment {
      * Format property key for display
      */
     private String formatPropertyKey(String key) {
-        return key.replace("_", " ")
-                .toLowerCase()
-                .replaceAll("\\b\\w", String.valueOf(key.charAt(0)).toUpperCase());
+        String[] words = key.replace("_", " ").toLowerCase().split(" ");
+        StringBuilder result = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+        return result.toString().trim();
     }
 
     /**
@@ -666,13 +673,13 @@ public class EventDetailFragment extends Fragment {
     private int getStatusIcon(EventStatus status) {
         switch (status) {
             case UPCOMING:
-                return android.R.drawable.ic_menu_recent_history;
+                return R.drawable.ic_rounded_event_upcoming_24;
             case CURRENT:
-                return android.R.drawable.ic_media_play;
+                return R.drawable.ic_rounded_play_arrow_24;
             case PAST:
-                return android.R.drawable.ic_menu_agenda;
+                return R.drawable.ic_rounded_view_agenda_24;
             default:
-                return android.R.drawable.ic_dialog_info;
+                return R.drawable.ic_rounded_info_24;
         }
     }
 

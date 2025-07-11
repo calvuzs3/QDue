@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
@@ -21,7 +20,7 @@ import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.shared.BaseClickAdapterLegacy;
+import net.calvuz.qdue.ui.shared.base.BaseClickAdapterLegacy;
 import net.calvuz.qdue.ui.shared.utils.EventIndicatorHelper;
 import net.calvuz.qdue.ui.shared.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.shared.models.SharedViewModels;
@@ -495,7 +494,7 @@ public class DaysListAdapterLegacy extends BaseClickAdapterLegacy {
                 java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
                 java.time.LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsInDateRange(startDateTime, endDateTime);
+                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
 
                 Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
