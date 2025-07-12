@@ -22,7 +22,7 @@
 
         <!-- WelcomeActivity -->
         <activity
-            android:name=".ui.welcome.WelcomeActivity"
+            android:name=".ui.features.welcome.WelcomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.QDue.Welcome" />
@@ -52,7 +52,7 @@
         <!--        android:theme="@style/Theme.QDue.Settings"-->
 
         <activity
-            android:name=".ui.events.EventsActivity"
+            android:name=".ui.features.events.EventsActivity"
             android:exported="true"
             android:label="@string/nav_eventi"
             android:theme="@style/Theme.QDue">

@@ -5,7 +5,7 @@
         android:id="@+id/coordinator_layout_calendar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.calendar.CalendarViewFragmentLegacy">
+    tools:context=".ui.features.calendar.CalendarViewFragment">
 
 <!--    &lt;!&ndash; AppBarMain &ndash;&gt;-->
 <!--    <include-->
@@ -58,7 +58,7 @@
 <!--    android:layout_width="match_parent"-->
 <!--    android:layout_height="match_parent"-->
 <!--    android:fitsSystemWindows="true"-->
-<!--    tools:context=".ui.calendar.CalendarViewFragmentLegacy">-->
+<!--    tools:context=".ui.calendar.CalendarViewFragment">-->
 
 <!--    &lt;!&ndash; Main Content Area &ndash;&gt;-->
 <!--    <androidx.core.widget.NestedScrollView-->

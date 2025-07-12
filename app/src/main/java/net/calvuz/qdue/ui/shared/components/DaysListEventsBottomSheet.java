@@ -15,8 +15,8 @@ import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.events.EventsAdapter;
-import net.calvuz.qdue.ui.shared.base.BaseEventsPreview;
+import net.calvuz.qdue.ui.features.events.EventsAdapter;
+import net.calvuz.qdue.ui.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.utils.Log;
 
 import java.time.LocalDate;

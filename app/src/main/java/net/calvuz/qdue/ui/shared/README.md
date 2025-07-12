@@ -35,7 +35,7 @@ protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
 
 @Override
 protected BaseClickAdapterLegacy getClickAdapter() {
-    return mLegacyAdapter; // CalendarAdapterLegacy
+    return mLegacyAdapter; // CalendarAdapter
 }
 ```
 
@@ -48,7 +48,7 @@ protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
 
 @Override
 protected BaseClickAdapterLegacy getClickAdapter() {
-    return mLegacyAdapter; // DaysListAdapterLegacy
+    return mLegacyAdapter; // DaysListAdapter
 }
 ```
 
@@ -226,7 +226,7 @@ private Map<LocalDate, List<LocalEvent>> groupEventsByDate(List<LocalEvent> even
 
 ### Adapter Integration
 ```java
-// In CalendarAdapterLegacy e DaysListAdapterLegacy
+// In CalendarAdapter e DaysListAdapter
 private void setupEventsIndicator(ViewHolder holder, DayItem dayItem) {
     List<LocalEvent> events = getEventsForDate(date);
     

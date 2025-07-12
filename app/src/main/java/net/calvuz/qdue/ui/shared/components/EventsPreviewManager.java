@@ -3,7 +3,7 @@ package net.calvuz.qdue.ui.shared.components;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.shared.base.BaseEventsPreview;
+import net.calvuz.qdue.ui.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.ui.shared.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.utils.Log;
 import java.time.LocalDate;

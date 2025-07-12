@@ -7,12 +7,12 @@
 
     <fragment
          android:id="@+id/nav_calendar"
-         android:name="net.calvuz.qdue.ui.calendar.CalendarViewFragmentLegacy"
+         android:name="net.calvuz.qdue.ui.features.calendar.CalendarViewFragment"
          android:label="@string/menu_calendar" />
 
      <fragment
          android:id="@+id/nav_dayslist"
-         android:name="net.calvuz.qdue.ui.dayslist.DayslistViewFragmentLegacy"
+         android:name="net.calvuz.qdue.ui.features.dayslist.DayslistViewFragment"
          android:label="@string/menu_dayslist" />
 
     <!-- About Dialog -->

@@ -26,14 +26,14 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.preferences.QDuePreferences;
-import net.calvuz.qdue.ui.events.EventsActivity;
-import net.calvuz.qdue.ui.events.interfaces.EventsRefreshInterface;
+import net.calvuz.qdue.ui.features.events.EventsActivity;
+import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.settings.QDueSettingsActivity;
-import net.calvuz.qdue.ui.shared.base.BaseActivity;
+import net.calvuz.qdue.ui.architecture.base.BaseActivity;
 import net.calvuz.qdue.ui.shared.enums.NavigationMode;
-import net.calvuz.qdue.ui.welcome.WelcomeActivity;
+import net.calvuz.qdue.ui.features.welcome.WelcomeActivity;
 import net.calvuz.qdue.utils.Log;
 
 import java.util.ArrayList;

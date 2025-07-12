@@ -9,7 +9,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:fitsSystemWindows="true"
-    tools:context=".ui.welcome.WelcomeActivity">
+    tools:context=".ui.features.welcome.WelcomeActivity">
 
     <!-- ============================================ -->
     <!-- ANIMATED LOGO CONTAINER -->

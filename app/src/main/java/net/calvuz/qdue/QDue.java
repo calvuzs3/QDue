@@ -133,10 +133,10 @@ public class QDue extends Application {
         // HelperMethod
         public static final boolean isVirtualScrollingEnabled = false;
 
-        // EnhancedBaseFragmentLegacyBridge
+        // EnhancedBaseFragmentBridge
         public static final boolean ENABLE_VIRTUAL_SCROLLING = false;
 
-        // AdapterLegacyBridge // EnhancedBaseFragmentLegacyBridge // CalendarViewFragmentLegacyEnhanced
+        // AdapterBridge // EnhancedBaseFragmentBridge // CalendarViewFragmentEnhanced
         public static final boolean USE_VIRTUAL_SCROLLING = false;
 
         // Exception storage settings

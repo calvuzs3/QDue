@@ -9,7 +9,7 @@
     <!-- Events List Fragment - Starting destination -->
     <fragment
         android:id="@+id/nav_events_list"
-        android:name="net.calvuz.qdue.ui.events.EventsListFragment"
+        android:name="net.calvuz.qdue.ui.features.events.EventsListFragment"
         android:label="@string/nav_eventi"
         tools:layout="@layout/fragment_events_list">
 
@@ -28,7 +28,7 @@
     <!-- Event Detail Fragment - Destination for selected event -->
     <fragment
         android:id="@+id/nav_event_detail"
-        android:name="net.calvuz.qdue.ui.events.EventDetailFragment"
+        android:name="net.calvuz.qdue.ui.features.events.EventDetailFragment"
         android:label="@string/event_detail_title"
         tools:layout="@layout/fragment_event_detail">
 
@@ -59,7 +59,7 @@
     <!-- Event Edit Fragment - Edit existing event -->
     <fragment
         android:id="@+id/nav_event_edit"
-        android:name="net.calvuz.qdue.ui.events.EventEditFragment"
+        android:name="net.calvuz.qdue.ui.features.events.EventEditFragment"
         android:label="@string/event_edit_title"
         tools:layout="@layout/fragment_event_edit">
 
