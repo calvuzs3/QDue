@@ -5,7 +5,7 @@
     android:id="@+id/coordinator_layout_dayslist"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.features.dayslist.DayslistViewFragment">
+    tools:context=".ui.features.dayslist.presentation.DayslistViewFragment">
 
     <!-- AppBarMain
     <include

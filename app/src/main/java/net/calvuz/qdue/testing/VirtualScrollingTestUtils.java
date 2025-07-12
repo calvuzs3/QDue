@@ -3,7 +3,7 @@ package net.calvuz.qdue.testing;
 
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 

@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.proto;
 
 import static net.calvuz.qdue.QDue.VirtualScrollingSettings.USE_VIRTUAL_SCROLLING;
 
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Utility class to help with gradual migration to virtual scrolling

@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

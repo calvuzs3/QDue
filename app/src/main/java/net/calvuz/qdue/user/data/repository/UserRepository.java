@@ -7,7 +7,7 @@ import net.calvuz.qdue.user.data.dao.UserDao;
 import net.calvuz.qdue.user.data.entities.User;
 import net.calvuz.qdue.user.data.models.GoogleAuthData;
 import net.calvuz.qdue.user.data.models.UserWithOrganization;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDateTime;
 import java.util.List;

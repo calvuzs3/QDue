@@ -13,7 +13,7 @@ import com.google.android.gms.tasks.Task;
 
 import net.calvuz.qdue.BuildConfig;
 import net.calvuz.qdue.user.data.models.GoogleAuthData;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Service for handling Google Sign-In authentication.

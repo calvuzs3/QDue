@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="false"
-    tools:context=".ui.features.calendar.CalendarViewFragment">
+    tools:context=".ui.features.calendar.presentation.CalendarViewFragment">
 
     <!-- AppBarLayout con ConstraintLayout interno -->
     <com.google.android.material.appbar.AppBarLayout

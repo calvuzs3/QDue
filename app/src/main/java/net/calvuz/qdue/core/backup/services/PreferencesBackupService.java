@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 
 import net.calvuz.qdue.core.backup.models.PreferencesBackupPackage;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
 import java.util.HashMap;

@@ -7,7 +7,6 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
-import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import net.calvuz.qdue.events.dao.EventDao;
@@ -23,7 +22,7 @@ import net.calvuz.qdue.user.data.entities.MacroDepartment;
 import net.calvuz.qdue.user.data.entities.SubDepartment;
 import net.calvuz.qdue.user.data.entities.User;
 import net.calvuz.qdue.core.db.converters.QDueTypeConverters;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * QDueDatabase - Unified main database for Q-DUE application.

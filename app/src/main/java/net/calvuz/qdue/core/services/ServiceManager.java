@@ -12,7 +12,7 @@ import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

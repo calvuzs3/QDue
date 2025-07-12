@@ -3,7 +3,7 @@ package net.calvuz.qdue.core.backup;
 import android.content.Context;
 
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.util.List;
 

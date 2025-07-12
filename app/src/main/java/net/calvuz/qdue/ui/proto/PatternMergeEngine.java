@@ -4,7 +4,7 @@ import net.calvuz.qdue.events.models.TurnException;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

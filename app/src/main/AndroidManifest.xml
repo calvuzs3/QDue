@@ -22,7 +22,7 @@
 
         <!-- WelcomeActivity -->
         <activity
-            android:name=".ui.features.welcome.WelcomeActivity"
+            android:name=".ui.features.welcome.presentation.WelcomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.QDue.Welcome" />
@@ -41,7 +41,7 @@
 
         <!-- SettingsActivity -->
         <activity
-            android:name=".ui.settings.QDueSettingsActivity"
+            android:name=".ui.features.settings.QDueSettingsActivity"
             android:exported="false"
             android:label="@string/menu_title_settings"
             android:parentActivityName=".QDueMainActivity">
@@ -52,7 +52,7 @@
         <!--        android:theme="@style/Theme.QDue.Settings"-->
 
         <activity
-            android:name=".ui.features.events.EventsActivity"
+            android:name=".ui.features.events.presentation.EventsActivity"
             android:exported="true"
             android:label="@string/nav_eventi"
             android:theme="@style/Theme.QDue">
@@ -176,7 +176,7 @@
 
         <!-- Time changes -->
         <receiver
-            android:name=".utils.TimeChangeReceiver"
+            android:name=".ui.core.common.utils.TimeChangeReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter android:priority="1000">

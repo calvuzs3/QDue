@@ -2,9 +2,8 @@ package net.calvuz.qdue.events.validation;
 
 import android.text.TextUtils;
 
-import net.calvuz.qdue.events.CalendarEvent;
 import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

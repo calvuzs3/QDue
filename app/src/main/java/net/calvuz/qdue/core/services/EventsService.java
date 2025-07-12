@@ -4,7 +4,7 @@ import net.calvuz.qdue.core.services.models.QuickEventRequest;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 
 import java.time.LocalDate;
 import java.util.List;

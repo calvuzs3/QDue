@@ -2,7 +2,6 @@ package net.calvuz.qdue.user.ui;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -17,13 +16,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -39,7 +35,7 @@ import net.calvuz.qdue.user.data.models.UserWithOrganization;
 import net.calvuz.qdue.user.data.repository.OrganizationRepository;
 import net.calvuz.qdue.user.manager.UserManager;
 import net.calvuz.qdue.user.services.GoogleAuthService;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

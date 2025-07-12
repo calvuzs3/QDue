@@ -5,15 +5,12 @@ import android.content.Context;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
-import net.calvuz.qdue.core.services.ServiceManager;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
 import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.utils.Log;
-
-import java.util.concurrent.CompletableFuture;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * ServiceProvider implementation for dependency injection

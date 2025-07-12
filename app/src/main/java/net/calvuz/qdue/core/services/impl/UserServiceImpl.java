@@ -8,7 +8,7 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.user.data.dao.UserDao;
 import net.calvuz.qdue.user.data.entities.User;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

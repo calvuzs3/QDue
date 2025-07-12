@@ -7,18 +7,18 @@
 
     <fragment
          android:id="@+id/nav_calendar"
-         android:name="net.calvuz.qdue.ui.features.calendar.CalendarViewFragment"
+         android:name="net.calvuz.qdue.ui.features.calendar.presentation.CalendarViewFragment"
          android:label="@string/menu_calendar" />
 
      <fragment
          android:id="@+id/nav_dayslist"
-         android:name="net.calvuz.qdue.ui.features.dayslist.DayslistViewFragment"
+         android:name="net.calvuz.qdue.ui.features.dayslist.presentation.DayslistViewFragment"
          android:label="@string/menu_dayslist" />
 
     <!-- About Dialog -->
     <dialog
         android:id="@+id/nav_about"
-        android:name="net.calvuz.qdue.ui.other.AboutDialogFragment"
+        android:name="net.calvuz.qdue.ui.legacy.other.AboutDialogFragment"
         android:label="@string/menu_title_about"
         tools:layout="@layout/fragment_dialog_about" />
 

@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.ui.shared.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

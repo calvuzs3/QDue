@@ -10,7 +10,7 @@ import com.google.gson.GsonBuilder;
 
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
 import java.io.FileWriter;

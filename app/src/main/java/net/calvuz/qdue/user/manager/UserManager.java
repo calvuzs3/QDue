@@ -8,7 +8,7 @@ import net.calvuz.qdue.user.data.models.UserWithOrganization;
 import net.calvuz.qdue.user.data.repository.UserRepository;
 import net.calvuz.qdue.user.data.repository.OrganizationRepository;
 import net.calvuz.qdue.user.services.GoogleAuthService;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Main manager class for user operations.

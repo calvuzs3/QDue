@@ -2,7 +2,7 @@ package net.calvuz.qdue.core.di;
 
 import android.content.Context;
 
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Dependency injection helper for activities and fragments

@@ -17,7 +17,7 @@ import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;

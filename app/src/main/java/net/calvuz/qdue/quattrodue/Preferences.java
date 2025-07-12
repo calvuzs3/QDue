@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.utils.Library;
+import net.calvuz.qdue.ui.core.common.utils.Library;
 
 import java.time.LocalDate;
 

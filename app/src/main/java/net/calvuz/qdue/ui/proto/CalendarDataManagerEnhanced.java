@@ -29,7 +29,7 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.user.data.entities.User;
-import net.calvuz.qdue.utils.Log;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Enhanced CalendarDataManager with virtual scrolling support
