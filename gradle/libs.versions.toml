@@ -7,6 +7,8 @@ glide = "4.16.0"
 googleApiClientAndroid = "1.32.1"
 googleApiServicesCalendar = "v3-rev20220715-2.0.0"
 gson = "2.10.1"
+hiltAndroid = "2.48"
+hiltAndroidCompiler = "2.48"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -36,12 +38,14 @@ material3 = "1.4.0-alpha15"
 [libraries]
 annotations = { module = "org.jetbrains:annotations", version.ref = "annotations" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
+dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 dynamicanimation = { module = "androidx.dynamicanimation:dynamicanimation", version.ref = "dynamicanimation" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClientAndroid" }
 google-api-client-gson = { module = "com.google.api-client:google-api-client-gson", version.ref = "googleApiClientAndroid" }
 google-api-services-calendar = { module = "com.google.apis:google-api-services-calendar", version.ref = "googleApiServicesCalendar" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

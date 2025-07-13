@@ -45,16 +45,15 @@
     <string name="settings_sync_title">Sincronizza periodicamente</string>
 
 
-
     <!-- Preferences per data schema -->
     <string name="qd_preference_scheme_start_day">preference_scheme_start_day</string>
     <string name="qd_preference_scheme_start_month">preference_scheme_start_month</string>
     <string name="qd_preference_scheme_start_year">preference_scheme_start_year</string>
 
-<!--    <string name="qd_preference_scheme_start_day">7</string>-->
-<!--    <string name="qd_preference_scheme_start_month">11</string>-->
-<!--    <string name="qd_preference_scheme_start_year">2018</string>-->
-<!--    -->
+    <!--    <string name="qd_preference_scheme_start_day">7</string>-->
+    <!--    <string name="qd_preference_scheme_start_month">11</string>-->
+    <!--    <string name="qd_preference_scheme_start_year">2018</string>-->
+    <!--    -->
     <!-- Dialog warning e conferma -->
     <string name="scheme_date_warning_title">Attenzione: Modifica Data Schema</string>
     <string name="scheme_date_warning_message">La data di inizio schema influenza significativamente la rotazione dei turni.\n\nSi consiglia di:\n• Accettare la data proposta inizialmente (07/11/2018)\n• Modificare solo se necessario\n• Verificare i turni dopo la modifica\n\nVuoi procedere?</string>
@@ -73,8 +72,6 @@
 
     <!-- Preference summary -->
     <string name="settings_scheme_date_current">Data corrente: %1$s</string>
-
-
 
 
     <!-- Tema e Aspetto -->
@@ -397,7 +394,6 @@
 
 
     <!-- Strings for proto -->
-    <string name="error_loading_data">Errore caricamento dati (proto)</string>
     <string name="nav_header_about">About</string>
 
     <!-- ==================== Additional Strings EVENTS ==================== -->
@@ -406,7 +402,6 @@
     <string name="events_empty_message">Import events from JSON files or create new ones</string>
     <string name="events_import_success">Successfully imported %d events</string>
     <string name="events_import_error">Failed to import events: %s</string>
-    <string name="events_export_success">Events exported successfully</string>
     <string name="events_export_error">Failed to export events: %s</string>
     <string name="events_clear_all_title">Clear All Events</string>
     <string name="events_clear_all_message">Are you sure you want to delete all local events? This action cannot be undone.</string>
@@ -464,7 +459,6 @@
     <!-- Export/Import Messages -->
     <string name="export_events_title">Export Events</string>
     <string name="export_processing">Exporting events...</string>
-    <string name="export_success">Events exported successfully</string>
     <string name="export_failed">Export failed</string>
     <string name="export_no_events">No events to export</string>
 
@@ -520,7 +514,6 @@
     <string name="delete_event_TODO">Elimina evento - TODO</string>
     <string name="details_copied_into_notes">Dettagli copiati negli appunti</string>
     <string name="no_URL_available">Nessun URL sorgente disponibile</string>
-
 
 
     <!-- Navigation and Titles -->
@@ -628,10 +621,6 @@
     <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
 
 
-
-
-
-
     <!-- ============================================ -->
     <!-- WELCOME ACTIVITY STRINGS -->
     <!-- ============================================ -->
@@ -716,7 +705,6 @@
     <string name="team_selected_letter_format">Squadra %1$s selezionata</string>         <!-- "Squadra A selezionata" -->
 
     <!-- Team Names and Descriptions -->
-    <string name="team_name_format">Squadra %1$d</string>
     <string name="team_description_format">Turni coordinati squadra %1$d</string>
     <string name="team_selected_format">Squadra %1$d selezionata</string>
     <string name="selected_team_label">Squadra selezionata:</string>
@@ -990,5 +978,7 @@
     <string name="text_advanced_features">Features Avanzate</string>
 
     <!-- ======================================================================= -->
+
+
 
 </resources>

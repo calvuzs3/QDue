@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id 'dagger.hilt.android.plugin'
 }
 
 // Leggi manualmente local.properties
@@ -192,4 +193,8 @@ dependencies {
 
     // For better performance monitoring (optional)
     implementation libs.tracing
+
+    // Hilt Dependency Injection
+    implementation libs.hilt.android
+    annotationProcessor libs.dagger.hilt.android.compiler
 }

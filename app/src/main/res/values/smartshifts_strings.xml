@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--    NUOVO SiSTEMA-->
+
+
+    <!-- ===== MENU & NAVIGATION ===== -->
+    <string name="menu_smart_shifts">SmartShifts</string>
+    <string name="nav_calendar">Calendario</string>
+    <string name="nav_patterns">Pattern</string>
+    <string name="nav_contacts">Contatti</string>
+    <string name="nav_settings">Impostazioni</string>
+
+    <!-- ===== SHIFT TYPES ===== -->
+    <string name="shift_type_morning">Mattina</string>
+    <string name="shift_type_afternoon">Pomeriggio</string>
+    <string name="shift_type_night">Notte</string>
+    <string name="shift_type_rest">Riposo</string>
+
+    <!-- ===== SHIFT PATTERNS ===== -->
+    <string name="pattern_continuous_4_2_name">Ciclo Continuo 4-2</string>
+    <string name="pattern_continuous_4_2_desc">4 mattine, 2 riposi, 4 notti, 2 riposi, 4 pomeriggi, 2 riposi</string>
+    <string name="pattern_continuous_3_2_name">Ciclo Continuo 3-2</string>
+    <string name="pattern_continuous_3_2_desc">3 mattine, 2 riposi, 3 notti, 2 riposi, 3 pomeriggi, 2 riposi</string>
+    <string name="pattern_weekly_5_2_name">Settimana Standard 5-2</string>
+    <string name="pattern_weekly_5_2_desc">5 giorni lavorativi, 2 giorni riposo (lunedì-venerdì)</string>
+    <string name="pattern_weekly_6_1_name">Settimana Standard 6-1</string>
+    <string name="pattern_weekly_6_1_desc">6 giorni lavorativi, 1 giorno riposo</string>
+
+    <!-- ===== TEAM LABELS ===== -->
+    <string name="team_name_format">Squadra %1$s</string>
+    <string name="team_personal_label">Personale</string>
+
+    <!-- ===== SETUP WIZARD ===== -->
+    <string name="setup_wizard_title">Configurazione SmartShifts</string>
+    <string name="setup_welcome_title">Benvenuto in SmartShifts</string>
+    <string name="setup_welcome_subtitle">Gestisci i tuoi turni con flessibilità e precisione</string>
+    <string name="setup_pattern_selection_title">Scegli il Tuo Pattern</string>
+    <string name="setup_pattern_predefined">Pattern Predefinito</string>
+    <string name="setup_pattern_custom">Pattern Personalizzato</string>
+    <string name="setup_start_date_title">Data Inizio Ciclo</string>
+    <string name="setup_start_date_subtitle">Quando inizia il tuo primo ciclo?</string>
+    <string name="setup_confirmation_title">Conferma Configurazione</string>
+    <string name="setup_confirmation_pattern">Pattern: %1$s</string>
+    <string name="setup_confirmation_start_date">Data inizio: %1$s</string>
+
+    <!-- ===== BUTTONS & ACTIONS ===== -->
+    <string name="btn_next">Avanti</string>
+    <string name="btn_previous">Indietro</string>
+    <string name="btn_finish">Completa</string>
+    <string name="btn_cancel">Annulla</string>
+    <string name="btn_save">Salva</string>
+    <string name="btn_edit">Modifica</string>
+    <string name="btn_delete">Elimina</string>
+    <string name="btn_add">Aggiungi</string>
+    <string name="btn_select">Seleziona</string>
+    <string name="btn_confirm">Conferma</string>
+
+    <!-- ===== CALENDAR VIEW ===== -->
+    <string name="calendar_today">Oggi</string>
+    <string name="calendar_go_to_date">Vai alla data</string>
+    <string name="calendar_month_view">Vista mese</string>
+    <string name="calendar_week_view">Vista settimana</string>
+    <string name="calendar_no_shifts">Nessun turno programmato</string>
+    <string name="calendar_shift_details">Dettagli turno</string>
+
+    <!-- ===== CONTACTS ===== -->
+    <string name="contacts_title">Contatti Squadra</string>
+    <string name="contacts_add_new">Aggiungi Contatto</string>
+    <string name="contacts_name">Nome</string>
+    <string name="contacts_phone">Telefono</string>
+    <string name="contacts_email">Email</string>
+    <string name="contacts_notes">Note</string>
+    <string name="contacts_link_android">Collega a contatto telefono</string>
+    <string name="contacts_no_contacts">Nessun contatto salvato</string>
+    <string name="contacts_call">Chiama</string>
+    <string name="contacts_message">Messaggio</string>
+
+    <!-- ===== CUSTOM PATTERN CREATOR ===== -->
+    <string name="pattern_creator_title">Crea Pattern Personalizzato</string>
+    <string name="pattern_creator_name">Nome Pattern</string>
+    <string name="pattern_creator_description">Descrizione</string>
+    <string name="pattern_creator_cycle_length">Durata Ciclo (giorni)</string>
+    <string name="pattern_creator_add_shift_type">Aggiungi Tipo Turno</string>
+    <string name="pattern_creator_validation">Validazione Pattern</string>
+    <string name="pattern_creator_continuous_cycle">Continuous Cycle Compliant</string>
+    <string name="pattern_creator_preview">Anteprima Pattern</string>
+
+    <!-- ===== SHIFT TYPE CREATOR ===== -->
+    <string name="shift_type_creator_title">Crea Tipo Turno</string>
+    <string name="shift_type_name">Nome Turno</string>
+    <string name="shift_type_start_time">Ora Inizio</string>
+    <string name="shift_type_end_time">Ora Fine</string>
+    <string name="shift_type_color">Colore</string>
+    <string name="shift_type_is_working">È un turno lavorativo</string>
+
+    <!-- ===== VALIDATION MESSAGES ===== -->
+    <string name="validation_pattern_name_required">Nome pattern obbligatorio</string>
+    <string name="validation_cycle_length_invalid">Durata ciclo deve essere tra 1 e 365 giorni</string>
+    <string name="validation_no_shifts_defined">Definisci almeno un turno</string>
+    <string name="validation_time_overlap">Sovrapposizione orari turni</string>
+    <string name="validation_coverage_gap">Gap nella copertura 24h</string>
+    <string name="validation_invalid_time_format">Formato orario non valido (usa HH:mm)</string>
+    <string name="validation_start_after_end">Ora inizio deve essere precedente a ora fine</string>
+    <string name="validation_name_exists">Nome già esistente</string>
+    <string name="validation_contact_name_required">Nome contatto obbligatorio</string>
+    <string name="validation_invalid_phone">Numero telefono non valido</string>
+    <string name="validation_invalid_email">Indirizzo email non valido</string>
+
+    <!-- ===== ERROR MESSAGES ===== -->
+    <string name="error_pattern_not_found">Pattern non trovato</string>
+    <string name="error_pattern_not_continuous_cycle">Pattern non compatibile con ciclo continuo</string>
+    <string name="error_database_operation">Errore operazione database</string>
+    <string name="error_shift_generation">Errore generazione turni</string>
+    <string name="error_invalid_date">Data non valida</string>
+    <string name="error_loading_data">Errore caricamento dati</string>
+    <string name="error_saving_data">Errore salvataggio dati</string>
+    <string name="error_network_connection">Errore connessione</string>
+    <string name="error_unknown">Errore sconosciuto</string>
+    <string name="smartshifts_not_available">SmartShifts non disponibile</string>
+
+    <!-- ===== SUCCESS MESSAGES ===== -->
+    <string name="success_pattern_saved">Pattern salvato con successo</string>
+    <string name="success_assignment_created">Assegnazione creata con successo</string>
+    <string name="success_shifts_generated">Turni generati per i prossimi 12 mesi</string>
+    <string name="success_contact_saved">Contatto salvato</string>
+    <string name="success_contact_deleted">Contatto eliminato</string>
+    <string name="success_pattern_deleted">Pattern eliminato</string>
+    <string name="success_shift_type_saved">Tipo turno salvato</string>
+
+    <!-- ===== DIALOG MESSAGES ===== -->
+    <string name="dialog_delete_pattern_title">Elimina Pattern</string>
+    <string name="dialog_delete_pattern_message">Sei sicuro di voler eliminare questo pattern? L\'azione non può essere annullata.</string>
+    <string name="dialog_delete_contact_title">Elimina Contatto</string>
+    <string name="dialog_delete_contact_message">Sei sicuro di voler eliminare questo contatto?</string>
+    <string name="dialog_change_pattern_title">Cambia Pattern</string>
+    <string name="dialog_change_pattern_message">Cambiando pattern verranno rigenerati tutti i turni futuri. Continuare?</string>
+    <string name="dialog_exit_setup_title">Esci dalla Configurazione</string>
+    <string name="dialog_exit_setup_message">Vuoi uscire senza completare la configurazione?</string>
+
+    <!-- ===== PREFERENCES ===== -->
+    <string name="pref_notifications_title">Notifiche</string>
+    <string name="pref_notifications_summary">Ricevi notifiche per i tuoi turni</string>
+    <string name="pref_notification_time_title">Orario Notifica</string>
+    <string name="pref_notification_time_summary">Quando ricevere le notifiche</string>
+    <string name="pref_calendar_integration_title">Integrazione Calendario</string>
+    <string name="pref_calendar_integration_summary">Sincronizza con il calendario del dispositivo</string>
+    <string name="pref_theme_title">Tema</string>
+    <string name="pref_theme_summary">Scegli il tema dell\'app</string>
+    <string name="pref_language_title">Lingua</string>
+    <string name="pref_language_summary">Seleziona la lingua dell\'interfaccia</string>
+
+    <!-- ===== TIME & DATE FORMATS ===== -->
+    <string name="time_format_24h">HH:mm</string>
+    <string name="date_format_short">dd/MM/yyyy</string>
+    <string name="date_format_long">EEEE, dd MMMM yyyy</string>
+    <string name="shift_time_format">%1$s - %2$s</string>
+    <string name="pattern_description_format">Ciclo di %1$d giorni, %2$d giorni lavorativi</string>
+
+    <!-- ===== STATUS MESSAGES ===== -->
+    <string name="status_loading">Caricamento…</string>
+    <string name="status_saving">Salvataggio…</string>
+    <string name="status_generating_shifts">Generazione turni…</string>
+    <string name="status_validating">Validazione…</string>
+    <string name="status_no_data">Nessun dato disponibile</string>
+    <string name="status_empty_list">Lista vuota</string>
+
+    <!-- ===== ACCESSIBILITY ===== -->
+    <string name="cd_shift_indicator">Indicatore turno</string>
+    <string name="cd_calendar_day">Giorno calendario</string>
+    <string name="cd_pattern_selection">Selezione pattern</string>
+    <string name="cd_contact_photo">Foto contatto</string>
+    <string name="cd_add_button">Pulsante aggiungi</string>
+    <string name="cd_delete_button">Pulsante elimina</string>
+    <string name="cd_edit_button">Pulsante modifica</string>
+    <string name="cd_menu_button">Pulsante menu</string>
+    <string name="cd_back_button">Pulsante indietro</string>
+
+    <!-- ===== PLURALS ===== -->
+    <plurals name="days_count">
+        <item quantity="one">%d giorno</item>
+        <item quantity="other">%d giorni</item>
+    </plurals>
+
+    <plurals name="shifts_count">
+        <item quantity="one">%d turno</item>
+        <item quantity="other">%d turni</item>
+    </plurals>
+
+    <plurals name="hours_count">
+        <item quantity="one">%d ora</item>
+        <item quantity="other">%d ore</item>
+    </plurals>
+
+    <plurals name="contacts_count">
+        <item quantity="one">%d contatto</item>
+        <item quantity="other">%d contatti</item>
+    </plurals>
+
+    <!-- ===== HELP & TUTORIAL ===== -->
+    <string name="help_pattern_selection">Scegli un pattern predefinito o crea il tuo schema personalizzato</string>
+    <string name="help_continuous_cycle">I pattern continuous cycle permettono la gestione di più squadre</string>
+    <string name="help_start_date">Seleziona quando inizia il tuo primo ciclo di turni</string>
+    <string name="help_contacts">Aggiungi contatti dei colleghi per coordinare cambi turno</string>
+
+    <!-- ===== SEARCH & FILTER ===== -->
+    <string name="search_hint">Cerca…</string>
+    <string name="filter_all">Tutti</string>
+    <string name="filter_predefined">Predefiniti</string>
+    <string name="filter_custom">Personalizzati</string>
+    <string name="filter_continuous">Ciclo Continuo</string>
+    <string name="filter_weekly">Settimanali</string>
+
+    <!-- ===== EXPORT & IMPORT ===== -->
+    <string name="export_patterns">Esporta Pattern</string>
+    <string name="import_patterns">Importa Pattern</string>
+    <string name="export_contacts">Esporta Contatti</string>
+    <string name="import_contacts">Importa Contatti</string>
+    <string name="export_success">Esportazione completata</string>
+    <string name="import_success">Importazione completata</string>
+
+
+    <!--    FINE NUOVO SISTEMA-->
+
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- SmartShifts specific colors -->
+    <color name="smartshifts_primary">#6200EE</color>
+    <color name="smartshifts_primary_variant">#3700B3</color>
+    <color name="smartshifts_secondary">#03DAC6</color>
+    <color name="smartshifts_secondary_variant">#018786</color>
+
+    <!-- Shift type colors -->
+    <color name="shift_morning">#4CAF50</color>
+    <color name="shift_afternoon">#FF9800</color>
+    <color name="shift_night">#3F51B5</color>
+    <color name="shift_rest">#9E9E9E</color>
+
+    <!-- Calendar colors -->
+    <color name="calendar_today">#1976D2</color>
+    <color name="calendar_selected">#E3F2FD</color>
+    <color name="calendar_current_month">#000000</color>
+    <color name="calendar_other_month">#9E9E9E</color>
+
+    <!-- Status colors -->
+    <color name="status_success">#4CAF50</color>
+    <color name="status_warning">#FF9800</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_info">#2196F3</color>
+
+</resources>

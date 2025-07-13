@@ -76,23 +76,23 @@
 
     <!-- PRIMARY SHIFTS (Most Important) -->
     <!-- Morning Shift - Warm Orange/Amber -->
-    <color name="shift_morning">#FF8F00</color>           <!-- Deep Orange 600 -->
+<!--    <color name="shift_morning">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
     <color name="shift_morning_light">#FFCC02</color>     <!-- Amber 600 -->
     <color name="shift_morning_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
     <!-- Afternoon Shift - Forest Green -->
-    <color name="shift_afternoon">#388E3C</color>         <!-- Green 600 -->
+<!--    <color name="shift_afternoon">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
     <color name="shift_afternoon_light">#66BB6A</color>   <!-- Green 400 -->
     <color name="shift_afternoon_dark">#1B5E20</color>    <!-- Green 900 -->
 
     <!-- Night Shift - Deep Blue -->
-    <color name="shift_night">#1976D2</color>             <!-- Blue 600 -->
+<!--    <color name="shift_night">#1976D2</color>             &lt;!&ndash; Blue 600 &ndash;&gt;-->
     <color name="shift_night_light">#42A5F5</color>       <!-- Blue 400 -->
     <color name="shift_night_dark">#0D47A1</color>        <!-- Blue 900 -->
 
     <!-- SECONDARY SHIFTS -->
     <!-- Rest/Off - Neutral Gray -->
-    <color name="shift_rest">#757575</color>              <!-- Gray 600 -->
+<!--    <color name="shift_rest">#757575</color>              &lt;!&ndash; Gray 600 &ndash;&gt;-->
     <color name="shift_rest_light">#BDBDBD</color>        <!-- Gray 400 -->
     <color name="shift_rest_dark">#424242</color>         <!-- Gray 800 -->
 
@@ -274,5 +274,11 @@
     <color name="type_maintenance">#FF9800</color>     <!-- Orange - Maintenance -->
     <color name="type_meeting">#2196F3</color>         <!-- Blue - Meetings -->
     <color name="type_general">#9C27B0</color>         <!-- Purple - General events -->
+
+
+
+<!--    SMARTSHIFTS-->
+
+<!--    END SMARTSHIFTS-->
 
 </resources>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120"
+    android:tint="?attr/colorPrimary">
+
+    <!-- Background Circle -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"
+        android:strokeWidth="4"
+        android:strokeColor="?attr/colorPrimary" />
+
+    <!-- Clock Face -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M60,20v8M60,92v8M20,60h8M92,60h8M35.86,35.86l5.66,5.66M78.48,78.48l5.66,5.66M84.14,35.86l-5.66,5.66M41.52,78.48l-5.66,5.66" />
+
+    <!-- Clock Hands -->
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M60,60L60,40"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+
+    <path
+        android:fillColor="?attr/colorPrimary"
+        android:pathData="M60,60L75,60"
+        android:strokeWidth="2"
+        android:strokeLineCap="round" />
+
+    <!-- Center Dot -->
+    <circle
+        android:fillColor="?attr/colorPrimary"
+        android:cx="60"
+        android:cy="60"
+        android:radius="3" />
+
+    <!-- Shift Indicators -->
+    <circle
+        android:fillColor="#4CAF50"
+        android:cx="35"
+        android:cy="35"
+        android:radius="4" />
+
+    <circle
+        android:fillColor="#FF9800"
+        android:cx="85"
+        android:cy="35"
+        android:radius="4" />
+
+    <circle
+        android:fillColor="#3F51B5"
+        android:cx="85"
+        android:cy="85"
+        android:radius="4" />
+
+</vector>
