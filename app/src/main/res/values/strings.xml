@@ -988,6 +988,7 @@
     <string name="text_package_name">Nome Pacchetto:</string>
     <string name="text_author">Autore:</string>
     <string name="text_advanced_features">Features Avanzate</string>
+    <string name="toolbar_action">Azione</string>
 
     <!-- ======================================================================= -->
 

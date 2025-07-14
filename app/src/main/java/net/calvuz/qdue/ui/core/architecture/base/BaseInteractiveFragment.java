@@ -26,6 +26,8 @@ import net.calvuz.qdue.core.services.models.QuickEventRequest;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.ui.core.components.toolbars.FloatingDayToolbar;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.core.components.toolbars.BottomSelectionToolbar;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
@@ -81,6 +83,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     // old untouched
     // Bottom Selection Toolbar
     protected BottomSelectionToolbar mBottomToolbar;
+//    protected FloatingDayToolbar mBottomToolbar;
 
     // Selection mode support
     protected boolean mHasSelectionHiddenFab = false;
@@ -780,14 +783,87 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     // Setup Methods (Enhanced)
     // ===========================================
 
+
+
+    /**
+     * 🆕 HELPER: Get current user team for validation from adapter
+     * Gets the user team directly from the BaseAdapter
+     */
+    protected HalfTeam getCurrentUserTeam() {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter != null) {
+            // Access mUserHalfTeam from BaseAdapter
+            return adapter.mUserHalfTeam;
+        }
+
+        Log.w(TAG, "getCurrentUserTeam: No adapter available, returning null");
+        return null;
+    }
+
+    /**
+     * 🆕 HELPER: Get current day map for validation - SIMPLE IMPLEMENTATION
+     * Builds a basic day map from adapter's mItems for toolbar validation
+     */
+    protected Map<LocalDate, Day> getCurrentDayMap() {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter == null || adapter.mItems == null) {
+            Log.w(TAG, "getCurrentDayMap: No adapter or items available");
+            return new HashMap<>();
+        }
+
+        Map<LocalDate, Day> dayMap = new HashMap<>();
+
+        // Extract Day objects from adapter's ViewItems
+        for (SharedViewModels.ViewItem item : adapter.mItems) {
+            if (item instanceof SharedViewModels.DayItem) {
+                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
+                if (dayItem.day != null) {
+                    dayMap.put(dayItem.day.getLocalDate(), dayItem.day);
+                }
+            }
+        }
+
+        Log.d(TAG, "getCurrentDayMap: Built day map with " + dayMap.size() + " days");
+        return dayMap;
+    }
+
+
     /**
      * Initialize bottom selection toolbar
      */
     private void setupBottomToolbar() {
         if (getContext() == null) return;
 
-        mBottomToolbar = new BottomSelectionToolbar(getContext());
+        // Get current user team for smart validation
+        HalfTeam userTeam = getCurrentUserTeam();
+
+        // Create enhanced toolbar with user team context
+        mBottomToolbar = new BottomSelectionToolbar(getContext(), userTeam);
+
+        // Set day map for validation context (if available)
+        setupValidationContext();
+
         Log.d(TAG, "setupBottomToolbar: ✅ Bottom toolbar initialized");
+    }
+
+
+    /**
+     * 🆕 Setup validation context for enhanced toolbar
+     */
+    private void setupValidationContext() {
+        if (mBottomToolbar == null) return;
+
+        // Get day map from data source (if available)
+        Map<LocalDate, Day> dayMap = getCurrentDayMap();
+        if (dayMap != null) {
+            mBottomToolbar.setDayMap(dayMap);
+        }
+
+        // Update user team if it changed
+        HalfTeam userTeam = getCurrentUserTeam();
+        if (userTeam != null) {
+            mBottomToolbar.setUserTeam(userTeam);
+        }
     }
 
     /**
@@ -1228,12 +1304,20 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      */
     private void showBottomToolbar() {
         if (mBottomToolbar == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null");
-            return;
+            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null - reinitializing...");
+            setupBottomToolbar(); // Reinitialize if needed
+
+            if (mBottomToolbar == null) {
+                Log.e(TAG, "showBottomToolbar: ❌ Failed to initialize bottom toolbar");
+                return;
+            }
         }
 
         BaseInteractiveAdapter adapter = getClickAdapter();
-        if (adapter == null) return;
+        if (adapter == null) {
+            Log.e(TAG, "showBottomToolbar: ❌ No adapter available");
+            return;
+        }
 
         ViewGroup container = getToolbarContainer();
         if (container == null) {
@@ -1241,8 +1325,35 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
             return;
         }
 
+        // 🔧 UPDATE: Setup validation context before showing
+        setupValidationContext();
+
+        // Get selected dates
         Set<LocalDate> selectedDates = adapter.getSelectedDates();
+        if (selectedDates == null || selectedDates.isEmpty()) {
+            Log.w(TAG, "showBottomToolbar: ⚠️ No dates selected");
+            return;
+        }
+
+        // Show enhanced toolbar with smart validation
         mBottomToolbar.show(container, selectedDates, this);
+//
+//        if (mBottomToolbar == null) {
+//            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null");
+//            return;
+//        }
+//
+//        BaseInteractiveAdapter adapter = getClickAdapter();
+//        if (adapter == null) return;
+//
+//        ViewGroup container = getToolbarContainer();
+//        if (container == null) {
+//            Log.e(TAG, "showBottomToolbar: ❌ No toolbar container available");
+//            return;
+//        }
+//
+//        Set<LocalDate> selectedDates = adapter.getSelectedDates();
+//        mBottomToolbar.show(container, selectedDates, this);
     }
 
     /**
@@ -1384,18 +1495,47 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * Update bottom toolbar with current selection
      */
     private void updateBottomToolbar() {
-        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
+        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) {
+            return;
+        }
 
         BaseInteractiveAdapter adapter = getClickAdapter();
-        if (adapter != null) {
-            Set<LocalDate> selectedDates = adapter.getSelectedDates();
-            mBottomToolbar.updateSelection(selectedDates);
+        if (adapter == null) {
+            hideBottomToolbar();
+            return;
         }
+
+        Set<LocalDate> selectedDates = adapter.getSelectedDates();
+        if (selectedDates == null || selectedDates.isEmpty()) {
+            hideBottomToolbar();
+            return;
+        }
+
+        // 🆕 NEW: Update selection with enhanced validation
+        mBottomToolbar.updateSelection(selectedDates);
+
+//        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
+//
+//        BaseInteractiveAdapter adapter = getClickAdapter();
+//        if (adapter != null) {
+//            Set<LocalDate> selectedDates = adapter.getSelectedDates();
+//            mBottomToolbar.updateSelection(selectedDates);
+//        }
     }
 
     // ===========================================
     // Helper Methods
     // ===========================================
+
+    /**
+     * 🆕 NEW: Refresh validation context when data changes
+     * Call this when day data or user team changes
+     */
+    protected void refreshToolbarValidation() {
+        if (mBottomToolbar != null) {
+            setupValidationContext();
+        }
+    }
 
     /**
      * Check if currently in selection mode with items selected

@@ -206,5 +206,8 @@
     <dimen name="drawer_header_icon_margin">12dp</dimen>
     <dimen name="drawer_header_icon_padding">8dp</dimen>
     <dimen name="spacing_ml">20dp</dimen>
+    <dimen name="radius_floating_menu">28dp</dimen>
+    <dimen name="radius_sm">12dp</dimen>
+    <dimen name="radius_m">16dp</dimen>
 
 </resources>

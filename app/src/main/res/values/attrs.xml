@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- ============================================ -->
+    <!-- SIMPLE MENU ATTRIBUTES -->
+    <!-- Essential attributes for menu styling -->
+    <!-- ============================================ -->
+
+    <!-- Floating Menu Color Attributes -->
+    <declare-styleable name="FloatingMenuTheme">
+        <attr name="floatingMenuBackground" format="color|reference" />
+        <attr name="floatingMenuOnBackground" format="color|reference" />
+        <attr name="floatingMenuPrimary" format="color|reference" />
+        <attr name="floatingMenuSelected" format="color|reference" />
+        <attr name="floatingMenuSurface" format="color|reference" />
+        <attr name="floatingMenuOnSurface" format="color|reference" />
+        <attr name="floatingMenuDestructive" format="color|reference" />
+    </declare-styleable>
+
+
+
+
     <!-- ============================================ -->
     <!-- ESSENTIAL CUSTOM ATTRIBUTES ONLY -->
     <!-- Cleaned up to bare minimum for app functionality -->

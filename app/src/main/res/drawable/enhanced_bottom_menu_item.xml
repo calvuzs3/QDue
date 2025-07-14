@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ============================================ -->
+<!-- ENHANCED MENU ITEM BACKGROUND DRAWABLE -->
+<!-- res/drawable/enhanced_bottom_menu_item.xml -->
+<!-- ============================================ -->
+
+<!-- Enhanced background for bottom toolbar menu items with states -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Selected/Pressed state -->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/floatingMenuSelected" />
+            <corners android:radius="16dp" />
+            <stroke
+                android:width="2dp"
+                android:color="?attr/floatingMenuPrimary" />
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/floatingMenuSelected" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+
+    <!-- Focused state -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/floatingMenuSurface" />
+            <corners android:radius="16dp" />
+            <stroke
+                android:width="2dp"
+                android:color="?attr/floatingMenuPrimary" />
+        </shape>
+    </item>
+
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/floatingMenuSurface" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+
+</selector>
+

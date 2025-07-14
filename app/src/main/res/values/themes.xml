@@ -8,6 +8,16 @@
 
     <style name="Theme.QDue" parent="Theme.Material3.DayNight">
 
+        <!-- ✅ NEW: Floating Menu Attributes (LIGHT THEME) -->
+        <item name="floatingMenuBackground">@color/grey_800</item>          <!-- Light background -->
+        <item name="floatingMenuOnBackground">@color/grey_100</item>        <!-- Dark text on light -->
+        <item name="floatingMenuPrimary">@color/blue_500</item>             <!-- Primary actions -->
+        <item name="floatingMenuSelected">@color/blue_100</item>            <!-- Selected/hover state -->
+        <item name="floatingMenuSurface">@color/grey_800</item>             <!-- Surface elements -->
+        <item name="floatingMenuOnSurface">@color/grey_100</item>           <!-- Text on surface -->
+
+
+
         <!-- Material 3 System Colors (auto-switched by Material You) -->
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
@@ -83,14 +93,14 @@
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="windowActionBar">false</item>
+<!--        <item name="windowActionBar">false</item>-->
         <item name="windowNoTitle">true</item>
 
         <!-- Component Style Applications -->
 <!--        <item name="toolbarStyle">@style/Widget.QDue.Toolbar</item>-->
         <item name="floatingActionButtonStyle">@style/Widget.QDue.FloatingActionButton</item>
         <item name="toolbarStyle">@style/Widget.QDue.Toolbar.Enhanced</item>
-        <item name="materialCardViewStyle">@style/Widget.QDue.CardView</item>
+<!--        <item name="materialCardViewStyle">@style/Widget.QDue.CardView</item>-->
         <item name="bottomNavigationStyle">@style/Widget.QDue.BottomNavigationView</item>
         <item name="navigationViewStyle">@style/Widget.QDue.NavigationView</item>
 

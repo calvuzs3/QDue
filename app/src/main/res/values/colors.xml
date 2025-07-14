@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- ============================================ -->
+    <!-- SIMPLE MENU COLOR PALETTE -->
+    <!-- Material-style naming for menu components -->
+    <!-- ============================================ -->
+
+    <!-- LIGHT THEME MENU COLORS -->
+    <color name="grey_50">#FAFAFA</color>          <!-- Light menu background -->
+    <color name="grey_100">#F5F5F5</color>         <!-- Light menu surface -->
+    <color name="grey_800">#424242</color>         <!-- Text on light menu -->
+    <color name="blue_500">#2196F3</color>         <!-- Primary action color -->
+    <color name="blue_100">#BBDEFB</color>         <!-- Selected/hover state -->
+    <color name="red_500">#F44336</color>          <!-- Destructive actions -->
+
+    <!-- DARK THEME MENU COLORS -->
+    <color name="grey_900">#212121</color>         <!-- Dark menu background -->
+    <color name="grey_800_dark">#303030</color>    <!-- Dark menu surface (lighter) -->
+    <color name="grey_100_dark">#F5F5F5</color>    <!-- Text on dark menu -->
+    <color name="blue_300">#64B5F6</color>         <!-- Primary action color dark -->
+    <color name="blue_800">#1565C0</color>         <!-- Selected/hover state dark -->
+    <color name="red_300">#E57373</color>          <!-- Destructive actions dark -->
+
+
     <!-- ============================================ -->
     <!-- MATERIAL YOU + FALLBACK COLOR SYSTEM -->
     <!-- Optimized for Dynamic Colors with Purple-Blue Fallback -->

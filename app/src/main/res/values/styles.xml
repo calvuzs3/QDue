@@ -38,7 +38,7 @@
         <item name="backgroundTint">?attr/colorPrimaryContainer</item>
         <item name="tint">?attr/colorOnPrimaryContainer</item>
         <item name="android:elevation">6dp</item>
-        <item name="android:src">@drawable/ic_today</item>
+        <item name="android:src">@drawable/today_indicator_circle</item>
         <item name="shapeAppearance">@style/ShapeAppearance.QDue.SmallComponent</item>
         <item name="android:layout_marginStart">@dimen/spacing_s</item>
         <item name="android:layout_marginEnd">@dimen/spacing_s</item>
@@ -173,10 +173,10 @@
 
     <style name="ThemeOverlay.QDue.Toolbar" parent="ThemeOverlay.Material3.Toolbar.Surface">
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
-        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnSecondary</item>
         <item name="actionMenuTextColor">?attr/colorOnPrimary</item>
         <item name="colorControlNormal">?attr/colorOnPrimary</item>
-        <item name="colorOnSurface">?attr/colorOnPrimary</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
     </style>
 
     <style name="ThemeOverlay.QDue.Toolbar.Popup" parent="ThemeOverlay.Material3.Light">
