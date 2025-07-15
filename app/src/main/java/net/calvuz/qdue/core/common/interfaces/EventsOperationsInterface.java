@@ -1,4 +1,3 @@
-
 package net.calvuz.qdue.core.common.interfaces;
 
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -22,6 +21,12 @@ public interface EventsOperationsInterface {
      * @param event Event to edit
      */
     void triggerEventEdit(LocalEvent event);
+
+    /**
+     * Edit existing event from the list contextual menu
+     * @param event Event to edit
+     */
+    void triggerEventEditFromList(LocalEvent event);
 
     /**
      * Duplicate existing event

@@ -1,3 +1,8 @@
+/**
+ * 🎨 Enhanced Bottom Selection Toolbar with Smart Validation
+ * Modern Material 3 implementation with programmatic approach
+ * Based on EventsBottomSelectionToolbar architecture but maintaining complex validation
+ */
 package net.calvuz.qdue.ui.core.components.toolbars;
 
 import android.animation.Animator;
@@ -8,6 +13,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,15 +22,17 @@ import android.view.ViewParent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
@@ -49,13 +57,13 @@ import java.util.Set;
 /**
  * 🎨 Enhanced Bottom Selection Toolbar with Smart Validation
  *
- * Key improvements:
- * - Custom color palette integration
- * - Larger icons (24dp) and buttons (56dp) for better accessibility
- * - Maximum 4 actions limit for clean UI
- * - Smart validation based on user work schedule
+ * Features:
+ * - Programmatic Material 3 design with custom styling
+ * - Smart action validation based on work schedule
+ * - Enhanced animations and haptic feedback
+ * - Robust layout parameter handling for any container
  * - Business rules enforcement
- * - Enhanced visual feedback and animations
+ * - Maximum 5 actions limit for clean UI
  */
 public class BottomSelectionToolbar {
 
@@ -65,14 +73,12 @@ public class BottomSelectionToolbar {
     private static final int MAX_ACTIONS = 5;              // Limit actions for clean UI
     private static final int ANIMATION_DURATION = 250;     // Smooth animations
     private static final int ICON_SIZE_DP = 24;           // Larger icons for visibility
-    private static final int BUTTON_SIZE_DP = 56;         // Larger touch targets
+    private static final int BUTTON_SIZE_DP = 48;         // Larger touch targets
 
     // Views
     private final Context mContext;
     private MaterialCardView mToolbarContainer;
-//    private MaterialButton mCloseSelectionButton;
     private RecyclerView mQuickActionsRecyclerView;
-//    private TextView mSelectionCountText;
 
     // Data and state
     private EnhancedToolbarActionsAdapter mActionsAdapter;
@@ -90,8 +96,8 @@ public class BottomSelectionToolbar {
     public BottomSelectionToolbar(@NonNull Context context, @Nullable HalfTeam userTeam) {
         mContext = context;
         mCurrentUserTeam = userTeam;
-        initializeEnhancedViews();
-        setupEnhancedListeners();
+        initializeViews();
+        setupListeners();
     }
 
     // ==================== SMART ACTION VALIDATION SYSTEM ====================
@@ -150,12 +156,12 @@ public class BottomSelectionToolbar {
             // ADD_EVENT è sempre valido (fallback)
             validActions.add(ToolbarAction.ADD_EVENT);
 
-            // VIEW_EVENTS se ci sono eventi esistenti
-//            if (context.hasExistingEvents) {
-//                validActions.add(ToolbarAction.VIEW_EVENTS);
-//            }
+            // Apply MAX_ACTIONS limit with smart prioritization
+            if (validActions.size() > MAX_ACTIONS) {
+                validActions = prioritizeActions(validActions, selectedDates.size());
+            }
 
-            Log.d(TAG, "Valid actions: " + validActions.size() + " of " + ToolbarAction.values().length);
+            Log.d(TAG, "Valid actions: " + validActions.size() + " for " + selectedDates.size() + " dates");
             return validActions;
         }
 
@@ -219,19 +225,16 @@ public class BottomSelectionToolbar {
          * 🏖️ FERIE - Valid for work days only
          */
         private static boolean isValidForFerie(ValidationContext context) {
-            // Business Rule: Ferie can only be applied to work days
             if (context.workDays == 0) {
                 Log.d(TAG, "FERIE invalid: No work days in selection");
                 return false;
             }
 
-            // Business Rule: No ferie for past days
             if (context.pastDays > 0) {
                 Log.d(TAG, "FERIE invalid: Contains past days");
                 return false;
             }
 
-            // Business Rule: Check maximum consecutive days
             if (context.workDays > MAX_CONSECUTIVE_VACATION_DAYS) {
                 Log.d(TAG, "FERIE invalid: Exceeds maximum consecutive days");
                 return false;
@@ -244,14 +247,11 @@ public class BottomSelectionToolbar {
          * 🏥 MALATTIA - Valid for work days, special rules for timing
          */
         private static boolean isValidForMalattia(ValidationContext context) {
-            // Business Rule: Malattia needs at least one work day impact
             if (context.workDays < MIN_WORK_DAYS_FOR_SICK_LEAVE) {
                 Log.d(TAG, "MALATTIA invalid: Need at least " + MIN_WORK_DAYS_FOR_SICK_LEAVE + " work day(s)");
                 return false;
             }
 
-            // Business Rule: Malattia can be retroactive (past days allowed)
-            // Business Rule: Weekend days are ok if there are work days too
             return true;
         }
 
@@ -259,13 +259,11 @@ public class BottomSelectionToolbar {
          * ⏰ PERMESSO - Valid for work days, more flexible than ferie
          */
         private static boolean isValidForPermesso(ValidationContext context) {
-            // Business Rule: Permesso can only be applied to work days
             if (context.workDays == 0) {
                 Log.d(TAG, "PERMESSO invalid: No work days in selection");
                 return false;
             }
 
-            // Business Rule: Limited retroactive permission
             if (context.pastDays > 0) {
                 Log.d(TAG, "PERMESSO invalid: Contains past days (limited retroactive allowed)");
                 return false;
@@ -278,14 +276,11 @@ public class BottomSelectionToolbar {
          * ♿ LEGGE_104 - Special protected leave, very flexible
          */
         private static boolean isValidForLegge104(ValidationContext context) {
-            // Business Rule: Legge 104 is very flexible, can be applied to work days
             if (context.workDays == 0) {
                 Log.d(TAG, "LEGGE_104 invalid: No work days in selection");
                 return false;
             }
 
-            // Business Rule: Retroactive allowed for Legge 104
-            // Business Rule: Can span weekends if needed
             return true;
         }
 
@@ -293,25 +288,45 @@ public class BottomSelectionToolbar {
          * ⚡ STRAORDINARIO - Valid for off days or weekends
          */
         private static boolean isValidForStraordinario(ValidationContext context) {
-            // Business Rule: Straordinario is typically for off-days or weekends
             if (context.offDays == 0 && context.weekendDays == 0) {
                 Log.d(TAG, "STRAORDINARIO invalid: No off-days or weekends in selection");
                 return false;
             }
 
-            // Business Rule: No straordinario for past days
             if (context.pastDays > 0) {
                 Log.d(TAG, "STRAORDINARIO invalid: Contains past days");
                 return false;
             }
 
-            // Business Rule: Single day selections preferred for straordinario
             if (context.totalDays > 3) {
                 Log.d(TAG, "STRAORDINARIO warning: Large selection, might not be appropriate");
-                // Still allow but with warning
             }
 
             return true;
+        }
+
+        /**
+         * 🎯 Prioritize actions when exceeding MAX_ACTIONS
+         */
+        private static List<ToolbarAction> prioritizeActions(List<ToolbarAction> actions, int selectionCount) {
+            List<ToolbarAction> priorityOrder = Arrays.asList(
+                    ToolbarAction.FERIE,         // High priority - most common
+                    ToolbarAction.MALATTIA,      // High priority - quite common
+                    ToolbarAction.PERMESSO,      // Medium priority - common
+                    ToolbarAction.LEGGE_104,     // Medium priority - protected
+                    ToolbarAction.ADD_EVENT,     // Medium priority - fallback
+                    ToolbarAction.STRAORDINARIO  // Lower priority - occasional
+            );
+
+            List<ToolbarAction> prioritized = new ArrayList<>();
+
+            for (ToolbarAction priority : priorityOrder) {
+                if (actions.contains(priority) && prioritized.size() < MAX_ACTIONS) {
+                    prioritized.add(priority);
+                }
+            }
+
+            return prioritized;
         }
 
         /**
@@ -322,7 +337,6 @@ public class BottomSelectionToolbar {
                 return false;
             }
 
-            // Check if user team is in any shift
             for (Shift shift : day.getShifts()) {
                 for (HalfTeam team : shift.getHalfTeams()) {
                     if (team.isSameTeamAs(userTeam)) {
@@ -338,8 +352,7 @@ public class BottomSelectionToolbar {
          * 📅 Check if day has existing events
          */
         private static boolean hasExistingEvents(Day day) {
-            // TODO: Implement actual event checking based on your event system
-            return day != null; // Placeholder
+            return day != null; // Placeholder - implement actual event checking
         }
 
         /**
@@ -381,10 +394,7 @@ public class BottomSelectionToolbar {
         public static void showValidationMessage(Context context, ToolbarAction action,
                                                  Set<LocalDate> selectedDates, String reason) {
             String message = generateFeedbackMessage(action, selectedDates, reason);
-
-            // Show user-friendly message
             Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-
             Log.d(TAG, "Validation feedback shown: " + message);
         }
 
@@ -433,121 +443,216 @@ public class BottomSelectionToolbar {
         }
     }
 
-    // ==================== ENHANCED INITIALIZATION ====================
+    // ==================== PROGRAMMATIC INITIALIZATION ====================
 
     /**
-     * 🎨 Initialize enhanced views with custom styling
+     * 🎨 PROGRAMMATIC: Initialize toolbar views with explicit sizing
      */
-    private void initializeEnhancedViews() {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        mToolbarContainer = (MaterialCardView) inflater.inflate(
-                R.layout.enhanced_bottom_selection_toolbar, null
-        );
+    private void initializeViews() {
+        // ✅ Try to use layout XML like Events toolbar
+        try {
+            LayoutInflater inflater = LayoutInflater.from(mContext);
 
-        // Get view references
-//        mCloseSelectionButton = mToolbarContainer.findViewById(R.id.btn_close_selection);
-        mQuickActionsRecyclerView = mToolbarContainer.findViewById(R.id.rv_quick_actions);
-//        mSelectionCountText = mToolbarContainer.findViewById(R.id.tv_selection_count);
+            // Create MaterialCardView container
+            mToolbarContainer = new MaterialCardView(mContext);
 
-        // 🎨 Apply custom styling
-        applyCustomStyling();
+            // ✅ Try to inflate enhanced layout XML
+            View contentView;
+            try {
+                contentView = inflater.inflate(R.layout.enhanced_bottom_selection_toolbar, null);
+                Log.d(TAG, "✅ Using enhanced_bottom_selection_toolbar.xml");
+            } catch (Exception e) {
+                // Fallback to events layout
+                Log.w(TAG, "Enhanced layout not found, using events layout");
+                contentView = inflater.inflate(R.layout.events_bottom_selection_toolbar, null);
+            }
 
-        // Setup enhanced RecyclerView
-        setupEnhancedRecyclerView();
+            // Add content to card
+            mToolbarContainer.addView(contentView);
 
-        // Initially hide with custom animation start position
+            // Get view references
+            mQuickActionsRecyclerView = contentView.findViewById(R.id.rv_quick_actions);
+
+            if (mQuickActionsRecyclerView == null) {
+                Log.e(TAG, "❌ rv_quick_actions not found in layout!");
+                createProgrammaticFallback();
+                return;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Layout inflation failed, using programmatic fallback: " + e.getMessage());
+            createProgrammaticFallback();
+            return;
+        }
+
+        // ✅ Apply styling to the inflated card
+        applyCardStyling();
+
+        // ✅ Setup RecyclerView
+        setupRecyclerView();
+
+        // Initially hide
         mToolbarContainer.setVisibility(View.GONE);
-        mToolbarContainer.setTranslationY(dpToPx(80)); // Start below screen
+        mToolbarContainer.setTranslationY(dpToPx(80));
         mToolbarContainer.setAlpha(0f);
 
-        Log.d(TAG, "Enhanced bottom selection toolbar initialized");
+        Log.d(TAG, "✅ Enhanced toolbar initialized with XML layout approach");
     }
 
     /**
-     * 🎨 Apply custom color palette and styling
+     * 🔧 FALLBACK: Create programmatic layout if XML fails
      */
-    private void applyCustomStyling() {
-        // Apply custom background colors
+    private void createProgrammaticFallback() {
+        Log.d(TAG, "Creating programmatic fallback layout");
+
+        mToolbarContainer = new MaterialCardView(mContext);
+
+        // Create content layout
+        LinearLayout mainLayout = new LinearLayout(mContext);
+        mainLayout.setOrientation(LinearLayout.HORIZONTAL);
+        mainLayout.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
+        mainLayout.setGravity(Gravity.CENTER_VERTICAL);
+
+        // Create RecyclerView
+        mQuickActionsRecyclerView = new RecyclerView(mContext);
+        LinearLayout.LayoutParams recyclerParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                dpToPx(48)
+        );
+        mQuickActionsRecyclerView.setLayoutParams(recyclerParams);
+
+        // Add RecyclerView to main layout
+        mainLayout.addView(mQuickActionsRecyclerView);
+
+        // Add main layout to card
+        mToolbarContainer.addView(mainLayout);
+    }
+
+    /**
+     * 🔧 ENHANCED: Card styling to match Events size
+     */
+    private void applyCardStyling() {
+        if (mToolbarContainer == null) return;
+
+        // Background color
         mToolbarContainer.setCardBackgroundColor(
                 Library.getColorByThemeAttr(mContext, R.attr.floatingMenuBackground)
         );
 
-        // Enhanced elevation and corner radius
+        // 🔧 Match Events toolbar elevation and styling
         mToolbarContainer.setCardElevation(dpToPx(12));
         mToolbarContainer.setRadius(dpToPx(20));
 
-        // Subtle stroke with custom colors
+        // Stroke
         mToolbarContainer.setStrokeWidth(dpToPx(1));
         mToolbarContainer.setStrokeColor(
-                ColorStateList.valueOf(Library.getColorByThemeAttr(mContext, R.attr.floatingMenuOnBackground))
+                Library.getColorByThemeAttr(mContext, R.attr.floatingMenuOnBackground)
         );
 
-//        // Apply custom colors to close button
-//        if (mCloseSelectionButton != null) {
-//            mCloseSelectionButton.setIconTint(
-//                    ColorStateList.valueOf(Library.getColorByThemeAttr(mContext, R.attr.floatingMenuOnBackground))
-//            );
-//            mCloseSelectionButton.setBackgroundTintList(
-//                    ColorStateList.valueOf(Color.TRANSPARENT)
-//            );
-//            mCloseSelectionButton.setRippleColor(
-//                    ColorStateList.valueOf(Library.getColorByThemeAttr(mContext, R.attr.floatingMenuSelected))
-//            );
-//        }
+        // 🔧 CRITICAL: High Z-index to ensure visibility above bottom nav
+        mToolbarContainer.setTranslationZ(dpToPx(24)); // Higher than bottom nav
+        mToolbarContainer.setMaxCardElevation(dpToPx(24));
 
-        // Apply custom colors to selection count text
-//        if (mSelectionCountText != null) {
-//            mSelectionCountText.setTextColor(
-//                    Library.getColorByThemeAttr(mContext, R.attr.floatingMenuOnBackground)
-//            );
-//        }
+        Log.d(TAG, "✅ Card styling applied to match Events toolbar");
     }
 
     /**
-     * 📋 Setup enhanced RecyclerView with optimizations
+     * 📋 Setup RecyclerView for action buttons
      */
-    private void setupEnhancedRecyclerView() {
-        // Enhanced layout manager with optimizations
+    private void setupRecyclerView() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(
                 mContext, LinearLayoutManager.HORIZONTAL, false
         );
         layoutManager.setInitialPrefetchItemCount(MAX_ACTIONS);
         mQuickActionsRecyclerView.setLayoutManager(layoutManager);
 
-        // Enhanced adapter
-        mActionsAdapter = new EnhancedToolbarActionsAdapter();
+        mActionsAdapter = new EnhancedToolbarActionsAdapter(mContext);
         mQuickActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Performance optimizations
-        mQuickActionsRecyclerView.setHasFixedSize(true);
+        mQuickActionsRecyclerView.setHasFixedSize(false);
         mQuickActionsRecyclerView.setItemViewCacheSize(MAX_ACTIONS);
-        mQuickActionsRecyclerView.setDrawingCacheEnabled(true);
-
-        // Enhanced scrolling behavior
         mQuickActionsRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mQuickActionsRecyclerView.setNestedScrollingEnabled(false);
     }
 
     /**
-     * 👆 Setup enhanced click listeners with haptic feedback
+     * 👆 Setup click listeners
      */
-    private void setupEnhancedListeners() {
-        // Enhanced close button with haptic feedback
-//        mCloseSelectionButton.setOnClickListener(v -> {
-//            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-//            animateButtonPress(v);
-//
-//            if (mListener != null) {
-//                mListener.onSelectionModeChanged(false, 0);
-//            }
-//            hide();
-//        });
-
+    private void setupListeners() {
         // Setup adapter click handling
         mActionsAdapter.setOnActionClickListener(this::onEnhancedActionClicked);
     }
 
-    // ==================== ENHANCED ACTION MANAGEMENT ====================
+    // ==================== ENHANCED LAYOUT HANDLING ====================
+
+    /**
+     * 🔧 CRITICAL: Create optimal layout parameters for any container type
+     */
+    private ViewGroup.LayoutParams createOptimalLayoutParams(ViewGroup container) {
+        ViewGroup.LayoutParams layoutParams;
+
+        String containerType = container.getClass().getSimpleName();
+        Log.d(TAG, "Creating layout params for container type: " + containerType);
+
+        if (container instanceof FrameLayout) {
+            FrameLayout.LayoutParams frameParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            frameParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            frameParams.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+            layoutParams = frameParams;
+
+        } else if (container instanceof CoordinatorLayout) {
+            CoordinatorLayout.LayoutParams coordParams = new CoordinatorLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            coordParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            coordParams.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+            layoutParams = coordParams;
+
+        } else if (container instanceof LinearLayout) {
+            LinearLayout linearLayout = (LinearLayout) container;
+            if (linearLayout.getOrientation() == LinearLayout.VERTICAL) {
+                LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                linearParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+                linearParams.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+                layoutParams = linearParams;
+            } else {
+                layoutParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+            }
+
+        } else if (container instanceof RelativeLayout) {
+            RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            relativeParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            relativeParams.setMargins(dpToPx(16), 0, dpToPx(16), dpToPx(16));
+            layoutParams = relativeParams;
+
+        } else {
+            layoutParams = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+
+        Log.d(TAG, "✅ Created " + layoutParams.getClass().getSimpleName() +
+                " with width=" + layoutParams.width + ", height=" + layoutParams.height);
+
+        return layoutParams;
+    }
+
+    // ==================== ACTION HANDLING ====================
 
     /**
      * 🎯 Enhanced action click with feedback and validation
@@ -587,72 +692,9 @@ public class BottomSelectionToolbar {
                 mListener.onToolbarActionSelected(action, null, date);
             }
         }
-
-        // Optional: Hide toolbar after action (configurable)
-        // hide();
     }
 
-    /**
-     * 🎯 Smart action selection with validation and priority
-     */
-    private List<ToolbarAction> getEnhancedActionsForSelection(Set<LocalDate> selectedDates) {
-        if (selectedDates == null || selectedDates.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 🧠 USE SMART VALIDATION
-        List<ToolbarAction> validActions = SmartActionValidator.getValidActionsForSelection(
-                selectedDates, mCurrentUserTeam, mDayMap
-        );
-
-        // Apply UI limits (max 4 actions)
-        if (validActions.size() > MAX_ACTIONS) {
-            // Prioritize based on business importance
-            validActions = prioritizeActions(validActions, selectedDates);
-        }
-
-        Log.d(TAG, "Smart selection: " + validActions.size() + " valid actions for " +
-                selectedDates.size() + " dates");
-
-        return validActions;
-    }
-
-    /**
-     * 🎯 Prioritize actions when we need to limit to MAX_ACTIONS
-     */
-    private List<ToolbarAction> prioritizeActions(List<ToolbarAction> actions, Set<LocalDate> selectedDates) {
-        // Priority order based on business importance and frequency
-        List<ToolbarAction> priorityOrder = Arrays.asList(
-                ToolbarAction.FERIE,         // High priority - most common
-                ToolbarAction.MALATTIA,      // High priority - quite common
-                ToolbarAction.PERMESSO,      // Medium priority - common
-                ToolbarAction.LEGGE_104,     // Medium priority - protected
-                ToolbarAction.ADD_EVENT,     // Medium priority - fallback
-                ToolbarAction.STRAORDINARIO,  // Lower priority - occasional
-                ToolbarAction.VIEW_EVENTS     // Lowest priority - informational
-
-        );
-
-        List<ToolbarAction> prioritized = new ArrayList<>();
-
-        // Add actions in priority order
-        for (ToolbarAction priority : priorityOrder) {
-            if (actions.contains(priority) && prioritized.size() < MAX_ACTIONS) {
-                prioritized.add(priority);
-            }
-        }
-
-        // Add any remaining actions up to limit
-        for (ToolbarAction action : actions) {
-            if (!prioritized.contains(action) && prioritized.size() < MAX_ACTIONS) {
-                prioritized.add(action);
-            }
-        }
-
-        return prioritized;
-    }
-
-    // ==================== ENHANCED UI METHODS ====================
+    // ==================== PUBLIC METHODS ====================
 
     /**
      * 🚀 Enhanced show method with smart validation setup
@@ -671,19 +713,26 @@ public class BottomSelectionToolbar {
         mSelectedDates = new HashSet<>(selectedDates);
         mListener = listener;
 
-        // Update UI content with smart validation
-//        updateSelectionDisplay();
+        // Update available actions with smart validation
         updateAvailableActions();
+
+        // ✅ CRITICAL: Set layout params based on container type BEFORE adding
+        ViewGroup.LayoutParams layoutParams = createOptimalLayoutParams(container);
+        mToolbarContainer.setLayoutParams(layoutParams);
 
         // Add to container if not already added
         if (mToolbarContainer.getParent() == null) {
             container.addView(mToolbarContainer);
         }
 
+        // ✅ CRITICAL: Force layout to ensure proper sizing
+        mToolbarContainer.requestLayout();
+        container.requestLayout();
+
         // Show with enhanced animation
         animateIn();
-
         mIsVisible = true;
+
         Log.d(TAG, "Enhanced toolbar shown for " + selectedDates.size() + " selected dates");
     }
 
@@ -691,12 +740,8 @@ public class BottomSelectionToolbar {
      * 🔧 Setup validation context before showing
      */
     private void setupValidationContext(Set<LocalDate> selectedDates) {
-        // Load day data for selected dates if not already available
-        // This would typically come from your repository/service layer
-
         for (LocalDate date : selectedDates) {
             if (!mDayMap.containsKey(date)) {
-                // Load day data - this is a placeholder
                 Day day = loadDayForDate(date);
                 if (day != null) {
                     mDayMap.put(date, day);
@@ -710,12 +755,11 @@ public class BottomSelectionToolbar {
      */
     private Day loadDayForDate(LocalDate date) {
         // TODO: Implement actual day loading logic
-        // This would typically use your repository pattern
         return null; // Placeholder
     }
 
     /**
-     * 🔄 Enhanced hide method with smooth animations
+     * 🔄 Hide toolbar
      */
     public void hide() {
         if (mIsDestroyed || !mIsVisible) {
@@ -723,7 +767,6 @@ public class BottomSelectionToolbar {
         }
 
         animateOut(() -> {
-            // Remove from container after animation
             if (mToolbarContainer.getParent() instanceof ViewGroup) {
                 ((ViewGroup) mToolbarContainer.getParent()).removeView(mToolbarContainer);
             }
@@ -731,28 +774,8 @@ public class BottomSelectionToolbar {
             mIsVisible = false;
             mSelectedDates.clear();
             mListener = null;
-
-            Log.d(TAG, "Enhanced toolbar hidden");
         });
     }
-
-//    /**
-//     * 📊 Update selection display with enhanced formatting
-//     */
-//    private void updateSelectionDisplay() {
-//        if (mSelectionCountText == null || mSelectedDates == null) return;
-//
-//        int count = mSelectedDates.size();
-//        String displayText;
-//
-//        if (count == 1) {
-//            displayText = "1 giorno";
-//        } else {
-//            displayText = count + " giorni";
-//        }
-//
-//        mSelectionCountText.setText(displayText);
-//    }
 
     /**
      * 🔄 Update available actions based on smart validation
@@ -760,14 +783,13 @@ public class BottomSelectionToolbar {
     private void updateAvailableActions() {
         if (mActionsAdapter == null) return;
 
-        // 🧠 Get smart-validated actions
-        List<ToolbarAction> actions = getEnhancedActionsForSelection(mSelectedDates);
+        List<ToolbarAction> actions = SmartActionValidator.getValidActionsForSelection(
+                mSelectedDates, mCurrentUserTeam, mDayMap
+        );
         mActionsAdapter.updateActions(actions);
 
         Log.v(TAG, "Updated to " + actions.size() + " validated actions for selection");
     }
-
-    // ==================== PUBLIC METHODS ====================
 
     /**
      * 🆕 Set user team for validation
@@ -775,7 +797,6 @@ public class BottomSelectionToolbar {
     public void setUserTeam(HalfTeam userTeam) {
         mCurrentUserTeam = userTeam;
 
-        // Refresh actions if toolbar is currently visible
         if (mIsVisible && !mSelectedDates.isEmpty()) {
             updateAvailableActions();
         }
@@ -787,7 +808,6 @@ public class BottomSelectionToolbar {
     public void setDayMap(Map<LocalDate, Day> dayMap) {
         mDayMap = dayMap != null ? dayMap : new HashMap<>();
 
-        // Refresh actions if toolbar is currently visible
         if (mIsVisible && !mSelectedDates.isEmpty()) {
             updateAvailableActions();
         }
@@ -799,11 +819,8 @@ public class BottomSelectionToolbar {
     public void updateSelection(@NonNull Set<LocalDate> selectedDates) {
         if (mIsDestroyed) return;
 
-        // 🔧 Setup validation context for new selection
         setupValidationContext(selectedDates);
-
         mSelectedDates = new HashSet<>(selectedDates);
-//        updateSelectionDisplay();
         updateAvailableActions();
 
         Log.d(TAG, "Selection updated: " + selectedDates.size() + " dates");
@@ -816,13 +833,6 @@ public class BottomSelectionToolbar {
         return mIsVisible && !mIsDestroyed;
     }
 
-    /**
-     * ❓ Check if toolbar is destroyed
-     */
-    public boolean isDestroyed() {
-        return mIsDestroyed;
-    }
-
     // ==================== ENHANCED ANIMATIONS ====================
 
     /**
@@ -831,17 +841,14 @@ public class BottomSelectionToolbar {
     private void animateIn() {
         if (mToolbarContainer == null) return;
 
-        // Cancel any running animations
         cancelRunningAnimations();
 
-        // Set initial state
         mToolbarContainer.setVisibility(View.VISIBLE);
         mToolbarContainer.setTranslationY(dpToPx(80));
         mToolbarContainer.setAlpha(0f);
         mToolbarContainer.setScaleX(0.95f);
         mToolbarContainer.setScaleY(0.95f);
 
-        // Create enhanced animation set
         mShowAnimation = new AnimatorSet();
 
         ObjectAnimator translateY = ObjectAnimator.ofFloat(mToolbarContainer, "translationY", dpToPx(80), 0f);
@@ -849,7 +856,6 @@ public class BottomSelectionToolbar {
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(mToolbarContainer, "scaleX", 0.95f, 1f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(mToolbarContainer, "scaleY", 0.95f, 1f);
 
-        // Enhanced interpolators
         translateY.setInterpolator(new DecelerateInterpolator(1.2f));
         alpha.setInterpolator(new DecelerateInterpolator());
         scaleX.setInterpolator(new OvershootInterpolator(1.1f));
@@ -866,10 +872,8 @@ public class BottomSelectionToolbar {
     private void animateOut(Runnable onComplete) {
         if (mToolbarContainer == null) return;
 
-        // Cancel any running animations
         cancelRunningAnimations();
 
-        // Create enhanced animation set
         mHideAnimation = new AnimatorSet();
 
         ObjectAnimator translateY = ObjectAnimator.ofFloat(mToolbarContainer, "translationY", 0f, dpToPx(60));
@@ -877,14 +881,13 @@ public class BottomSelectionToolbar {
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(mToolbarContainer, "scaleX", 1f, 0.9f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(mToolbarContainer, "scaleY", 1f, 0.9f);
 
-        // Enhanced interpolators for exit
         translateY.setInterpolator(new AccelerateInterpolator(1.2f));
         alpha.setInterpolator(new AccelerateInterpolator());
         scaleX.setInterpolator(new AccelerateInterpolator());
         scaleY.setInterpolator(new AccelerateInterpolator());
 
         mHideAnimation.playTogether(translateY, alpha, scaleX, scaleY);
-        mHideAnimation.setDuration((int)(ANIMATION_DURATION * 0.8f)); // Slightly faster exit
+        mHideAnimation.setDuration((int)(ANIMATION_DURATION * 0.8f));
 
         mHideAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
@@ -902,7 +905,7 @@ public class BottomSelectionToolbar {
     }
 
     /**
-     * 🎬 Enhanced button press animation
+     * 🎬 Button press animation
      */
     private void animateButtonPress(View button) {
         button.animate()
@@ -922,7 +925,7 @@ public class BottomSelectionToolbar {
     }
 
     /**
-     * 🛑 Cancel any running animations
+     * 🛑 Cancel running animations
      */
     private void cancelRunningAnimations() {
         if (mShowAnimation != null && mShowAnimation.isRunning()) {
@@ -943,7 +946,6 @@ public class BottomSelectionToolbar {
             return;
         }
 
-        // Pause any running animations
         if (mShowAnimation != null && mShowAnimation.isRunning()) {
             mShowAnimation.pause();
         }
@@ -963,7 +965,6 @@ public class BottomSelectionToolbar {
             return;
         }
 
-        // Resume any paused animations
         if (mShowAnimation != null && mShowAnimation.isPaused()) {
             mShowAnimation.resume();
         }
@@ -975,7 +976,7 @@ public class BottomSelectionToolbar {
         Log.v(TAG, "BottomSelectionToolbar resumed");
     }
 
-    // ==================== DESTROY METHOD ====================
+    // ==================== DESTROY METHODS ====================
 
     /**
      * 🧹 Destroy toolbar and cleanup resources
@@ -998,23 +999,19 @@ public class BottomSelectionToolbar {
             // Step 3: Cleanup RecyclerView and adapter
             cleanupRecyclerView();
 
-            // Step 4: Cleanup button listeners and references
-            cleanupButtons();
-
-            // Step 5: Clear all data references
+            // Step 4: Clear all data references
             clearAllReferences();
 
-            // Step 6: Cleanup view references
+            // Step 5: Cleanup view references
             cleanupViews();
 
-            // Step 7: Mark as destroyed
+            // Step 6: Mark as destroyed
             mIsDestroyed = true;
 
             Log.d(TAG, "✅ BottomSelectionToolbar destruction completed successfully");
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Error during BottomSelectionToolbar destruction", e);
-            // Ensure we mark as destroyed even if cleanup fails
             mIsDestroyed = true;
         }
     }
@@ -1030,7 +1027,6 @@ public class BottomSelectionToolbar {
                 mToolbarContainer.setVisibility(View.GONE);
                 mToolbarContainer.setTranslationY(200f);
 
-                // Remove from parent if attached
                 ViewParent parent = mToolbarContainer.getParent();
                 if (parent instanceof ViewGroup) {
                     ((ViewGroup) parent).removeView(mToolbarContainer);
@@ -1038,7 +1034,6 @@ public class BottomSelectionToolbar {
             }
 
             mIsVisible = false;
-
             Log.v(TAG, "✅ Toolbar hidden immediately");
 
         } catch (Exception e) {
@@ -1053,7 +1048,6 @@ public class BottomSelectionToolbar {
         Log.v(TAG, "Cleaning up animations...");
 
         try {
-            // Stop and cleanup show animation
             if (mShowAnimation != null) {
                 if (mShowAnimation.isRunning()) {
                     mShowAnimation.cancel();
@@ -1062,7 +1056,6 @@ public class BottomSelectionToolbar {
                 mShowAnimation = null;
             }
 
-            // Stop and cleanup hide animation
             if (mHideAnimation != null) {
                 if (mHideAnimation.isRunning()) {
                     mHideAnimation.cancel();
@@ -1071,13 +1064,11 @@ public class BottomSelectionToolbar {
                 mHideAnimation = null;
             }
 
-            // Cancel any pending view animations on container
             if (mToolbarContainer != null) {
                 mToolbarContainer.clearAnimation();
                 mToolbarContainer.animate().cancel();
             }
 
-            // Cancel animations on RecyclerView
             if (mQuickActionsRecyclerView != null) {
                 mQuickActionsRecyclerView.clearAnimation();
                 mQuickActionsRecyclerView.animate().cancel();
@@ -1098,35 +1089,24 @@ public class BottomSelectionToolbar {
 
         try {
             if (mQuickActionsRecyclerView != null) {
-                // Stop any pending scroll operations
                 mQuickActionsRecyclerView.stopScroll();
-
-                // Clear adapter
                 mQuickActionsRecyclerView.setAdapter(null);
-
-                // Clear layout manager
                 mQuickActionsRecyclerView.setLayoutManager(null);
 
-                // Clear all item decorations
                 while (mQuickActionsRecyclerView.getItemDecorationCount() > 0) {
                     mQuickActionsRecyclerView.removeItemDecorationAt(0);
                 }
 
-                // Clear recycled view pool
                 RecyclerView.RecycledViewPool recycledViewPool = mQuickActionsRecyclerView.getRecycledViewPool();
                 if (recycledViewPool != null) {
                     recycledViewPool.clear();
                 }
 
-                // Clear animations
                 mQuickActionsRecyclerView.clearAnimation();
                 mQuickActionsRecyclerView.animate().cancel();
-
-                // Nullify reference
                 mQuickActionsRecyclerView = null;
             }
 
-            // Cleanup adapter separately
             if (mActionsAdapter != null) {
                 mActionsAdapter.clearData();
                 mActionsAdapter = null;
@@ -1136,34 +1116,8 @@ public class BottomSelectionToolbar {
 
         } catch (Exception e) {
             Log.e(TAG, "Error cleaning up RecyclerView", e);
-            // Force nullify
             mQuickActionsRecyclerView = null;
             mActionsAdapter = null;
-        }
-    }
-
-    /**
-     * 🔘 Cleanup button listeners and references
-     */
-    private void cleanupButtons() {
-        Log.v(TAG, "Cleaning up buttons...");
-
-        try {
-            // Clean close selection button
-//            if (mCloseSelectionButton != null) {
-//                mCloseSelectionButton.setOnClickListener(null);
-//                mCloseSelectionButton.setOnLongClickListener(null);
-//                mCloseSelectionButton.clearAnimation();
-//                mCloseSelectionButton.animate().cancel();
-//                mCloseSelectionButton = null;
-//            }
-
-            Log.v(TAG, "✅ Buttons cleanup completed");
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error cleaning up buttons", e);
-            // Force nullify
-//            mCloseSelectionButton = null;
         }
     }
 
@@ -1174,32 +1128,26 @@ public class BottomSelectionToolbar {
         Log.v(TAG, "Clearing all references...");
 
         try {
-            // Clear listener
             mListener = null;
 
-            // Clear selected dates
             if (mSelectedDates != null) {
                 mSelectedDates.clear();
                 mSelectedDates = null;
             }
 
-            // Clear user team reference
             mCurrentUserTeam = null;
 
-            // Clear day map
             if (mDayMap != null) {
                 mDayMap.clear();
                 mDayMap = null;
             }
 
-            // Clear state
             mIsVisible = false;
 
             Log.v(TAG, "✅ References cleanup completed");
 
         } catch (Exception e) {
             Log.e(TAG, "Error clearing references", e);
-            // Force clear
             mListener = null;
             mSelectedDates = null;
             mCurrentUserTeam = null;
@@ -1215,21 +1163,12 @@ public class BottomSelectionToolbar {
         Log.v(TAG, "Cleaning up view references...");
 
         try {
-            // Clear selection count text
-//            if (mSelectionCountText != null) {
-//                mSelectionCountText.clearAnimation();
-//                mSelectionCountText = null;
-//            }
-
-            // Clear main toolbar container
             if (mToolbarContainer != null) {
-                // Remove from parent if still attached
                 ViewParent parent = mToolbarContainer.getParent();
                 if (parent instanceof ViewGroup) {
                     ((ViewGroup) parent).removeView(mToolbarContainer);
                 }
 
-                // Clear all view references
                 mToolbarContainer.clearAnimation();
                 mToolbarContainer.animate().cancel();
                 mToolbarContainer = null;
@@ -1239,8 +1178,6 @@ public class BottomSelectionToolbar {
 
         } catch (Exception e) {
             Log.e(TAG, "Error cleaning up views", e);
-            // Force nullify
-//            mSelectionCountText = null;
             mToolbarContainer = null;
         }
     }
@@ -1306,6 +1243,41 @@ public class BottomSelectionToolbar {
         }
     }
 
+    /**
+     * ❓ Check if toolbar is destroyed
+     */
+    public boolean isDestroyed() {
+        return mIsDestroyed;
+    }
+
+    /**
+     * 🔧 DEBUG: Add method to verify layout loading
+     */
+    private void debugLayoutStructure() {
+        Log.d(TAG, "=== LAYOUT DEBUG ===");
+        Log.d(TAG, "Toolbar container: " + (mToolbarContainer != null ? "✅" : "❌"));
+        Log.d(TAG, "RecyclerView: " + (mQuickActionsRecyclerView != null ? "✅" : "❌"));
+
+        if (mToolbarContainer != null) {
+            Log.d(TAG, "Container class: " + mToolbarContainer.getClass().getSimpleName());
+            Log.d(TAG, "Container children: " + mToolbarContainer.getChildCount());
+
+            // List all child views
+            for (int i = 0; i < mToolbarContainer.getChildCount(); i++) {
+                View child = mToolbarContainer.getChildAt(i);
+                Log.d(TAG, "  Child " + i + ": " + child.getClass().getSimpleName() +
+                        " (id: " + child.getId() + ")");
+            }
+        }
+
+        if (mQuickActionsRecyclerView != null) {
+            Log.d(TAG, "RecyclerView class: " + mQuickActionsRecyclerView.getClass().getSimpleName());
+            Log.d(TAG, "RecyclerView adapter: " + (mQuickActionsRecyclerView.getAdapter() != null ? "✅" : "❌"));
+        }
+
+        Log.d(TAG, "==================");
+    }
+
     // ==================== EXAMPLE USAGE AND INTEGRATION ====================
 
     /**
@@ -1338,7 +1310,7 @@ public class BottomSelectionToolbar {
 
         // 3. The toolbar will automatically:
         //    - Validate actions based on user work schedule
-        //    - Show only appropriate actions (max 4)
+        //    - Show only appropriate actions (max 5)
         //    - Provide user feedback for invalid actions
         //    - Apply business rules (ferie only for work days, etc.)
 

@@ -1,9 +1,8 @@
 /**
- * 🎨 Enhanced Actions Adapter for Bottom Toolbar
+ * 🎨 Enhanced Actions Adapter for Events Bottom Toolbar
  * Material 3 implementation with custom styling support
- * Based on EventsToolbarActionsAdapter architecture but adapted for ToolbarAction enum
  */
-package net.calvuz.qdue.ui.core.components.toolbars;
+package net.calvuz.qdue.ui.features.events.components;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -18,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -26,86 +24,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RecyclerView Adapter for Toolbar Action Buttons
+ * RecyclerView Adapter for Event Action Buttons
  * Supports different action types with custom styling
  */
-public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<EnhancedToolbarActionsAdapter.ActionViewHolder> {
+public class EventsToolbarActionsAdapter extends RecyclerView.Adapter<EventsToolbarActionsAdapter.ActionViewHolder> {
 
-    private static final String TAG = "EnhancedActionsAdapter";
+    private static final String TAG = "EventsActionsAdapter";
 
     private final Context mContext;
-    private List<ToolbarAction> mActions = new ArrayList<>();
+    private List<EventsBottomSelectionToolbar.EventAction> mActions = new ArrayList<>();
     private OnActionClickListener mClickListener;
 
-    public EnhancedToolbarActionsAdapter(@NonNull Context context) {
+    public EventsToolbarActionsAdapter(@NonNull Context context) {
         mContext = context;
-    }
-
-    // ==================== ACTION TYPE MAPPING ====================
-
-    /**
-     * 🎨 Action Type Classification for Styling
-     */
-    public enum ActionType {
-        PRIMARY,     // Main actions like ADD_EVENT
-        SECONDARY,   // Common actions like FERIE, PERMESSO
-        SPECIAL,     // Protected actions like LEGGE_104
-        DESTRUCTIVE  // Not used in this context but kept for consistency
-    }
-
-    /**
-     * 🎯 Map ToolbarAction to ActionType for styling
-     */
-    private ActionType getActionType(ToolbarAction action) {
-        switch (action) {
-            case ADD_EVENT:
-                return ActionType.PRIMARY;
-
-            case LEGGE_104:
-                return ActionType.SPECIAL;
-
-            case FERIE:
-            case MALATTIA:
-            case PERMESSO:
-            case STRAORDINARIO:
-            default:
-                return ActionType.SECONDARY;
-        }
-    }
-
-    /**
-     * 🎨 Get action display properties
-     */
-    private ActionDisplayInfo getActionDisplayInfo(ToolbarAction action) {
-        switch (action) {
-            case FERIE:
-                return new ActionDisplayInfo("Ferie", R.drawable.ic_rounded_beach_access_24);
-            case MALATTIA:
-                return new ActionDisplayInfo("Malattia", R.drawable.ic_rounded_local_hospital_24);
-            case PERMESSO:
-                return new ActionDisplayInfo("Permesso", R.drawable.ic_rounded_schedule_24);
-            case LEGGE_104:
-                return new ActionDisplayInfo("L.104", R.drawable.ic_rounded_accessible_24);
-            case STRAORDINARIO:
-                return new ActionDisplayInfo("Straord.", R.drawable.ic_rounded_overtime_gears_24);
-            case ADD_EVENT:
-                return new ActionDisplayInfo("Evento", R.drawable.ic_rounded_calendar_add_on_24);
-            default:
-                return new ActionDisplayInfo(action.name(), R.drawable.ic_rounded_help_24);
-        }
-    }
-
-    /**
-     * 📋 Action display information
-     */
-    private static class ActionDisplayInfo {
-        final String label;
-        final int iconRes;
-
-        ActionDisplayInfo(String label, int iconRes) {
-            this.label = label;
-            this.iconRes = iconRes;
-        }
     }
 
     // ==================== VIEW HOLDER ====================
@@ -121,7 +52,7 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
         /**
          * 🎨 Apply styling based on action type
          */
-        void applyActionStyling(Context context, ToolbarAction action, ActionType actionType) {
+        void applyActionStyling(Context context, EventsBottomSelectionToolbar.EventAction action) {
             if (actionButton == null) return;
 
             // Base styling
@@ -136,56 +67,25 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
                     TypedValue.COMPLEX_UNIT_DIP, 48,
                     context.getResources().getDisplayMetrics()
             );
+//            actionButton.setMinWidth(minTouchTarget);
             actionButton.setMinHeight(minTouchTarget);
 
             // Apply colors based on action type
-            applyActionColors(context, actionType);
+            applyActionColors(context, action);
         }
 
         /**
          * 🎨 Apply colors based on action type using floatingMenu attributes
          */
-        private void applyActionColors(Context context, ActionType actionType) {
+        private void applyActionColors(Context context, EventsBottomSelectionToolbar.EventAction action) {
             ColorStateList backgroundTint;
             ColorStateList iconTint;
             ColorStateList textColor;
             ColorStateList rippleColor;
 
-            switch (actionType) {
-                case PRIMARY:
-                    // Primary blue colors for main actions (ADD_EVENT)
-                    backgroundTint = ColorStateList.valueOf(
-                            Library.getColorByThemeAttr(context, R.attr.floatingMenuPrimary)
-                    );
-                    iconTint = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.grey_50)
-                    );
-                    textColor = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.grey_50)
-                    );
-                    rippleColor = ColorStateList.valueOf(
-                            Library.getColorByThemeAttr(context, R.attr.floatingMenuSelected)
-                    );
-                    break;
-
-                case SPECIAL:
-                    // Special colors for protected actions (LEGGE_104)
-                    backgroundTint = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.purple_500)
-                    );
-                    iconTint = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.grey_50)
-                    );
-                    textColor = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.grey_50)
-                    );
-                    rippleColor = ColorStateList.valueOf(
-                            ContextCompat.getColor(context, R.color.purple_300)
-                    );
-                    break;
-
+            switch (action.getType()) {
                 case DESTRUCTIVE:
-                    // Red colors for destructive actions (if needed)
+                    // Red colors for destructive actions (Delete)
                     backgroundTint = ColorStateList.valueOf(
                             ContextCompat.getColor(context, R.color.red_500)
                     );
@@ -200,9 +100,25 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
                     );
                     break;
 
+                case PRIMARY:
+                    // Primary blue colors for main actions (Edit)
+                    backgroundTint = ColorStateList.valueOf(
+                            Library.getColorByThemeAttr(context, R.attr.floatingMenuPrimary)
+                    );
+                    iconTint = ColorStateList.valueOf(
+                            ContextCompat.getColor(context, R.color.grey_50)
+                    );
+                    textColor = ColorStateList.valueOf(
+                            ContextCompat.getColor(context, R.color.grey_50)
+                    );
+                    rippleColor = ColorStateList.valueOf(
+                            Library.getColorByThemeAttr(context, R.attr.floatingMenuSelected)
+                    );
+                    break;
+
                 case SECONDARY:
                 default:
-                    // Surface colors for secondary actions (FERIE, MALATTIA, etc.)
+                    // Surface colors for secondary actions (Share, Export, etc.)
                     backgroundTint = ColorStateList.valueOf(
                             Library.getColorByThemeAttr(context, R.attr.floatingMenuSurface)
                     );
@@ -224,7 +140,7 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
             actionButton.setTextColor(textColor);
             actionButton.setRippleColor(rippleColor);
 
-            Log.v(TAG, "Applied " + actionType + " styling to " + actionButton.getText());
+            Log.v(TAG, "Applied " + action.getType() + " styling to " + action.getLabel());
         }
     }
 
@@ -241,14 +157,14 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
                 RecyclerView.LayoutParams.WRAP_CONTENT,
                 RecyclerView.LayoutParams.WRAP_CONTENT
         );
-
-        // Margin between buttons
-        int margin = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 8,
-                parent.getContext().getResources().getDisplayMetrics()
-        );
-        layoutParams.setMargins(margin, 0, margin, 0);
-        button.setLayoutParams(layoutParams);
+//
+//        // Margin between buttons
+//        int margin = (int) TypedValue.applyDimension(
+//                TypedValue.COMPLEX_UNIT_DIP, 8,
+//                parent.getContext().getResources().getDisplayMetrics()
+//        );
+//        layoutParams.setMargins(margin, 0, margin, 0);
+//        button.setLayoutParams(layoutParams);
 
         // Base button styling
         button.setCornerRadius((int) TypedValue.applyDimension(
@@ -261,17 +177,14 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
 
     @Override
     public void onBindViewHolder(@NonNull ActionViewHolder holder, int position) {
-        ToolbarAction action = mActions.get(position);
-        ActionDisplayInfo displayInfo = getActionDisplayInfo(action);
-        ActionType actionType = getActionType(action);
+        EventsBottomSelectionToolbar.EventAction action = mActions.get(position);
 
-        // Set button content - icon only for clean look
-        holder.actionButton.setIcon(ContextCompat.getDrawable(mContext, displayInfo.iconRes));
-        // Optionally set text for accessibility or debug
-        // holder.actionButton.setText(displayInfo.label);
+        // Set button content
+//        holder.actionButton.setText(action.getLabel());
+        holder.actionButton.setIcon(ContextCompat.getDrawable(mContext, action.getIconRes()));
 
         // Apply styling based on action type
-        holder.applyActionStyling(mContext, action, actionType);
+        holder.applyActionStyling(mContext, action);
 
         // Set click listener with enhanced feedback
         holder.actionButton.setOnClickListener(v -> {
@@ -285,13 +198,13 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
                 // Trigger callback
                 mClickListener.onActionClicked(action);
 
-                Log.d(TAG, "Action clicked: " + action);
+                Log.d(TAG, "Action clicked: " + action.getLabel());
             }
         });
 
         // Accessibility
         holder.actionButton.setContentDescription(
-                "Azione: " + displayInfo.label + " per giorni selezionati"
+                "Azione: " + action.getLabel() + " per eventi selezionati"
         );
     }
 
@@ -325,7 +238,7 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
     /**
      * 🔄 Update actions list
      */
-    public void updateActions(List<ToolbarAction> actions) {
+    public void updateActions(List<EventsBottomSelectionToolbar.EventAction> actions) {
         mActions = new ArrayList<>(actions);
         notifyDataSetChanged();
 
@@ -355,6 +268,6 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
      * 📋 Callback interface for action clicks
      */
     public interface OnActionClickListener {
-        void onActionClicked(ToolbarAction action);
+        void onActionClicked(EventsBottomSelectionToolbar.EventAction action);
     }
 }

@@ -46,6 +46,14 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_calendar_month" />
 
+    <!-- ✅ Overlay Container for Bottom Toolbar -->
+    <FrameLayout
+        android:id="@+id/toolbar_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 <!-- res/layout/fragment_calendar_view.xml -->

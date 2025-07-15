@@ -85,7 +85,7 @@ public class FloatingDayToolbar {
 
         // Setup enhanced adapter
         //mActionsAdapter = new ToolbarActionsAdapter();
-        mActionsAdapter = new EnhancedToolbarActionsAdapter();
+        mActionsAdapter = new EnhancedToolbarActionsAdapter(mContext);
         mActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Create popup with enhanced properties

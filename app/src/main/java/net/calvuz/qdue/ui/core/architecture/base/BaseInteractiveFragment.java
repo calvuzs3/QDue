@@ -2,6 +2,8 @@ package net.calvuz.qdue.ui.core.architecture.base;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -1234,21 +1236,124 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * Proxy for ADAPTER: Enter selection mode (update UI accordingly?)
      */
     protected void enterSelectionMode() {
+//        BaseInteractiveAdapter adapter = getClickAdapter();
+//        if (adapter != null && !adapter.isSelectionMode()) {
+//            adapter.setSelectionMode(true);
+//        }
+//
+//        hideFabForSelection();
+//        hideBottomNavigation();
+//
+//        showBottomToolbar();
+//        updateActionBarForSelection(isSelectionMode());
+//        updateBottomToolbar();
+//
+//        // TODO: update fab visibility
+//        //toggleFabVisibility(mFabGoToToday);
+//        updateActionBarTitle(getCurrentSelectionCount());
+//
+//        Log.d(TAG, "enterSelectionMode: Entered selection mode");
+//    }
         BaseInteractiveAdapter adapter = getClickAdapter();
         if (adapter != null && !adapter.isSelectionMode()) {
             adapter.setSelectionMode(true);
         }
 
         hideFabForSelection();
-        showBottomToolbar();
         updateActionBarForSelection(isSelectionMode());
-        updateBottomToolbar();
-        // TODO: update fab visibility
-        //toggleFabVisibility(mFabGoToToday);
-        updateActionBarTitle(getCurrentSelectionCount());
 
-        Log.d(TAG, "enterSelectionMode: Entered selection mode");
+        // 🔧 CRITICAL: Coordinate bottom nav and toolbar timing
+        coordinateBottomNavAndToolbar(true);
+
+        updateActionBarTitle(getCurrentSelectionCount());
+        Log.d(TAG, "enterSelectionMode: Enhanced selection mode with coordinated timing");
     }
+
+    /**
+     * 🔧 NEW: Coordinate bottom navigation hiding and toolbar showing
+     */
+    private void coordinateBottomNavAndToolbar(boolean enteringSelectionMode) {
+        if (!(getActivity() instanceof QDueMainActivity)) {
+            // No bottom nav to coordinate - show toolbar immediately
+            showToolbarAfterDelay(0);
+            return;
+        }
+
+        QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+        View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+        if (bottomNav == null || bottomNav.getVisibility() != View.VISIBLE) {
+            // Bottom nav not visible - show toolbar immediately
+            showToolbarAfterDelay(0);
+            return;
+        }
+
+        if (enteringSelectionMode) {
+            Log.d(TAG, "Coordinating bottom nav hide with toolbar show");
+
+            // Start bottom nav hide animation
+            bottomNav.animate()
+                    .translationY(bottomNav.getHeight())
+                    .alpha(0f)
+                    .setDuration(200)
+                    .withStartAction(() -> {
+                        // 🔧 Show toolbar slightly after bottom nav starts hiding
+                        showToolbarAfterDelay(100);
+                    })
+                    .withEndAction(() -> {
+                        bottomNav.setVisibility(View.INVISIBLE);
+                        bottomNav.setAlpha(1.0f);  // ← CRITICAL: Reset to full opacity
+                        Log.d(TAG, "✅ Bottom navigation hidden");
+                    })
+                    .start();
+        } else {
+            // Exiting - hide toolbar first, then show bottom nav
+            hideBottomToolbar();
+
+            // Show bottom nav after toolbar is hidden
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(() -> {
+                bottomNav.setVisibility(View.VISIBLE);
+                bottomNav.setTranslationY(bottomNav.getHeight());
+                bottomNav.setAlpha(0f);
+
+                bottomNav.animate()
+                        .translationY(0)
+                        .alpha(1.0f)
+                        .setDuration(200)
+                        .start();
+            }, 150);
+        }
+    }
+
+
+    /**
+     * 🔧 NEW: Show toolbar with coordinated delay
+     */
+    private void showToolbarAfterDelay(int delayMs) {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter == null || adapter.getSelectedCount() == 0) {
+            Log.w(TAG, "showToolbarAfterDelay: No selections to show");
+            return;
+        }
+
+        if (mMainHandler == null) {
+            mMainHandler = new Handler(Looper.getMainLooper());
+        }
+
+        mMainHandler.postDelayed(() -> {
+            try {
+                showBottomToolbar();
+                updateBottomToolbar();
+                Log.d(TAG, "✅ Toolbar shown after coordinated delay: " + delayMs + "ms");
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing toolbar after delay: " + e.getMessage(), e);
+            }
+        }, delayMs);
+    }
+
+
+
 
     /**
      * ✅ REFACTORED: Exit selection mode - eliminato clear diretto
@@ -1259,8 +1364,9 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         // ✅ Update action bar/toolbar
         updateActionBarForSelection(false);
 
-        // ✅ Show FAB again
+        // ✅ Show again
         showFabAfterSelection();
+        showBottomNavigation();
 
         // ✅ Hide bottom toolbar
         hideBottomToolbar();
@@ -1332,7 +1438,8 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         Set<LocalDate> selectedDates = adapter.getSelectedDates();
         if (selectedDates == null || selectedDates.isEmpty()) {
             Log.w(TAG, "showBottomToolbar: ⚠️ No dates selected");
-            return;
+//            return;
+            Log.w(TAG, "showBottomToolbar: ⚠️ Skipping return for test");
         }
 
         // Show enhanced toolbar with smart validation
@@ -2726,6 +2833,62 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 .count();
     }
 
+
+
+
+    /// /////////////////////////////////
+    /**
+     * Hide bottom navigation during selection mode
+     */
+    private void hideBottomNavigation() {
+        if (getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+            if (bottomNav != null && bottomNav.getVisibility() == View.VISIBLE) {
+                Log.d(TAG, "Hiding bottom navigation for selection mode");
+
+                // Animate hide
+                bottomNav.animate()
+                        .translationY(bottomNav.getHeight())
+                        .setDuration(250)
+                        .withEndAction(() -> {
+                            bottomNav.setVisibility(View.GONE);
+                            Log.d(TAG, "✅ Bottom navigation hidden");
+                        })
+                        .start();
+            }
+        }
+    }
+
+    /**
+     * Show bottom navigation after selection mode
+     */
+    private void showBottomNavigation() {
+        if (getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+            if (bottomNav != null && bottomNav.getVisibility() != View.VISIBLE) {
+                Log.d(TAG, "Showing bottom navigation after selection mode");
+
+                bottomNav.setVisibility(View.VISIBLE);
+                bottomNav.setTranslationY(bottomNav.getHeight());
+
+                // Animate show
+                bottomNav.animate()
+                        .translationY(0)
+                        .setDuration(250)
+                        .withEndAction(() -> {
+                            Log.d(TAG, "✅ Bottom navigation shown");
+                        })
+                        .start();
+            }
+        }
+    }
+    /// ////////////////////////////////
+
+
     // ===========================================
     // Debug Methods Enhanced
     // ===========================================
@@ -2841,4 +3004,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         Log.d(TAG, "View Type: " + getEventsPreviewViewType().name());
         Log.d(TAG, "========================");
     }
+
+
+
 }

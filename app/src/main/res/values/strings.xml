@@ -528,18 +528,22 @@
     <string name="event_detail_title">Dettagli Evento</string>
     <string name="add_new_event">Aggiungi nuovo evento</string>
 
-    <!-- Menu Actions -->
+    <!-- Event Action Strings -->
+    <string name="action_edit_event">Modifica</string>
+    <string name="action_delete_events">Elimina</string>
+    <string name="action_share_events">Condividi</string>
+    <string name="action_export_events">Esporta</string>
+    <string name="action_copy_event">Copia</string>
+    <string name="action_duplicate_event">Duplica</string>
+    <string name="action_add_to_calendar">Calendario</string>
     <string name="action_import_events">Importa Eventi</string>
-    <string name="action_export_events">Esporta Eventi</string>
     <string name="action_refresh_events">Aggiorna</string>
     <string name="action_search_events">Cerca Eventi</string>
     <string name="advanced_menu_events_list">Avanzate</string>
     <string name="action_events_settings">Impostazioni Eventi</string>
 
     <!-- Event Detail Actions -->
-    <string name="action_edit_event">Modifica Evento</string>
     <string name="action_share_event">Condividi Evento</string>
-    <string name="action_add_to_calendar">Aggiungi al Calendario</string>
     <string name="action_delete_event">Elimina Evento</string>
     <string name="action_copy_details">Copia Dettagli</string>
     <string name="action_view_source">Visualizza Pacchetto Origine</string>
@@ -627,7 +631,21 @@
     <string name="text_delete">Elimina</string>
     <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
 
+    <!-- Events Bottom Toolbar Strings -->
+    <string name="close_selection">Chiudi selezione</string>
+    <string name="event_selection_count_single">%d evento</string>
+    <string name="event_selection_count_multiple">%d eventi</string>
 
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_delete_single_event">Eliminare l\'evento \"%s\"?</string>
+    <string name="confirm_delete_multiple_events">Eliminare %d eventi selezionati?</string>
+    <string name="confirm_delete_title">Conferma eliminazione</string>
+    <string name="delete">Elimina</string>
+
+    <!-- Success Messages -->
+    <string name="events_deleted_success">Eliminati %d eventi</string>
+    <string name="event_copied_clipboard">Evento copiato negli appunti</string>
+    <string name="cannot_open_calendar">Impossibile aprire il calendario</string>
 
 
 
@@ -991,5 +1009,7 @@
     <string name="toolbar_action">Azione</string>
 
     <!-- ======================================================================= -->
+
+
 
 </resources>

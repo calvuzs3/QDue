@@ -1,82 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- ============================================ -->
-<!-- ENHANCED BOTTOM SELECTION TOOLBAR LAYOUT -->
 <!-- res/layout/enhanced_bottom_selection_toolbar.xml -->
-<!-- ============================================ -->
-
-<!-- Enhanced bottom selection toolbar with custom colors and improved UX -->
-<com.google.android.material.card.MaterialCardView
+<!-- Enhanced Bottom Selection Toolbar Layout -->
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="16dp"
-    android:layout_marginTop="@dimen/spacing_l"
-    android:layout_marginBottom="@dimen/spacing_l"
-    android:layout_gravity="center_horizontal|bottom|end"
-    app:cardCornerRadius="@dimen/spacing_xxl"
-    app:cardElevation="12dp"
-    app:cardBackgroundColor="?attr/floatingMenuBackground"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/floatingMenuOnBackground"
-    >
-<!--    app:strokeAlpha="0.12"-->
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical|center_horizontal"
+    android:minHeight="56dp"
+    android:minWidth="200dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end|center_horizontal"
+    <!-- Quick Actions RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_quick_actions"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal"
-        android:padding="@dimen/spacing_s"
-        android:gravity="center_horizontal"
-        android:background="?attr/floatingMenuSurface"
-        android:clipToPadding="false">
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp" />
 
-<!--        &lt;!&ndash; Close Selection Button - Enhanced &ndash;&gt;-->
-<!--        <com.google.android.material.button.MaterialButton-->
-<!--            android:id="@+id/btn_close_selection"-->
-<!--            android:layout_width="48dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_marginEnd="@dimen/spacing_sm"-->
-<!--            android:insetTop="0dp"-->
-<!--            android:insetBottom="0dp"-->
-<!--            android:insetLeft="0dp"-->
-<!--            android:insetRight="0dp"-->
-<!--            android:contentDescription="@string/selection_mode_clear"-->
-<!--            app:icon="@drawable/ic_rounded_close_24"-->
-<!--            app:iconSize="24dp"-->
-<!--            app:iconTint="?attr/floatingMenuOnBackground"-->
-<!--            app:cornerRadius="12dp"-->
-<!--            app:backgroundTint="@android:color/transparent"-->
-<!--            app:rippleColor="?attr/floatingMenuSelected"-->
-<!--            style="@style/Widget.Material3.Button.IconButton" />-->
-
-<!--        &lt;!&ndash; Selection Count Text - Compact &ndash;&gt;-->
-<!--        <TextView-->
-<!--            android:id="@+id/tv_selection_count"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="0 giorni"-->
-<!--            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"-->
-<!--            android:textColor="?attr/floatingMenuOnBackground"-->
-<!--            android:fontFamily="sans-serif-medium"-->
-<!--            android:gravity="start|center_vertical"-->
-<!--            android:layout_marginEnd="@dimen/spacing_sm" />-->
-
-        <!-- Quick Actions RecyclerView - Enhanced -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_quick_actions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:clipToPadding="false"
-            android:scrollbars="none"
-            android:overScrollMode="never"
-            android:nestedScrollingEnabled="false" />
-
-    </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView>
-
+</LinearLayout>

@@ -1,5 +1,7 @@
 package net.calvuz.qdue.ui.features.events.presentation;
 
+import static android.text.format.Formatter.formatFileSize;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -32,6 +34,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.backup.ExportManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.ui.features.events.components.imports.FileAccessAdapter;
 import net.calvuz.qdue.ui.features.events.components.imports.EventsImportAdapter;
@@ -58,6 +61,8 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -129,6 +134,12 @@ public class EventsActivity extends AppCompatActivity implements
     private FileAccessAdapter mFileAccessAdapter;
     private EventsImportAdapter mEventsImportAdapter;
     private PermissionManager mPermissionManager;
+
+    // Field to store pending export events for file launcher callback
+    private List<LocalEvent> mPendingExportEvents = null;
+
+    // Enhanced ExportManager (if not already present)
+    private ExportManager mExportManager;
 
     // Activity Result
     // Result constants for MainActivity communication
@@ -204,7 +215,6 @@ public class EventsActivity extends AppCompatActivity implements
             // Could implement logic to detect if changes occurred during session
         }
     }
-
 
     /*
 IDEA: Non chiamare mai handleBackPress() sull'activity,
@@ -396,7 +406,7 @@ ma sempre sul fragment corrente
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri fileUri = result.getData().getData();
                         if (fileUri != null) {
-                            exportEventsToFile(fileUri);
+                            handleExportEventsToFile(fileUri);
                         }
                     }
                 });
@@ -515,7 +525,6 @@ ma sempre sul fragment corrente
         return mBackHandlingService.hasUnsavedChanges(this);
     }
 
-
     // ==================== ACTION HANDLERS ====================
 
     /**
@@ -587,11 +596,54 @@ ma sempre sul fragment corrente
     /**
      * Handle import events from URL
      */
-    public void handleExportEventsToFile() {
-        // TODO: to implement handleExportEventsToFile
-        Log.d(TAG, "TODO: Handle export events to file");
-        Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
-        // Notify MainActivity
+    public void handleExportEventsToFile(@Nullable Uri fileUri) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        if (fileUri != null) {
+            intent.putExtra(Intent.EXTRA_TITLE, fileUri.getLastPathSegment());
+        } else {
+            intent.putExtra(Intent.EXTRA_TITLE, "qdue_events_" + System.currentTimeMillis() + ".json");
+        }
+
+        try {
+            mFileSaverLauncher.launch(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening file saver: " + e.getMessage());
+            Toast.makeText(this, "Errore apertura file saver", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * ✅ NEW: Handle export of selected events to file
+     * Enhanced version of existing export logic for selected events
+     */
+    public void handleExportSelectedEventsToFile(Uri fileUri, List<LocalEvent> selectedEvents) {
+        Log.d(TAG, "handleExportSelectedEventsToFile: Processing " + selectedEvents.size() + " events");
+
+        // Generate filename with selection info
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String filename;
+
+        if (fileUri != null) filename = fileUri.getLastPathSegment();
+        else filename = "qdue_events_" + selectedEvents.size() + "_" + timestamp + ".json";
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+
+        try {
+            // Store selected events for later use in file launcher callback
+            mPendingExportEvents = selectedEvents;
+            mFileSaverLauncher.launch(intent);
+
+            Log.d(TAG, "handleExportSelectedEventsToFile: File picker launched for " + selectedEvents.size() + " events");
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening file saver for selected events: " + e.getMessage());
+            Toast.makeText(this, "Errore apertura file saver", Toast.LENGTH_SHORT).show();
+            mPendingExportEvents = null; // Clean up
+        }
     }
 
     /**
@@ -1046,10 +1098,18 @@ ma sempre sul fragment corrente
 
     // ==================== CREATE FUNCTIONALITY ====================
 
+
+    /**
+     * Show event creation dialog with LocalDate.now()
+     */
+    private void showCreateEventDialog() {
+        showCreateEventDialog(LocalDate.now());
+    }
+
     /**
      * Show event creation dialog
      */
-    private void showCreateEventDialog() {
+    private void showCreateEventDialog(LocalDate date) {
         // Simple event creation for now
         EditText editTitle = new EditText(this);
         editTitle.setHint("Event title");
@@ -1066,17 +1126,23 @@ ma sempre sul fragment corrente
                     Log.d(TAG, "showCreateEventDialog: New Event Title: " + title);
 
                     if (!title.isEmpty()) {
-                        createNewEvent(title);
+                        createNewEvent(title, date);
                     }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void createNewEvent(String title) {
+
+
+    private void createNewEvent(@NonNull String title) {
+        createNewEvent(title, LocalDate.now());
+    }
+
+    private void createNewEvent(@NonNull String title, @NonNull LocalDate date) {
         new Thread(() -> {
             try {
-                LocalEvent newEvent = new LocalEvent(title, java.time.LocalDate.now());
+                LocalEvent newEvent = new LocalEvent(title, date);
                 newEvent.setDescription("My Event");
 
                 long result = mDatabase.eventDao().insertEvent(newEvent);
@@ -1520,62 +1586,75 @@ ma sempre sul fragment corrente
         return desc.toString();
     }
 
-    /**
-     * Handle export events to file
-     */
-    public void exportEventsToFile() {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
-        intent.putExtra(Intent.EXTRA_TITLE, "eventi_export_" + System.currentTimeMillis() + ".json");
-
-        try {
-            mFileSaverLauncher.launch(intent);
-        } catch (Exception e) {
-            Log.e(TAG, "Error opening file saver: " + e.getMessage());
-            Toast.makeText(this, "Errore apertura file saver", Toast.LENGTH_SHORT).show();
-        }
-    }
 
     /**
-     * Export events to selected file URI
+     * ✅ NEW: Export selected events to specified file URI
+     * Enhanced version of existing exportEventsToFile(Uri) for selected events
      */
-    private void exportEventsToFile(Uri fileUri) {
-        // TODO: Integrate with existing export functionality
-        Log.d(TAG, "Exporting events to: " + fileUri.toString());
+    private void exportSelectedEventsToFile(Uri fileUri, List<LocalEvent> selectedEvents) {
+        Log.d(TAG, "exportSelectedEventsToFile: Exporting " + selectedEvents.size() + " events to: " + fileUri);
 
         try {
-            showGlobalLoading(true, "Esportando eventi...");
+            showGlobalLoading(true, "Esportando " + selectedEvents.size() + " eventi selezionati...");
 
-            // TODO: Use existing ExportManager or similar for export
-            // ExportManager.exportToUri(fileUri, new ExportCallback() {
-            //     @Override
-            //     public void onSuccess(int eventCount) {
-            //         runOnUiThread(() -> {
-            //             showGlobalLoading(false, null);
-            //             Toast.makeText(EventsActivity.this,
-            //                 "Esportati " + eventCount + " eventi", Toast.LENGTH_SHORT).show();
-            //         });
-            //     }
-            //
-            //     @Override
-            //     public void onError(String error) {
-            //         runOnUiThread(() -> {
-            //             showGlobalLoading(false, null);
-            //             Toast.makeText(EventsActivity.this,
-            //                 "Errore export: " + error, Toast.LENGTH_LONG).show();
-            //         });
-            //     }
-            // });
+            // ✅ ENHANCED: Use existing ExportManager with selected events only
+            if (mExportManager != null) {
+                // Create export options for selected events
+                ExportManager.ExportOptions options = new ExportManager.ExportOptions();
+//                options.includeMetadata = true;
+//                options.formatOutput = true;
+                options.includeCustomProperties = true;
+//                options.validateBeforeExport = true;
 
-            // Placeholder implementation
-            showGlobalLoading(false, null);
-            Toast.makeText(this, "Export eventi - TODO: Integrare con ExportManager", Toast.LENGTH_LONG).show();
+                // Perform export with selected events
+                mExportManager.exportToUri(selectedEvents, fileUri, options, new ExportManager.ExportCallback() {
+                    @Override
+                    public void onExportComplete(ExportManager.ExportResult result) {
+                        runOnUiThread(() -> {
+                            showGlobalLoading(false, null);
+
+                            if (result.success) {
+
+                                Library.showSuccess(EventsActivity.this, result.getSummary(), Toast.LENGTH_LONG);
+                            } else {
+                                Library.showError(EventsActivity.this, "Export fallito: " + result.getSummary(), Toast.LENGTH_LONG);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onExportError(String error, Exception exception) {
+                        runOnUiThread(() -> {
+                            showGlobalLoading(false, null);
+                            Log.e(TAG, "Export error for selected events: " + error);
+
+                            String userMessage = "Errore durante l'export dei " + selectedEvents.size() + " eventi selezionati:\n" + error;
+                            Library.showError(EventsActivity.this, userMessage, Toast.LENGTH_LONG);
+                        });
+                    }
+
+                    @Override
+                    public void onExportProgress(int processed, int total, String currentEvent) {
+                        runOnUiThread(() -> {
+                            String progressMessage = String.format(QDue.getLocale(),
+                                    "Esportando eventi selezionati... %d/%d\n%s",
+                                    processed, total, currentEvent
+                            );
+                            showGlobalLoading(true, progressMessage);
+                        });
+                    }
+                });
+            } else {
+                // ExportManager not available
+                Log.e(TAG, "ExportManager not available ");
+            }
 
         } catch (Exception e) {
             showGlobalLoading(false, null);
-            Log.e(TAG, "Error exporting events: " + e.getMessage());
-            Toast.makeText(this, "Errore durante l'export: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Error exporting selected events: " + e.getMessage(), e);
+
+            String errorMessage = "Errore durante l'export di " + selectedEvents.size() + " eventi: " + e.getMessage();
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -1696,48 +1775,6 @@ ma sempre sul fragment corrente
         return mNavController;
     }
 
-    /**
-     * Trigger import from fragments
-     */
-    @Override
-    public void triggerImportEventsFromFile() {
-        // Use SAF-based file selection instead of traditional file picker
-        mFileAccessAdapter.selectFile(new FileAccessAdapter.FileSelectionCallback() {
-            @Override
-            public void onFileSelected(@NonNull Uri fileUri) {
-                // Delegate to existing import logic - zero changes needed!
-                importEventsFromFile(fileUri);
-            }
-
-            @Override
-            public void onSelectionError(@NonNull String error) {
-                showError("File selection failed: " + error);
-            }
-
-            @Override
-            public void onSelectionCancelled() {
-                Log.d(TAG, "File selection cancelled");
-                // No action needed - user cancelled
-            }
-        });
-
-        // Old one
-        //handleImportEventsFromFile();
-    }
-
-    /**
-     * Trigger import from fragments
-     */
-    @Override
-    public void triggerImportEventsFromUrl() {
-        handleImportEventsFromUrl();
-    }
-
-    /**
-     * Trigger export events to file
-     */
-    @Override
-    public void triggerExportEventsToFile() { handleExportEventsToFile(); }
 
     // ==================== HELPER METHODS ====================
 
@@ -1829,7 +1866,6 @@ ma sempre sul fragment corrente
         return false;
     }
 
-
     /**
      * 🆕 HELPER: Check if current fragment has unsaved changes
      */
@@ -1848,7 +1884,7 @@ ma sempre sul fragment corrente
         }
     }
 
-    // ============================= TRIGGERS ==============================
+    // ==================== IMPLEMENT EventsDatabaseOperationsInterface  ===========
 
     /**
      * Trigger delete all events from db
@@ -1858,6 +1894,66 @@ ma sempre sul fragment corrente
         handleDeleteAllEvents();
     }
 
+
+    // ==================== IMPLEMENT EventsFileOperationsInterface  ===========
+
+    /**
+     * Trigger import from fragments
+     */
+    @Override
+    public void triggerImportEventsFromFile() {
+        // Use SAF-based file selection instead of traditional file picker
+        mFileAccessAdapter.selectFile(new FileAccessAdapter.FileSelectionCallback() {
+            @Override
+            public void onFileSelected(@NonNull Uri fileUri) {
+                // Delegate to existing import logic - zero changes needed!
+                importEventsFromFile(fileUri);
+            }
+
+            @Override
+            public void onSelectionError(@NonNull String error) {
+                Library.showError(QDue.getContext(),"File selection failed: " + error);
+            }
+
+            @Override
+            public void onSelectionCancelled() {
+                Log.d(TAG, "File selection cancelled");
+                // No action needed - user cancelled
+            }
+        });
+
+        // Old one
+        //handleImportEventsFromFile();
+    }
+
+    /**
+     * Trigger import from fragments
+     */
+    @Override
+    public void triggerImportEventsFromUrl() {
+        handleImportEventsFromUrl();
+    }
+
+    /**
+     * Trigger export events to file
+     */
+    @Override
+    public void triggerExportEventsToFile(Uri fileUri) {
+        handleExportEventsToFile(fileUri);
+    }
+
+    /**
+     * Export selected events to file
+     */
+    @Override
+    public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
+        handleExportSelectedEventsToFile(fileUri, selectedEvents);
+    }
+
+
+    // ==================== IMPLEMENT EventsOperationsInterface ====================
+
+
     /**
      * Trigger create new event
      */
@@ -1865,15 +1961,6 @@ ma sempre sul fragment corrente
     public void triggerCreateNewEvent() {
         handleCreateNewEvent();
     }
-
-    /**
-     * Trigger export from fragments
-     */
-    public void triggerExportEvents() {
-        exportEventsToFile();
-    }
-
-    // ==================== IMPLEMENT EventsOperationsInterface ====================
 
     @Override
     public void triggerEventDeletion(LocalEvent event, EventDeletionListener listener) {
@@ -1895,6 +1982,22 @@ ma sempre sul fragment corrente
         try {
             if (mNavController != null) {
                 mNavController.navigate(R.id.action_event_detail_to_edit, args);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error navigating to edit: " + e.getMessage());
+            Toast.makeText(this, "Errore navigazione edit", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void triggerEventEditFromList(LocalEvent event) {
+        // Navigate to edit fragment
+        Bundle args = new Bundle();
+        args.putString("eventId", event.getId());
+
+        try {
+            if (mNavController != null) {
+                mNavController.navigate(R.id.action_events_list_to_event_edit, args);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to edit: " + e.getMessage());

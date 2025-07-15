@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/events_bottom_selection_toolbar.xml -->
+<!-- Events Bottom Selection Toolbar Layout -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical|center_horizontal"
+    android:minHeight="56dp"
+    android:minWidth="200dp">
+
+    <!-- Quick Actions RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_quick_actions"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp" />
+
+</LinearLayout>
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+
+<!--&lt;!&ndash; ============================================ &ndash;&gt;-->
+<!--&lt;!&ndash; 1. LAYOUT XML per Events Bottom Toolbar &ndash;&gt;-->
+<!--&lt;!&ndash; res/layout/events_bottom_selection_toolbar.xml &ndash;&gt;-->
+<!--&lt;!&ndash; ============================================ &ndash;&gt;-->
+
+<!--<com.google.android.material.card.MaterialCardView-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    style="@style/Widget.QDue.BottomSelectionToolbar"-->
+<!--    android:layout_width="wrap_content"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_margin="16dp">-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:padding="12dp"-->
+<!--        android:gravity="center_vertical">-->
+
+<!--        &lt;!&ndash; Close Selection Button &ndash;&gt;-->
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:id="@+id/btn_close_selection"-->
+<!--            style="@style/Widget.QDue.ToolbarAction.Close"-->
+<!--            android:layout_width="48dp"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:layout_marginEnd="8dp"-->
+<!--            app:icon="@drawable/ic_rounded_close_24"-->
+<!--            android:contentDescription="Close" />-->
+
+<!--        &lt;!&ndash; Selection Count &ndash;&gt;-->
+<!--        <TextView-->
+<!--            android:id="@+id/tv_selection_count"-->
+<!--            style="@style/Widget.QDue.SelectionCountText"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_marginStart="8dp"-->
+<!--            android:layout_marginEnd="16dp"-->
+<!--            android:text="1 evento" />-->
+
+<!--        &lt;!&ndash; Quick Actions RecyclerView &ndash;&gt;-->
+<!--        <androidx.recyclerview.widget.RecyclerView-->
+<!--            android:id="@+id/rv_quick_actions"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="48dp"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:scrollbars="none"-->
+<!--            android:overScrollMode="never" />-->
+
+<!--    </LinearLayout>-->
+
+<!--</com.google.android.material.card.MaterialCardView>-->
