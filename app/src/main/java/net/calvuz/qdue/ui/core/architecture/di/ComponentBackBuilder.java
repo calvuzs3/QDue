@@ -2,14 +2,17 @@ package net.calvuz.qdue.ui.core.architecture.di;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.ui.core.common.interfaces.BackPressHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.MultiLevelBackHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.SelectionModeHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
-import net.calvuz.qdue.ui.core.common.utils.Log; /**
+import net.calvuz.qdue.ui.core.common.utils.Log;
+
+/**
  * Builder for configuring back handlers for a specific component.
- *
+ * <p>
  * This builder provides a fluent API for setting up back handlers
  * with proper configuration and automatic registration, following
  * the project's established patterns.
@@ -31,13 +34,13 @@ public class ComponentBackBuilder {
 
     /**
      * Set the priority for this back handler
-     *
+     * <p>
      * Standard priorities (following project conventions):
      * - 100: Critical (unsaved changes, data loss prevention)
      * - 50: UI state (selection modes, search, filters)
      * - 10: Activity navigation (default activity behavior)
      * - 0: Default behavior
-     *
+     * <p>
      * @param priority Priority level (higher = called first)
      * @return This builder for chaining
      */
@@ -49,7 +52,7 @@ public class ComponentBackBuilder {
 
     /**
      * Set a custom description for debugging
-     *
+     * <p>
      * @param description Human-readable description
      * @return This builder for chaining
      */
@@ -61,27 +64,27 @@ public class ComponentBackBuilder {
 
     /**
      * Register a simple back press handler
-     *
+     * <p>
      * @param handler The handler to register
      */
     public void register(@NonNull BackPressHandler handler) {
         EnhancedBackHandler enhanced = new EnhancedBackHandler(handler, mPriority, mDescription);
         mService.registerComponent(mComponent, enhanced);
 
-        Log.d("ComponentBackBuilder", String.format("Registered handler: %s (priority: %d)",
+        Log.d("ComponentBackBuilder", String.format(QDue.getLocale(), "Registered handler: %s (priority: %d)",
                 mDescription, mPriority));
     }
 
     /**
      * Register an unsaved changes handler
-     *
+     * <p>
      * @param handler The unsaved changes handler to register
      */
     public void registerUnsavedChanges(@NonNull UnsavedChangesHandler handler) {
         EnhancedUnsavedChangesHandler enhanced = new EnhancedUnsavedChangesHandler(handler, mPriority, mDescription);
         mService.registerComponent(mComponent, enhanced);
 
-        Log.d("ComponentBackBuilder", String.format("Registered unsaved changes handler: %s (priority: %d)",
+        Log.d("ComponentBackBuilder", String.format(QDue.getLocale(), "Registered unsaved changes handler: %s (priority: %d)",
                 mDescription, mPriority));
     }
 

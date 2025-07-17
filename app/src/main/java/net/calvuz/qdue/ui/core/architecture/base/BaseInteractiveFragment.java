@@ -25,11 +25,12 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.EventAction;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.ui.core.components.toolbars.FloatingDayToolbar;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.core.components.toolbars.BottomSelectionToolbar;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
@@ -38,6 +39,7 @@ import net.calvuz.qdue.ui.core.common.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.features.events.quickevents.QuickEventConfirmationDialog;
+import net.calvuz.qdue.ui.features.events.quickevents.QuickEventLogicAdapter;
 import net.calvuz.qdue.ui.features.events.quickevents.QuickEventTemplate;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -365,6 +367,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * ✅ REFACTORED: Service-based quick event creation
      */
     protected void createQuickEvent(ToolbarAction action, LocalDate date) {
+        // EventAction validation
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+        if (!QuickEventLogicAdapter.canCreateEventActionOnDate(eventAction, date, mCurrentUserId)) {
+            showQuickEventError("Azione non consentita per questa data", action, date);
+            return;
+        }
+
         if (!areDependenciesReady()) {
             showQuickEventError("Services not available", action, date);
             return;
@@ -563,6 +572,20 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         }
 
         try {
+
+            // TODO: Sostituire creazione con:
+//            for (LocalDate date : selectedDates) {
+//                EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+//                LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, mCurrentUserId);
+//
+//                // Inizializzare metadata
+//                event = EventEditMetadataManager.initializeEditSessionMetadata(event, mCurrentUserId);
+//
+//                // Salvare nel database
+//                long rowId = eventDao.insertEvent(event);
+//                // ...
+//            }
+//
             // Create base request from template
             LocalDate firstDate = dates.get(0);
             QuickEventRequest baseRequest = template.createEventRequest(firstDate, mCurrentUserId);
@@ -934,15 +957,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 showEventsDialog(date);
                 break;
 
-            // ✅ ENHANCED: Quick Event Actions with proper integration
             case FERIE:
             case MALATTIA:
             case LEGGE_104:
             case PERMESSO:
             case PERMESSO_SINDACALE:
             case STRAORDINARIO:
-                // These are handled by adapter, but we can show confirmation
-//                handleQuickEventCreation(action, date); break;  // OLD version without services
+                // These are no more handled by adapter, we handle them here
                 createQuickEvent(action, date);
                 break;
 
@@ -1052,8 +1073,8 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 //     * ✅ ENHANCED: Handle quick event creation with confirmation dialog
 //     * Main entry point for toolbar action → confirmation dialog → actual event creation
 //     */
-//    private void handleQuickEventCreation(ToolbarAction action, LocalDate date) {
-//        Log.d(TAG, "handleQuickEventCreation: Creating quick event " + action + " for date " + date);
+//    private void createQuickEvent(ToolbarAction action, LocalDate date) {
+//        Log.d(TAG, "createQuickEvent: Creating quick event " + action + " for date " + date);
 //
 //        // Validate Quick Events system initialization
 //        if (!mQuickEventsInitialized) {
@@ -1222,9 +1243,9 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 //     * Replaces the simple Toast implementation
 //     */
 //    protected void showQuickEventConfirmation(ToolbarAction action, LocalDate date) {
-//        // This method is now handled by handleQuickEventCreation
+//        // This method is now handled by createQuickEvent
 //        // Keeping for backward compatibility
-//        handleQuickEventCreation(action, date);
+//        createQuickEvent(action, date);
 //        //onQuickEventCreated(action, date);
 //    }
 

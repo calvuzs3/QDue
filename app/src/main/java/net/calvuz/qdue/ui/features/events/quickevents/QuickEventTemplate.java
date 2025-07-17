@@ -2,12 +2,15 @@ package net.calvuz.qdue.ui.features.events.quickevents;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.metadata.EventEditMetadataManager;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -222,7 +225,12 @@ public class QuickEventTemplate {
         }
 
         // Delegate to QuickEventLogicAdapter for actual creation
-        LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userId);
+        //LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userId);
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(sourceAction);
+        LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, userId);
+
+        // Inizializzare metadata tracking
+        event = EventEditMetadataManager.initializeEditSessionMetadata(event, userId);
 
         // Add template tracking to metadata
         addTemplateMetadata(event);
@@ -250,6 +258,12 @@ public class QuickEventTemplate {
         props.put("template_version", "2.0"); // Version after QuickEventLogicAdapter integration
 
         event.setCustomProperties(props);
+    }
+
+    // Aggiungere metodo per titolo raccomandato
+    public String getRecommendedTitle(LocalDate date) {
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(sourceAction);
+        return QuickEventLogicAdapter.getRecommendedTitle(eventAction, date);
     }
 
     // ==================== TEMPLATE PREVIEW/DISPLAY ====================
@@ -281,14 +295,6 @@ public class QuickEventTemplate {
      */
     public boolean canUseOnDate(LocalDate date, Long userId) {
         return isValid && QuickEventLogicAdapter.canCreateEventOnDate(sourceAction, date, userId);
-    }
-
-    /**
-     * ✅ NEW: Get recommended title for specific date
-     * Delegates to QuickEventLogicAdapter for context-aware titles
-     */
-    public String getRecommendedTitle(LocalDate date) {
-        return QuickEventLogicAdapter.getRecommendedTitle(sourceAction, date);
     }
 
     // ==================== TEMPLATE PROPERTIES (Simplified) ====================

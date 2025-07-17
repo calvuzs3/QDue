@@ -5,6 +5,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -128,6 +130,20 @@ public class EventsListFragment extends Fragment implements
 
         // ✅ NEW: Initialize bottom toolbar
         setupBottomSelectionToolbar();
+
+        // 🔧 NEW: Check for pending event creation from activity
+        checkForPendingEventCreation();
+    }
+
+    /**
+     * 🔧 ADD to EventsListFragment.onResume()
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // 🔧 NEW: Double-check for pending creation on resume
+        checkForPendingEventCreation();
     }
 
     @Override
@@ -260,6 +276,24 @@ public class EventsListFragment extends Fragment implements
             Log.e(TAG, "Error getting database instance: " + e.getMessage());
             updateViewState();
             showLoading(false);
+        }
+    }
+
+
+    /**
+     * 🔧 NEW: Check for pending event creation in activity
+     */
+    private void checkForPendingEventCreation() {
+        if (getActivity() instanceof EventsActivity eventsActivity) {
+
+            if (eventsActivity.hasPendingEventCreation()) {
+                Log.d(TAG, "Fragment detected pending event creation: " +
+                        eventsActivity.hasPendingEventCreation());
+
+                // Trigger the check after a small delay to ensure fragment is ready
+                new Handler(Looper.getMainLooper()).postDelayed(
+                        eventsActivity::triggerPendingEventCreationCheck, 100);
+            }
         }
     }
 

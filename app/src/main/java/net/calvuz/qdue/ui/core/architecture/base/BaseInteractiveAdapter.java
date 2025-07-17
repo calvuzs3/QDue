@@ -81,15 +81,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
      */
     private LocalDate mSingleSelectedDate = null;
 
-    /**
-     * Handle toolbar action execution - subclasses should implement
-     *
-     * @param action The action to be executed
-     * @param day    The day associated with the action
-     * @param date   The date associated with the action
-     */
-    protected abstract void handleToolbarAction(ToolbarAction action, Day day, LocalDate date);
-
     public BaseInteractiveAdapter(Context context, List<SharedViewModels.ViewItem> items,
                                   HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);

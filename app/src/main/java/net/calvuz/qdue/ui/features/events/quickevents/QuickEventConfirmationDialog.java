@@ -25,10 +25,13 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.actions.EventActionManager;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -59,6 +62,8 @@ import java.time.format.DateTimeFormatter;
 public class QuickEventConfirmationDialog implements Injectable {
 
     private static final String TAG = "QuickEventDialog";
+
+    private static final String QUICK_EVENT_CONFIRMATION_DIALOG_VERSION = "2.1";
 
     // ==================== DEPENDENCIES (DI) ====================
 
@@ -585,6 +590,13 @@ public class QuickEventConfirmationDialog implements Injectable {
             }
         }
 
+        // Aggiungere validazione EventAction
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(mTemplate.getSourceAction());
+        if (!EventActionManager.canPerformAction(eventAction, mDate, mUserId)) {
+            Library.showError(mContext, "Azione non consentita per questa data");
+            return false;
+        }
+
         return true;
     }
 
@@ -599,14 +611,22 @@ public class QuickEventConfirmationDialog implements Injectable {
                 .eventType(mTemplate.getEventType())
                 .date(mDate)
                 .userId(mUserId)
-                .displayName(mCurrentTitle)
+                .displayName(mCurrentTitle.isEmpty() ?
+                        QuickEventLogicAdapter.getRecommendedTitle(mTemplate.getSourceAction(), mDate) :
+                        mCurrentTitle)
+//                .templateId(mTemplate.getTemplateId())
+//                .sourceAction(mTemplate.getSourceAction())
+//                .eventType(mTemplate.getEventType())
+//                .date(mDate)
+//                .userId(mUserId)
+//                .displayName(mCurrentTitle)
                 .description(mCurrentDescription.isEmpty() ? null : mCurrentDescription)
                 .priority(mTemplate.getDefaultPriority())
                 .allDay(mCurrentAllDay)
                 .startTime(mCurrentAllDay ? null : mCurrentStartTime)
                 .endTime(mCurrentAllDay ? null : mCurrentEndTime)
                 .customProperty("ui_created", "true")
-                .customProperty("dialog_version", "2.0")
+                .customProperty("dialog_version", QUICK_EVENT_CONFIRMATION_DIALOG_VERSION)
                 .build();
     }
 

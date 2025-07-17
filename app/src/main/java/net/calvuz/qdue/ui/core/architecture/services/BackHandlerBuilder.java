@@ -5,28 +5,82 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.ui.core.common.interfaces.BackPressHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.MultiLevelBackHandler;
-import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
 
 /**
- * Convenient builder for creating back handlers with DI.
- *
- * This builder provides a fluent API for creating and configuring
- * back handlers while maintaining dependency injection compatibility.
+ * Simple builder for direct back handler creation with fluent API.
+ * <p>
+ * <p>This builder provides immediate, lightweight back handler registration
+ * without the complexity of the factory system. Ideal for simple components,
+ * testing scenarios, and direct service integration.
+ * <p>
+ * <p><strong>Design Purpose:</strong>
+ * <ul>
+ *   <li>Direct service access without factory layer</li>
+ *   <li>Minimal API surface for simple use cases</li>
+ *   <li>Testing-friendly with easy mocking</li>
+ *   <li>Self-contained handler wrappers</li>
+ * </ul>
+ * <p>
+ * <p><strong>Usage Pattern:</strong>
+ * <pre>
+ * // Direct registration with existing service
+ * BackHandlingService service = BackHandlingModule.getBackHandlingService(context);
+ * <p>
+ * new BackHandlerBuilder(service, this)
+ *     .withPriority(100)
+ *     .withDescription("Fragment selection mode")
+ *     .register(() -> exitSelectionMode());
+ * <p>
+ * // Or for unsaved changes
+ * new BackHandlerBuilder(service, this)
+ *     .registerUnsavedChanges(new UnsavedChangesHandler() {
+ *         // Implementation
+ *     });
+ * </pre>
+ * <p>
+ * <p><strong>When to Use:</strong>
+ * <ul>
+ *   <li>Simple components without complex DI requirements</li>
+ *   <li>Testing scenarios requiring direct control</li>
+ *   <li>Legacy components needing quick integration</li>
+ *   <li>Prototype development and experimentation</li>
+ * </ul>
+ * <p>
+ * <p><strong>vs BackHandlerFactory:</strong> This builder is simpler but less
+ * feature-rich than BackHandlerFactory. Use BackHandlerFactory for complex
+ * applications with advanced DI requirements.
  */
 public class BackHandlerBuilder {
+
+    // ==================== BUILDER STATE ====================
+
     private final BackHandlingService mService;
     private final Object mComponent;
     private int mPriority = 0;
     private String mDescription;
 
+    // ==================== CONSTRUCTOR ====================
+
+    /**
+     * Creates builder for component with direct service access.
+     *<p>
+     * @param service Back handling service instance
+     * @param component Component that will handle back presses
+     */
     public BackHandlerBuilder(@NonNull BackHandlingService service, @NonNull Object component) {
         this.mService = service;
         this.mComponent = component;
         this.mDescription = component.getClass().getSimpleName();
     }
 
+    // ==================== FLUENT CONFIGURATION ====================
+
     /**
-     * Set the priority for the back handler
+     * Sets priority for back handler execution order.
+     * Higher priority handlers execute first.
+     * <p>
+     * @param priority Handler priority (default: 0)
+     * @return This builder for method chaining
      */
     @NonNull
     public BackHandlerBuilder withPriority(int priority) {
@@ -35,7 +89,10 @@ public class BackHandlerBuilder {
     }
 
     /**
-     * Set a custom description for the back handler
+     * Sets custom description for debugging and logging.
+     * <p>
+     * @param description Human-readable handler description
+     * @return This builder for method chaining
      */
     @NonNull
     public BackHandlerBuilder withDescription(@NonNull String description) {
@@ -43,29 +100,41 @@ public class BackHandlerBuilder {
         return this;
     }
 
+    // ==================== REGISTRATION METHODS ====================
+
     /**
-     * Register a simple back handler
+     * Registers simple back press handler.
+     * <p>
+     * @param handler Back press handler implementation
      */
     public void register(@NonNull BackPressHandler handler) {
-        mService.registerComponent(mComponent, new EnhancedBackHandler(handler, mPriority, mDescription));
+        mService.registerComponent(mComponent, new BackHandler(handler, mPriority, mDescription));
     }
 
     /**
-     * Register an unsaved changes handler
+     * Registers unsaved changes handler with confirmation dialog support.
+     * <p>
+     * @param handler Unsaved changes handler implementation
      */
-    public void registerUnsavedChanges(@NonNull UnsavedChangesHandler handler) {
-        mService.registerComponent(mComponent, new EnhancedUnsavedChangesHandler(handler, mPriority, mDescription));
+    public void registerUnsavedChanges(@NonNull net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler handler) {
+        mService.registerComponent(mComponent, new UnsavedChangesHandler(handler, mPriority, mDescription));
     }
 
+    // ==================== ENHANCED WRAPPER CLASSES ====================
+
     /**
-     * Enhanced wrapper that adds priority and description
+     * Enhanced wrapper that adds priority and description to simple handlers.
+     * <p>
+     * <p>This wrapper transforms basic BackPressHandler implementations into
+     * MultiLevelBackHandler instances with priority support and debugging
+     * information.
      */
-    private static class EnhancedBackHandler implements MultiLevelBackHandler {
+    private static class BackHandler implements MultiLevelBackHandler {
         private final BackPressHandler mHandler;
         private final int mPriority;
         private final String mDescription;
 
-        EnhancedBackHandler(BackPressHandler handler, int priority, String description) {
+        BackHandler(BackPressHandler handler, int priority, String description) {
             this.mHandler = handler;
             this.mPriority = priority;
             this.mDescription = description;
@@ -88,12 +157,16 @@ public class BackHandlerBuilder {
     }
 
     /**
-     * Enhanced wrapper for unsaved changes handlers
+     * Enhanced wrapper for unsaved changes handlers with full interface support.
+     * <p>
+     * <p>This wrapper extends BackHandler to provide complete
+     * UnsavedChangesHandler interface implementation while maintaining
+     * priority and description support.
      */
-    private static class EnhancedUnsavedChangesHandler extends EnhancedBackHandler implements UnsavedChangesHandler {
-        private final UnsavedChangesHandler mUnsavedHandler;
+    private static class UnsavedChangesHandler extends BackHandler implements net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler {
+        private final net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler mUnsavedHandler;
 
-        EnhancedUnsavedChangesHandler(UnsavedChangesHandler handler, int priority, String description) {
+        UnsavedChangesHandler(net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler handler, int priority, String description) {
             super(handler, priority, description);
             this.mUnsavedHandler = handler;
         }
