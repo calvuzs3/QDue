@@ -24,20 +24,20 @@ import java.util.List;
 
 /**
  * General-purpose utility library containing static helper functions and members.
- *
+ * <p>
  * This utility class provides common functionality that is application-independent
  * and can be reused across different parts of the codebase. The class focuses on
  * Android system interactions, package management, and preference handling.
- *
+ * <p>
  * Features:
  * - Intent availability checking for safe intent launching
  * - Application version information retrieval with caching
  * - SharedPreferences wrapper for consistent preference access
  * - Package manager utilities for app metadata
- *
+ * <p>
  * All methods are static and thread-safe. The class cannot be instantiated
  * as it serves purely as a utility container.
- *
+ * <p>
  * Usage Examples:
  * <pre>
  * // Check if an email intent can be handled
@@ -88,11 +88,11 @@ public final class Library {
 
     /**
      * Checks whether the specified intent action can be handled by any installed application.
-     *
+     * <p>
      * This method queries the PackageManager for installed packages that can respond
      * to the given intent. It's useful for preventing crashes when launching intents
      * that might not have handlers available on the device.
-     *
+     * <p>
      * Common use cases:
      * - Checking if email clients are available before sending emails
      * - Verifying map apps exist before showing directions
@@ -134,12 +134,12 @@ public final class Library {
 
     /**
      * Retrieves the application version name with caching for performance.
-     *
+     * <p>
      * This method fetches the version name from the application's PackageInfo
      * and caches it for subsequent calls to avoid repeated PackageManager queries.
      * The version information is useful for debugging, crash reporting, and
      * feature compatibility checks.
-     *
+     * <p>
      * The version code is cached statically, so it will persist across multiple
      * calls but will be cleared if the application process is restarted.
      *
@@ -182,11 +182,11 @@ public final class Library {
 
     /**
      * Provides access to the default SharedPreferences instance.
-     *
+     * <p>
      * This is a convenience wrapper around PreferenceManager.getDefaultSharedPreferences()
      * that provides a consistent way to access the application's default preferences
      * throughout the codebase.
-     *
+     * <p>
      * The default SharedPreferences are typically used for:
      * - User settings and configuration
      * - Application state persistence
@@ -227,7 +227,7 @@ public final class Library {
 
     /**
      * Clears the cached version code, forcing a fresh lookup on next access.
-     *
+     * <p>
      * This method is useful in testing scenarios or when the application
      * version might change during runtime (though this is rare in normal usage).
      *
@@ -240,7 +240,7 @@ public final class Library {
 
     /**
      * Gets the cached version code without triggering a fresh lookup.
-     *
+     * <p>
      * This method returns the currently cached version string, or null if
      * no version has been cached yet. Unlike getVersionCode(), this method
      * will not attempt to fetch the version if it hasn't been loaded.
@@ -332,6 +332,27 @@ public final class Library {
     }
 
     /**
+     * HELPER: Show Error toast
+     *
+     * @param context Context
+     * @param message ResId of the String message to show
+     * @param length The length of the toast
+     */
+    public static void showWarning(Context context, @StringRes int message, int length) {
+        showToast(context, context.getString(message), length);
+    }
+
+    /**
+     * HELPER: Show Error toast
+     *
+     * @param context Context
+     * @param message ResId of the String message to show
+     */
+    public static void showWarning(Context context, @StringRes int message) {
+        showToast(context, context.getString(message), Toast.LENGTH_SHORT);
+    }
+
+    /**
      * HELPER: Show Error toast (LONG)
      *
      * @param message The message to show
@@ -362,8 +383,18 @@ public final class Library {
     }
 
     /**
-     * Show error dialog with formatted alert dialog
+     * HELPER: Show Error toast
      *
+     * @param context Context
+     * @param message ResId of the String message to show
+     */
+    public static void showError(Context context, @StringRes int message) {
+        showError(context, context.getString(message), Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * Show error dialog with formatted alert dialog
+     * <p>
      * Displays a formatted AlertDialog with error icon, title "Errore creazione",
      * and the provided error message. The dialog is modal and dismissable with
      * an OK button.

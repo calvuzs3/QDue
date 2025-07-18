@@ -26,7 +26,7 @@
             android:textSize="14sp"
             android:textColor="?attr/colorOnSurface"
             android:fontFamily="sans-serif-medium"
-            android:text="1" />
+            android:text="@string/placeholder_calendar_day" />
 
         <!-- Skeleton shimmer overlay -->
         <View

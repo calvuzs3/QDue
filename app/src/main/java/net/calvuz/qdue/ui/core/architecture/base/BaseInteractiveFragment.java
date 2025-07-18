@@ -128,8 +128,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Find and setup views.
-     *
-     * @param rootView
      */
     @Override
     protected void findViews(View rootView) {
@@ -138,9 +136,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Convert data in fragment specific format.
-     *
-     * @param days
-     * @param monthDate
      */
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
@@ -167,8 +162,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Set adapter, an extension of BaseAdapter
-     *
-     * @param adapter
      */
     @Override
     protected void setFragmentAdapter(BaseAdapter adapter) {

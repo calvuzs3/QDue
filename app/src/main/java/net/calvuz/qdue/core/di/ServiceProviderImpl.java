@@ -14,10 +14,10 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * ServiceProvider implementation for dependency injection
- *
+ * <p>
  * Provides centralized service management with lazy initialization
  * and proper lifecycle management.
- *
+ * <p>
  * Features:
  * - Lazy service initialization
  * - Thread-safe singleton pattern

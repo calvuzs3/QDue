@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * DaysListEventsPreview - Updated implementation using Bottom Sheet
- *
+ * <p>
  * This class now uses DaysListEventsBottomSheet for a better user experience
  * on DaysList rows, replacing the problematic in-place card expansion.
  */

@@ -4,7 +4,7 @@ import androidx.annotation.Nullable;
 
 /**
  * Marker interface for components that support complex back handling scenarios.
- *
+ * <p>
  * Components implementing this interface can handle multiple back scenarios
  * in a prioritized manner (e.g., first exit selection mode, then handle unsaved changes).
  */
@@ -12,7 +12,7 @@ public interface MultiLevelBackHandler extends BackPressHandler {
 
     /**
      * Get the priority level for back handling
-     *
+     * <p>
      * Higher values indicate higher priority. Standard levels:
      * - 100: Critical actions (unsaved changes)
      * - 50: UI state changes (selection modes, search)

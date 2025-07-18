@@ -9,7 +9,7 @@ import net.calvuz.qdue.quattrodue.models.HalfTeam;
 
 /**
  * Factory for creating and managing teams (HalfTeam).
- *
+ * <p>
  * Implements a cache system for predefined teams (A-I) and provides
  * utilities for team creation, validation and retrieval.
  *

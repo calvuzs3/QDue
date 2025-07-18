@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Validation"
+        android:text="@string/text_validation"
         android:textAppearance="?attr/textAppearanceSubtitle1"
         android:textColor="?attr/colorPrimary" />
 
@@ -18,14 +18,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:checked="true"
-        android:text="Validate before import" />
+        android:text="@string/text_validate_before_import" />
 
     <!-- Conflict Resolution -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Duplicate Events"
+        android:text="@string/text_duplicate_events"
         android:textAppearance="?attr/textAppearanceSubtitle1"
         android:textColor="?attr/colorPrimary" />
 
@@ -39,13 +39,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="Skip duplicate events" />
+            android:text="@string/text_skip_duplicate_events" />
 
         <RadioButton
             android:id="@+id/radio_replace_existing"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Replace existing events" />
+            android:text="@string/text_replace_existing_events" />
 
     </RadioGroup>
 
@@ -54,7 +54,7 @@
         android:id="@+id/btn_advanced_import"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Advanced Import"
+        android:text="@string/text_advanced_import"
         android:layout_marginTop="16dp" />
 
 </LinearLayout>

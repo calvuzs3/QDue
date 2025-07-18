@@ -70,7 +70,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/spacing_m"
         android:layout_marginBottom="@dimen/spacing_l"
-        android:contentDescription="@string/create_new_event"
+        android:contentDescription="@string/text_create_new_event"
         android:src="@drawable/ic_rounded_calendar_add_on_24"
         app:srcCompat="@drawable/ic_rounded_calendar_add_on_24"
         />

@@ -10,11 +10,11 @@ import java.time.LocalTime;
 
 /**
  * EventAction - Pure Business Logic for Event Actions
- *
+ * <p>
  * This enum contains only business logic and domain rules, completely separated
  * from UI concerns. It represents the core business actions that can be performed
  * on events, regardless of how they are triggered (toolbar, API, automation, etc.).
- *
+ * <p>
  * Migration Strategy:
  * - Phase 1: Extract business logic from ToolbarAction
  * - Phase 2: Create mapping layer for backward compatibility

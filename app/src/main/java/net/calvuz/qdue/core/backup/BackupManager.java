@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * STEP 3: Automatic Backup Manager for Events System
- *
+ * <p>
  * Manages automatic backup of events to local storage with rotation.
  * Features:
  * - Automatic backup on every events modification

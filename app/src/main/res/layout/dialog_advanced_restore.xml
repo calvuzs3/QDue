@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Advanced Restore Options"
+            android:text="@string/text_advanced_restore_options"
             android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
             android:layout_marginBottom="16dp" />
 
@@ -36,7 +36,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Restore Mode"
+                    android:text="@string/text_restore_mode"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -49,20 +49,20 @@
                         android:id="@+id/radio_merge"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Merge with existing events"
+                        android:text="@string/text_merge_with_existing_events"
                         android:checked="true" />
 
                     <com.google.android.material.radiobutton.MaterialRadioButton
                         android:id="@+id/radio_replace"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Replace all existing events" />
+                        android:text="@string/text_replace_all_existing_events" />
 
                     <com.google.android.material.radiobutton.MaterialRadioButton
                         android:id="@+id/radio_selective"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Selective restore (choose events)" />
+                        android:text="@string/text_selective_restore_choose_events" />
 
                 </RadioGroup>
 
@@ -86,14 +86,14 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Conflict Resolution"
+                    android:text="@string/text_conflict_resolution"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="How to handle events with duplicate IDs:"
+                    android:text="@string/text_how_to_handle_events_with_duplicate_ids_semicolon"
                     android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                     android:layout_marginBottom="8dp" />
 
@@ -106,20 +106,20 @@
                         android:id="@+id/radio_skip_duplicates"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Skip duplicate events"
+                        android:text="@string/text_skip_duplicate_events"
                         android:checked="true" />
 
                     <com.google.android.material.radiobutton.MaterialRadioButton
                         android:id="@+id/radio_replace_duplicates"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Replace existing events" />
+                        android:text="@string/text_replace_existing_events" />
 
                     <com.google.android.material.radiobutton.MaterialRadioButton
                         android:id="@+id/radio_rename_duplicates"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Create new events with different IDs" />
+                        android:text="@string/text_create_new_events_with_different_ids" />
 
                 </RadioGroup>
 
@@ -143,7 +143,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Safety Options"
+                    android:text="@string/text_safety_options"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -152,7 +152,7 @@
                     android:id="@+id/checkbox_backup_before_restore"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create backup before restore"
+                    android:text="@string/text_create_backup_before_restore"
                     android:checked="true" />
 
                 <!-- Validate Before Restore -->
@@ -160,7 +160,7 @@
                     android:id="@+id/checkbox_validate_before_restore"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Validate backup file integrity"
+                    android:text="@string/text_validate_backup_file_integrity"
                     android:checked="true" />
 
                 <!-- Show Detailed Progress -->
@@ -168,7 +168,7 @@
                     android:id="@+id/checkbox_detailed_progress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Show detailed progress information"
+                    android:text="@string/text_show_detailed_progress_information"
                     android:checked="false" />
 
             </LinearLayout>
@@ -191,7 +191,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Filter Options"
+                    android:text="@string/text_filter_options"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -200,7 +200,7 @@
                     android:id="@+id/checkbox_enable_filters"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Enable event filters"
+                    android:text="@string/text_enable_event_filters"
                     android:layout_marginBottom="8dp" />
 
                 <!-- Date Range Filter -->
@@ -216,11 +216,12 @@
                         android:id="@+id/checkbox_date_range_filter"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Only restore events in date range" />
+                        android:text="@string/text_only_restore_events_in_date_range" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:baselineAligned="false"
                         android:orientation="horizontal"
                         android:layout_marginTop="8dp">
 
@@ -229,7 +230,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:hint="From"
+                            android:hint="@string/text_from"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
 
                             <com.google.android.material.textfield.TextInputEditText
@@ -245,7 +246,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:hint="To"
+                            android:hint="@string/text_to"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
 
                             <com.google.android.material.textfield.TextInputEditText
@@ -265,7 +266,7 @@
                     android:id="@+id/checkbox_type_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Filter by event types"
+                    android:text="@string/text_filter_by_event_types"
                     android:layout_marginStart="24dp"
                     android:visibility="gone" />
 
@@ -289,7 +290,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Restore Summary"
+                    android:text="@string/text_restore_summary"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -297,7 +298,7 @@
                     android:id="@+id/text_restore_summary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Ready to restore with default settings"
+                    android:text="@string/text_ready_to_restore_with_default_settings"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
             </LinearLayout>

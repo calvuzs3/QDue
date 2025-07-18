@@ -3,7 +3,7 @@ package net.calvuz.qdue.quattrodue;
 
 /**
  * Constants
- *
+ * <p>
  * Created by luke on 16/09/17.
  */
 

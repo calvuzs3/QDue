@@ -14,11 +14,11 @@ import java.util.Map;
 
 /**
  * STEP 1: QuickEventRequest DTO
- *
+ * <p>
  * Data Transfer Object for quick event creation requests.
  * Separates UI concerns from business logic by providing a clean
  * interface between UI components and the EventsService.
- *
+ * <p>
  * Features:
  * - Builder pattern for easy construction
  * - Validation-ready structure

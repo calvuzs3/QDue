@@ -2,15 +2,15 @@ package net.calvuz.qdue.ui.core.common.interfaces;
 
 /**
  * Interface for Fragment to Activity communication.
- *
+ * <p>
  * This interface defines the contract for fragments to communicate with their host activity.
  * It follows Android best practices for fragment-activity communication using callbacks.
- *
+ * <p>
  * Usage:
  * 1. Activity implements this interface
  * 2. Fragment gets reference to activity via this interface
  * 3. Fragment calls methods when it needs to communicate
- *
+ * <p>
  * Benefits:
  * - Type-safe communication
  * - Loose coupling between fragment and activity

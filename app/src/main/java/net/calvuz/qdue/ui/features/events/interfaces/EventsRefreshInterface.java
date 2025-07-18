@@ -3,12 +3,12 @@ package net.calvuz.qdue.ui.features.events.interfaces;
 /**
  * Interface for fragments that display events and need to be refreshed
  * when events data changes in the database.
- *
+ * <p>
  * Fragments implementing this interface will receive notifications when:
  * - Events are imported from files
  * - Events are created, modified, or deleted
  * - Any other event-related data changes occur
- *
+ * <p>
  * The interface provides both immediate refresh for active fragments
  * and lazy refresh for inactive fragments.
  */
@@ -17,7 +17,7 @@ public interface EventsRefreshInterface {
     /**
      * Called when events data has changed and the fragment should refresh
      * its display immediately.
-     *
+     * <p>
      * This method is called for active/visible fragments to provide
      * immediate visual feedback to the user.
      *
@@ -28,7 +28,7 @@ public interface EventsRefreshInterface {
 
     /**
      * Called when the fragment should perform a complete refresh of events data.
-     *
+     * <p>
      * This method is called when:
      * - Fragment becomes visible after being inactive
      * - A full refresh is needed (e.g., after major data changes)

@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 /**
  * Interface for components that need to communicate with back handlers.
- *
+ * <p>
  * This interface allows for loose coupling between components and their
  * back handling logic, supporting dependency injection patterns.
  */

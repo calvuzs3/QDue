@@ -16,7 +16,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Export Options"
+            android:text="@string/text_export_options"
             android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
             android:layout_marginBottom="16dp" />
 
@@ -36,7 +36,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Package Information"
+                    android:text="@string/text_package_information"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -45,14 +45,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:hint="Package Name"
+                    android:hint="@string/text_package_name"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edit_package_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Custom Events Export" />
+                        android:text="@string/text_custom_events_export" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,14 +60,14 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Description"
+                    android:hint="@string/text_description"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/edit_package_description"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Custom export of selected events" />
+                        android:text="@string/text_custom_export_of_selected_events" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,7 +91,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Date Range Filter"
+                    android:text="@string/text_date_range_filter"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -100,7 +100,7 @@
                     android:id="@+id/checkbox_date_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Filter by date range"
+                    android:text="@string/text_filter_by_date_range"
                     android:layout_marginBottom="8dp" />
 
                 <!-- From Date -->
@@ -109,7 +109,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:hint="From Date"
+                    android:hint="@string/text_from_date"
                     android:enabled="false"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     app:endIconMode="custom"
@@ -129,7 +129,7 @@
                     android:id="@+id/layout_to_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="To Date"
+                    android:hint="@string/text_to_date"
                     android:enabled="false"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     app:endIconMode="custom"
@@ -164,7 +164,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Event Type Filter"
+                    android:text="@string/text_event_type_filter"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -173,7 +173,7 @@
                     android:id="@+id/checkbox_type_filter"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Filter by event types"
+                    android:text="@string/text_filter_by_event_types"
                     android:layout_marginBottom="8dp" />
 
                 <!-- Event Type Checkboxes -->
@@ -187,35 +187,35 @@
                         android:id="@+id/checkbox_type_general"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="General Events"
+                        android:text="@string/text_general_events"
                         android:enabled="false" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/checkbox_type_stop_planned"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Planned Stops"
+                        android:text="@string/text_planned_stops"
                         android:enabled="false" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/checkbox_type_stop_unplanned"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Unplanned Stops"
+                        android:text="@string/text_unplanned_stops"
                         android:enabled="false" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/checkbox_type_maintenance"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Maintenance"
+                        android:text="@string/text_maintenance"
                         android:enabled="false" />
 
                     <com.google.android.material.checkbox.MaterialCheckBox
                         android:id="@+id/checkbox_type_meeting"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Meetings"
+                        android:text="@string/text_meetings"
                         android:enabled="false" />
 
                 </LinearLayout>
@@ -240,7 +240,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Export Options"
+                    android:text="@string/text_export_options"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -249,7 +249,7 @@
                     android:id="@+id/checkbox_include_custom_properties"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Include custom properties"
+                    android:text="@string/text_include_custom_properties"
                     android:checked="true" />
 
                 <!-- Pretty Print JSON -->
@@ -257,7 +257,7 @@
                     android:id="@+id/checkbox_pretty_print"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Format JSON for readability"
+                    android:text="@string/text_format_json_for_readability"
                     android:checked="true" />
 
                 <!-- Show Progress -->
@@ -265,7 +265,7 @@
                     android:id="@+id/checkbox_show_progress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Show detailed progress"
+                    android:text="@string/text_show_detailed_progress"
                     android:checked="true" />
 
             </LinearLayout>
@@ -288,7 +288,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Export Summary"
+                    android:text="@string/text_export_summary"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                     android:layout_marginBottom="8dp" />
 
@@ -296,7 +296,7 @@
                     android:id="@+id/text_export_summary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Ready to export all events"
+                    android:text="@string/text_ready_to_export_events"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
             </LinearLayout>

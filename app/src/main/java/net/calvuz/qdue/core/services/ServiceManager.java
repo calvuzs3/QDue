@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * REFACTORED: ServiceManager - Dependency Injection Compliant
- *
+ * <p>
  * ✅ Public constructor for ServiceProvider injection
  * ✅ Removed singleton pattern
  * ✅ Uses public constructors for all service implementations

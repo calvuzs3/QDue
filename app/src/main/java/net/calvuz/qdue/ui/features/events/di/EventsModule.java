@@ -136,24 +136,6 @@ public class EventsModule {
     // ==================== QUICK EVENTS PROVIDERS ====================
 
     /**
-     * Provide Quick Event Templates (singleton)
-     * Thread-safe singleton initialization
-     *
-     * @return Map of ToolbarAction to QuickEventTemplate
-     */
-    public Map<ToolbarAction, QuickEventTemplate> provideQuickEventTemplates() {
-        if (sQuickEventTemplates == null) {
-            synchronized (sQuickEventLock) {
-                if (sQuickEventTemplates == null) {
-                    sQuickEventTemplates = createQuickEventTemplates();
-                    Log.d(TAG, "Created Quick Event Templates singleton");
-                }
-            }
-        }
-        return sQuickEventTemplates;
-    }
-
-    /**
      * Create Quick Event Templates map
      *
      * @return Configured templates map

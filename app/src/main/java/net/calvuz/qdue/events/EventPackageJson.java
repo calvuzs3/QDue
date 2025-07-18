@@ -2,7 +2,7 @@ package net.calvuz.qdue.events;
 
 /**
  * STEP 2: JSON Package Format and SSL Validation System
- *
+ * <p>
  * Simple JSON format for event packages with SSL validation
  * and manual update functionality
  */
@@ -11,7 +11,7 @@ package net.calvuz.qdue.events;
 
 /**
  * JSON Schema for event packages
- *
+ * <p>
  * Example package structure:
  * {
  *   "package_info": {

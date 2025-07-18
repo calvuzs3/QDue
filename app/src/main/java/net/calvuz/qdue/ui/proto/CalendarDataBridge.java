@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.proto;
 
 /**
  * INTEGRATION STEP 1: Bridge Classes for Prototype Integration
- *
+ * <p>
  * These classes bridge your existing code with the new virtual scrolling prototype
  * allowing gradual migration without breaking existing functionality
  */

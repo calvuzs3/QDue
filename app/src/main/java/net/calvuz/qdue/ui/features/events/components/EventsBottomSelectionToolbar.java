@@ -46,7 +46,7 @@ import java.util.Set;
 
 /**
  * 🎨 Bottom Selection Toolbar for Events List
- *
+ * <p>
  * Features:
  * - Material 3 design with custom styling
  * - Event-specific actions (Edit, Delete, Share, Export)

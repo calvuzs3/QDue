@@ -487,7 +487,7 @@ public class SharedViewModels {
 
         /**
          * Validate the structure of a calendar grid.
-         *
+         * <p>
          * Checks if the items form a valid calendar grid structure
          * with proper week alignment.
          *

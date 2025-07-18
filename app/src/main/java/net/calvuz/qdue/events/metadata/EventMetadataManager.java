@@ -19,16 +19,16 @@ import java.util.UUID;
 
 /**
  * MIGRATED: Advanced Metadata System for Event Edit Tracking with EventAction Integration
- *
+ * <p>
  * This migrated version integrates with the new EventAction system while maintaining
  * backward compatibility with existing ToolbarAction-based metadata. Key improvements:
- *
+ * <p>
  * - Enhanced EventAction-based business logic analysis
  * - Backward compatibility with existing ToolbarAction metadata
  * - Advanced turn impact analysis using EventAction capabilities
  * - Improved business rule enforcement and validation
  * - Seamless integration with EventActionManager
- *
+ * <p>
  * Migration Benefits:
  * - Pure business logic separation from UI concerns
  * - Enhanced metadata accuracy through EventAction business rules

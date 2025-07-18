@@ -27,7 +27,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📊 Backup Status"
+                    android:text="@string/text_char_backup_status"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:textStyle="bold" />
 
@@ -41,28 +41,28 @@
                     android:id="@+id/text_auto_backup_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Auto Backup: ON"
+                    android:text="@string/text_auto_backup_on"
                     android:textAppearance="?attr/textAppearanceBody1" />
 
                 <TextView
                     android:id="@+id/text_last_backup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Last Backup: Never"
+                    android:text="@string/text_last_backup_never"
                     android:textAppearance="?attr/textAppearanceBody2" />
 
                 <TextView
                     android:id="@+id/text_total_backups"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Total Created: 0"
+                    android:text="@string/total_created_0"
                     android:textAppearance="?attr/textAppearanceBody2" />
 
                 <TextView
                     android:id="@+id/text_available_backups"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Available: 0"
+                    android:text="@string/text_available_0"
                     android:textAppearance="?attr/textAppearanceBody2" />
 
             </LinearLayout>
@@ -86,7 +86,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="📁 Recent Backups"
+                    android:text="@string/text_char_recent_backups"
                     android:textAppearance="?attr/textAppearanceSubtitle1"
                     android:textStyle="bold" />
 

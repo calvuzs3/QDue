@@ -87,7 +87,7 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:contentDescription="Evento non disponibile"
+                android:contentDescription="@string/text_event_not_available"
                 android:src="@drawable/ic_rounded_event_available_24"
                 app:tint="?attr/colorOnSurfaceVariant"
                 android:alpha="0.6" />
@@ -108,7 +108,7 @@
                 android:id="@+id/btn_quick_add_empty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Aggiungi Evento"
+                android:text="@string/text_add_event"
                 android:icon="@drawable/ic_rounded_add_24"
                 style="@style/Widget.Material3.Button.TonalButton" />
 
@@ -132,7 +132,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="Aggiungi"
+            android:text="@string/text_add"
             android:icon="@drawable/ic_rounded_add_24"
             style="@style/Widget.Material3.Button.TonalButton" />
 
@@ -143,7 +143,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Vedi Tutti"
+            android:text="@string/text_show_all"
             android:icon="@drawable/ic_rounded_event_note_24"
             style="@style/Widget.Material3.Button.OutlinedButton" />
 

@@ -5,7 +5,7 @@ import net.calvuz.qdue.core.services.models.OperationResult;
 
 /**
  * Interface for communication between EventsActivity and EventsListFragment
- *
+ * <p>
  * Handles callbacks for file operations, backup/restore, and data updates
  */
 public interface EventsOperationListener {

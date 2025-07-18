@@ -2,7 +2,6 @@
 <!-- EventEditFragment Layout -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -31,7 +30,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Informazioni Base"
+                    android:text="@string/text_event_edit_base_info"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
@@ -41,7 +40,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Titolo evento *"
+                    android:hint="@string/text_event_edit_hint_event_title"
                     app:startIconDrawable="@android:drawable/ic_dialog_info">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -58,7 +57,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Descrizione"
+                    android:hint="@string/text_description"
                     app:startIconDrawable="@android:drawable/ic_menu_edit">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -75,7 +74,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Luogo"
+                    android:hint="@string/text_event_edit_hint_location"
                     app:startIconDrawable="@android:drawable/ic_dialog_map">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -107,7 +106,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Data e Orario"
+                    android:text="@string/text_event_edit_date_and_hour"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
@@ -124,7 +123,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_gravity="center_vertical"
-                        android:text="Evento tutto il giorno"
+                        android:text="@string/text_event_edit_all_day"
                         android:textAppearance="?attr/textAppearanceBody1" />
 
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -138,7 +137,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Inizio *"
+                    android:text="@string/text_event_edit_start_asterisc"
                     android:textAppearance="?attr/textAppearanceBody2"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -155,7 +154,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:text="Seleziona data"
+                        android:text="@string/text_event_edit_select_date"
                         app:icon="@android:drawable/ic_menu_today"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -165,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="Seleziona ora"
+                        android:text="@string/text_event_edit_select_hour"
                         app:icon="@android:drawable/ic_menu_recent_history"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -175,7 +174,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Fine *"
+                    android:text="@string/text_event_edit_end_asterisk"
                     android:textAppearance="?attr/textAppearanceBody2"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -191,7 +190,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:text="Seleziona data"
+                        android:text="@string/text_event_edit_select_date"
                         app:icon="@android:drawable/ic_menu_today"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -201,7 +200,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="Seleziona ora"
+                        android:text="@string/text_event_edit_select_hour"
                         app:icon="@android:drawable/ic_menu_recent_history"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -227,7 +226,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Classificazione"
+                    android:text="@string/text_classification"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
@@ -237,7 +236,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:hint="Tipo evento"
+                    android:hint="@string/text_event_edit_hint_event_type"
                     app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
                     app:endIconMode="dropdown_menu">
 
@@ -254,7 +253,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Priorità"
+                    android:hint="@string/text_priority"
                     app:startIconDrawable="@android:drawable/ic_menu_agenda"
                     app:endIconMode="dropdown_menu">
 

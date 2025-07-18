@@ -16,18 +16,18 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Events Import Adapter - Updated to use EventPackageManager instead of Extension
- *
+ * <p>
  * This adapter now uses the enhanced EventPackageManager.importFromJsonString() method
  * which provides proper database integration while maintaining 100% compatibility
  * with existing code and interfaces.
- *
+ * <p>
  * Key Changes:
  * - Uses EventPackageManager.importFromJsonString() instead of Extension
  * - Proper database saving through tested EventPackageManager methods
  * - Maintains all existing validation and error handling
  * - Compatible with existing EventsActivity integration
  * - Enhanced field mapping through EventPackageManager enhanced methods
- *
+ * <p>
  * Usage (unchanged):
  * EventsImportAdapter adapter = new EventsImportAdapter(context);
  * adapter.importFromSAFFile(uri, options, callback);
@@ -50,7 +50,7 @@ public class EventsImportAdapter {
 
     /**
      * Import events from SAF-selected file URI
-     *
+     * <p>
      * This method bridges SAF file access with the enhanced EventPackageManager,
      * providing proper database integration and the same interface as before.
      *
@@ -140,7 +140,7 @@ public class EventsImportAdapter {
 
     /**
      * Detect file format for SAF-selected files
-     *
+     * <p>
      * Uses the existing EventsImportManager.FileFormatInfo structure
      * with direct constructor calls (no factory methods needed)
      */
@@ -277,7 +277,7 @@ public class EventsImportAdapter {
 
     /**
      * Validate file before import using EventPackageManager
-     *
+     * <p>
      * This provides validation using the enhanced EventPackageManager methods
      * instead of the previous approach.
      */
@@ -332,7 +332,7 @@ public class EventsImportAdapter {
 
     /**
      * Import from URL (delegates to EventsImportManager)
-     *
+     * <p>
      * This method continues to use EventsImportManager for URL imports
      * while file imports use the enhanced EventPackageManager approach.
      */

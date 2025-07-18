@@ -7,7 +7,7 @@ import net.calvuz.qdue.events.models.EventType;
 
 /**
  * ToolbarActionBridge - Backward Compatibility Bridge
- *
+ * <p>
  * This class provides backward compatibility while migrating from ToolbarAction
  * to EventAction. It maintains the existing API while delegating business logic
  * to the new EventAction system.

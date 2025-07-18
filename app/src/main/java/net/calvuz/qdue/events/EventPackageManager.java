@@ -367,7 +367,7 @@ public class EventPackageManager {
 
     /**
      * ENHANCEMENT FOR EventPackageManager.java
-     *
+     * <p>
      * Add these methods to your existing EventPackageManager class.
      * This integrates EventPackageManagerExtension functionality while maintaining
      * full backward compatibility with existing URL import features.
@@ -423,7 +423,7 @@ public class EventPackageManager {
 
     /**
      * Import events from JSON string content (for file imports)
-     *
+     * <p>
      * This method provides file import capability while reusing the existing
      * database operations and event conversion logic. It's designed to work
      * alongside the existing URL import functionality without conflicts.
@@ -528,7 +528,7 @@ public class EventPackageManager {
 
     /**
      * Enhanced event conversion with improved field mapping
-     *
+     * <p>
      * This method extends the existing convertJsonToEvent() with additional
      * field mappings and better error handling, while maintaining backward
      * compatibility.
@@ -639,7 +639,7 @@ public class EventPackageManager {
 
     /**
      * Enhanced import method with improved conversion and error tracking
-     *
+     * <p>
      * This method uses the enhanced convertJsonToEventEnhanced() for better
      * field mapping while maintaining the same database operations.
      */

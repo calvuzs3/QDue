@@ -21,13 +21,13 @@ import java.util.Objects;
 
 /**
  * QuickEventTemplate - Simplified template system with QuickEventLogicAdapter integration
- *
+ * <p>
  * EVOLUTION STRATEGY:
  * - Drastically simplified thanks to QuickEventLogicAdapter
  * - Now focuses only on template structure and validation
  * - Business logic completely delegated to QuickEventLogicAdapter
  * - Maintains template concept for UI consistency and future extensions
- *
+ * <p>
  * REFACTORED VERSION:
  * - ❌ REMOVED: All business logic (validation, event creation)
  * - ❌ REMOVED: Database operations
@@ -35,7 +35,7 @@ import java.util.Objects;
  * - ✅ KEPT: Factory pattern for template creation
  * - ✅ NEW: Integration with service layer via DTOs
  * - ✅ NEW: Clean separation between UI and business logic
- *
+ * <p>
  * RESPONSIBILITIES (UI Only):
  * - Template metadata management
  * - UI preview generation

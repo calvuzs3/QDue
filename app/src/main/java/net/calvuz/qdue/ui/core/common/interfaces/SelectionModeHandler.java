@@ -3,7 +3,7 @@ package net.calvuz.qdue.ui.core.common.interfaces;
 
 /**
  * Interface for selection mode handling across different components.
- *
+ * <p>
  * Many components (lists, grids, etc.) have selection modes that should
  * be exited on back press. This interface provides a standard way to handle this.
  */
