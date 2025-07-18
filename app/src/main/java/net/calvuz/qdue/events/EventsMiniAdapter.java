@@ -25,8 +25,6 @@ import java.util.List;
  */
 public class EventsMiniAdapter extends RecyclerView.Adapter<EventsMiniAdapter.EventMiniViewHolder> {
 
-    private static final String TAG = "EV_MINI_ADAPTER";
-
     private final Context mContext;
     private final List<LocalEvent> mEvents;
     private OnEventClickListener mClickListener;
@@ -112,7 +110,7 @@ public class EventsMiniAdapter extends RecyclerView.Adapter<EventsMiniAdapter.Ev
             holder.tvEventTime.setText(event.getTimeString());
             holder.tvEventTime.setVisibility(View.VISIBLE);
         } else if (event.isAllDay()) {
-            holder.tvEventTime.setText("Tutto il giorno");
+            holder.tvEventTime.setText(R.string.text_all_day);
             holder.tvEventTime.setVisibility(View.VISIBLE);
         } else {
             holder.tvEventTime.setVisibility(View.GONE);

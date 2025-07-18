@@ -17,7 +17,7 @@ import net.calvuz.qdue.quattrodue.utils.Log;
 
 /**
  * Represents a calendar day with its work shifts.
- *
+ * <p>
  * Each day contains multiple shifts and tracks teams that are off work.
  * Supports cloning for template-based generation.
  *

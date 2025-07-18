@@ -19,6 +19,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="12dp"
             android:src="@drawable/ic_backup"
+            android:contentDescription="@string/text_backup"
             android:foregroundTint="?attr/colorPrimary" />
 
         <LinearLayout
@@ -31,7 +32,7 @@
                 android:id="@+id/text_backup_filename"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="events_backup_20250613_143022.json"
+                android:text="@string/placeholder_backup_json_file"
                 android:textAppearance="?attr/textAppearanceBody1"
                 android:textStyle="bold" />
 
@@ -39,7 +40,7 @@
                 android:id="@+id/text_backup_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="13/06/2025 14:30 - 15.2 KB"
+                android:text="@string/placeholder_date_time_kilobytes"
                 android:textAppearance="?attr/textAppearanceCaption"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -51,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Backup options"
+            android:contentDescription="@string/text_backup_options"
             android:src="@drawable/ic_menu" />
 
     </LinearLayout>

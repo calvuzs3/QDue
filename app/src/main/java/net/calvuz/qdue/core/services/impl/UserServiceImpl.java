@@ -19,14 +19,14 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: User Service Implementation with Dependency Injection
- *
+ * <p>
  * Centralized implementation for all User operations with:
  * - Manual dependency injection via constructor
  * - Consistent OperationResult pattern throughout
  * - Automatic backup integration
  * - Background operations with CompletableFuture
  * - Comprehensive validation and error handling
- *
+ * <p>
  * Fully compliant with UserService interface contract.
  */
 public class UserServiceImpl implements UserService {

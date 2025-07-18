@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Factory for creating shifts (Shift objects).
- *
+ * <p>
  * Updated to work with the new dynamic ShiftTypeFactory.
  * No longer relies on static shift types but accesses the
  * dynamically configured shift types from the factory cache.

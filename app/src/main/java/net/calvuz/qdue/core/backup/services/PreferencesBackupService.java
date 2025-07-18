@@ -15,11 +15,11 @@ import java.util.Set;
 
 /**
  * STEP 1: Preferences Backup Service
- *
+ * <p>
  * Handles backup and restore operations for SharedPreferences.
  * Provides unified interface for backing up all application preferences
  * with categorization and selective restore capabilities.
- *
+ * <p>
  * Note: SharedPreferences are automatically backed up by Android,
  * but this service provides additional control and immediate backup capabilities.
  */

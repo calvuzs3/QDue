@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: SubDepartmentServiceImpl - Dependency Injection Compliant
- *
+ * <p>
  * Centralized implementation for all SubDepartment operations with:
  * - Manual dependency injection via constructor
  * - Consistent OperationResult pattern throughout
@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  * - Background operations with CompletableFuture
  * - Comprehensive validation and error handling
  * - Hierarchical department management within macro departments
- *
+ * <p>
  * Fully compliant with SubDepartmentService interface contract.
  */
 public class SubDepartmentServiceImpl implements SubDepartmentService {

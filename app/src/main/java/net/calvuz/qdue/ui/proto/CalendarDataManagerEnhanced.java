@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.proto;
 
 /**
  * INTEGRATION STEP 3: CalendarDataManager Integration
- *
+ * <p>
  * Enhance existing CalendarDataManager to work with virtual scrolling
  * while maintaining backward compatibility
  */
@@ -206,7 +206,7 @@ public class CalendarDataManagerEnhanced extends CalendarDataManager {
 
     /**
      * Load exceptions for a specific month
-     * @param monthDate
+     * @param monthDate Month date
      * @return exceptions list
      */
     private List<TurnException> loadExceptionsForMonth(LocalDate monthDate) {

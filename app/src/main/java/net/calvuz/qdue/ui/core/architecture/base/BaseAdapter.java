@@ -35,13 +35,13 @@ import java.util.Map;
 
 /**
  * Base adapter with common functionality for RecyclerView.
- *
+ * <p>
  * Provides:
  * - Standard ViewHolder patterns
  * - Data binding utilities
  * - Performance optimizations
  * - Memory management
- *
+ * <p>
  * REFACTORED from BaseAdapterLegacy:
  * - Removed "Legacy" suffix
  * - Enhanced performance

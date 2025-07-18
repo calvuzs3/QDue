@@ -16,19 +16,19 @@ import java.util.List;
 
 /**
  * Dependency Injection Module for Calendar Feature
- *
+ * <p>
  * Provides centralized dependency management for Calendar components:
  * - CalendarViewFragment
  * - CalendarAdapter
  * - CalendarEventsBottomSheet
  * - Calendar-specific services and configurations
- *
+ * <p>
  * Features:
  * - Activity-scoped adapter instances
  * - 7-column grid layout configuration
  * - Calendar-specific events preview
  * - Optimized for calendar grid display
- *
+ * <p>
  * Usage:
  * CalendarModule module = new CalendarModule(context, eventsService, userService);
  * CalendarAdapter adapter = module.provideCalendarAdapter(items, userTeam);

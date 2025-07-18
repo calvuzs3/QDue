@@ -27,13 +27,13 @@ import java.util.Set;
 
 /**
  * Base adapter with user interaction support (clicks, selection mode).
- *
+ * <p>
  * Extends BaseAdapter with:
  * - Click and long-click handling
  * - Selection mode management
  * - Multi-selection support
  * - Event delegation to fragments
- *
+ * <p>
  * REFACTORED from BaseClickAdapterLegacy:
  * - More descriptive name
  * - Enhanced interaction handling

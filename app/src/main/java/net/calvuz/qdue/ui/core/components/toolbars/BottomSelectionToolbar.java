@@ -56,7 +56,7 @@ import java.util.Set;
 
 /**
  * 🎨 Enhanced Bottom Selection Toolbar with Smart Validation
- *
+ * <p>
  * Features:
  * - Programmatic Material 3 design with custom styling
  * - Smart action validation based on work schedule

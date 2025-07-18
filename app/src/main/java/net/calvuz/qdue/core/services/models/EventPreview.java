@@ -12,11 +12,11 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * STEP 1: EventPreview DTO
- *
+ * <p>
  * Data Transfer Object for event preview display in UI.
  * Provides a clean interface for showing event preview information
  * without exposing complex business logic or database entities.
- *
+ * <p>
  * Features:
  * - Immutable after construction
  * - UI-friendly display methods

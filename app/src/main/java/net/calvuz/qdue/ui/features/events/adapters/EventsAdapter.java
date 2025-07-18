@@ -22,7 +22,7 @@ import java.util.Set;
 
 /**
  * EventsAdapter - RecyclerView adapter for events list with navigation support
- *
+ * <p>
  * Features:
  * - Click handling for navigation to event details
  * - Long click for context menu actions
@@ -214,7 +214,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
     /**
      * ViewHolder for event items
-     *
+     * <p>
      * TODO: implement selection mode (indicator goes with cardview)
      */
     public static class EventViewHolder extends RecyclerView.ViewHolder {
@@ -274,7 +274,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
          */
         private void formatTimeDisplay(LocalEvent event) {
             if (event.getStartTime() == null) {
-                mTimeView.setText("Orario non specificato");
+                mTimeView.setText(R.string.text_hour_not_specified);
                 return;
             }
 
@@ -310,7 +310,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
          */
         private void setEventStatus(LocalEvent event) {
             if (event.getStartTime() == null || event.getEndTime() == null) {
-                mStatusView.setText("Stato sconosciuto");
+                mStatusView.setText(R.string.text_unknown_state);
                 mStatusIndicator.setBackgroundColor(getColorFromResource(R.color.status_unknown));
                 return;
             }
@@ -319,15 +319,15 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
             if (now.isBefore(event.getStartTime())) {
                 // Upcoming event
-                mStatusView.setText("In programma");
+                mStatusView.setText(R.string.text_scheduled_on);
                 mStatusIndicator.setBackgroundColor(getColorFromResource(R.color.status_upcoming));
             } else if (now.isAfter(event.getEndTime())) {
                 // Past event
-                mStatusView.setText("Terminato");
+                mStatusView.setText(R.string.text_finished);
                 mStatusIndicator.setBackgroundColor(getColorFromResource(R.color.status_past));
             } else {
                 // Current event
-                mStatusView.setText("In corso");
+                mStatusView.setText(R.string.text_in_progress);
                 mStatusIndicator.setBackgroundColor(getColorFromResource(R.color.status_current));
             }
         }

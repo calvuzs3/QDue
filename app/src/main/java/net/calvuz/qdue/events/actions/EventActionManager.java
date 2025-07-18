@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * EventActionManager - Centralized Business Logic for Event Actions
- *
+ * <p>
  * This manager provides centralized business logic for event actions, completely
  * separated from UI concerns. It handles validation, event creation, and business
  * rule enforcement.

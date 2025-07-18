@@ -22,11 +22,11 @@ import net.calvuz.qdue.ui.features.welcome.interfaces.WelcomeInterface;
 
 /**
  * View Mode Selection Fragment - Third step of welcome flow
- *
+ * <p>
  * Allows user to choose between two main view modes:
  * 1. Calendar View - Shows only user's team shifts in monthly calendar format
  * 2. DaysList View - Shows all 9 teams' shifts in daily list format
- *
+ * <p>
  * Features visual previews and detailed explanations of each mode.
  */
 public class ViewModeFragment extends Fragment {

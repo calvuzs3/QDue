@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * RecyclerView Adapter for team selection in 3x3 grid layout
- *
+ * <p>
  * Features:
  * - Visual team cards with distinct colors
  * - Selection state management

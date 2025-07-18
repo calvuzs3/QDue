@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * EventDao interface for Google Calendar-like event operations.
  * Provides comprehensive CRUD operations and advanced querying capabilities.
- *
+ * <p>
  * Features:
  * - Basic CRUD operations
  * - Calendar-specific date range queries
@@ -125,7 +125,7 @@ public interface EventDao {
     /**
      * Get upcoming events from current time.
      * @param currentTime Current timestamp
-     * @return List of upcoming events
+     * @return Number of upcoming events
      */
     @Query("SELECT COUNT(*) FROM events WHERE start_time >= :currentTime ")
     int getUpcomingEventsCount(LocalDateTime currentTime);

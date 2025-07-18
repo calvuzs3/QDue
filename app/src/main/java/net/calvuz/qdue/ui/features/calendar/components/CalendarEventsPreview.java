@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * CalendarEventsPreview - Updated implementation using Bottom Sheet
- *
+ * <p>
  * This class now uses CalendarEventsBottomSheet for a better user experience
  * on small calendar cells (48x48dp).
  */

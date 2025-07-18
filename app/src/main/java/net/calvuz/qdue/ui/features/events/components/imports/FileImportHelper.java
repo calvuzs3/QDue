@@ -18,14 +18,14 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 /**
  * Helper class to integrate FileManager with your existing event system.
  * Provides high-level methods for importing JSON/QDue event files.
- *
+ * <p>
  * Features:
  * - Integration with existing EventPackageJson structure
  * - Automatic JSON parsing and validation
  * - Error handling with user-friendly messages
  * - Progress callbacks for UI feedback
  * - Support for both single file and batch imports
- *
+ * <p>
  * Usage:
  * FileImportHelper importHelper = new FileImportHelper(this);
  * importHelper.importEventFile(callback);

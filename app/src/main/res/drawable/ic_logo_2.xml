@@ -30,11 +30,11 @@
             android:pathData="M25,63 L55,63 C57.2,63 59,61.2 59,59 C59,56.8 57.2,55 55,55 L25,55 C22.8,55 21,56.8 21,59 C21,61.2 22.8,63 25,63 Z" />
 
         <!-- Small rotation indicator dot -->
-        <circle
-            android:fillColor="?attr/colorPrimary"
-            android:centerX="60"
-            android:centerY="30"
-            android:radius="2.5dp" />
+<!--        <circle-->
+<!--            android:fillColor="?attr/colorPrimary"-->
+<!--            android:centerX="60"-->
+<!--            android:centerY="30"-->
+<!--            android:radius="2.5dp" />-->
     </group>
 
     <!-- Clock hand indicator (subtle) -->

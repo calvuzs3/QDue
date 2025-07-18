@@ -5,10 +5,10 @@ import androidx.annotation.Nullable;
 
 /**
  * Enhanced interface for components that can have unsaved changes.
- *
+ * <p>
  * This interface extends BackPressHandler to provide sophisticated handling
  * of unsaved changes with user confirmation dialogs.
- *
+ * <p>
  * Components implementing this interface can automatically integrate with
  * the back handling system to prevent data loss.
  */
@@ -23,7 +23,7 @@ public interface UnsavedChangesHandler extends BackPressHandler {
 
     /**
      * Handle unsaved changes with user confirmation
-     *
+     * <p>
      * This method should present appropriate UI (dialog, snackbar, etc.) to let
      * the user decide how to proceed with unsaved changes.
      *
@@ -44,7 +44,7 @@ public interface UnsavedChangesHandler extends BackPressHandler {
 
     /**
      * Default implementation that delegates to unsaved changes handling
-     *
+     * <p>
      * Components can override this if they need more complex logic.
      */
     @Override
@@ -61,7 +61,7 @@ public interface UnsavedChangesHandler extends BackPressHandler {
 
     /**
      * Called when user confirms they want to proceed despite unsaved changes
-     *
+     * <p>
      * Default implementation does nothing. Override to implement custom logic
      * like clearing unsaved state, notifying other components, etc.
      */
@@ -71,7 +71,7 @@ public interface UnsavedChangesHandler extends BackPressHandler {
 
     /**
      * Called when user cancels navigation due to unsaved changes
-     *
+     * <p>
      * Default implementation does nothing. Override to implement custom logic
      * like focusing on unsaved fields, showing save options, etc.
      */

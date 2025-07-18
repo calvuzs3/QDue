@@ -12,7 +12,7 @@ import net.calvuz.qdue.quattrodue.models.ShiftType;
 
 /**
  * Utility class for managing shift schedule patterns.
- *
+ * <p>
  * Implements the logic for applying the fixed shift rotation scheme.
  * Contains the 18-day rotation pattern and provides methods for
  * generating days, finding team schedules, and calculating rotations.

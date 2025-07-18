@@ -17,19 +17,19 @@ import java.util.List;
 
 /**
  * Dependency Injection Module for DaysList Feature
- *
+ * <p>
  * Provides centralized dependency management for DaysList components:
  * - DayslistViewFragment
  * - DaysListAdapter
  * - DaysListEventsPreview components
  * - Days list specific services
- *
+ * <p>
  * Features:
  * - Activity-scoped adapter instances
  * - Shared events preview components
  * - Calendar data manager integration
  * - Clean separation from other features
- *
+ * <p>
  * Usage:
  * DaysListModule module = new DaysListModule(context, eventsService, userService);
  * DaysListAdapter adapter = module.provideDaysListAdapter(listener);

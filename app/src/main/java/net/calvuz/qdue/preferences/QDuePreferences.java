@@ -8,10 +8,10 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * Modern QDue preferences management
- *
+ * <p>
  * Integrates with existing WelcomeActivity preferences while providing modern API.
  * This class acts as a bridge between legacy preferences and new QDue architecture.
- *
+ * <p>
  * Features:
  * - Compatible with existing WelcomeActivity and WelcomeInterface
  * - View mode preferences (Calendar vs DaysList)

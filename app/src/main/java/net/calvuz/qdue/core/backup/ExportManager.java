@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * STEP 3: Export Manager for Events System
- *
+ * <p>
  * Handles export of events to JSON files in EventPackageJson format.
  * Features:
  * - Export all events or filtered selection
@@ -383,7 +383,7 @@ public class ExportManager {
         } catch (Exception e) {
             // Rough estimation if JSON serialization fails
             int eventsCount = packageJson.events != null ? packageJson.events.size() : 0;
-            return eventsCount * 1000; // Approximately 1KB per event
+            return ((long)eventsCount) * 1000; // Approximately 1KB per event
         }
     }
 

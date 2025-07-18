@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/header_thuersday"
+            android:text="@string/header_thursday"
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnPrimary"
             android:textStyle="bold" />
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="@string/header_wednsday"
+            android:text="@string/header_wednesday"
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnPrimary"
             android:textStyle="bold" />

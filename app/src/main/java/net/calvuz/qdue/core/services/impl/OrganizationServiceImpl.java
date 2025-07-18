@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: OrganizationServiceImpl - Dependency Injection Compliant
- *
+ * <p>
  * Composite service that manages organizational hierarchy operations with:
  * - Manual dependency injection via constructor
  * - Consistent OperationResult pattern throughout
@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
  * - High-level operations across multiple organizational entities
  * - Import/Export capabilities
  * - Hierarchical search functionality
- *
+ * <p>
  * Fully compliant with OrganizationService interface contract.
  */
 public class OrganizationServiceImpl implements OrganizationService {

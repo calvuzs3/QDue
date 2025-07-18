@@ -5,7 +5,7 @@ import java.util.Objects;
 
 /**
  * Represents a work team (or half-team) of workers.
- *
+ * <p>
  * Each HalfTeam is identified by a unique name (typically a single character).
  * Supports cloning and comparison operations for team management.
  *

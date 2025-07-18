@@ -20,17 +20,17 @@ import java.util.UUID;
 
 /**
  * MIGRATED: QuickEventLogicAdapter with EventAction Integration
- *
+ * <p>
  * This migrated version leverages the new EventAction system while maintaining
  * backward compatibility with existing ToolbarAction-based functionality.
- *
+ * <p>
  * Key Migration Benefits:
  * - Enhanced business logic through EventAction business rules
  * - Improved metadata accuracy and consistency
  * - Better validation and constraint checking
  * - Cleaner separation between UI and business concerns
  * - Forward compatibility with EventAction-based systems
- *
+ * <p>
  * Migration Strategy:
  * - Primary logic now uses EventAction and EventActionManager
  * - ToolbarAction support maintained through bridge pattern

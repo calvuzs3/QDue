@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 /**
  * FIXED: Advanced JSON Schema Validator for Q-Due Events
- *
+ * <p>
  * Fixed date validation to support multiple formats:
  * - ISO 8601 dates: "2025-01-15"
  * - ISO 8601 datetime: "2025-01-15T10:30:00Z"

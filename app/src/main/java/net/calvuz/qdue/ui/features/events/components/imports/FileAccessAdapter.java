@@ -14,18 +14,18 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * File Access Adapter - SAF bridge for EventsImportManager
- *
+ * <p>
  * This adapter provides a clean interface between the existing EventsImportManager
  * and the new SAF-based file access system, ensuring zero breaking changes
  * while solving storage permission issues.
- *
+ * <p>
  * Features:
  * - Drop-in replacement for direct file access
  * - SAF-based file selection (no permissions required)
  * - Compatible with existing EventsImportManager interface
  * - Support for .json and .qdue files
  * - Maintains all existing error handling patterns
- *
+ * <p>
  * Usage in EventsActivity:
  * mFileAccessAdapter = new FileAccessAdapter(this);
  * mFileAccessAdapter.selectFile(uri -> importEventsFromFile(uri));

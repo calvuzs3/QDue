@@ -4,7 +4,7 @@ package net.calvuz.qdue.ui.core.common.utils;
  * Wrapper class for Log.
  * Questa classe è stata migliorata ma mantiene la retrocompatibilità
  * con la versione originale.
- *
+ * <p>
  * Created on 20/09/17.
  * Updated on 21/05/2025.
  *

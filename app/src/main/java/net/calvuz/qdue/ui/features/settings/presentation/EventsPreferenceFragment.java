@@ -309,28 +309,28 @@ public class EventsPreferenceFragment extends PreferenceFragmentCompat
 
 /**
  * INTEGRATION STEPS:
- *
+ * <p>
  * 1. Add to main root_preferences.xml:
- *
+ * <p>
  *    <Preference
  *        app:key="events_settings"
  *        app:title="@string/settings_events_title"
  *        app:summary="@string/settings_events_main_summary"
  *        app:icon="@drawable/ic_event"
  *        app:fragment="net.calvuz.qdue.ui.settings.EventsPreferenceFragment" />
- *
+ * <p>
  * 2. Create res/xml/events_preferences.xml with the settings structure
- *
+ * <p>
  * 3. Add all strings to res/values/strings.xml
- *
+ * <p>
  * 4. Create all drawable icons
- *
+ * <p>
  * 5. Implement actual EventDao interface for your database
- *
+ * <p>
  * 6. Add network permissions to AndroidManifest.xml:
  *    <uses-permission android:name="android.permission.INTERNET" />
  *    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
- *
+ * <p>
  * 7. Add Gson dependency to build.gradle:
  *    implementation 'com.google.code.gson:gson:2.10.1'
  */
