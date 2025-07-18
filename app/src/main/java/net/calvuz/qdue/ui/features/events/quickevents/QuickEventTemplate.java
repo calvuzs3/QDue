@@ -3,7 +3,7 @@ package net.calvuz.qdue.ui.features.events.quickevents;
 import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.metadata.EventEditMetadataManager;
+import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
@@ -230,7 +230,7 @@ public class QuickEventTemplate {
         LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, userId);
 
         // Inizializzare metadata tracking
-        event = EventEditMetadataManager.initializeEditSessionMetadata(event, userId);
+        event = EventMetadataManager.initializeEditSessionMetadata(event, userId);
 
         // Add template tracking to metadata
         addTemplateMetadata(event);

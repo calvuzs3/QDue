@@ -26,10 +26,10 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
-                style="@style/Widget.QDue.Toolbar.Enhanced"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
+                android:foregroundTint="?attr/colorPrimary"
                 app:title="@string/app_name"
                 app:titleTextAppearance="@style/TextAppearance.QDue.TitleLarge"
                 android:textStyle="bold"

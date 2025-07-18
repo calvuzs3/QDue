@@ -59,8 +59,6 @@ import java.util.concurrent.CompletableFuture;
  * Enhanced with Quick Events creation system
  * Intermediate layer between BaseFragment and specific implementations
  * <p>
- * PHASE 3: BaseInteractiveFragment - Service Integration
- * <p>
  * REFACTORED VERSION:
  * - ✅ ADDED: Dependency injection support (Injectable)
  * - ✅ ADDED: Service-based quick event creation
@@ -579,7 +577,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 //                LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, mCurrentUserId);
 //
 //                // Inizializzare metadata
-//                event = EventEditMetadataManager.initializeEditSessionMetadata(event, mCurrentUserId);
+//                event = EventMetadataManager.initializeEditSessionMetadata(event, mCurrentUserId);
 //
 //                // Salvare nel database
 //                long rowId = eventDao.insertEvent(event);
@@ -1257,24 +1255,8 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * Proxy for ADAPTER: Enter selection mode (update UI accordingly?)
      */
     protected void enterSelectionMode() {
-//        BaseInteractiveAdapter adapter = getClickAdapter();
-//        if (adapter != null && !adapter.isSelectionMode()) {
-//            adapter.setSelectionMode(true);
-//        }
-//
-//        hideFabForSelection();
-//        hideBottomNavigation();
-//
-//        showBottomToolbar();
-//        updateActionBarForSelection(isSelectionMode());
-//        updateBottomToolbar();
-//
-//        // TODO: update fab visibility
-//        //toggleFabVisibility(mFabGoToToday);
-//        updateActionBarTitle(getCurrentSelectionCount());
-//
-//        Log.d(TAG, "enterSelectionMode: Entered selection mode");
-//    }
+        Log.i(TAG, "✅ Entering selection mode with coordinated timing");
+
         BaseInteractiveAdapter adapter = getClickAdapter();
         if (adapter != null && !adapter.isSelectionMode()) {
             adapter.setSelectionMode(true);
@@ -1287,11 +1269,10 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         coordinateBottomNavAndToolbar(true);
 
         updateActionBarTitle(getCurrentSelectionCount());
-        Log.d(TAG, "enterSelectionMode: Enhanced selection mode with coordinated timing");
     }
 
     /**
-     * 🔧 NEW: Coordinate bottom navigation hiding and toolbar showing
+     * Coordinate bottom navigation hiding and toolbar showing
      */
     private void coordinateBottomNavAndToolbar(boolean enteringSelectionMode) {
         if (!(getActivity() instanceof QDueMainActivity)) {
@@ -1373,13 +1354,12 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         }, delayMs);
     }
 
-
-
-
     /**
-     * ✅ REFACTORED: Exit selection mode - eliminato clear diretto
+     * Exit selection mode - eliminato clear diretto
      */
     protected void exitSelectionMode() {
+        Log.i(TAG, "✅ Exiting selection mode");
+
         if (isSelectionMode()) return; // false is ok(already updated)
 
         // ✅ Update action bar/toolbar
@@ -1397,58 +1377,31 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         if (adapter != null && adapter.isSelectionMode()) {
             adapter.setSelectionMode(false); // ✅ Questo gestirà automaticamente il clear se necessario
         }
-
-        Log.d(TAG, "exitSelectionMode: Exited selection mode");
     }
-//    /**
-//     * Exit selection mode - restore normal UI
-//     */
-//    protected void exitSelectionMode() {
-//        // Exit if in selection mode
-//        if (!isSelectionMode()) return;
-//
-//        // Update action bar/toolbar
-//        updateActionBarForSelection(false);
-//
-//        // Show FAB again
-//        showFabAfterSelection();
-//
-//        // Hide bottom toolbar
-//        hideBottomToolbar();
-//
-//        // Disable selection mode in adapter
-//        BaseInteractiveAdapter adapter = getClickAdapter();
-//        if (adapter != null && adapter.isSelectionMode()) {
-//            adapter.setSelectionMode(false);
-//            adapter.clearSelections();
-//        }
-//
-//        Log.d(TAG, "exitSelectionMode: Exited selection mode");
-//    }
 
     /**
      * Show bottom toolbar with current selection
      */
     private void showBottomToolbar() {
         if (mBottomToolbar == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null - reinitializing...");
+            Log.e(TAG, "❌ showBottomToolbar: Bottom toolbar is null - reinitializing");
             setupBottomToolbar(); // Reinitialize if needed
 
             if (mBottomToolbar == null) {
-                Log.e(TAG, "showBottomToolbar: ❌ Failed to initialize bottom toolbar");
+                Log.e(TAG, "❌ showBottomToolbar: Failed to initialize bottom toolbar");
                 return;
             }
         }
 
         BaseInteractiveAdapter adapter = getClickAdapter();
         if (adapter == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ No adapter available");
+            Log.e(TAG, "❌ showBottomToolbar: No adapter available");
             return;
         }
 
         ViewGroup container = getToolbarContainer();
         if (container == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ No toolbar container available");
+            Log.e(TAG, "❌ showBottomToolbar: No toolbar container available");
             return;
         }
 
@@ -1458,30 +1411,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         // Get selected dates
         Set<LocalDate> selectedDates = adapter.getSelectedDates();
         if (selectedDates == null || selectedDates.isEmpty()) {
-            Log.w(TAG, "showBottomToolbar: ⚠️ No dates selected");
-//            return;
-            Log.w(TAG, "showBottomToolbar: ⚠️ Skipping return for test");
+            Log.w(TAG, "⚠️ No dates selected");
+            Log.w(TAG, "⚠️ Not Skipping return for test");
+            return;
         }
 
         // Show enhanced toolbar with smart validation
         mBottomToolbar.show(container, selectedDates, this);
-//
-//        if (mBottomToolbar == null) {
-//            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null");
-//            return;
-//        }
-//
-//        BaseInteractiveAdapter adapter = getClickAdapter();
-//        if (adapter == null) return;
-//
-//        ViewGroup container = getToolbarContainer();
-//        if (container == null) {
-//            Log.e(TAG, "showBottomToolbar: ❌ No toolbar container available");
-//            return;
-//        }
-//
-//        Set<LocalDate> selectedDates = adapter.getSelectedDates();
-//        mBottomToolbar.show(container, selectedDates, this);
     }
 
     /**

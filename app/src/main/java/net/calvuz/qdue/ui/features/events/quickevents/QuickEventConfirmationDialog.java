@@ -667,7 +667,7 @@ public class QuickEventConfirmationDialog implements Injectable {
         if (mContext instanceof Activity) {
             ((Activity) mContext).runOnUiThread(() -> {
                 setLoadingState(false);
-                handleCreationError("Errore nella creazione dell'evento: " + throwable.getMessage());
+                handleCreationError(throwable.getMessage());
             });
         }
 
@@ -679,7 +679,7 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private void handleCreationError(String errorMessage) {
         Log.e(TAG, "Creation error: " + errorMessage);
-        Library.showError(mContext, errorMessage);
+        Library.showDialogError(mContext, "Errore Creazione", errorMessage);
         mListener.onEventCreationFailed(mTemplate.getSourceAction(), mDate, errorMessage);
     }
 

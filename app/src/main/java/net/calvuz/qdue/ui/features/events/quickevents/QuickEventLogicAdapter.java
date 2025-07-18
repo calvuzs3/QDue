@@ -1,5 +1,7 @@
 package net.calvuz.qdue.ui.features.events.quickevents;
 
+import net.calvuz.qdue.events.actions.ConflictAnalysis;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -181,6 +183,33 @@ public class QuickEventLogicAdapter {
             Log.e(TAG, "Error checking ToolbarAction availability: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Enhanced validation with conflict checking.
+     */
+    public static boolean canCreateEventActionOnDate(EventAction action, LocalDate date, Long userId, EventDao eventDao) {
+        // Validazione esistente
+        if (!EventActionManager.canPerformAction(action, date, userId)) {
+            return false;
+        }
+
+        // Nuova validazione conflitti
+        return !EventActionManager.hasConflictingEvents(action, date, userId, eventDao);
+    }
+
+    /**
+     * Create event with conflict validation.
+     */
+    public static LocalEvent createEventFromEventActionWithValidation(EventAction action, LocalDate date, Long userId, EventDao eventDao) throws Exception {
+        // Check conflicts before creation
+        ConflictAnalysis conflicts = EventActionManager.analyzeConflicts(action, date, userId, eventDao);
+        if (conflicts.hasConflicts()) {
+//            throw new EventConflictException("Conflitti rilevati: " + conflicts.getConflictSummary());
+            throw new Exception("Conflitti rilevati: " + conflicts.getConflictSummary());
+        }
+
+        return createEventFromEventAction(action, date, userId);
     }
 
     // ==================== ENHANCED METADATA APPLICATION ====================

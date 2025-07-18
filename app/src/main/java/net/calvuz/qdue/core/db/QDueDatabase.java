@@ -52,7 +52,7 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
                 MacroDepartment.class,
                 SubDepartment.class
         },
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 @TypeConverters({

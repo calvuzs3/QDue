@@ -32,7 +32,7 @@ import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.events.actions.EventAction;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.metadata.EventEditMetadataManager;
+import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -225,7 +225,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
             Long currentUserId = getCurrentUserId();
 
             // Initialize enhanced edit session metadata
-            mEvent = EventEditMetadataManager.initializeEditSessionMetadata(mEvent, currentUserId);
+            mEvent = EventMetadataManager.initializeEditSessionMetadata(mEvent, currentUserId);
             mMetadataInitialized = true;
 
             // Extract session ID for tracking
@@ -254,7 +254,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
 
         try {
             // Strategy 1: Check for EventAction in metadata
-            EventAction fromMetadata = EventEditMetadataManager.getOriginalEventAction(mEvent);
+            EventAction fromMetadata = EventMetadataManager.getOriginalEventAction(mEvent);
             if (fromMetadata != null) {
                 Log.d(TAG, "Original EventAction detected from metadata: " + fromMetadata);
                 return fromMetadata;
@@ -694,7 +694,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
             long editDurationSeconds = (System.currentTimeMillis() - mEditSessionStartTime) / 1000;
 
             // Enhanced: Update change tracking metadata with EventAction context
-            mEvent = EventEditMetadataManager.updateChangeTrackingMetadata(
+            mEvent = EventMetadataManager.updateChangeTrackingMetadata(
                     mEvent, mOriginalEvent, mChangedFields, editDurationSeconds);
 
             Log.v(TAG, "Enhanced metadata updated for current changes");
@@ -1105,7 +1105,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
                 // Enhanced: Finalize metadata with EventAction context
                 if (mMetadataInitialized) {
                     long totalEditDuration = (System.currentTimeMillis() - mEditSessionStartTime) / 1000;
-                    mEvent = EventEditMetadataManager.finalizeEditSessionMetadata(
+                    mEvent = EventMetadataManager.finalizeEditSessionMetadata(
                             mEvent, mSaveAttempts, totalEditDuration);
                 }
 
@@ -1395,19 +1395,19 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
             if (mEvent == null) return;
 
             // Check if approval is required due to changes
-            if (EventEditMetadataManager.requiresApprovalDueToChanges(mEvent)) {
+            if (EventMetadataManager.requiresApprovalDueToChanges(mEvent)) {
                 Log.w(TAG, "⚠️ ALERT: Event changes require approval workflow");
             }
 
             // Check business impact score
-            int businessImpact = EventEditMetadataManager.getBusinessImpactScore(mEvent);
+            int businessImpact = EventMetadataManager.getBusinessImpactScore(mEvent);
             if (businessImpact >= 7) {
                 Log.w(TAG, "⚠️ ALERT: High business impact detected (score: " + businessImpact + ")");
             }
 
             // Check change severity
-            EventEditMetadataManager.ChangeSeverity severity = EventEditMetadataManager.getChangeSeverity(mEvent);
-            if (severity == EventEditMetadataManager.ChangeSeverity.CRITICAL) {
+            EventMetadataManager.ChangeSeverity severity = EventMetadataManager.getChangeSeverity(mEvent);
+            if (severity == EventMetadataManager.ChangeSeverity.CRITICAL) {
                 Log.w(TAG, "⚠️ ALERT: Critical changes detected - may require immediate attention");
             }
 
@@ -1425,12 +1425,12 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
             }
 
             // Check if originally a quick event
-            if (EventEditMetadataManager.wasOriginallyQuickEvent(mEvent)) {
+            if (EventMetadataManager.wasOriginallyQuickEvent(mEvent)) {
                 Log.i(TAG, "ℹ️ INFO: Originally created as quick event, now manually edited");
             }
 
             // Enhanced: Check EventAction business rule violations
-            List<String> violations = EventEditMetadataManager.getEventActionViolations(mEvent);
+            List<String> violations = EventMetadataManager.getEventActionViolations(mEvent);
             if (!violations.isEmpty()) {
                 Log.w(TAG, "⚠️ ALERT: EventAction business rule violations: " + violations);
             }
@@ -1811,7 +1811,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
      */
     public String getEnhancedMetadataSummaryForDebugging() {
         if (mEvent != null) {
-            return EventEditMetadataManager.getEnhancedEditSessionSummary(mEvent);
+            return EventMetadataManager.getEnhancedEditSessionSummary(mEvent);
         }
         return "No enhanced metadata available";
     }
@@ -1905,7 +1905,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
     private void logEnhancedMetadataSummary() {
         try {
             if (mEvent != null) {
-                String summary = EventEditMetadataManager.getEnhancedEditSessionSummary(mEvent);
+                String summary = EventMetadataManager.getEnhancedEditSessionSummary(mEvent);
                 Log.i(TAG, "=== ENHANCED EDIT SESSION COMPLETED ===");
                 Log.i(TAG, summary);
 

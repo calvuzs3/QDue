@@ -8,6 +8,7 @@
         android:id="@+id/action_save_event"
         android:title="@string/text_action_save"
         android:icon="@drawable/ic_rounded_save_24"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
     <!-- Cancel Edit -->
@@ -15,6 +16,7 @@
         android:id="@+id/action_cancel_edit"
         android:title="@string/text_action_cancel"
         android:icon="@drawable/ic_rounded_cancel_24"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="never" />
 
 </menu>

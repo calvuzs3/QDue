@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- ============================================ -->
-    <!-- UNIFIED MATERIAL 3 THEME SYSTEM -->
-    <!-- Single source of truth with automatic light/dark switching -->
+    <!-- QDUE THEME - MATERIAL 3 COLOR MAPPING -->
+    <!-- Maps semantic QDue colors to Material 3 attributes -->
     <!-- ============================================ -->
 
     <style name="Theme.QDue" parent="Theme.Material3.DayNight">
 
-        <!-- ✅ NEW: Floating Menu Attributes (LIGHT THEME) -->
+        <!-- ✅ Floating Menu Attributes (LIGHT THEME) -->
         <item name="floatingMenuBackground">@color/grey_800</item>          <!-- Light background -->
         <item name="floatingMenuOnBackground">@color/grey_100</item>        <!-- Dark text on light -->
         <item name="floatingMenuPrimary">@color/blue_500</item>             <!-- Primary actions -->
@@ -16,116 +15,110 @@
         <item name="floatingMenuSurface">@color/grey_800</item>             <!-- Surface elements -->
         <item name="floatingMenuOnSurface">@color/grey_100</item>           <!-- Text on surface -->
 
+        <!-- ============================================ -->
+        <!-- MATERIAL 3 SYSTEM COLORS (Dynamic Colors Compatible) -->
+        <!-- ============================================ -->
 
+        <!-- PRIMARY PALETTE - QDue Royal Purple -->
+        <item name="colorPrimary">@color/qdue_royal_purple</item>
+        <item name="colorOnPrimary">@color/qdue_text_on_dark</item>
+        <item name="colorPrimaryContainer">@color/qdue_royal_purple_container</item>
+        <item name="colorOnPrimaryContainer">@color/qdue_royal_purple_dark</item>
 
-        <!-- Material 3 System Colors (auto-switched by Material You) -->
-        <item name="colorPrimary">@color/md_theme_light_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        <!-- SECONDARY PALETTE - QDue Ocean Blue -->
+        <item name="colorSecondary">@color/qdue_ocean_blue</item>
+        <item name="colorOnSecondary">@color/qdue_text_on_dark</item>
+        <item name="colorSecondaryContainer">@color/qdue_ocean_blue_container</item>
+        <item name="colorOnSecondaryContainer">@color/qdue_ocean_blue_dark</item>
 
-        <item name="colorSecondary">@color/md_theme_light_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
-        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
-        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        <!-- TERTIARY PALETTE - Accent Colors -->
+        <item name="colorTertiary">@color/qdue_info_blue</item>
+        <item name="colorOnTertiary">@color/qdue_text_on_dark</item>
+        <item name="colorTertiaryContainer">@color/qdue_info_light</item>
+        <item name="colorOnTertiaryContainer">@color/qdue_text_primary</item>
 
-        <item name="colorTertiary">@color/md_theme_light_tertiary</item>
-        <item name="colorOnTertiary">@color/md_theme_light_onTertiary</item>
-        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
-        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        <!-- ERROR PALETTE - QDue Error Red -->
+        <item name="colorError">@color/qdue_error_red</item>
+        <item name="colorOnError">@color/qdue_text_on_dark</item>
+        <item name="colorErrorContainer">@color/qdue_error_light</item>
+        <item name="colorOnErrorContainer">@color/qdue_text_primary</item>
 
-        <item name="colorError">@color/md_theme_light_error</item>
-        <item name="colorOnError">@color/md_theme_light_onError</item>
-        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
-        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        <!-- SURFACE COLORS - Clean & Modern -->
+        <item name="colorSurface">@color/qdue_card_white</item>
+        <item name="colorOnSurface">@color/qdue_text_primary</item>
+        <item name="colorSurfaceVariant">@color/qdue_card_grey</item>
+        <item name="colorOnSurfaceVariant">@color/qdue_text_secondary</item>
 
-        <item name="colorSurface">@color/md_theme_light_surface</item>
-        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
-        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
-        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <!-- BACKGROUND COLORS -->
+        <item name="android:colorBackground">@color/qdue_bg_gradient_light</item>
+        <item name="colorOnBackground">@color/qdue_text_primary</item>
 
-        <item name="android:colorBackground">@color/md_theme_light_background</item>
-        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <!-- OUTLINE COLORS - Borders & Dividers -->
+        <item name="colorOutline">@color/qdue_border_medium</item>
+        <item name="colorOutlineVariant">@color/qdue_border_light</item>
 
-        <item name="colorOutline">@color/md_theme_light_outline</item>
-        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
+        <!-- ============================================ -->
+        <!-- QDUE CUSTOM ATTRIBUTES MAPPING -->
+        <!-- ============================================ -->
 
-        <!-- App-Specific Fixed Colors (maintain consistency) -->
-        <item name="colorTodayBackground">@color/today_background_light</item>
-        <item name="colorTodayBorder">@color/today_border</item>
-        <item name="colorOnTodayBackground">@color/on_today_light</item>
+        <!-- Calendar Day States -->
+        <item name="colorTodayBackground">@color/qdue_today_highlight</item>
+        <item name="colorTodayBorder">@color/qdue_today_highlight</item>
+        <item name="colorOnTodayBackground">@color/qdue_text_on_dark</item>
 
-        <item name="colorUserShiftBackground">@color/user_shift_background_light</item>
-        <item name="colorUserShiftBorder">@color/user_shift_border</item>
-        <item name="colorOnUserShift">@color/on_user_shift_light</item>
+        <item name="colorUserShiftBackground">@color/qdue_user_day</item>
+        <item name="colorUserShiftBorder">@color/qdue_user_day</item>
+        <item name="colorOnUserShift">@color/qdue_text_on_dark</item>
 
-        <item name="colorSundayBackground">@color/sunday_background_light</item>
-        <item name="colorSundayBorder">@color/sunday_border</item>
-        <item name="colorOnSundayBackground">@color/on_sunday_light</item>
+        <item name="colorSundayBackground">@color/qdue_sunday_special</item>
+        <item name="colorSundayBorder">@color/qdue_sunday_special</item>
+        <item name="colorOnSundayBackground">@color/qdue_text_on_dark</item>
 
-        <item name="colorTodayUserBackground">@color/today_user_background_light</item>
-        <item name="colorTodayUserBorder">@color/today_user_border</item>
-        <item name="colorTodaySundayBackground">@color/today_sunday_background_light</item>
-        <item name="colorUserSundayBackground">@color/user_sunday_background_light</item>
+        <!-- Combined State Colors -->
+        <item name="colorTodayUserBackground">@color/qdue_today_user</item>
+        <item name="colorTodayUserBorder">@color/qdue_today_user</item>
+        <item name="colorTodaySundayBackground">@color/qdue_today_sunday</item>
+        <item name="colorUserSundayBackground">@color/qdue_user_sunday</item>
 
-        <!-- Shift Colors (Fixed for Recognition) -->
-        <item name="colorShiftMorning">@color/shift_morning</item>
-        <item name="colorShiftAfternoon">@color/shift_afternoon</item>
-        <item name="colorShiftNight">@color/shift_night</item>
-        <item name="colorShiftRest">@color/shift_rest</item>
-        <item name="colorShiftFifth">@color/shift_fifth</item>
-        <item name="colorShiftSixth">@color/shift_sixth</item>
-        <item name="colorShiftSeventh">@color/shift_seventh</item>
-        <item name="colorShiftEighth">@color/shift_eighth</item>
-
-        <!-- ATTR -->
+        <!-- Shift Type Colors (All 8 Required) -->
+        <item name="colorShiftMorning">@color/qdue_morning_shift</item>
+        <item name="colorShiftAfternoon">@color/qdue_afternoon_shift</item>
+        <item name="colorShiftNight">@color/qdue_night_shift</item>
+        <item name="colorShiftRest">@color/qdue_rest_shift</item>
+        <item name="colorShiftFifth">@color/qdue_extra_shift_1</item>
+        <item name="colorShiftSixth">@color/qdue_extra_shift_2</item>
+        <item name="colorShiftSeventh">@color/qdue_extra_shift_3</item>
+        <item name="colorShiftEighth">@color/qdue_extra_shift_4</item>
 
         <!-- Essential UI Colors -->
-        <item name="colorCardBackground">?attr/colorSurface</item>
-        <item name="colorCardBorder">?attr/colorOutlineVariant</item>
-        <item name="colorLoadingBackground">?attr/colorSurfaceVariant</item>
-        <item name="colorLoadingProgress">?attr/colorPrimary</item>
+        <item name="colorCardBackground">@color/qdue_card_white</item>
+        <item name="colorCardBorder">@color/qdue_border_light</item>
+        <item name="colorLoadingBackground">@color/qdue_highlight_subtle</item>
+        <item name="colorLoadingProgress">@color/qdue_royal_purple</item>
 
-        <!-- System Configuration -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
+        <!-- ============================================ -->
+        <!-- MATERIAL 3 COMPONENTS STYLING -->
+        <!-- ============================================ -->
+
+        <!-- System bars and navigation -->
+        <item name="android:statusBarColor">@color/qdue_gradient_start</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Window and activity styling -->
         <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-<!--        <item name="windowActionBar">false</item>-->
+        <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <!-- Component Style Applications -->
-<!--        <item name="toolbarStyle">@style/Widget.QDue.Toolbar</item>-->
+        <!-- Component style applications -->
         <item name="floatingActionButtonStyle">@style/Widget.QDue.FloatingActionButton</item>
         <item name="toolbarStyle">@style/Widget.QDue.Toolbar.Enhanced</item>
-<!--        <item name="materialCardViewStyle">@style/Widget.QDue.CardView</item>-->
+        <item name="materialCardViewStyle">@style/Widget.QDue.CardView</item>
         <item name="bottomNavigationStyle">@style/Widget.QDue.BottomNavigationView</item>
         <item name="navigationViewStyle">@style/Widget.QDue.NavigationView</item>
-
-        <!-- NavigationRail styles -->
         <item name="navigationRailStyle">@style/Widget.QDue.NavigationRail</item>
+
     </style>
-
-
-    <!-- ============================================ -->
-    <!-- SPECIALIZED ACTIVITY THEMES -->
-    <!-- ============================================ -->
-
-    <!-- For activities Settings like -->
-    <style name="Theme.QDue.Settings" parent="Theme.QDue">
-        <item name="android:windowBackground">?attr/colorSurface</item>
-    </style>
-
-    <style name="Theme.QDue.Welcome" parent="Theme.QDue">
-        <item name="android:windowBackground">?attr/colorSurface</item>
-    </style>
-
-    <!-- For activities that need explicit NoActionBar -->
-    <style name="Theme.QDue.NoActionBar" parent="Theme.QDue">
-        <item name="android:windowActionBar">false</item>
-    </style>
-
-
 </resources>

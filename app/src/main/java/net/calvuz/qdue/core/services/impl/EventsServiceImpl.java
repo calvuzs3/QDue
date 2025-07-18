@@ -6,9 +6,11 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.ConflictAnalysis;
 import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.actions.EventActionManager;
 import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.metadata.EventEditMetadataManager;
+import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.services.EventsService;
@@ -1098,6 +1100,18 @@ public class EventsServiceImpl implements EventsService {
                     return OperationResult.failure(validation.getFormattedErrorMessage(), OperationResult.OperationType.CREATE);
                 }
 
+                // ✅ Additional Conflict validation
+                EventAction eventAction = ToolbarActionBridge.mapToEventAction(request.getSourceAction());
+                ConflictAnalysis conflicts = EventActionManager.analyzeConflicts(
+                        eventAction, request.getDate(), request.getUserId(), mEventDao); // ← CORREZIONE: usa mEventDao
+
+                if (conflicts.hasConflicts()) {
+                    String message = conflicts.getConflictSummary();
+                    return OperationResult.failure(message, OperationResult.OperationType.CREATE);
+                }
+
+
+
                 // ✅ Create LocalEvent from request
                 LocalEvent event = createEventFromRequest(request);
 
@@ -1148,6 +1162,11 @@ public class EventsServiceImpl implements EventsService {
                     Log.w(TAG, errorMessage);
                     return OperationResult.failure(errorMessage, OperationResult.OperationType.BULK_CREATE);
                 }
+
+
+                // TODO: add conflict validations
+                // ✅ Additional Conflict validation
+
 
                 // ✅ Create events from requests
                 List<LocalEvent> createdEvents = new ArrayList<>();
@@ -1200,6 +1219,7 @@ public class EventsServiceImpl implements EventsService {
                     return OperationResult.success(new ArrayList<>(), "No dates provided", OperationResult.OperationType.BULK_CREATE);
                 }
 
+                // TODO: update as above
                 // ✅ Create requests for each date
                 List<QuickEventRequest> requests = new ArrayList<>();
                 for (LocalDate date : dates) {
@@ -1490,7 +1510,7 @@ public class EventsServiceImpl implements EventsService {
         }
 
         // Inizializzare metadata tracking
-        event = EventEditMetadataManager.initializeEditSessionMetadata(event, request.getUserId());
+        event = EventMetadataManager.initializeEditSessionMetadata(event, request.getUserId());
 
         return event;
 

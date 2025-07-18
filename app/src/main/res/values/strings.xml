@@ -1007,6 +1007,7 @@
     <string name="text_author">Autore:</string>
     <string name="text_advanced_features">Features Avanzate</string>
     <string name="toolbar_action">Azione</string>
+    <string name="text_settings_reboot_app_to_apply_dynamic_colors">Riavvia l\'app per applicare completamente i colori dinamici</string>
 
     <!-- ======================================================================= -->
 

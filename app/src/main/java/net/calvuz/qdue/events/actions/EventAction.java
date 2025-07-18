@@ -301,9 +301,9 @@ public enum EventAction {
     public int getMinimumAdvanceNoticeDays() {
         switch (this) {
             case VACATION:
-                return 7; // 1 week notice
+                return 0; // 7 -> 1 week notice
             case TRAINING:
-                return 3; // 3 days notice
+                return 0; // 3 -> 3 days notice
             case PLANNED_STOP:
             case MAINTENANCE:
                 return 1; // 1 day notice

@@ -153,17 +153,23 @@ public class AboutDialogFragment extends DialogFragment {
 
         // Crea la TextView per il nome
         TextView textView = new TextView(getContext());
-        textView.setText(" (" +
-                shiftType.getFormattedStartTime() + "-" +
-                shiftType.getFormattedEndTime() + ") " +
-                shiftType.getName());
-        textView.setTextColor(getColorByThemeAttr(getContext(), com.google.android.material.R.attr.colorOnSurface));
+        textView.setText(new StringBuilder()
+                .append(" (")
+                .append(shiftType.getFormattedStartTime())
+                .append("-")
+                .append(shiftType.getFormattedEndTime())
+                .append(") ")
+                .append(shiftType.getName())
+                .append("  ")
+                .toString());
+        textView.setTextColor(getColorByThemeAttr(getContext(),
+                com.google.android.material.R.attr.colorOnSurface));
         textView.setTextSize(12);
 
         // Crea l'indicatore colorato
         View colorIndicator = new View(getContext());
         LinearLayout.LayoutParams indicatorParams = new LinearLayout.LayoutParams(
-                dpToPx(16) * 2, dpToPx(16) / 2
+                dpToPx(32) , dpToPx(12)
         );
         indicatorParams.setMargins(0, 0, dpToPx(8), 0);
         colorIndicator.setLayoutParams(indicatorParams);

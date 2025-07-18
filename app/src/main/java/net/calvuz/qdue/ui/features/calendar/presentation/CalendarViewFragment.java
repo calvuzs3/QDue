@@ -128,33 +128,8 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
         // Update with events if available
         updateAdapterWithEvents();
 
-        Log.d(TAG, "setupLegacyAdapter: ✅ Legacy adapter setup completed");
+        Log.v(TAG, "✅ Legacy adapter setup completed");
     }
-
-//    /**
-//     * Setup both long-click and regular click listeners
-//     */
-//    private void setupClickListeners() {
-//        final String mTAG = "setupClickListeners: ";
-//
-//        if (mLegacyAdapter == null) {
-//            Log.w(TAG, mTAG + "Adapter is null, cannot setup click listeners");
-//            return;
-//        }
-//
-//        // Setup long-click listener (from BaseInteractiveFragment)
-//        mLegacyAdapter.setLongClickListener(this);
-//
-//        // Setup regular click listener for events preview
-//        mLegacyAdapter.setRegularClickListener(new BaseInteractiveAdapter.DayRegularClickListener() {
-//            @Override
-//            public void onDayRegularClick(Day day, LocalDate date, View itemView, int position) {
-//                handleDayRegularClick(day, date, itemView, position);
-//            }
-//        });
-//
-//        Log.d(TAG, mTAG + "✅ Click listeners setup completed");
-//    }
 
     // ==================== FAB VISIBILITY ====================
 
@@ -198,11 +173,10 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
         try {
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
-                Log.d(TAG, mTAG + "Found existing events cache with " + eventsCache.size() + " dates");
                 mLegacyAdapter.updateEventsData(eventsCache);
-                Log.d(TAG, mTAG + "✅ Adapter updated with events data");
+                Log.i(TAG, mTAG + "✅ Adapter updated with events data");
             } else {
-                Log.d(TAG, mTAG + "No events cache available yet");
+                Log.d(TAG, mTAG + "❌ No events cache available yet");
             }
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error updating adapter with events: " + e.getMessage());
@@ -216,7 +190,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
      */
     @Override
     public void onEventsChanged(String changeType, int eventCount) {
-        Log.d(TAG, String.format(QDue.getLocale(),
+        Log.i(TAG, String.format(QDue.getLocale(),
                 "CalendarFragment: Events changed %s (%d events)", changeType, eventCount));
 
         // Call parent implementation for base functionality
@@ -230,7 +204,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
      */
     @Override
     public void onForceEventsRefresh() {
-        Log.d(TAG, "CalendarFragment: Force refresh requested");
+        Log.v(TAG, "CalendarFragment: Force refresh requested");
 
         // Call parent implementation for base functionality
         super.onForceEventsRefresh();
@@ -285,14 +259,14 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
                 mMainHandler.post(() -> {
                     try {
                         mLegacyAdapter.notifyEventsDataChanged();
-                        Log.d(TAG, mTAG + "✅ Legacy adapter notified of events changes");
+                        Log.v(TAG, mTAG + "✅ Legacy adapter notified of events changes");
                     } catch (Exception e) {
                         Log.e(TAG, mTAG + "Error notifying legacy adapter: " + e.getMessage());
                     }
                 });
             }
 
-            Log.d(TAG, mTAG + "✅ Calendar events notification completed");
+            Log.v(TAG, mTAG + "✅ Calendar events notification completed");
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error in Calendar events notification: " + e.getMessage());
         }
@@ -318,7 +292,6 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
     private boolean isCurrentlyInCalendarView() {
         try {
             if (getActivity() instanceof QDueMainActivity) {
-                // TODO: check current navigation destination
                 // For now, assume we're in the right view if fragment is attached
                 return true;
             }
@@ -338,7 +311,6 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
     protected void onOpenEventEditor(LocalDate date) {
         Log.d(TAG, "Calendar: Opening event editor for date: " + date);
 
-        // TODO: Implement specific navigation for DaysList
         // For now, delegate to base implementation
         super.onOpenEventEditor(date);
 
@@ -352,7 +324,6 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
 
         // DaysList-specific events dialog
         if (events != null && !events.isEmpty()) {
-            // TODO: Create DaysListEventsDialog with specific features
             showCalendarEventsDialog(date, events);
         } else {
             super.onShowEventsDialog(date, events);
@@ -377,7 +348,6 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
     private void showCalendarEventsDialog(LocalDate date, List<LocalEvent> events) {
         Log.d(TAG, "Showing Calendar events dialog with " + events.size() + " events for " + date);
 
-        // TODO: Implement CalendarEventsDialogFragment
         // For now, use base implementation
         showEventsListDialog(date, events);
     }
@@ -479,17 +449,5 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
         }
 
         Log.d(TAG, "=== END DEBUG FORCE RELOAD (CALENDAR) ===");
-    }
-
-    /**
-     * Called when day selection changes in multi-select mode
-     *
-     * @param day        The Day object
-     * @param date       The LocalDate
-     * @param isSelected Whether the day is now selected
-     */
-    @Override
-    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
-
     }
 }

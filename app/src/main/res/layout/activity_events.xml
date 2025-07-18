@@ -22,10 +22,8 @@
             android:id="@+id/toolbar_events"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:theme="@style/ThemeOverlay.Material3.ActionBar"
+            app:theme="@style/ThemeOverlay.QDue.Toolbar"
             app:title="@string/nav_eventi"
-            app:titleTextColor="?attr/colorOnPrimary"
             app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -71,10 +69,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/spacing_m"
-        android:layout_marginBottom="@dimen/spacing_ml"
+        android:layout_marginBottom="@dimen/spacing_l"
         android:contentDescription="@string/create_new_event"
-        android:src="@drawable/ic_rounded_add_24"
-        app:srcCompat="@drawable/ic_rounded_add_24"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
+        android:src="@drawable/ic_rounded_calendar_add_on_24"
+        app:srcCompat="@drawable/ic_rounded_calendar_add_on_24"
+        />
+<!--    app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

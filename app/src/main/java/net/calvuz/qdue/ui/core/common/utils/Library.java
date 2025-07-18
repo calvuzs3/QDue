@@ -1,5 +1,7 @@
 package net.calvuz.qdue.ui.core.common.utils;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +12,13 @@ import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+
+import net.calvuz.qdue.R;
 
 import java.util.List;
 
@@ -299,7 +308,7 @@ public final class Library {
      * @param message The message to show
      */
     public static void showSuccess(Context context, String message) {
-        showToast(context, message, Toast.LENGTH_SHORT);
+        showSuccess(context, message, Toast.LENGTH_SHORT);
     }
 
     /**
@@ -313,12 +322,13 @@ public final class Library {
     }
 
     /**
-     * HELPER: Show Error toast (SHORT)
+     * HELPER: Show Success toast (SHORT)
      *
      * @param message The message to show
+     * @param length The length of the toast
      */
-    public static void showError(Context context, String message) {
-        showToast(context, message, Toast.LENGTH_SHORT);
+    public static void showSuccess(Context context, @StringRes int message, int length) {
+        showSuccess(context, context.getString(message), length);
     }
 
     /**
@@ -330,4 +340,86 @@ public final class Library {
     public static void showError(Context context, String message, int length) {
         showToast(context,message,length);
     }
+
+    /**
+     * HELPER: Show Error toast (SHORT)
+     *
+     * @param message The message to show
+     */
+    public static void showError(Context context, String message) {
+        showError(context, message, Toast.LENGTH_SHORT);
+    }
+
+    /**
+     * HELPER: Show Error toast
+     *
+     * @param context Context
+     * @param message ResId of the String message to show
+     * @param length The length of the toast
+     */
+    public static void showError(Context context, @StringRes int message, int length) {
+        showError(context, context.getString(message), length);
+    }
+
+    /**
+     * Show error dialog with formatted alert dialog
+     *
+     * Displays a formatted AlertDialog with error icon, title "Errore creazione",
+     * and the provided error message. The dialog is modal and dismissable with
+     * an OK button.
+     *
+     * @param context The context for displaying the dialog
+     * @param errorMessage The error message to display in the dialog body
+     * @throws IllegalArgumentException if context is null
+     */
+    public static void showDialogError(@NonNull Context context, @Nullable String errorTitle, @Nullable String errorMessage) {
+
+        if (!(context instanceof Activity)) {
+            Log.w(TAG, "Context is not an Activity, falling back to Toast");
+            showError(context, errorMessage);
+            return;
+        }
+
+        Activity activity = (Activity) context;
+
+        // Ensure dialog is shown on UI thread
+        activity.runOnUiThread(() -> {
+            try {
+                // Create AlertDialog with error styling
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+
+                // Set title with error icon
+                builder.setTitle(errorTitle != null ? errorTitle : "Error");
+
+                // Set error icon (using built-in Android error icon)
+                builder.setIcon(R.drawable.ic_error_outline);
+
+                // Set error message
+                builder.setMessage(errorMessage != null ? errorMessage : "Unknown error");
+
+                // Set OK button to dismiss dialog
+                builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+
+                // Make dialog cancelable
+                builder.setCancelable(true);
+
+                // Create and show dialog
+                AlertDialog dialog = builder.create();
+
+                // Check if activity is not finishing before showing dialog
+                if (!activity.isFinishing() && !activity.isDestroyed()) {
+                    dialog.show();
+                } else {
+                    Log.w(TAG, "Activity is finishing, cannot show error dialog");
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing error dialog", e);
+                // Fallback to existing error method
+                showError(context, errorMessage);
+            }
+        });
+    }
+
+
 }

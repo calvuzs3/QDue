@@ -422,7 +422,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         }
 
         mIsLoadingEvents.set(true);
-        Log.d(TAG, mTAG + "Starting to load events from database");
+        Log.i(TAG, mTAG + "Starting to load events from database");
 
         // Calculate date range (current month ± 2 months for visible range)
         LocalDate now = LocalDate.now();
@@ -438,7 +438,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
 
                 List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
 
-                Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
+                Log.i(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
 
             } catch (Exception e) {
@@ -633,7 +633,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
     private void validateExpansionSupport() {
         // This method can be called during adapter initialization
         // to ensure all ViewHolders support expansion
-        Log.d(TAG, "Validating expansion support for DaysList rows");
+        Log.v(TAG, "Validating expansion support for DaysList rows");
 
         // The validation happens in ViewHolder constructor
         // This method serves as a placeholder for future checks
@@ -645,11 +645,11 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         super.setupLongClickSupport(holder, dayItem, position);
 
         // Additional check for expansion support
-        if (holder instanceof DayslistDayViewHolder dayslistHolder) {
-            if (!dayslistHolder.supportsExpansion()) {
-                Log.w(TAG, "ViewHolder at position " + position + " does not support expansion");
-            }
-        }
+//        if (holder instanceof DayslistDayViewHolder dayslistHolder) {
+//            if (!dayslistHolder.supportsExpansion()) {
+//                Log.v(TAG, "ViewHolder at position " + position + " does not support expansion");
+//            }
+//        }
     }
 
     /// /////////////////////////////////////////////////////////////////////////////////////
@@ -682,8 +682,6 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
             if (eventsIndicator != null) {
                 eventsIndicator.setVisibility(View.GONE);
             }
-
-            Log.d(TAG, "DayslistDayViewHolder: initialized");
         }
 
         /**

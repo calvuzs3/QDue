@@ -1,7 +1,5 @@
 package net.calvuz.qdue.events.metadata;
 
-import android.text.TextUtils;
-
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -37,7 +35,7 @@ import java.util.UUID;
  * - Better turn impact analysis using EventAction categories
  * - Improved validation and constraint checking
  */
-public class EventEditMetadataManager {
+public class EventMetadataManager {
 
     private static final String TAG = "EventEditMetadata";
 
@@ -627,7 +625,7 @@ public class EventEditMetadataManager {
     /**
      * Derive EventAction from LocalEvent using multiple strategies.
      */
-    private static EventAction deriveEventActionFromEvent(LocalEvent event) {
+    public static EventAction deriveEventActionFromEvent(LocalEvent event) {
         if (event == null) return null;
 
         try {

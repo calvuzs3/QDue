@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Aggiungi questo nuovo style in styles.xml -->
+    <style name="ThemeOverlay.QDue.Toolbar.Dark" parent="ThemeOverlay.Material3.Dark">
+        <!-- Force light text and icons for dark toolbar background -->
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="android:textColorTertiary">?attr/colorOnPrimary</item>
+
+        <!-- Menu item colors (for ifRoom actions) -->
+        <item name="actionMenuTextColor">?attr/colorOnPrimary</item>
+        <item name="colorControlNormal">?attr/colorOnPrimary</item>
+        <item name="colorOnSurface">?attr/colorOnPrimary</item>
+        <item name="colorOnSurfaceVariant">?attr/colorOnPrimary</item>
+
+        <!-- Navigation icon and overflow menu -->
+        <item name="homeAsUpIndicator">?attr/colorOnPrimary</item>
+        <item name="android:actionOverflowButtonStyle">@style/Widget.QDue.ActionButton.Overflow</item>
+
+        <!-- Popup menu theme (when overflow menu opens) -->
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.QDue.Toolbar.Popup</item>
+        <item name="popupMenuStyle">@style/Widget.QDue.PopupMenu</item>
+    </style>
+
+    <!-- Style per l'icona overflow menu (tre puntini) -->
+    <style name="Widget.QDue.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">?attr/colorOnPrimary</item>
+        <item name="android:src">@drawable/ic_rounded_more_vert_24</item>
+    </style>
+
+    <!-- Style per il popup menu -->
+    <style name="Widget.QDue.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">?attr/colorSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+</resources>

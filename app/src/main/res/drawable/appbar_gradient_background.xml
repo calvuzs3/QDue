@@ -19,9 +19,3 @@
         android:topRightRadius="0dp" />
 
 </shape>
-
-    <!-- Add these colors to res/values/colors.xml -->
-    <!--
-    <color name="appbar_gradient_center">#7C4DFF</color>  Purple A200
-    <color name="appbar_gradient_end">#536DFE</color>     Indigo A200
-    -->

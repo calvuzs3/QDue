@@ -18,20 +18,24 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.QDue" >
+        android:theme="@style/Theme.QDue"
+        >
 
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.features.welcome.presentation.WelcomeActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.QDue.Welcome" />
+            />
+<!--        android:theme="@style/Theme.QDue.Welcome"-->
 
         <!-- MainActivity -->
         <activity
             android:name=".QDueMainActivity"
             android:exported="true"
-            android:theme="@style/Theme.QDue">
+            >
+<!--            android:theme="@style/Theme.QDue"-->
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,34 +49,25 @@
             android:exported="false"
             android:label="@string/menu_title_settings"
             android:parentActivityName=".QDueMainActivity">
+            <!--        android:theme="@style/Theme.QDue.Settings"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />
         </activity>
-        <!--        android:theme="@style/Theme.QDue.Settings"-->
 
         <activity
             android:name=".ui.features.events.presentation.EventsActivity"
             android:exported="true"
             android:label="@string/nav_eventi"
-            android:theme="@style/Theme.QDue">
+            >
+<!--            android:theme="@style/Theme.QDue"-->
 
             <!-- Standard activity launch -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
 
-            <!-- Primary: JSON files via MIME type (Storage Access Framework) -->
-            <intent-filter android:priority="100">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:mimeType="application/json" />
-            </intent-filter>
-
-            <!-- Secondary: Custom .qdue files with specific hosts -->
+            <!-- Primary: Custom .qdue files with specific hosts -->
             <intent-filter android:priority="100">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -83,8 +78,7 @@
                 <data android:host="com.android.externalstorage.documents" />
                 <data android:pathPattern=".*\\.qdue" />
             </intent-filter>
-
-            <intent-filter android:priority="100">
+            <intent-filter android:priority="96">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -94,9 +88,29 @@
                 <data android:host="com.android.providers.downloads.documents" />
                 <data android:pathPattern=".*\\.qdue" />
             </intent-filter>
+            <intent-filter android:priority="92">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.google.android.apps.docs.storage" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <!-- Secondary: JSON files via MIME type (Storage Access Framework) -->
+            <intent-filter android:priority="90">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="application/json" />
+            </intent-filter>
 
             <!-- Fallback: JSON files with common document providers -->
-            <intent-filter android:priority="80">
+            <intent-filter android:priority="86">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -106,8 +120,7 @@
                 <data android:host="com.android.externalstorage.documents" />
                 <data android:pathPattern=".*\\.json" />
             </intent-filter>
-
-            <intent-filter android:priority="80">
+            <intent-filter android:priority="82">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -119,7 +132,7 @@
             </intent-filter>
 
             <!-- Google Drive support -->
-            <intent-filter android:priority="75">
+            <intent-filter android:priority="70">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -130,19 +143,8 @@
                 <data android:pathPattern=".*\\.json" />
             </intent-filter>
 
-            <intent-filter android:priority="75">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="content" />
-                <data android:host="com.google.android.apps.docs.storage" />
-                <data android:pathPattern=".*\\.qdue" />
-            </intent-filter>
-
             <!-- File provider support (your app's FileProvider) -->
-            <intent-filter android:priority="90">
+            <intent-filter android:priority="60">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
@@ -158,8 +160,8 @@
             android:exported="false"
             android:label="@string/user_profile"
             android:parentActivityName=".QDueMainActivity"
-            android:theme="@style/Theme.QDue"
             android:windowSoftInputMode="adjustResize">
+<!--            android:theme="@style/Theme.QDue"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />
