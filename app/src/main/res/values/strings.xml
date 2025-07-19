@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
 
     <!-- App info -->
@@ -163,7 +163,7 @@
     <string name="header_friday">VEN</string>
     <string name="header_saturday">SAB</string>
     <string name="placeholder_calendar_month" translatable="false">month</string>
-    <string name="progress_bar_loading">Caricamento...</string>
+    <string name="progress_bar_loading">Caricamento…</string>
 
     <!-- Legenda -->
     <string name="legenda_title">Legenda</string>
@@ -401,20 +401,20 @@
     <string name="nav_header_about" translatable="false">About</string>
 
     <!-- ==================== Additional Strings EVENTS ==================== -->
-    <string name="events_activity_title">Events Management</string>
-    <string name="events_empty_title">No Events Found</string>
-    <string name="events_empty_message">Import events from JSON files or create new ones</string>
-    <string name="events_import_success">Successfully imported %d events</string>
-    <string name="events_import_error">Failed to import events: %s</string>
-    <string name="events_export_success">Events exported successfully</string>
-    <string name="events_export_error">Failed to export events: %s</string>
-    <string name="events_clear_all_title">Clear All Events</string>
-    <string name="events_clear_all_message">Are you sure you want to delete all local events? This action cannot be undone.</string>
-    <string name="events_clear_all_confirm">Clear All</string>
-    <string name="action_import_file">Import from File</string>
-    <string name="action_export_file">Export to File</string>
+    <string name="events_activity_title">Eventi</string>
+    <string name="events_empty_title">Nessun Evento Trovato</string>
+    <string name="events_empty_message">Impèorta eventi da file JSON o aggiungi nuovi eventi</string>
+    <string name="events_import_success">%d eventi importati correttamente</string>
+    <string name="events_import_error">Importazione fallita: %s</string>
+    <string name="events_export_success">Eventi esportati correttamente</string>
+    <string name="events_export_error">Esportazione fallita: %s</string>
+    <string name="events_clear_all_title">Pulisci tutti gli eventi</string>
+    <string name="events_clear_all_message">Sei sicuro di voler cancellare tutti gli eventi? Questa azione non può essere ripristinata.</string>
+    <string name="events_clear_all_confirm">Pulisci tutto</string>
+    <string name="action_import_file">Importa da File</string>
+    <string name="action_export_file">Esporta su File</string>
     <string name="action_clear_all">Pulisci tutti gli eventi</string>
-    <string name="btn_import_first">Import Events</string>
+    <string name="btn_import_first">Importa Eventi</string>
     <string name="location">Luogo</string>
 
 
@@ -481,7 +481,7 @@
     <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
     <string name="text_import_events">Importa Eventi</string>
-    <string name="long_text_no_events_to_show_import_from_JSON_file_or_manually_add_event">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="long_text_no_events_to_show_import_from_JSON_file_or_manually_add_event" tools:ignore="Typos">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
     <string name="text_create_new_event">Crea Nuovo Evento</string>
     <string name="tip_important_events_will_be_automatically_synchronized">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
     <string name="search_events">Cerca Eventi</string>
@@ -604,7 +604,7 @@
 
     <!-- Empty State -->
     <string name="empty_no_events_title">Nessun evento disponibile</string>
-    <string name="empty_no_events_description">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="empty_no_events_description" tools:ignore="Typos">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
     <string name="empty_import_events">Importa Eventi</string>
     <string name="empty_create_event">Crea Nuovo Evento</string>
     <string name="empty_help_text">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
@@ -801,7 +801,7 @@
 
     <!-- Quick Tips -->
     <string name="completion_tips_title">Suggerimenti Rapidi</string>
-    <string name="completion_tip_1">Tocca il menu per cambiare vista in qualsiasi momento</string>
+    <string name="completion_tip_1" tools:ignore="Typos">Tocca il menu per cambiare vista in qualsiasi momento</string>
     <string name="completion_tip_2">Usa il pulsante \"+\" per aggiungere eventi personalizzati</string>
     <string name="completion_tip_3">I turni si calcolano automaticamente dal tuo primo giorno</string>
 
@@ -837,7 +837,7 @@
     <!-- PERSONALIZATION ADDITIONAL STRINGS -->
     <!-- ============================================ -->
 
-    <string name="configuration_in_progress">Configurazione in corso...</string>
+    <string name="configuration_in_progress">Configurazione in corso…</string>
     <string name="configuration_complete">✓ Configurazione completata</string>
     <string name="completion_team_format">Squadra: %1$d</string>
     <string name="completion_view_format">Vista: %1$s</string>
@@ -1146,6 +1146,61 @@
     <string name="text_cost_center">Centro di costo</string>
     <string name="text_warning">Attenzione</string>
     <string name="text_backup">Backup</string>
+    <string name="text_error_navigation">Errore navigazione</string>
+    <string name="text_error_event_not_valid">Evento non valido</string>
+    <string name="text_event_deleted">Evento eliminato</string>
+    <string name="text_error_in_share">Errore nella condivisione</string>
+    <string name="text_copied_into_clipboard">Copiato negli appunti</string>
+    <string name="text_error_in_copy_into_clipboard">Errore nella copia negli appunti</string>
+    <string name="text_error_in_duplicating">Errore nella duplicazione</string>
+    <string name="text_error_in_adding_to_calendar">Errore nella aggiunta al calendario</string>
+    <string name="text_events_updated">Eventi aggiornati</string>
+    <string name="text_coming_soon">Coming soon</string>
+    <string name="text_error_loading">Errore caricamento</string>
+    <string name="text_error_file_selection_failed_semicolon">"Selezione File fallita: "</string>
+    <string name="text_clear_all_events">Cancella tutti gli eventi</string>
+    <string name="long_text_are_you_sure_you_want_to_delete_all_local_events_this_action_cannot_be_undone">Sicuro di cancellare tutti gli eventi? Questa azione non può essere ripristinata</string>
+    <string name="text_clear_all">Cancella tutti</string>
+    <string name="text_all_events_cleared">Tutti gli eventi sono stati cancellati</string>
+    <string name="text_char_error_deleting_all_events">❌ Errore nel cancellare tutti gli eventi</string>
+    <string name="text_error_opening_file_saver">Errore apertura file saver</string>
+    <string name="text_exporting_events_dots">Esportando eventi...</string>
+    <string name="text_no_events_to_export">Nessun evento da esportare</string>
+    <string name="text_error_reading_events_from_db">Errore lettura eventi dal database</string>
+    <string name="format_text_exported_0_event_successfully">Esportati {0} eventi con successo</string>
+    <string name="text_error_during_export">Errore durante l\'export</string>
+    <string name="text_no_event_selected_for_export">Nessun evento selezionato per l\'export</string>
+    <string name="text_exporting_0_selected_events">Esportando {0} eventi selezionati...</string>
+    <string name="text_error_during_export_of_selected_events">Errore durante l\'export degli eventi selezionati</string>
+    <string name="format_text_location_semicolon_0">Luogo: {0}</string>
+    <string name="text_date_not_specified">Data non specificata</string>
+    <string name="text_opening_calendar_impossible">Impossibile aprire il calendario</string>
+    <string name="text_error_sharing">Errore condivisione</string>
+    <string name="text_share_event">Condividi Evento</string>
+    <string name="text_error">"Errore "</string>
+    <string name="text_event_deleted_definetly">Evento cancellato definitivamente</string>
+    <string name="text_deleting_cancelled">Eliminazione annullata</string>
+    <string name="text_parenthesis_cr_0_warnings_parenthesis">\n({0} avvisi)</string>
+    <string name="text_export_log_functionality_coming_soon">Log Esportazione ina arrivo presto</string>
+    <string name="text_showing_0_imported_events">Mostrando {0} eventi importati</string>
+    <string name="text_issues_found">Avvertimenti riscontrati</string>
+    <string name="text_import_completed">Import completato</string>
+    <string name="text_import_failed">Import fallito</string>
+    <string name="format_import_failed_semicolon_0">Import failed: {0}</string>
+    <string name="stringformat_importing_dots_d_d_s">Importing... (%d/%d) %s</string>
+    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi...</string>
+    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo...</string>
+    <string name="text_importing_events">Importazione Eventi</string>
+    <string name="text_reading_file">Lettura file...</string>
+    <string name="text_char_error_reading_file_semicolon">"❌ Error reading file: "</string>
+    <string name="text_char_unsupported_file_type">"❌ Tipo file non supportato "</string>
+    <string name="text_char_error_creating_event_space">❌ Error creating event</string>
+    <string name="text_create">Crea</string>
+    <string name="text_new_eventnuovo_evento">Nuovo Evento</string>
+    <string name="text_create_event_for_0_semicolon">Crea evento per {0}:</string>
+    <string name="text_event_not_found">Evento non trovato</string>
+    <string name="text_error_loading_event">Errore nel caricamento dell\'evento</string>
+    <string name="text_event_id_not_valid">ID evento non valido</string>
 
     <!-- ======================================================================= -->
 

@@ -115,7 +115,7 @@ public final class HighlightingHelper {
             else if (isSunday) {
                 int sundayColor = ContextCompat.getColor(context, android.R.color.holo_red_dark);
                 textView.setTextColor(sundayColor);
-                textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
+//                textView.setTypeface(textView.getTypeface(), android.graphics.Typeface.BOLD);
 //                Log.v(TAG, "Applied SUNDAY text to TextView[" + i + "] - RED");
             }
             // ✅ Default: Regular text
@@ -197,13 +197,14 @@ public final class HighlightingHelper {
      */
     public static void setupSundayCardStyle(Context context, com.google.android.material.card.MaterialCardView cardView) {
         cardView.setStrokeWidth(NORMAL_STROKE_WIDTH);
-        cardView.setCardElevation(SUNDAY_ELEVATION);
+//        cardView.setCardElevation(SUNDAY_ELEVATION);
+        cardView.setCardElevation(NORMAL_ELEVATION);
         cardView.setCardBackgroundColor(
                 blendEventColorWithWhite(
                         getColorByThemeAttr(context,
                                 com.google.android.material.R.attr.colorSurfaceVariant)));
-        cardView.setStrokeColor(
-                ContextCompat.getColor(context, android.R.color.holo_red_light));
+//        cardView.setStrokeColor(
+//                ContextCompat.getColor(context, android.R.color.holo_red_light));
 
 //        Log.v(TAG, "Sunday card style applied");
     }

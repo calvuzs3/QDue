@@ -86,7 +86,7 @@ public class IntroductionFragment extends Fragment {
 
         // Setup RecyclerView
         featuresRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        featuresRecyclerView.setHasFixedSize(true);
+//        featuresRecyclerView.setHasFixedSize(true);
     }
 
     /**

@@ -104,7 +104,7 @@ public class TeamSelectionFragment extends Fragment implements TeamSelectionAdap
         // Setup RecyclerView with grid layout (3 columns)
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(), 3);
         teamsRecyclerView.setLayoutManager(layoutManager);
-        teamsRecyclerView.setHasFixedSize(true);
+//        teamsRecyclerView.setHasFixedSize(true);
     }
 
     private void loadSavedPreferences() {

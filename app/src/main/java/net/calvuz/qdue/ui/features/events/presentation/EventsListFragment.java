@@ -30,6 +30,7 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.backup.BackupIntegration;
+import net.calvuz.qdue.ui.core.common.enums.SelectionMode;
 import net.calvuz.qdue.ui.core.common.interfaces.SelectionModeHandler;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.dao.EventDao;
@@ -42,7 +43,7 @@ import net.calvuz.qdue.ui.features.events.components.EventsBottomSelectionToolba
 import net.calvuz.qdue.ui.features.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
-import java.time.ZoneId;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +68,9 @@ public class EventsListFragment extends Fragment implements
         EventsBottomSelectionToolbar.EventsSelectionListener {
 
     private static final String TAG = "EventsList";
+
+    // Default selection mode
+    public static final SelectionMode DEFAULT_SELECTION_MODE = SelectionMode.SINGLE;
 
     // Views
     private RecyclerView mEventsRecyclerView;
@@ -185,7 +189,22 @@ public class EventsListFragment extends Fragment implements
      * Setup RecyclerView with adapter
      */
     private void setupRecyclerView() {
-        mEventsAdapter = new EventsAdapter(mEventsList, this);
+        mEventsAdapter = new EventsAdapter(mEventsList, new EventsAdapter.OnEventClickListener() {
+            @Override
+            public void onEventClick(LocalEvent event) {
+                EventsListFragment.this.onEventClick(event);
+            }
+
+            @Override
+            public void onEventLongClick(LocalEvent event) {
+                EventsListFragment.this.onEventLongClick(event);
+            }
+
+            @Override
+            public void onSelectionChanged(int selectedCount, Set<String> selectedEvents) {
+                EventsListFragment.this.onSelectionChanged(selectedCount, selectedEvents);
+            }
+        });
         mEventsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mEventsRecyclerView.setAdapter(mEventsAdapter);
     }
@@ -267,7 +286,7 @@ public class EventsListFragment extends Fragment implements
                     Log.e(TAG, "Error loading events from database: " + e.getMessage());
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
-                        Toast.makeText(getContext(), "Errore caricamento eventi", Toast.LENGTH_SHORT).show();
+                        Library.showError(getContext(), R.string.text_error_loading);
                     });
                 }
             }).start();
@@ -466,6 +485,84 @@ public class EventsListFragment extends Fragment implements
         return selectedEvents;
     }
 
+    // ==================== ENHANCED SELECTION MODE IMPLEMENTATION ====================
+
+    /**
+     * Configure selection mode for the adapter
+     * @param mode Selection mode (NONE, SINGLE, MULTIPLE)
+     */
+    public void configureSelectionMode(SelectionMode mode) {
+        if (mEventsAdapter != null) {
+            mEventsAdapter.setSelectionMode(mode);
+            Log.d(TAG, "Selection mode configured to: " + mode);
+        }
+    }
+
+
+    /**
+     * Enhanced implementation of OnEventClickListener.onSelectionChanged
+     * This handles automatic exit from selection mode when no items are selected
+     */
+    @Override
+    public void onSelectionChanged(int selectedCount, Set<String> selectedEvents) {
+        Log.d(TAG, "Selection changed: " + selectedCount + " items selected");
+
+        // Update internal selection tracking
+        mSelectedEventIds.clear();
+        mSelectedEventIds.addAll(selectedEvents);
+
+        // Auto-exit selection mode when no items are selected
+        if (selectedCount == 0 && mIsInSelectionMode) {
+            Log.d(TAG, "No items selected - auto-exiting selection mode");
+            exitSelectionMode();
+            return;
+        }
+
+        // Update bottom toolbar if visible
+        if (mBottomSelectionToolbar != null && mBottomSelectionToolbar.isVisible()) {
+            List<LocalEvent> selectedEventsList = getSelectedEvents();
+            mBottomSelectionToolbar.updateSelection(mSelectedEventIds, selectedEventsList);
+        }
+
+        // Update UI elements (title, etc.)
+        updateSelectionModeUI();
+    }
+
+
+    /**
+     * 🆕 NEW: Enter selection mode (called when user long-presses an item)
+     */
+    public void enterSelectionMode(SelectionMode selectionMode) {
+        if (!mIsInSelectionMode) {
+            Log.d(TAG, "Entering selection mode");
+
+            mIsInSelectionMode = true;
+
+            // Update adapter
+            if (mEventsAdapter != null) {
+                mEventsAdapter.setSelectionMode(selectionMode);
+                //mEventsAdapter.notifyDataSetChanged(); // Adapter does it automatically
+            }
+
+            // Show bottom selection toolbar
+            showBottomSelectionToolbar();
+
+            // Update other UI elements
+            updateSelectionModeUI();
+
+            Log.d(TAG, MessageFormat.format("✅ Selection mode entered (mode {0})", selectionMode));
+        }
+    }
+
+
+    /**
+     * Enhanced enter selection mode with default SINGLE mode (backward compatibility)
+     */
+    public void enterSelectionMode() {
+        enterSelectionMode(DEFAULT_SELECTION_MODE);
+    }
+
+
     // ==================== IMPLEMENTAZIONE SelectionModeHandler ====================
 
     @Override
@@ -473,6 +570,9 @@ public class EventsListFragment extends Fragment implements
         return mIsInSelectionMode;
     }
 
+    /**
+     * Enhanced exit selection mode
+     */
     @Override
     public boolean exitSelectionMode() {
         if (mIsInSelectionMode) {
@@ -481,17 +581,15 @@ public class EventsListFragment extends Fragment implements
             mIsInSelectionMode = false;
             mSelectedEventIds.clear();
 
-            // Update UI - notify adapter to remove selection indicators
+            // Update adapter to exit selection mode
             if (mEventsAdapter != null) {
-                mEventsAdapter.setSelectionMode(false);
-                mEventsAdapter.clearSelections();
-                mEventsAdapter.notifyDataSetChanged();
+                mEventsAdapter.setSelectionMode(SelectionMode.NONE);
             }
 
-            // ✅ NEW: Hide bottom toolbar
+            // Hide bottom toolbar
             hideBottomSelectionToolbar();
 
-            // Update toolbar/menu if needed
+            // Update UI
             updateSelectionModeUI();
 
             Log.d(TAG, "✅ Selection mode exited successfully");
@@ -505,31 +603,6 @@ public class EventsListFragment extends Fragment implements
     @Override
     public int getSelectedItemCount() {
         return mSelectedEventIds.size();
-    }
-
-    /**
-     * 🆕 NEW: Enter selection mode (called when user long-presses an item)
-     */
-    public void enterSelectionMode() {
-        if (!mIsInSelectionMode) {
-            Log.d(TAG, "Entering selection mode");
-
-            mIsInSelectionMode = true;
-
-            // ✅ Update adapter
-            if (mEventsAdapter != null) {
-                mEventsAdapter.setSelectionMode(true);
-                mEventsAdapter.notifyDataSetChanged();
-            }
-
-            // ✅ NEW: Show modern bottom toolbar instead of old context menu
-            showBottomSelectionToolbar();
-
-            // ✅ Update other UI elements
-            updateSelectionModeUI();
-
-            Log.d(TAG, "✅ Selection mode entered with bottom toolbar shown");
-        }
     }
 
     /**
@@ -614,34 +687,35 @@ public class EventsListFragment extends Fragment implements
     /**
      * Handle event item click - Navigate to detail fragment or handle selection
      */
-    //@Override
+    @Override
     public void onEventClick(LocalEvent event) {
         Log.d(TAG, "onEventClick called for: " + (event != null ? event.getTitle() : "null"));
 
         if (event == null || event.getId() == null) {
-            Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
+            Library.showError(getContext(), R.string.text_error_event_not_valid);
             return;
         }
 
-        // ✅ MODIFICA: Handle selection mode
         if (mIsInSelectionMode) {
-            // In selection mode, toggle selection instead of navigating
-            toggleEventSelection(event.getId());
-            return;
-        }
+            // In selection mode, delegate click to adapter for selection toggle
+            if (mEventsAdapter != null) {
+                mEventsAdapter.toggleEventSelection(event.getId());
+                Log.d(TAG, "Delegated click to adapter for selection toggle: " + event.getId());
+            }
+        } else {
+            // Normal mode, navigate to detail
+            debugLogCurrentEvents();
 
-        // Normal mode: navigate to detail
-        debugLogCurrentEvents();
+            Bundle args = new Bundle();
+            args.putString("eventId", event.getId());
 
-        Bundle args = new Bundle();
-        args.putString("eventId", event.getId());
-
-        try {
-            Navigation.findNavController(requireView())
-                    .navigate(R.id.action_events_list_to_event_detail, args);
-        } catch (Exception e) {
-            Log.e(TAG, "Navigation error: " + e.getMessage());
-            Toast.makeText(getContext(), "Errore navigazione", Toast.LENGTH_SHORT).show();
+            try {
+                Navigation.findNavController(requireView())
+                        .navigate(R.id.action_events_list_to_event_detail, args);
+            } catch (Exception e) {
+                Log.e(TAG, "Navigation error: " + e.getMessage());
+                Library.showError(getContext(), R.string.text_error_navigation);
+            }
         }
     }
 
@@ -654,23 +728,23 @@ public class EventsListFragment extends Fragment implements
 
         Log.d(TAG, "onEventLongClick called for: " + event.getTitle());
 
-        // ✅ ENHANCED: Enter selection mode and select this item
+        // Enter selection mode if not already active
         if (!mIsInSelectionMode) {
-            enterSelectionMode();  // This will also show the bottom toolbar
+            // Configure default selection mode (can be changed per your requirements)
+            enterSelectionMode(DEFAULT_SELECTION_MODE);
         }
 
-        // ✅ Select the long-clicked item
-        toggleEventSelection(event.getId());
+        // Toggle selection for the long-clicked item
+        if (mEventsAdapter != null) {
+            mEventsAdapter.toggleEventSelection(event.getId());
+        }
 
-        // ✅ ENHANCED: Provide haptic feedback for better UX
+        // Provide haptic feedback
         if (getView() != null) {
             getView().performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
         }
 
-        // ✅ REMOVED: Old context menu (replaced by modern bottom toolbar)
-        // showEventContextMenu(event);  // <-- OLD WAY
-
-        Log.d(TAG, "✅ Selection mode active with modern bottom toolbar");
+        Log.d(TAG, "✅ Selection mode active with native MaterialCardView checkable property");
     }
 
     // ==================== ✅ NEW: EventsSelectionListener Implementation ====================
@@ -724,6 +798,7 @@ public class EventsListFragment extends Fragment implements
         if (selectedEvents.size() == 1) {
             LocalEvent event = selectedEvents.get(0);
 
+            // TODO: internationalize these messages
             if (event == null || event.getId() == null) {
                 Log.e(TAG, "Enhanced edit error: event is null or has no ID");
                 Toast.makeText(getContext(), "Errore: evento non valido", Toast.LENGTH_SHORT).show();
@@ -734,7 +809,7 @@ public class EventsListFragment extends Fragment implements
                 mEventsOperationsInterface.triggerEventEditFromList(event);
             } catch (Exception e) {
                 Log.e(TAG, "Navigation error: " + e.getMessage());
-                Library.showError(getContext(), "Errore navigazione modifica", Toast.LENGTH_SHORT);
+                Library.showError(getContext(), R.string.text_error_navigation, Toast.LENGTH_SHORT);
             } finally {
                 exitSelectionMode();
             }
@@ -756,18 +831,21 @@ public class EventsListFragment extends Fragment implements
 
                     @Override
                     public void onDeletionCancelled() {
-                        // Nothing
+                        exitSelectionMode();
                     }
 
                     @Override
                     public void onDeletionCompleted(boolean success, String message) {
                         exitSelectionMode();
-                        Library.showSuccess(getContext(), "Evento eliminato", Toast.LENGTH_SHORT);
+                        Library.showSuccess(getContext(), R.string.text_event_deleted, Toast.LENGTH_SHORT);
                     }
                 });
             } catch (Exception e) {
+                exitSelectionMode();
                 Log.e(TAG, "Navigation error: " + e.getMessage());
-                Library.showError(getContext(), "Errore navigazione modifica", Toast.LENGTH_SHORT);
+                Library.showError(getContext(), R.string.text_error_navigation, Toast.LENGTH_SHORT);
+            } finally {
+                exitSelectionMode();
             }
         }
     }
@@ -782,7 +860,7 @@ public class EventsListFragment extends Fragment implements
                 mEventsOperationsInterface.triggerEventShare(event);
             } catch (Exception e) {
                 Log.e(TAG, "Share Event Error: " + e.getMessage());
-                Library.showError(getContext(), "Errore nella condivisione", Toast.LENGTH_SHORT);
+                Library.showError(getContext(), R.string.text_error_in_share, Toast.LENGTH_SHORT);
             } finally {
                 exitSelectionMode();
             }
@@ -807,9 +885,15 @@ public class EventsListFragment extends Fragment implements
                 (event.getStartDate().toString() +
                         (event.getDescription() != null ? "\n" + event.getDescription() : ""));
         ClipData clip = ClipData.newPlainText("QDue Event", eventText);
-        clipboard.setPrimaryClip(clip);
 
-        Library.showSuccess(getContext(), "Copiato negli appunti", Toast.LENGTH_SHORT);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+            Library.showSuccess(getContext(), R.string.text_copied_into_clipboard, Toast.LENGTH_SHORT);
+
+        } else {
+            Library.showError(getContext(), R.string.text_error_in_copy_into_clipboard, Toast.LENGTH_SHORT);
+        }
+
         exitSelectionMode();
     }
 
@@ -821,7 +905,7 @@ public class EventsListFragment extends Fragment implements
             mEventsOperationsInterface.triggerEventDuplicate(event);
         } catch (Exception e) {
             Log.e(TAG, "Duplicating event error: " + e.getMessage());
-            Library.showError(getContext(), "Errore nella duplicazione", Toast.LENGTH_SHORT);
+            Library.showError(getContext(), R.string.text_error_in_duplicating, Toast.LENGTH_SHORT);
         } finally {
             exitSelectionMode();
         }
@@ -837,7 +921,7 @@ public class EventsListFragment extends Fragment implements
                 mEventsOperationsInterface.triggerAddToCalendar(event);
             } catch (Exception e) {
                 Log.e(TAG, "Add to calendar error: " + e.getMessage());
-                Library.showError(getContext(), "Errore nella aggiunta al calendario", Toast.LENGTH_SHORT);
+                Library.showError(getContext(), R.string.text_error_in_adding_to_calendar, Toast.LENGTH_SHORT);
             } finally {
                 exitSelectionMode();
             }
@@ -851,7 +935,7 @@ public class EventsListFragment extends Fragment implements
                 mFileOperationsInterface.triggerExportSelectedEventsToFile(fileUri, selectedEventIds, selectedEvents);
             } catch (Exception e) {
                 Log.e(TAG, "Navigation error: " + e.getMessage());
-                Library.showError(getContext(), "Errore navigazione modifica", Toast.LENGTH_SHORT);
+                Library.showError(getContext(), R.string.text_error_navigation, Toast.LENGTH_SHORT);
             } finally {
                 exitSelectionMode();
             }
@@ -1038,47 +1122,42 @@ public class EventsListFragment extends Fragment implements
     // ==================== ACTION HANDLERS ====================
 
     private void handleImportEventsFromFile() {
+        if (mIsInSelectionMode) exitSelectionMode();
         if (mFileOperationsInterface != null) {
             mFileOperationsInterface.triggerImportEventsFromFile();
         }
     }
 
     private void handleImportEventsFromUrl() {
+        if (mIsInSelectionMode) exitSelectionMode();
         if (mFileOperationsInterface != null) {
             mFileOperationsInterface.triggerImportEventsFromUrl();
         }
     }
 
     private void handleClearAllEvents() {
+        if (mIsInSelectionMode) exitSelectionMode();
         if (mDataOperationsInterface != null) {
             mDataOperationsInterface.triggerDeleteAllEvents();
         }
     }
 
     private void handleExportEvents() {
+        if (mIsInSelectionMode) exitSelectionMode();
         if (mFileOperationsInterface != null) {
             mFileOperationsInterface.triggerExportEventsToFile(null);
         }
     }
 
     private void handleRefreshEvents() {
+        if (mIsInSelectionMode) exitSelectionMode();
         loadEvents();
-        Library.showSuccess(getContext(), "Eventi aggiornati");
+        Library.showSuccess(getContext(), getString(R.string.text_events_updated));
     }
 
     private void handleSearchEvents() {
         // TODO: Implement search functionality
-        Library.showSuccess(getContext(), "Coming soon", Toast.LENGTH_SHORT);
-    }
-
-    /**
-     * Old method with a contextual menu
-     *
-     * @param event Event to show context menu for
-     */
-    private void showEventContextMenu(LocalEvent event) {
-        // TODO: Show context menu with options
-        Toast.makeText(getContext(), "Menu contestuale per: " + event.getTitle(), Toast.LENGTH_SHORT).show();
+        Library.showSuccess(getContext(), R.string.text_coming_soon, Toast.LENGTH_SHORT);
     }
 
     /**
@@ -1395,6 +1474,29 @@ public class EventsListFragment extends Fragment implements
         Log.d(TAG, "UI State Interface: " + (mUIStateInterface != null ? "available" : "null"));
 
         Log.d(TAG, "=== END FRAGMENT STATE DEBUG ===");
+    }
+
+    /**
+     * DEBUG: Show selection info
+     */
+    public void debugSelectionState() {
+        Log.d(TAG, "=== SELECTION STATE DEBUG ===");
+        Log.d(TAG, "Is In Selection Mode: " + mIsInSelectionMode);
+        Log.d(TAG, "Selected Events Count: " + mSelectedEventIds.size());
+
+        if (mEventsAdapter != null) {
+            Log.d(TAG, "Adapter Selection Mode: " + mEventsAdapter.getSelectionMode());
+            Log.d(TAG, "Adapter Selected Count: " + mEventsAdapter.getSelectedItemCount());
+            Log.d(TAG, "Adapter Is In Selection: " + mEventsAdapter.isInSelectionMode());
+        } else {
+            Log.d(TAG, "Adapter is null");
+        }
+
+        if (!mSelectedEventIds.isEmpty()) {
+            Log.d(TAG, "Selected Event IDs: " + mSelectedEventIds);
+        }
+
+        Log.d(TAG, "=== END SELECTION DEBUG ===");
     }
 
     /**
