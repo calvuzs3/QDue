@@ -56,6 +56,7 @@ import net.calvuz.qdue.ui.features.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -92,6 +93,7 @@ public class EventsActivity extends AppCompatActivity implements
     public static final String EXTRA_CHANGE_TYPE = "change_type";
 
     public static final String CHANGE_TYPE_IMPORT = "import";
+    public static final String CHANGE_TYPE_EXPORT = "export";
     public static final String CHANGE_TYPE_DELETE = "delete";
     public static final String CHANGE_TYPE_CREATE = "create";
     public static final String CHANGE_TYPE_MODIFY = "modify";
@@ -126,6 +128,8 @@ public class EventsActivity extends AppCompatActivity implements
     private EventsImportAdapter mEventsImportAdapter;
     private PermissionManager mPermissionManager;
     private List<LocalEvent> mPendingExportEvents = null;
+    // Add this field to the class for selected events export:
+    private List<LocalEvent> mSelectedEventsForExport;
 
     // ==================== DATA LAYER ====================
 
@@ -304,7 +308,13 @@ public class EventsActivity extends AppCompatActivity implements
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         Uri fileUri = result.getData().getData();
                         if (fileUri != null) {
-                            handleExportEventsToFile(fileUri);
+                            // Check if we're exporting selected events or all events
+                            if (mSelectedEventsForExport != null && !mSelectedEventsForExport.isEmpty()) {
+                                exportSelectedEventsToFile(fileUri, mSelectedEventsForExport);
+                                mSelectedEventsForExport = null; // Clear after use
+                            } else {
+                                exportEventsToFile(fileUri);
+                            }
                         }
                     }
                 });
@@ -405,7 +415,7 @@ public class EventsActivity extends AppCompatActivity implements
         String sourceFragment = intent.getStringExtra("source_fragment");
 
         if (eventId == null || eventId.trim().isEmpty()) {
-            Library.showToast(this, "Errore: ID evento non valido");
+            Library.showError(this, R.string.text_event_id_not_valid);
             return;
         }
 
@@ -418,7 +428,7 @@ public class EventsActivity extends AppCompatActivity implements
         String sourceFragment = intent.getStringExtra("source_fragment");
 
         if (eventId == null || eventId.trim().isEmpty()) {
-            Library.showToast(this, "Errore: ID evento non valido");
+            Library.showError(this, R.string.text_event_id_not_valid);
             return;
         }
 
@@ -491,11 +501,11 @@ public class EventsActivity extends AppCompatActivity implements
                             break;
                     }
                 } else {
-                    Library.showToast(this, "Evento non trovato");
+                    Library.showError(this, R.string.text_event_not_found);
                 }
             });
         }).exceptionally(throwable -> {
-            runOnUiThread(() -> Library.showToast(this, "Errore nel caricamento dell'evento"));
+            runOnUiThread(() -> Library.showError(this, R.string.text_error_loading_event));
             return null;
         });
     }
@@ -512,7 +522,7 @@ public class EventsActivity extends AppCompatActivity implements
             mNavController.navigate(R.id.action_events_list_to_event_detail, args);
         } catch (Exception e) {
             Log.e(TAG, "Navigation error: " + e.getMessage());
-            Library.showToast(this, "Errore nella navigazione");
+            Library.showError(this, R.string.text_error_navigation);
         }
     }
 
@@ -537,13 +547,13 @@ public class EventsActivity extends AppCompatActivity implements
                 try {
                     mNavController.navigate(R.id.action_event_detail_to_edit, editArgs);
                 } catch (Exception e) {
-                    Log.e(TAG, "Error navigating to edit: " + e.getMessage());
+                    Library.showError(this, R.string.text_error_navigation);
                 }
             }, 100);
 
         } catch (Exception e) {
             Log.e(TAG, "Navigation error: " + e.getMessage());
-            Library.showToast(this, "Errore nella navigazione all'editor");
+            Library.showError(this, R.string.text_error_navigation);
         }
     }
 
@@ -585,16 +595,16 @@ public class EventsActivity extends AppCompatActivity implements
         String formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
         new AlertDialog.Builder(this)
-                .setTitle("Nuovo Evento")
-                .setMessage("Crea evento per " + formattedDate + ":")
+                .setTitle(R.string.text_new_eventnuovo_evento)
+                .setMessage(MessageFormat.format(getString(R.string.text_create_event_for_0_semicolon), formattedDate))
                 .setView(editTitle)
-                .setPositiveButton("Crea", (dialog, which) -> {
+                .setPositiveButton(R.string.text_create, (dialog, which) -> {
                     String title = editTitle.getText().toString().trim();
                     if (!title.isEmpty()) {
                         createNewEvent(title, date);
                     }
                 })
-                .setNegativeButton("Annulla", null)
+                .setNegativeButton(getString(R.string.text_cancel), null)
                 .show();
 
         editTitle.requestFocus();
@@ -628,13 +638,13 @@ public class EventsActivity extends AppCompatActivity implements
                         updateFabVisibility();
                         notifyEventsChanged(CHANGE_TYPE_CREATE, 1);
                     } else {
-                        showError("❌ Error creating event " + title);
+                        showError(getString(R.string.text_char_error_creating_event_space) + title);
                     }
                 });
 
             } catch (Exception e) {
                 Log.e(TAG, "Error creating event: " + e.getMessage());
-                runOnUiThread(() -> showError("❌ Error creating event"));
+                runOnUiThread(() -> showError(getString(R.string.text_char_error_creating_event_space)));
             }
         }).start();
     }
@@ -667,7 +677,7 @@ public class EventsActivity extends AppCompatActivity implements
             String fileInfo = mFileAccessAdapter.getFileDisplayInfo(fileUri);
 
             if (!mFileAccessAdapter.isSupportedFile(fileUri)) {
-                showError("❌ Unsupported file type. " + FileAccessAdapter.getSupportedFileTypesDescription());
+                showError(getString(R.string.text_char_unsupported_file_type) + FileAccessAdapter.getSupportedFileTypesDescription());
                 return;
             }
 
@@ -675,7 +685,7 @@ public class EventsActivity extends AppCompatActivity implements
 
         } catch (Exception e) {
             Log.e(TAG, "Error starting import", e);
-            showError("❌ Error reading file: " + e.getMessage());
+            showError(getString(R.string.text_char_error_reading_file_semicolon) + e.getMessage());
         }
     }
 
@@ -800,8 +810,8 @@ public class EventsActivity extends AppCompatActivity implements
      */
     private void performImport(Uri fileUri, EventsImportManager.ImportOptions options) {
         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
-        progressDialog.setTitle("Importing Events");
-        progressDialog.setMessage("Reading file...");
+        progressDialog.setTitle(getString(R.string.text_importing_events));
+        progressDialog.setMessage(getString(R.string.text_reading_file));
         progressDialog.setIndeterminate(true);
         progressDialog.setCancelable(false);
         progressDialog.show();
@@ -811,9 +821,9 @@ public class EventsActivity extends AppCompatActivity implements
             public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
                 runOnUiThread(() -> {
                     if (validationResult.isValid) {
-                        progressDialog.setMessage("Validation passed. Importing events...");
+                        progressDialog.setMessage(getString(R.string.text_validation_passed_importing_events));
                     } else {
-                        progressDialog.setMessage("Validation issues found. Continuing...");
+                        progressDialog.setMessage(getString(R.string.text_validation_issues_found_continuing));
                     }
                 });
             }
@@ -822,7 +832,7 @@ public class EventsActivity extends AppCompatActivity implements
             public void onProgress(int processed, int total, String currentEvent) {
                 runOnUiThread(() -> {
                     progressDialog.setMessage(String.format(QDue.getLocale(),
-                            "Importing... (%d/%d) %s", processed, total, currentEvent));
+                            getString(R.string.stringformat_importing_dots_d_d_s), processed, total, currentEvent));
                 });
             }
 
@@ -838,7 +848,7 @@ public class EventsActivity extends AppCompatActivity implements
             public void onError(String error, Exception exception) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    showError("Import failed: " + error);
+                    showError(MessageFormat.format(getString(R.string.format_import_failed_semicolon_0), error));
                 });
             }
         });
@@ -866,13 +876,15 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     private void showImportResultDialog(EventsImportManager.ImportResult result) {
-        String title = result.success ? "Import Completed" : "Import Failed";
+        String title = result.success ? getString(R.string.text_import_completed) : getString(R.string.text_import_failed);
 
         StringBuilder message = new StringBuilder();
         message.append(result.getDetailedSummary());
 
         if (result.hasIssues()) {
-            message.append("\n📋 Issues Found:\n");
+            message.append("\n📋 ")
+                    .append(getString(R.string.text_issues_found))
+                    .append(":\n");
 
             for (String warning : result.warnings) {
                 message.append("⚠️ ").append(warning).append("\n");
@@ -890,13 +902,14 @@ public class EventsActivity extends AppCompatActivity implements
 
         if (result.success && result.importedEvents > 0) {
             builder.setNeutralButton("View Events", (dialog, which) -> {
-                Toast.makeText(this, "Showing " + result.importedEvents + " imported events", Toast.LENGTH_SHORT).show();
+                Library.showSuccess(this, MessageFormat.format(
+                        getString(R.string.text_showing_0_imported_events), result.importedEvents), Toast.LENGTH_SHORT);
             });
         }
 
         if (result.hasIssues()) {
             builder.setNegativeButton("Export Log", (dialog, which) -> {
-                Toast.makeText(this, "Export log functionality coming soon", Toast.LENGTH_SHORT).show();
+                Library.showError(this, R.string.text_export_log_functionality_coming_soon);
             });
         }
 
@@ -904,25 +917,158 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     public void handleImportEventsFromUrl() {
-        Toast.makeText(this, "Coming soon", Toast.LENGTH_SHORT).show();
+        Library.showSuccess(this, R.string.coming_soon, Toast.LENGTH_SHORT);
     }
 
     public void handleExportEventsToFile(@Nullable Uri fileUri) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/json");
+
+        // Generate meaningful filename
+        String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String filename = "qdue_events_" + timestamp + ".qdue";
+
         if (fileUri != null) {
             intent.putExtra(Intent.EXTRA_TITLE, fileUri.getLastPathSegment());
         } else {
-            intent.putExtra(Intent.EXTRA_TITLE, "qdue_events_" + System.currentTimeMillis() + ".json");
+            intent.putExtra(Intent.EXTRA_TITLE, filename);
         }
 
         try {
             mFileSaverLauncher.launch(intent);
         } catch (Exception e) {
             Log.e(TAG, "Error opening file saver: " + e.getMessage());
-            Toast.makeText(this, "Errore apertura file saver", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_error_opening_file_saver, Toast.LENGTH_SHORT);
         }
+    }
+
+    /**
+     * Enhanced export implementation using existing ExportManager
+     */
+    private void exportEventsToFile(Uri fileUri) {
+        Log.d(TAG, "Starting export to: " + fileUri.toString());
+
+        try {
+            showGlobalLoading(true, getString(R.string.text_exporting_events_dots));
+
+            // Get all events from database
+            new Thread(() -> {
+                try {
+                    // Get all events from database
+                    EventDao eventDao = mDatabase.eventDao();
+                    List<LocalEvent> allEvents = eventDao.getAllEvents();
+
+                    Log.d(TAG, "Retrieved " + allEvents.size() + " events for export");
+
+                    if (allEvents.isEmpty()) {
+                        runOnUiThread(() -> {
+                            showGlobalLoading(false, null);
+                            Library.showError(this, R.string.text_no_events_to_export, Toast.LENGTH_SHORT);
+                        });
+                        return;
+                    }
+
+                    // Create export options
+                    ExportManager.ExportOptions exportOptions = createDefaultExportOptions();
+
+                    // Use ExportManager for export
+                    ExportManager exportManager = new ExportManager(this);
+                    exportManager.exportToUri(allEvents, fileUri, exportOptions, new ExportManager.ExportCallback() {
+                        @Override
+                        public void onExportComplete(ExportManager.ExportResult result) {
+                            runOnUiThread(() -> {
+                                showGlobalLoading(false, null);
+                                handleExportSuccess(result);
+                            });
+                        }
+
+                        @Override
+                        public void onExportProgress(int processed, int total, String currentEvent) {
+                        }
+
+                        @Override
+                        public void onExportError(String error, Exception exception) {
+                            runOnUiThread(() -> {
+                                showGlobalLoading(false, null);
+                                handleExportError(error, exception);
+                            });
+                        }
+                    });
+
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        showGlobalLoading(false, null);
+                        handleExportError(getString(R.string.text_error_reading_events_from_db), e);
+                    });
+                }
+            }).start();
+
+        } catch (Exception e) {
+            showGlobalLoading(false, null);
+            Log.e(TAG, "Error starting export: " + e.getMessage());
+            Library.showError(this, R.string.text_error_during_export);
+        }
+    }
+
+    /**
+     * Create default export options
+     */
+    private ExportManager.ExportOptions createDefaultExportOptions() {
+        ExportManager.ExportOptions options = new ExportManager.ExportOptions();
+
+        // Package info
+        options.packageName = "QDue Events Export";
+        options.packageDescription = "Export QDue";
+        options.authorName = "QDue App";
+
+        // Export settings
+        options.includeCustomProperties = true;
+
+        // Progress reporting
+        options.reportProgress = true;
+
+        return options;
+    }
+
+    /**
+     * Handle successful export
+     */
+    private void handleExportSuccess(ExportManager.ExportResult result) {
+        Log.d(TAG, "Export completed successfully: " + result.exportedEvents + " events");
+
+        String message = MessageFormat.format(
+                getString(R.string.format_text_exported_0_event_successfully), result.exportedEvents);
+
+        if (result.warnings != null && !result.warnings.isEmpty()) {
+            message += MessageFormat.format(
+                    getString(R.string.text_parenthesis_cr_0_warnings_parenthesis), result.warnings.size());
+
+            // Log warnings for debugging
+            for (String warning : result.warnings) {
+                Log.w(TAG, "Export warning: " + warning);
+            }
+        }
+
+        Library.showSuccess(this, message, Toast.LENGTH_LONG);
+
+        // Notify about export action
+        notifyEventsChanged(CHANGE_TYPE_EXPORT, result.exportedEvents);
+    }
+
+    /**
+     * Handle export error
+     */
+    private void handleExportError(String error, Exception exception) {
+        Log.e(TAG, "Export error: " + error, exception);
+
+        String userMessage = getString(R.string.text_error_during_export);
+        if (error != null && !error.trim().isEmpty()) {
+            userMessage += ": " + error;
+        }
+
+        Toast.makeText(this, userMessage, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -932,78 +1078,88 @@ public class EventsActivity extends AppCompatActivity implements
      * @param fileUri        Optional target file URI
      * @param selectedEvents List of events to export
      */
-    public void handleExportSelectedEventsToFile(Uri fileUri, List<LocalEvent> selectedEvents) {
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String filename;
-
-        if (fileUri != null) {
-            filename = fileUri.getLastPathSegment();
-        } else {
-            filename = "qdue_events_" + selectedEvents.size() + "_" + timestamp + ".json";
+    public void handleExportSelectedEventsToFile(@Nullable Uri fileUri,
+                                                 Set<String> selectedEventIds,
+                                                 List<LocalEvent> selectedEvents) {
+        if (selectedEvents == null || selectedEvents.isEmpty()) {
+            Library.showError(this, R.string.text_no_event_selected_for_export);
+            return;
         }
+
+        Log.d(TAG, "Exporting " + selectedEvents.size() + " selected events");
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("application/json");
+
+        String timestamp = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String filename = "qdue_events_selected_" + timestamp + ".qdue";
+
         intent.putExtra(Intent.EXTRA_TITLE, filename);
 
+        // Store selected events for later use
+        mSelectedEventsForExport = selectedEvents;
+
         try {
-            mPendingExportEvents = selectedEvents;
             mFileSaverLauncher.launch(intent);
         } catch (Exception e) {
             Log.e(TAG, "Error opening file saver for selected events: " + e.getMessage());
-            Toast.makeText(this, "Errore apertura file saver", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_error_opening_file_saver);
             mPendingExportEvents = null;
         }
     }
 
     private void exportSelectedEventsToFile(Uri fileUri, List<LocalEvent> selectedEvents) {
         try {
-            showGlobalLoading(true, "Esportando " + selectedEvents.size() + " eventi selezionati...");
+            showGlobalLoading(true, MessageFormat.format(
+                    getString(R.string.text_exporting_0_selected_events), selectedEvents.size()));
 
-            if (mExportManager != null) {
-                ExportManager.ExportOptions options = new ExportManager.ExportOptions();
-                options.includeCustomProperties = true;
+            new Thread(() -> {
 
-                mExportManager.exportToUri(selectedEvents, fileUri, options, new ExportManager.ExportCallback() {
-                    @Override
-                    public void onExportComplete(ExportManager.ExportResult result) {
-                        runOnUiThread(() -> {
-                            showGlobalLoading(false, null);
-                            if (result.success) {
-                                Library.showSuccess(EventsActivity.this, result.getSummary(), Toast.LENGTH_LONG);
-                            } else {
-                                Library.showError(EventsActivity.this, "Export fallito: " + result.getSummary(), Toast.LENGTH_LONG);
-                            }
-                        });
-                    }
+                try {
+                    // Create export options for selected events
+                    ExportManager.ExportOptions exportOptions = createDefaultExportOptions();
+                    exportOptions.packageName = "QDue Selected Events Export";
+                    exportOptions.packageDescription = "Export Multiple QDue";
 
-                    @Override
-                    public void onExportError(String error, Exception exception) {
-                        runOnUiThread(() -> {
-                            showGlobalLoading(false, null);
-                            String userMessage = "Errore durante l'export dei " + selectedEvents.size() + " eventi selezionati:\n" + error;
-                            Library.showError(EventsActivity.this, userMessage, Toast.LENGTH_LONG);
-                        });
-                    }
+                    // Use ExportManager for export
+                    ExportManager exportManager = new ExportManager(this);
+                    exportManager.exportToUri(selectedEvents, fileUri, exportOptions, new ExportManager.ExportCallback() {
+                        @Override
+                        public void onExportComplete(ExportManager.ExportResult result) {
+                            runOnUiThread(() -> {
+                                showGlobalLoading(false, null);
+                                handleExportSuccess(result);
+                            });
+                        }
 
-                    @Override
-                    public void onExportProgress(int processed, int total, String currentEvent) {
-                        runOnUiThread(() -> {
-                            String progressMessage = String.format(QDue.getLocale(),
-                                    "Esportando eventi selezionati... %d/%d\n%s",
-                                    processed, total, currentEvent
-                            );
-                            showGlobalLoading(true, progressMessage);
-                        });
-                    }
-                });
-            }
+                        @Override
+                        public void onExportProgress(int processed, int total, String currentEvent) {
+                        }
+
+                        @Override
+                        public void onExportError(String error, Exception exception) {
+                            runOnUiThread(() -> {
+                                showGlobalLoading(false, null);
+                                handleExportError(error, exception);
+                            });
+                        }
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        showGlobalLoading(false, null);
+                        Log.e(TAG, "Error exporting selected events: " + e.getMessage(), e);
+
+                        handleExportError(getString(R.string.text_error_during_export_of_selected_events), e);
+                    });
+                }
+            }).start();
+
         } catch (Exception e) {
             showGlobalLoading(false, null);
-            Log.e(TAG, "Error exporting selected events: " + e.getMessage(), e);
-            String errorMessage = "Errore durante l'export di " + selectedEvents.size() + " eventi: " + e.getMessage();
-            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Error exporting selected events: " + e.getMessage());
+            Library.showError(this, R.string.text_error_during_export);
         }
     }
 
@@ -1011,10 +1167,10 @@ public class EventsActivity extends AppCompatActivity implements
 
     void handleDeleteAllEvents() {
         new AlertDialog.Builder(this)
-                .setTitle("Clear All Events")
-                .setMessage("Are you sure you want to delete all local events? This action cannot be undone.")
-                .setPositiveButton("Clear All", (dialog, which) -> deleteAllEvents())
-                .setNegativeButton("Cancel", null)
+                .setTitle(R.string.text_clear_all_events)
+                .setMessage(R.string.long_text_are_you_sure_you_want_to_delete_all_local_events_this_action_cannot_be_undone)
+                .setPositiveButton(R.string.text_clear_all, (dialog, which) -> deleteAllEvents())
+                .setNegativeButton(R.string.text_cancel, null)
                 .show();
     }
 
@@ -1032,20 +1188,20 @@ public class EventsActivity extends AppCompatActivity implements
                             mCurrentListFragment.onEventsCleared(result, true);
                         }
 
-                        showSuccess("All events cleared");
+                        showSuccess(getString(R.string.text_all_events_cleared));
 
                         mHasEvents = false;
                         mTotalEventsCount = 0;
                         updateFabVisibility();
                         notifyEventsChanged(CHANGE_TYPE_DELETE, result);
                     } else {
-                        showError("❌ Error deleting all events");
+                        showError(getString(R.string.text_char_error_deleting_all_events));
                     }
                 });
 
             } catch (Exception e) {
                 Log.e(TAG, "Error clearing events from database", e);
-                runOnUiThread(() -> showError("❌ Error deleting all events"));
+                runOnUiThread(() -> showError(getString(R.string.text_char_error_deleting_all_events)));
             }
         }).start();
     }
@@ -1062,7 +1218,7 @@ public class EventsActivity extends AppCompatActivity implements
     @Override
     public void triggerEventDeletion(LocalEvent event, EventDeletionListener listener) {
         if (event == null || event.getId() == null) {
-            listener.onDeletionCompleted(false, "Evento non valido");
+            listener.onDeletionCompleted(false, getString(R.string.text_error_event_not_valid));
             return;
         }
 
@@ -1142,7 +1298,7 @@ public class EventsActivity extends AppCompatActivity implements
             mCurrentListFragment.addEvent(event);
         }
 
-        Toast.makeText(this, "Eliminazione annullata", Toast.LENGTH_SHORT).show();
+        Library.showSuccess(this, R.string.text_deleting_cancelled, Toast.LENGTH_SHORT);
     }
 
     private void performActualEventDeletion(String eventId, String eventTitle) {
@@ -1158,7 +1314,7 @@ public class EventsActivity extends AppCompatActivity implements
                     }
 
                     if (deletedRows > 0) {
-                        showSuccess("Event deleted permanently");
+                        showSuccess(getString(R.string.text_event_deleted_definetly));
 
                         mTotalEventsCount = Math.max(0, mTotalEventsCount - 1);
                         mHasEvents = mTotalEventsCount > 0;
@@ -1182,7 +1338,7 @@ public class EventsActivity extends AppCompatActivity implements
                         mCurrentListFragment.suppressRefresh(false);
                         mCurrentListFragment.refreshEvents();
                     }
-                    showError("Error during deletion: " + e.getMessage());
+                    showError(getString(R.string.text_error) + e.getMessage());
                 });
             }
         }).start();
@@ -1199,7 +1355,7 @@ public class EventsActivity extends AppCompatActivity implements
             }
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to edit: " + e.getMessage());
-            Toast.makeText(this, "Errore navigazione edit", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_error_navigation);
         }
     }
 
@@ -1214,13 +1370,13 @@ public class EventsActivity extends AppCompatActivity implements
             }
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to edit: " + e.getMessage());
-            Toast.makeText(this, "Errore navigazione edit", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_error_navigation);
         }
     }
 
     @Override
     public void triggerEventDuplicate(LocalEvent event) {
-        Toast.makeText(this, "Duplica evento - TODO", Toast.LENGTH_SHORT).show();
+        Library.showError(this, R.string.coming_soon);
     }
 
     /**
@@ -1238,10 +1394,10 @@ public class EventsActivity extends AppCompatActivity implements
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Evento: " + event.getTitle());
 
         try {
-            startActivity(Intent.createChooser(shareIntent, "Condividi Evento"));
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.text_share_event)));
         } catch (Exception e) {
             Log.e(TAG, "Error sharing event: " + e.getMessage());
-            Toast.makeText(this, "Errore condivisione", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_error_sharing);
         }
     }
 
@@ -1280,7 +1436,7 @@ public class EventsActivity extends AppCompatActivity implements
             startActivity(intent);
         } catch (Exception e) {
             Log.e(TAG, "Error adding to calendar: " + e.getMessage());
-            Toast.makeText(this, "Impossibile aprire il calendario", Toast.LENGTH_SHORT).show();
+            Library.showError(this, R.string.text_opening_calendar_impossible);
         }
     }
 
@@ -1363,21 +1519,24 @@ public class EventsActivity extends AppCompatActivity implements
      * @param fragment Fragment with unsaved changes
      * @param handler  Handler for unsaved changes confirmation
      */
-    public void registerFragmentUnsavedChanges(@NonNull Fragment fragment, @NonNull UnsavedChangesHandler handler) {
+    public void registerFragmentUnsavedChanges(@NonNull Fragment
+                                                       fragment, @NonNull UnsavedChangesHandler handler) {
         mBackHandlerFactory.forComponent(fragment)
                 .withPriority(100)
                 .withDescription(fragment.getClass().getSimpleName() + " unsaved changes")
                 .registerUnsavedChanges(handler);
     }
 
-    public void registerUnsavedChangesHandler(@NonNull Object component, @NonNull UnsavedChangesHandler handler) {
+    public void registerUnsavedChangesHandler(@NonNull Object
+                                                      component, @NonNull UnsavedChangesHandler handler) {
         mBackHandlerFactory.forComponent(component)
                 .withPriority(100)
                 .withDescription(component.getClass().getSimpleName() + " unsaved changes")
                 .registerUnsavedChanges(handler);
     }
 
-    public void registerSelectionModeHandler(@NonNull Object component, @NonNull BackPressHandler selectionHandler) {
+    public void registerSelectionModeHandler(@NonNull Object
+                                                     component, @NonNull BackPressHandler selectionHandler) {
         mBackHandlerFactory.forComponent(component)
                 .withPriority(50)
                 .withDescription(component.getClass().getSimpleName() + " selection mode")
@@ -1409,7 +1568,7 @@ public class EventsActivity extends AppCompatActivity implements
 
             @Override
             public void onSelectionError(@NonNull String error) {
-                Library.showError(QDue.getContext(), "File selection failed: " + error);
+                Library.showError(QDue.getContext(), getString(R.string.text_error_file_selection_failed_semicolon) + error);
             }
 
             @Override
@@ -1431,7 +1590,7 @@ public class EventsActivity extends AppCompatActivity implements
 
     @Override
     public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
-        handleExportSelectedEventsToFile(fileUri, selectedEvents);
+        handleExportSelectedEventsToFile(fileUri, selectedEventIds, selectedEvents);
     }
 
     @Override
@@ -1460,7 +1619,8 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mPermissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -1510,9 +1670,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     public void triggerPendingEventCreationCheck() {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            checkAndExecutePendingEventCreation();
-        }, 200);
+        new Handler(Looper.getMainLooper()).postDelayed(this::checkAndExecutePendingEventCreation, 200);
     }
 
     public boolean hasPendingEventCreation() {
@@ -1531,16 +1689,19 @@ public class EventsActivity extends AppCompatActivity implements
 
         if (event.getStartTime() != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            text.append("Inizio: ").append(event.getStartTime().format(formatter)).append("\n");
+            text.append(MessageFormat.format(getString(R.string.format_text_begin_semicolon_0), event.getStartTime().format(formatter)))
+                    .append("\n");
         }
 
         if (event.getEndTime() != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            text.append("Fine: ").append(event.getEndTime().format(formatter)).append("\n");
+            text.append(MessageFormat.format(getString(R.string.format_text_end_semicolon_0), event.getEndTime().format(formatter)))
+                    .append("\n");
         }
 
         if (event.getLocation() != null && !event.getLocation().trim().isEmpty()) {
-            text.append("Luogo: ").append(event.getLocation()).append("\n");
+            text.append(MessageFormat.format(getString(R.string.format_text_location_semicolon_0), event.getLocation()))
+                    .append("\n");
         }
 
         return text.toString();
@@ -1548,7 +1709,7 @@ public class EventsActivity extends AppCompatActivity implements
 
     private String formatEventDateForDialog(LocalEvent event) {
         if (event.getStartTime() == null) {
-            return "Data non specificata";
+            return getString(R.string.text_date_not_specified);
         }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
@@ -1561,7 +1722,7 @@ public class EventsActivity extends AppCompatActivity implements
                 return event.getStartTime().format(dateFormatter) +
                         " - " + event.getEndTime().format(dateFormatter);
             } else {
-                return event.getStartTime().format(dateFormatter) + " (Tutto il giorno)";
+                return MessageFormat.format("{0} ({1})", event.getStartTime().format(dateFormatter), getString(R.string.text_all_day));
             }
         } else {
             if (event.getEndTime() != null) {

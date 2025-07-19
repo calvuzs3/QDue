@@ -10,10 +10,14 @@
     android:layout_marginVertical="4dp"
     android:clickable="true"
     android:focusable="true"
+    android:checkable="true"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
     app:rippleColor="?attr/colorControlHighlight"
-    app:cardBackgroundColor="?attr/colorSurface">
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:strokeWidth="0dp"
+    app:checkedIcon="@drawable/ic_check_circle"
+    app:checkedIconTint="?attr/colorPrimary" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -108,7 +112,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textAppearance="?attr/textAppearanceBody2"
+                    android:textAppearance="?attr/textAppearanceBody1"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textStyle="bold"
                     tools:text="15 Mar 2025, 08:00 - 17:00" />
@@ -146,8 +150,9 @@
 
         </LinearLayout>
 
-        <!-- Action Indicator -->
+        <!-- Action Indicator / Selection Indicator -->
         <ImageView
+            android:id="@+id/iv_action_indicator"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center_vertical"
