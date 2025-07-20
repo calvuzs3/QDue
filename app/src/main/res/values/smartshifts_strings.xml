@@ -2,7 +2,7 @@
 <resources>
 
     <!--    NUOVO SiSTEMA-->
-
+<string name="smartshifts_title">SmartShifts</string>
 
     <!-- ===== MENU & NAVIGATION ===== -->
     <string name="menu_smart_shifts">SmartShifts</string>
@@ -18,13 +18,13 @@
     <string name="shift_type_rest">Riposo</string>
 
     <!-- ===== SHIFT PATTERNS ===== -->
-    <string name="pattern_continuous_4_2_name">Ciclo Continuo 4-2</string>
+    <string name="pattern_continuous_4_2_name">Ciclo Continuo 4–2</string>
     <string name="pattern_continuous_4_2_desc">4 mattine, 2 riposi, 4 notti, 2 riposi, 4 pomeriggi, 2 riposi</string>
-    <string name="pattern_continuous_3_2_name">Ciclo Continuo 3-2</string>
+    <string name="pattern_continuous_3_2_name">Ciclo Continuo 3–2</string>
     <string name="pattern_continuous_3_2_desc">3 mattine, 2 riposi, 3 notti, 2 riposi, 3 pomeriggi, 2 riposi</string>
-    <string name="pattern_weekly_5_2_name">Settimana Standard 5-2</string>
+    <string name="pattern_weekly_5_2_name">Settimana Standard 5–2</string>
     <string name="pattern_weekly_5_2_desc">5 giorni lavorativi, 2 giorni riposo (lunedì-venerdì)</string>
-    <string name="pattern_weekly_6_1_name">Settimana Standard 6-1</string>
+    <string name="pattern_weekly_6_1_name">Settimana Standard 6–1</string>
     <string name="pattern_weekly_6_1_desc">6 giorni lavorativi, 1 giorno riposo</string>
 
     <!-- ===== TEAM LABELS ===== -->

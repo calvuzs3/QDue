@@ -60,7 +60,7 @@
     <!-- ============================================ -->
 
     <!-- Calendar day cells -->
-    <dimen name="calendar_day_size">48dp</dimen>
+<dimen name="calendar_day_size">48dp</dimen>
     <dimen name="calendar_day_margin">1dp</dimen>
     <dimen name="calendar_day_padding">@dimen/spacing_xs</dimen>
     <dimen name="calendar_day_corner_radius">8dp</dimen>

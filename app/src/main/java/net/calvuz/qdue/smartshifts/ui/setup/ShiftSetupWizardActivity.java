@@ -59,11 +59,11 @@ public class ShiftSetupWizardActivity extends AppCompatActivity {
      * Setup toolbar
      */
     private void setupToolbar() {
-        setSupportActionBar(binding.toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(R.string.setup_wizard_title);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+//        setSupportActionBar(binding.toolbar);
+//        if (getSupportActionBar() != null) {
+//            getSupportActionBar().setTitle(R.string.setup_wizard_title);
+//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        }
     }
 
     /**

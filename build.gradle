@@ -1,18 +1,22 @@
+// ==============================================
+// ROOT BUILD.GRADLE (Project level)
+// ==============================================
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+
 buildscript {
     ext {
-        APP_REVISION = 6
+        APP_REVISION = 8
         APP_VERSION = '2.0.0'
-
-        // release 1.4.1
-//        APP_REVISION = 5
-//        APP_VERSION = '1.4.1'
+        hilt_version = '2.48'
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0' // o versione più recente
-        classpath "com.google.dagger:hilt-android-gradle-plugin:2.48"
+        classpath 'com.android.tools.build:gradle:8.2.0'
+        // ✅ AGGIUNTO: Hilt classpath necessario
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
 }
+
 plugins {
-alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.application) apply false
 }

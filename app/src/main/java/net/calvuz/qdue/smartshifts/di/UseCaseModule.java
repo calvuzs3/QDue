@@ -6,12 +6,13 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.android.qualifiers.ApplicationContext;
-import dagger.hilt.android.scopes.ViewModelScoped;
 import dagger.hilt.components.SingletonComponent;
 
 import net.calvuz.qdue.smartshifts.ui.usecases.*;
 import net.calvuz.qdue.smartshifts.data.repository.*;
 import net.calvuz.qdue.smartshifts.domain.validators.ContinuousCycleValidator;
+
+import javax.inject.Singleton;
 
 /**
  * Hilt module for providing use case dependencies
@@ -25,7 +26,7 @@ public class UseCaseModule {
      * Provide get user shifts use case
      */
     @Provides
-    @ViewModelScoped
+    @Singleton // ✅ Cambiato da @ViewModelScoped a @Singleton
     public GetUserShiftsUseCase provideGetUserShiftsUseCase(
             SmartShiftsRepository repository,
             UserAssignmentRepository assignmentRepository
@@ -37,7 +38,7 @@ public class UseCaseModule {
      * Provide create pattern use case
      */
     @Provides
-    @ViewModelScoped
+    @Singleton // ✅ Cambiato da @ViewModelScoped a @Singleton
     public CreatePatternUseCase provideCreatePatternUseCase(
             ShiftPatternRepository patternRepository,
             ValidatePatternUseCase validateUseCase,
@@ -50,7 +51,7 @@ public class UseCaseModule {
      * Provide assign pattern use case
      */
     @Provides
-    @ViewModelScoped
+    @Singleton // ✅ Cambiato da @ViewModelScoped a @Singleton
     public AssignPatternUseCase provideAssignPatternUseCase(
             UserAssignmentRepository assignmentRepository,
             SmartShiftsRepository shiftsRepository,
@@ -63,7 +64,7 @@ public class UseCaseModule {
      * Provide validate pattern use case
      */
     @Provides
-    @ViewModelScoped
+    @Singleton // ✅ Cambiato da @ViewModelScoped a @Singleton
     public ValidatePatternUseCase provideValidatePatternUseCase(
             ContinuousCycleValidator validator,
             ShiftPatternRepository patternRepository
@@ -75,7 +76,7 @@ public class UseCaseModule {
      * Provide manage contacts use case
      */
     @Provides
-    @ViewModelScoped
+    @Singleton // ✅ Cambiato da @ViewModelScoped a @Singleton
     public ManageContactsUseCase provideManageContactsUseCase(
             TeamContactRepository contactRepository,
             @ApplicationContext Context context

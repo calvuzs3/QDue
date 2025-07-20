@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!-- SmartShifts specific dimensions -->
+<!--<dimen name="calendar_day_size">48dp</dimen>-->
+<!--<dimen name="calendar_day_margin">2dp</dimen>-->
+<!--<dimen name="shift_indicator_height">3dp</dimen>-->
+<dimen name="legend_item_height">40dp</dimen>
+<dimen name="pattern_card_height">120dp</dimen>
+
+<!-- Spacing -->
+<dimen name="smartshifts_margin_small">8dp</dimen>
+<dimen name="smartshifts_margin_medium">16dp</dimen>
+<dimen name="smartshifts_margin_large">24dp</dimen>
+<dimen name="smartshifts_margin_xlarge">32dp</dimen>
+
+<!-- Text sizes -->
+<dimen name="calendar_day_text_size">14sp</dimen>
+<dimen name="calendar_shift_label_size">8sp</dimen>
+<dimen name="setup_title_text_size">24sp</dimen>
+<dimen name="setup_subtitle_text_size">16sp</dimen>
+
+<!-- Card dimensions -->
+<!--<dimen name="card_corner_radius">12dp</dimen>-->
+<!--<dimen name="card_elevation">4dp</dimen>-->
+<dimen name="card_stroke_width">1dp</dimen>
+
+<!-- Button dimensions -->
+<!--<dimen name="fab_margin">16dp</dimen>-->
+<!--<dimen name="button_height">48dp</dimen>-->
+<dimen name="icon_button_size">48dp</dimen>
+
+</resources>

@@ -3,22 +3,23 @@ package net.calvuz.qdue.smartshifts.integration;
 import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
 
-import dagger.hilt.android.AndroidEntryPoint;
-
 import net.calvuz.qdue.smartshifts.ui.main.SmartShiftsActivity;
-
-import javax.inject.Inject;
 
 /**
  * Integration class for launching SmartShifts from main QDue app
  * This class can be referenced from QDue's MainActivity navigation
  */
-@AndroidEntryPoint
+//@AndroidEntryPoint //nonsense
 public class SmartShiftsLauncher {
 
-    @Inject
-    public SmartShiftsLauncher() {
-        // Hilt will inject dependencies automatically
+//    @Inject
+//    public SmartShiftsLauncher() {
+//        // Hilt will inject dependencies automatically
+//    }
+
+    // Private constructor to prevent instantiation
+    private SmartShiftsLauncher() {
+        throw new UnsupportedOperationException("Utility class - cannot be instantiated");
     }
 
     /**
@@ -38,96 +39,26 @@ public class SmartShiftsLauncher {
         // For example, check if database is initialized
         return true;
     }
+
+    /**
+     * Launch SmartShifts with specific configuration
+     */
+    public static void launchWithConfig(AppCompatActivity fromActivity, String config) {
+        Intent intent = new Intent(fromActivity, SmartShiftsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("config", config);
+        fromActivity.startActivity(intent);
+    }
+
+    /**
+     * Check if SmartShifts has any active shift assignments
+     */
+    public static boolean hasActiveAssignments() {
+        // This would need to query the database
+        // For now, return true as placeholder
+        return true;
+    }
 }
-
-// =====================================================================
-
-// ===== EXAMPLE USAGE IN QDUE MAINACTIVITY =====
-
-/*
- * Add this to QDue's existing MainActivity.java:
- *
- * // In the navigation drawer item click handler:
- * case R.id.nav_smart_shifts:
- *     if (SmartShiftsLauncher.isSmartShiftsAvailable()) {
- *         SmartShiftsLauncher.launch(this);
- *     } else {
- *         // Show error or setup dialog
- *         Toast.makeText(this, R.string.smartshifts_not_available, Toast.LENGTH_SHORT).show();
- *     }
- *     break;
- */
-
-// =====================================================================
-
-// ===== BUILD.GRADLE DEPENDENCIES FOR HILT SETUP =====
-
-/*
- * Add these dependencies to your app/build.gradle:
- *
- * dependencies {
- *     // Hilt Dependency Injection
- *     implementation "com.google.dagger:hilt-android:2.48"
- *     annotationProcessor "com.google.dagger:hilt-android-compiler:2.48"
- *
- *     // Room Database (if not already included)
- *     implementation "androidx.room:room-runtime:2.5.0"
- *     implementation "androidx.room:room-ktx:2.5.0"
- *     annotationProcessor "androidx.room:room-compiler:2.5.0"
- *
- *     // Lifecycle ViewModels
- *     implementation "androidx.lifecycle:lifecycle-viewmodel:2.7.0"
- *     implementation "androidx.lifecycle:lifecycle-livedata:2.7.0"
- *
- *     // Navigation Component
- *     implementation "androidx.navigation:navigation-fragment:2.7.5"
- *     implementation "androidx.navigation:navigation-ui:2.7.5"
- *
- *     // JSON parsing
- *     implementation "com.google.code.gson:gson:2.10.1"
- * }
- *
- * // Also add to the top of the file:
- * plugins {
- *     id 'dagger.hilt.android.plugin'
- * }
- *
- * // And in project-level build.gradle:
- * buildscript {
- *     dependencies {
- *         classpath "com.google.dagger:hilt-android-gradle-plugin:2.48"
- *     }
- * }
- */
-
-// =====================================================================
-
-// ===== ANDROIDMANIFEST.XML UPDATES =====
-
-/*
- * Add to AndroidManifest.xml:
- *
- * <application
- *     android:name="net.calvuz.qdue.smartshifts.SmartShiftsApplication"
- *     ... other attributes>
- *
- *     <!-- Existing QDue activities... -->
- *
- *     <!-- SmartShifts Activities -->
- *     <activity
- *         android:name="net.calvuz.qdue.smartshifts.ui.main.SmartShiftsActivity"
- *         android:exported="false"
- *         android:theme="@style/Theme.QDue"
- *         android:screenOrientation="portrait" />
- *
- *     <activity
- *         android:name="net.calvuz.qdue.smartshifts.ui.setup.ShiftSetupWizardActivity"
- *         android:exported="false"
- *         android:theme="@style/Theme.QDue.NoActionBar"
- *         android:screenOrientation="portrait" />
- *
- * </application>
- */
 
 // =====================================================================
 
@@ -172,7 +103,7 @@ public class SmartShiftsLauncher {
  *    - Background & Main Thread Executors
  *
  * INTEGRATION POINTS:
- * - SmartShiftsApplication extends Application with @HiltAndroidApp
+ * - SmartShiftsApplication (QDue) extends Application with @HiltAndroidApp
  * - SmartShiftsLauncher for integration with existing QDue
  * - Qualifiers for distinguishing similar dependencies
  * - Background initialization with localized strings

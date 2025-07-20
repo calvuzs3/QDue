@@ -46,21 +46,59 @@ public class PatternSelectionStepFragment extends Fragment {
      * Setup pattern option radio buttons
      */
     private void setupPatternOptions() {
+        // ✅ CORRETTO: Stato iniziale
         binding.radioPredefined.setChecked(true);
+        binding.radioCustom.setChecked(false);
+        binding.predefinedPatternsCard.setVisibility(View.VISIBLE);
 
+        // ✅ CORRETTO: Listener con esclusione mutua
         binding.radioPredefined.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                // Disattiva l'altro radiobutton
+                binding.radioCustom.setChecked(false);
+
+                // Mostra patterns predefiniti
                 binding.predefinedPatternsCard.setVisibility(View.VISIBLE);
+
+                // Reset pattern selection nel ViewModel
                 viewModel.setSelectedPattern(null, false);
+
+                android.util.Log.d("PatternSelection", "Predefined selected");
             }
         });
 
         binding.radioCustom.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
+                // Disattiva l'altro radiobutton
+                binding.radioPredefined.setChecked(false);
+
+                // Nascondi patterns predefiniti
                 binding.predefinedPatternsCard.setVisibility(View.GONE);
+
+                // Imposta custom pattern nel ViewModel
                 viewModel.setSelectedPattern("custom", true);
+
+                android.util.Log.d("PatternSelection", "Custom selected");
             }
         });
+
+
+//
+//        binding.radioPredefined.setChecked(true);
+//
+//        binding.radioPredefined.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            if (isChecked) {
+//                binding.predefinedPatternsCard.setVisibility(View.VISIBLE);
+//                viewModel.setSelectedPattern(null, false);
+//            }
+//        });
+//
+//        binding.radioCustom.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            if (isChecked) {
+//                binding.predefinedPatternsCard.setVisibility(View.GONE);
+//                viewModel.setSelectedPattern("custom", true);
+//            }
+//        });
     }
 
     /**

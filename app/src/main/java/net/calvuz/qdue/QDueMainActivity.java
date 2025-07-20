@@ -26,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.preferences.QDuePreferences;
+import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
@@ -75,7 +76,6 @@ public class QDueMainActivity extends BaseActivity {
 
     // Toolbar
     private MaterialToolbar toolbar;
-
 
     // Enhanced activity launcher
     private ActivityResultLauncher<Intent> mEventsActivityLauncher;
@@ -171,6 +171,7 @@ public class QDueMainActivity extends BaseActivity {
 
     /**
      * Check if user should be redirected to WelcomeActivity
+     *
      * @return true if welcome should be shown
      */
     private boolean shouldRedirectToWelcome() {
@@ -261,6 +262,7 @@ public class QDueMainActivity extends BaseActivity {
 
     /**
      * Check if the given destination ID is a main navigation destination
+     *
      * @param destinationId Navigation destination ID to check
      * @return true if it's a main destination (calendar or dayslist)
      */
@@ -456,7 +458,6 @@ public class QDueMainActivity extends BaseActivity {
         final String mTAG = "setupNavController: ";
         Log.v(TAG, mTAG + "called with preferred destination: " + currentDestination);
 
-
         try {
             // Method 1: Find NavHostFragment directly
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -489,7 +490,6 @@ public class QDueMainActivity extends BaseActivity {
             });
         }
     }
-
 
     /**
      * Configure the navigation graph start destination based on user preferences
@@ -542,6 +542,7 @@ public class QDueMainActivity extends BaseActivity {
     /**
      * Handle navigation when user changes view mode from settings
      * Call this method when user changes view mode in settings
+     *
      * @param newViewMode The new view mode selected by user
      */
     public void onViewModeChanged(String newViewMode) {
@@ -728,7 +729,7 @@ public class QDueMainActivity extends BaseActivity {
         // Add registered fragments
         synchronized (mRegisteredEventsFragments) {
             allFragments.addAll(mRegisteredEventsFragments);
-            Log.d(TAG, String.format(QDue.getLocale() ,"Added %d registered fragments", mRegisteredEventsFragments.size()));
+            Log.d(TAG, String.format(QDue.getLocale(), "Added %d registered fragments", mRegisteredEventsFragments.size()));
         }
 
         // Add discovered fragments (fallback method)
@@ -763,7 +764,7 @@ public class QDueMainActivity extends BaseActivity {
             for (Fragment fragment : allFragments) {
                 if (fragment.getChildFragmentManager() != null) {
                     List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
-                    Log.d(TAG, String.format(QDue.getLocale(),"Checking %d child fragments of %s",
+                    Log.d(TAG, String.format(QDue.getLocale(), "Checking %d child fragments of %s",
                             childFragments.size(), fragment.getClass().getSimpleName()));
 
                     for (Fragment childFragment : childFragments) {
@@ -894,6 +895,7 @@ public class QDueMainActivity extends BaseActivity {
 
     /**
      * Get all fragments that implement EventsRefreshInterface
+     *
      * @return List of fragments that can be refreshed when events change
      */
     private List<EventsRefreshInterface> getEventsRefreshFragments() {
@@ -1339,6 +1341,15 @@ public class QDueMainActivity extends BaseActivity {
                 return true;
             }
 
+            if (id == R.id.action_smart_shifts) {
+                if (SmartShiftsLauncher.isSmartShiftsAvailable()) {
+                    SmartShiftsLauncher.launch(this);
+                } else {
+                    // Show error or setup dialog
+                    Toast.makeText(this, R.string.smartshifts_not_available, Toast.LENGTH_SHORT).show();
+                }
+            }
+
         } catch (Exception e) {
             Log.e(TAG, mTAG + "Error handling menu selection: " + e.getMessage());
         }
@@ -1409,7 +1420,6 @@ public class QDueMainActivity extends BaseActivity {
     public FloatingActionButton getFabGoToToday() {
         return fabGoToToday;
     }
-
 
     /**
      * Show success message to user

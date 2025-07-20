@@ -16,6 +16,6 @@
     <item android:color="?attr/colorOnSurfaceVariant" android:state_hovered="true" />
 
     <!-- Default inactive state - Subtle visibility -->
-    <item android:color="?attr/colorOutline" />
+    <item android:color="?attr/colorOnSurfaceVariant" />
 
 </selector>

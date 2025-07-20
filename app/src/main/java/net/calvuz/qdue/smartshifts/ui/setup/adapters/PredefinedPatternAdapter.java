@@ -1,5 +1,6 @@
 package net.calvuz.qdue.smartshifts.ui.setup.adapters;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +23,7 @@ import java.util.List;
 public class PredefinedPatternAdapter extends RecyclerView.Adapter<PredefinedPatternAdapter.PatternViewHolder> {
 
     private List<PatternInfo> patterns = new ArrayList<>();
-    private OnPatternSelectedListener onPatternSelectedListener;
+    private final OnPatternSelectedListener onPatternSelectedListener;
     private int selectedPosition = -1;
 
     public interface OnPatternSelectedListener {
@@ -55,6 +56,7 @@ public class PredefinedPatternAdapter extends RecyclerView.Adapter<PredefinedPat
     /**
      * Update patterns list
      */
+    @SuppressLint("NotifyDataSetChanged")
     public void updatePatterns(List<PatternInfo> newPatterns) {
         this.patterns = new ArrayList<>(newPatterns);
         notifyDataSetChanged();
@@ -78,7 +80,7 @@ public class PredefinedPatternAdapter extends RecyclerView.Adapter<PredefinedPat
     /**
      * ViewHolder for pattern item
      */
-    static class PatternViewHolder extends RecyclerView.ViewHolder {
+    public static class PatternViewHolder extends RecyclerView.ViewHolder {
 
         private final ItemPatternSelectionBinding binding;
 

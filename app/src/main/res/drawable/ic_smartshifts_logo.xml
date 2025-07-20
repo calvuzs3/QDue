@@ -3,58 +3,109 @@
     android:width="120dp"
     android:height="120dp"
     android:viewportWidth="120"
-    android:viewportHeight="120"
-    android:tint="?attr/colorPrimary">
+    android:viewportHeight="120">
 
     <!-- Background Circle -->
     <path
+        android:pathData="M60,60 m-50,0 a50,50 0,1 1,100 0 a50,50 0,1 1,-100 0"
         android:fillColor="@android:color/white"
-        android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"
-        android:strokeWidth="4"
-        android:strokeColor="?attr/colorPrimary" />
+        android:strokeColor="?attr/colorPrimary"
+        android:strokeWidth="4" />
 
-    <!-- Clock Face -->
-    <path
-        android:fillColor="?attr/colorPrimary"
-        android:pathData="M60,20v8M60,92v8M20,60h8M92,60h8M35.86,35.86l5.66,5.66M78.48,78.48l5.66,5.66M84.14,35.86l-5.66,5.66M41.52,78.48l-5.66,5.66" />
+    <!-- Clock Face Markers -->
+    <group android:name="clock_markers">
+        <!-- 12 o'clock -->
+        <path
+            android:pathData="M60,20 L60,28"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <!-- 6 o'clock -->
+        <path
+            android:pathData="M60,92 L60,100"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <!-- 3 o'clock -->
+        <path
+            android:pathData="M92,60 L100,60"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <!-- 9 o'clock -->
+        <path
+            android:pathData="M20,60 L28,60"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <!-- Hour markers -->
+        <path
+            android:pathData="M35.86,35.86 L41.52,41.52"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <path
+            android:pathData="M84.14,35.86 L78.48,41.52"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <path
+            android:pathData="M84.14,84.14 L78.48,78.48"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+
+        <path
+            android:pathData="M35.86,84.14 L41.52,78.48"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+    </group>
 
     <!-- Clock Hands -->
-    <path
-        android:fillColor="?attr/colorPrimary"
-        android:pathData="M60,60L60,40"
-        android:strokeWidth="3"
-        android:strokeLineCap="round" />
+    <group android:name="clock_hands">
+        <!-- Hour hand (pointing to 12) -->
+        <path
+            android:pathData="M60,60 L60,40"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="3"
+            android:strokeLineCap="round" />
 
-    <path
-        android:fillColor="?attr/colorPrimary"
-        android:pathData="M60,60L75,60"
-        android:strokeWidth="2"
-        android:strokeLineCap="round" />
+        <!-- Minute hand (pointing to 3) -->
+        <path
+            android:pathData="M60,60 L75,60"
+            android:strokeColor="?attr/colorPrimary"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+    </group>
 
     <!-- Center Dot -->
-    <circle
-        android:fillColor="?attr/colorPrimary"
-        android:cx="60"
-        android:cy="60"
-        android:radius="3" />
+    <path
+        android:pathData="M60,60 m-3,0 a3,3 0,1 1,6 0 a3,3 0,1 1,-6 0"
+        android:fillColor="?attr/colorPrimary" />
 
     <!-- Shift Indicators -->
-    <circle
-        android:fillColor="#4CAF50"
-        android:cx="35"
-        android:cy="35"
-        android:radius="4" />
+    <group android:name="shift_indicators">
+        <!-- Morning (green) - top left -->
+        <path
+            android:pathData="M35,35 m-4,0 a4,4 0,1 1,8 0 a4,4 0,1 1,-8 0"
+            android:fillColor="#4CAF50" />
 
-    <circle
-        android:fillColor="#FF9800"
-        android:cx="85"
-        android:cy="35"
-        android:radius="4" />
+        <!-- Afternoon (orange) - top right -->
+        <path
+            android:pathData="M85,35 m-4,0 a4,4 0,1 1,8 0 a4,4 0,1 1,-8 0"
+            android:fillColor="#FF9800" />
 
-    <circle
-        android:fillColor="#3F51B5"
-        android:cx="85"
-        android:cy="85"
-        android:radius="4" />
+        <!-- Night (blue) - bottom right -->
+        <path
+            android:pathData="M85,85 m-4,0 a4,4 0,1 1,8 0 a4,4 0,1 1,-8 0"
+            android:fillColor="#3F51B5" />
+    </group>
 
 </vector>

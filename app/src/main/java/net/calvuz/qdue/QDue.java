@@ -14,8 +14,19 @@ import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.util.Locale;
 
+import dagger.hilt.android.HiltAndroidApp;
+
+import net.calvuz.qdue.smartshifts.data.database.SmartShiftsDatabase;
+import net.calvuz.qdue.smartshifts.data.database.DatabaseInitializer;
+
+/**
+ * Main QDue Application class with Hilt support
+ * Now supports both existing QDue functionality and new SmartShifts
+ */
+@HiltAndroidApp  // Hilt Support for Dependency Injection
 public class QDue extends Application {
 
     // TAG
@@ -62,6 +73,9 @@ public class QDue extends Application {
         // 🆕 Initialize back handling services early
         BackHandlingModule.initialize(this);
         Log.d(TAG, "=== BackHandling services initialized");
+
+        // ✅ AGGIUNTO: Initialize SmartShifts database
+        initializeSmartShifts();
     }
 
     /* ===== GETTERS ===== */
@@ -81,7 +95,55 @@ public class QDue extends Application {
         return quattrodue;
     }
 
-    /* ===== PRIVATES ===== */
+    /// ////////////////////////// SMARTSHIFTS STARTS HERE //////////////////////////////////
+
+    /**
+     * Initialize SmartShifts components
+     * Runs in background to avoid blocking UI
+     */
+    private void initializeSmartShifts() {
+        SmartShiftsDatabase.databaseWriteExecutor.execute(() -> {
+            try {
+                SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
+                DatabaseInitializer.initializeWithLocalizedStrings(database, this);
+                android.util.Log.d(TAG, "=== SmartShifts database initialized successfully");
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing SmartShifts database", e);
+            }
+        });
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+
+        // === EXISTING QDUE CLEANUP ===
+        // (Mantieni tutto il cleanup QDue esistente qui)
+
+        // === SMARTSHIFTS CLEANUP ===
+        try {
+            SmartShiftsDatabase.closeDatabase();
+            android.util.Log.d(TAG, "=== SmartShifts resources cleaned up");
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "Error cleaning up SmartShifts resources", e);
+        }
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+
+        // Cleanup SmartShifts cache in low memory situations
+        try {
+            SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
+            // Could add cache clearing logic here if needed
+        } catch (Exception e) {
+            Log.w(TAG, "Could not clear SmartShifts cache", e);
+        }
+    }
+
+    /// ////////////////////////// SMARTSHIFTS ENDS HERE //////////////////////////////////
+
 
     @SuppressLint("ObsoleteSdkInt")
     private static Locale getSystemLocale() {
@@ -111,8 +173,8 @@ public class QDue extends Application {
         public static final String VIEW_MODE_DAYSLIST = "dayslist";
 
         // Animation constants
-        public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 3000; // 3 seconds
-        public static final long QD_WELCOME_DISPLAY_DURATION = 2000; // 2 seconds after animation
+        public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 1500; // 3 seconds
+        public static final long QD_WELCOME_DISPLAY_DURATION = 2500; // 2 seconds after animation
 
     }
 
@@ -180,7 +242,7 @@ public class QDue extends Application {
          */
         public void logPerformance(String tag, String metric, long value) {
             if (DEBUG_PERFORMANCE) {
-                android.util.Log.d(tag, "PERF: " + metric + " = " + value + "ms");
+                Log.d(tag, MessageFormat.format("PERF: {0} = {1}ms", metric, value));
             }
         }
     }
@@ -194,9 +256,9 @@ public class QDue extends Application {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Enable dynamic colors for all activities
                 DynamicColors.applyToActivitiesIfAvailable(this);
-                Log.i(TAG, "Material You dynamic colors enabled");
+                Log.i(TAG, "=== Material You dynamic colors enabled");
             } else {
-                Log.i(TAG, "Using fallback purple-blue theme (Android < 12)");
+                Log.i(TAG, "=== Using fallback purple-blue theme (Android < 12)");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error enabling dynamic colors: " + e.getMessage());

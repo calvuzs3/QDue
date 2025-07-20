@@ -18,4 +18,11 @@
         app:showAsAction="never"
         android:contentDescription="@string/menu_title_about"/>
 
+    <item
+        android:id="@+id/action_smart_shifts"
+        android:title="@string/menu_title_smartshifts"
+        android:icon="@drawable/ic_rounded_smart_toy_24"
+        app:showAsAction="never"
+        android:contentDescription="@string/menu_title_about"/>
+
 </menu>

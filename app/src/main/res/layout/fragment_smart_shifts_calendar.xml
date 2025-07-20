@@ -68,7 +68,7 @@
                     style="@style/Widget.Material3.Button.IconButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:icon="@drawable/ic_chevron_left" />
+                    app:icon="@drawable/ic_rounded_chevron_left_24" />
 
                 <TextView
                     android:id="@+id/current_month_year"
@@ -85,7 +85,7 @@
                     style="@style/Widget.Material3.Button.IconButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:icon="@drawable/ic_chevron_right" />
+                    app:icon="@drawable/ic_rounded_chevron_right_24" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_today"

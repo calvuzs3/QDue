@@ -5,7 +5,7 @@
     android:shape="oval">
 
     <!-- Solid color fill -->
-    <solid android:color="?attr/colorOnSurfaceVariant" />
+    <solid android:color="?attr/colorPrimary" />
 
     <!-- Optional stroke for definition -->
     <stroke

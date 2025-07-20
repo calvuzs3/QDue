@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- ESSENTIAL COMPONENT STYLES -->
+    <!-- ============================================ -->
+
+    <!-- AppBarLayout Base Style -->
+    <style name="SmartShifts.AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="elevation">4dp</item>
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+
+    <!-- Simplified Style without scroll behavior -->
+    <style name="SmartShifts.AppBarLayout.Static" parent="SmartShifts.AppBarLayout">
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+
+    <style name="SmartShifts.Toolbar.AppBar" parent="Widget.Material3.Toolbar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+        <item name="navigationIconTint">?attr/colorOnPrimary</item>
+        <item name="popupTheme">@style/SmartShifts.Popup</item>
+    </style>
+
+    <!-- Popup theme -->
+    <style name="SmartShifts.Popup" parent="ThemeOverlay.Material3.Light">
+        <item name="android:colorBackground">?attr/colorSurface</item>
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+        <item name="android:textColorSecondary">?attr/colorOnSurfaceVariant</item>
+        <item name="elevation">8dp</item>
+    </style>
+
+
+    <!-- ============================================ -->
+    <!-- OTHER COMPONENT STYLES -->
+    <!-- ============================================ -->
+
+<!-- SmartShifts specific styles -->
+<style name="SmartShifts.Card" parent="Widget.Material3.CardView.Elevated">
+    <item name="cardCornerRadius">@dimen/card_corner_radius</item>
+    <item name="cardElevation">@dimen/card_elevation</item>
+    <item name="strokeWidth">@dimen/card_stroke_width</item>
+    <item name="strokeColor">?attr/colorOutlineVariant</item>
+</style>
+
+<style name="SmartShifts.Button.Primary" parent="Widget.Material3.Button">
+    <item name="backgroundTint">?attr/colorPrimary</item>
+    <item name="android:textColor">?attr/colorOnPrimary</item>
+    <item name="cornerRadius">8dp</item>
+</style>
+
+<style name="SmartShifts.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+    <item name="strokeColor">?attr/colorPrimary</item>
+    <item name="android:textColor">?attr/colorPrimary</item>
+    <item name="cornerRadius">8dp</item>
+</style>
+
+<style name="SmartShifts.Text.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+    <item name="android:textColor">?attr/colorOnSurface</item>
+    <item name="android:textStyle">bold</item>
+</style>
+
+<style name="SmartShifts.Text.Title" parent="TextAppearance.Material3.TitleMedium">
+    <item name="android:textColor">?attr/colorOnSurface</item>
+</style>
+
+<style name="SmartShifts.Text.Body" parent="TextAppearance.Material3.BodyMedium">
+    <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+</style>
+
+<style name="SmartShifts.Text.Caption" parent="TextAppearance.Material3.LabelSmall">
+    <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+</style>
+
+<!-- Calendar specific styles -->
+<style name="SmartShifts.Calendar.Day" parent="SmartShifts.Card">
+    <item name="android:layout_width">0dp</item>
+    <item name="android:layout_height">@dimen/calendar_day_size</item>
+    <item name="android:layout_weight">1</item>
+    <item name="android:layout_margin">@dimen/calendar_day_margin</item>
+    <item name="android:gravity">center</item>
+    <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+</style>
+
+<!-- Setup wizard styles -->
+<style name="SmartShifts.Setup.Title" parent="SmartShifts.Text.Headline">
+    <item name="android:layout_marginBottom">@dimen/smartshifts_margin_medium</item>
+</style>
+
+<style name="SmartShifts.Setup.Subtitle" parent="SmartShifts.Text.Body">
+    <item name="android:layout_marginBottom">@dimen/smartshifts_margin_large</item>
+</style>
+
+<!-- Progress indicator style -->
+<style name="SmartShifts.Progress" parent="Widget.Material3.LinearProgressIndicator">
+    <item name="indicatorColor">?attr/colorPrimary</item>
+    <item name="trackColor">?attr/colorSurfaceVariant</item>
+    <item name="trackCornerRadius">4dp</item>
+</style>
+
+    <style name="SmartShifts.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="itemTextColor">@color/nav_sidebar_item_color</item>
+        <item name="itemIconTint">@color/nav_sidebar_item_color</item>
+        <item name="itemRippleColor">@color/navigation_ripple_color</item>
+        <item name="labelVisibilityMode">selected</item>
+        <item name="android:elevation">@dimen/elevation_navbar</item>
+    </style>
+
+</resources>

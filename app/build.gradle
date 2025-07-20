@@ -1,3 +1,7 @@
+// ==============================================
+// APP BUILD.GRADLE (Module level)
+// ==============================================
+
 plugins {
     alias(libs.plugins.android.application)
     id 'dagger.hilt.android.plugin'
@@ -100,7 +104,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            // Debug sysmbols
+            // Debug symbols
             ndk {
                 debugSymbolLevel 'FULL'
             }
@@ -184,7 +188,7 @@ dependencies {
     implementation libs.google.api.services.calendar
     implementation libs.google.api.client.gson
 
-    // pROTO
+    // PROTO
     // For CompletableFuture (if targeting API < 24)
     implementation libs.annotations
 
@@ -194,7 +198,16 @@ dependencies {
     // For better performance monitoring (optional)
     implementation libs.tracing
 
+
+    // ✅ CORRETTO: Hilt Dependency Injection per progetti JAVA
+    implementation "com.google.dagger:hilt-android:${rootProject.ext.hilt_version}"
+    annotationProcessor "com.google.dagger:hilt-compiler:${rootProject.ext.hilt_version}"
+
+    // ✅ CORRETTO: Hilt Testing (optional, per i test)
+    testImplementation "com.google.dagger:hilt-android-testing:${rootProject.ext.hilt_version}"
+    testAnnotationProcessor "com.google.dagger:hilt-compiler:${rootProject.ext.hilt_version}"
+
     // Hilt Dependency Injection
-    implementation libs.hilt.android
-    annotationProcessor libs.dagger.hilt.android.compiler
+//    implementation libs.hilt.android
+//    annotationProcessor libs.dagger.hilt.android.compiler
 }

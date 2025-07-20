@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base theme for SmartShifts - No ActionBar by default -->
+    <style name="Theme.SmartShifts" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Material 3 System Colors (auto-switched by Material You) -->
+        <item name="colorPrimary">@color/smartshifts_primary</item>
+        <item name="colorPrimaryVariant">@color/smartshifts_primary_variant</item>
+        <item name="colorSecondary">@color/smartshifts_secondary</item>
+        <item name="colorSecondaryVariant">@color/smartshifts_secondary_variant</item>
+
+        <!-- Disable system ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Status bar configuration -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Navigation bar configuration -->
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:fitsSystemWindows">true</item>
+
+        <!-- Component Style Applications -->
+
+        <!-- Buttons -->
+        <item name="materialButtonStyle">@style/SmartShifts.Button.Primary</item>
+        <item name="materialButtonOutlinedStyle">@style/SmartShifts.Button.Secondary</item>
+        <item name="buttonStyle">@style/SmartShifts.Button.Primary</item>
+
+        <!-- Cards -->
+        <item name="materialCardViewStyle">@style/SmartShifts.Card</item>
+
+        <!-- Text Input -->
+<!--        <item name="textInputStyle">@style/SmartShifts.TextInput</item>-->
+<!--        <item name="editTextStyle">@style/SmartShifts.EditText</item>-->
+
+        <!-- Progress Indicators -->
+        <item name="linearProgressIndicatorStyle">@style/SmartShifts.Progress</item>
+<!--        <item name="circularProgressIndicatorStyle">@style/SmartShifts.Progress.Circular</item>-->
+
+        <!-- Chips -->
+<!--        <item name="chipStyle">@style/SmartShifts.Chip</item>-->
+<!--        <item name="chipGroupStyle">@style/SmartShifts.ChipGroup</item>-->
+
+        <!-- Bottom Navigation -->
+        <item name="bottomNavigationStyle">@style/SmartShifts.BottomNavigationView</item>
+
+        <!-- TabLayout -->
+<!--        <item name="tabStyle">@style/SmartShifts.Tab</item>-->
+
+        <!-- Dialogs -->
+<!--        <item name="alertDialogStyle">@style/SmartShifts.Dialog</item>-->
+<!--        <item name="materialAlertDialogTheme">@style/Theme.SmartShifts.Dialog</item>-->
+
+        <!-- FloatingActionButton -->
+<!--        <item name="floatingActionButtonStyle">@style/SmartShifts.FAB</item>-->
+
+        <!-- Switches -->
+<!--        <item name="switchStyle">@style/SmartShifts.Switch</item>-->
+<!--        <item name="materialSwitchStyle">@style/SmartShifts.Switch.Material</item>-->
+
+        <!-- Checkboxes & Radio -->
+<!--        <item name="checkboxStyle">@style/SmartShifts.Checkbox</item>-->
+<!--        <item name="radioButtonStyle">@style/SmartShifts.RadioButton</item>-->
+
+        <!-- Sliders -->
+<!--        <item name="sliderStyle">@style/SmartShifts.Slider</item>-->
+
+        <!-- Bottom Sheets -->
+<!--        <item name="bottomSheetDialogTheme">@style/Theme.SmartShifts.BottomSheet</item>-->
+
+        <!-- App Bar / Toolbar -->
+        <item name="appBarLayoutStyle">@style/SmartShifts.AppBarLayout.Static</item>
+        <item name="toolbarStyle">@style/SmartShifts.Toolbar.AppBar</item>
+<!--        <item name="actionBarStyle">@style/SmartShifts.ActionBar</item>-->
+
+        <!-- Text Appearance Overrides -->
+        <item name="textAppearanceHeadline1">@style/SmartShifts.Text.Headline</item>
+        <item name="textAppearanceBody1">@style/SmartShifts.Text.Body</item>
+        <item name="textAppearanceCaption">@style/SmartShifts.Text.Caption</item>
+
+    </style>
+
+
+    <!-- For activities that need explicit ActionBar -->
+    <style name="Theme.SmartShifts.ActionBar" parent="Theme.Material3.DayNight">
+
+        <!-- Material 3 System Colors (auto-switched by Material You) -->
+        <item name="colorPrimary">@color/smartshifts_primary</item>
+        <item name="colorPrimaryVariant">@color/smartshifts_primary_variant</item>
+        <item name="colorSecondary">@color/smartshifts_secondary</item>
+        <item name="colorSecondaryVariant">@color/smartshifts_secondary_variant</item>
+
+        <!-- Disable system ActionBar -->
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
+
+        <!-- Component Style Applications -->
+        <item name="toolbarStyle">@style/SmartShifts.Toolbar.AppBar</item>
+
+        <!-- Status bar configuration -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Navigation bar configuration -->
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:fitsSystemWindows">true</item>
+    </style>
+
+
+</resources>

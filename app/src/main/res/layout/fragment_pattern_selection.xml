@@ -92,7 +92,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_library_books"
+                        android:src="@drawable/ic_rounded_library_books_24"
                         app:tint="?attr/colorPrimary" />
 
                 </LinearLayout>
@@ -151,7 +151,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_edit"
+                        android:src="@drawable/ic_rounded_edit_24"
                         app:tint="?attr/colorPrimary" />
 
                 </LinearLayout>
@@ -201,5 +201,3 @@
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
-
-    <!-- ===== item_pattern_selection.xml ===== -->
