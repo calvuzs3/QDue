@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import net.calvuz.qdue.smartshifts.ui.usecases.GetUserShiftsUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.GetUserShiftsUseCase;
 
 import javax.inject.Inject;
 

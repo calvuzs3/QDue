@@ -179,6 +179,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />
         </activity>
+        <activity android:name="net.calvuz.qdue.smartshifts.ui.settings.SmartShiftsSettingsActivity" />
 
         <!-- Fonts -->
         <meta-data

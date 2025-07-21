@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!--    NUOVO SiSTEMA-->
-<string name="smartshifts_title">SmartShifts</string>
+    <!--    NUOVO SISTEMA-->
+
+    <string name="smartshifts_title">SmartShifts</string>
 
     <!-- ===== MENU & NAVIGATION ===== -->
     <string name="menu_smart_shifts">SmartShifts</string>
@@ -218,7 +219,355 @@
     <string name="import_contacts">Importa Contatti</string>
     <string name="export_success">Esportazione completata</string>
     <string name="import_success">Importazione completata</string>
+    <string name="smartshifts_success">successo</string>
+    <string name="export_data">Esportazione Dati</string>
+    <string name="backup_safe_with_metadata">Backup sicuro con metadati</string>
+    <string name="import_data">Importazione Dati</string>
+    <string name="import_from_file">Import da File</string>
+    <string name="json_cvs_xml_excel">JSON, CSV, XML, Excel</string>
+    <string name="import_from_cloud">Import da Cloud</string>
+    <string name="google_drive_dropbox">Google Drive, Dropbox</string>
+    <string name="restore_backup">Ripristina Backup</string>
+    <string name="recent_operations">Operazioni Recenti</string>
+    <string name="see_all">Vedi Tutto</string>
+    <string name="no_recent_operation">Nessuna operazione recente</string>
+    <string name="operation_in_progress_dots">Operazione in corso…</string>
+    <string name="common_cancel">Annulla</string>
+    <string name="common_go">vai</string>
+    <string name="export_completed">Export Completo</string>
+    <string name="export_successfully_completed">Export completato con successo</string>
+    <string name="actions_operation">Azioni operazione</string>
+    <string name="common_ok">OK</string>
+    <string name="file_semicolon">File:</string>
+    <string name="dimension_semicolon">Dimensione:</string>
+    <string name="duration_semicolon">Durata:</string>
+    <string name="share">Condividi</string>
+    <string name="repeat">Ripeti\t\t</string>
+    <string name="error">Errore</string>
+    <string name="backup_completed">Backup Completo</string>
+    <string name="all_smartshifts_data">Tutti i dati SmartShifts</string>
+    <string name="selective_export">Export Selettivo</string>
+    <string name="choose_specific_data_to_export">Scegli dati specifici da esportare</string>
+    <string name="calendar_export">Export Calendario</string>
+    <string name="icalendar_format">Formato iCalendar (.ics)</string>
+    <string name="quick_export">Export Rapido</string>
 
+    <!--    DIALOGS -->
+
+    <!-- Export Options Dialog -->
+    <string name="smartshifts_export_options_title">Opzioni Esportazione SmartShifts</string>
+    <string name="smartshifts_export_package_info_title">Informazioni Pacchetto</string>
+    <string name="smartshifts_export_package_name_hint">Nome pacchetto</string>
+    <string name="smartshifts_export_description_hint">Descrizione (opzionale)</string>
+    <string name="smartshifts_export_format_title">Formato Esportazione</string>
+    <string name="smartshifts_export_format_hint">Seleziona formato</string>
+    <string name="smartshifts_export_format_json">JSON</string>
+    <string name="smartshifts_export_format_csv">CSV</string>
+    <string name="smartshifts_export_format_excel">Excel (XLSX)</string>
+    <string name="smartshifts_export_format_ical">iCalendar (ICS)</string>
+    <string name="smartshifts_export_format_xml">XML</string>
+    <string name="smartshifts_export_date_range_title">Intervallo Date</string>
+    <string name="smartshifts_export_date_all">Tutti i dati</string>
+    <string name="smartshifts_export_date_last_month">Ultimo mese</string>
+    <string name="smartshifts_export_date_last_3_months">Ultimi 3 mesi</string>
+    <string name="smartshifts_export_date_last_6_months">Ultimi 6 mesi</string>
+    <string name="smartshifts_export_date_last_year">Ultimo anno</string>
+    <string name="smartshifts_export_data_selection_title">Dati da Includere</string>
+    <string name="smartshifts_export_include_shift_types">Tipi turno</string>
+    <string name="smartshifts_export_include_patterns">Pattern turni</string>
+    <string name="smartshifts_export_include_assignments">Assegnazioni utenti</string>
+    <string name="smartshifts_export_include_events">Eventi turni</string>
+    <string name="smartshifts_export_include_contacts">Contatti squadra</string>
+    <string name="smartshifts_export_output_options_title">Opzioni Output</string>
+    <string name="smartshifts_export_compress_output">Comprimi file output</string>
+    <string name="smartshifts_export_default_name">SmartShifts_Export</string>
+    <string name="smartshifts_export_default_description">Esportazione dati SmartShifts</string>
+
+    <!-- Import Options Dialog -->
+    <string name="smartshifts_import_options_title">Opzioni Importazione SmartShifts</string>
+    <string name="smartshifts_import_file_info_title">File da Importare</string>
+    <string name="smartshifts_import_file_name_placeholder">Nessun file selezionato</string>
+    <string name="smartshifts_import_file_info">File: %1$s</string>
+    <string name="smartshifts_import_validation_title">Validazione</string>
+    <string name="smartshifts_import_validate_before_import">Valida dati prima dell\'importazione</string>
+    <string name="smartshifts_import_show_progress">Mostra progresso importazione</string>
+    <string name="smartshifts_import_backup_before_import">Crea backup prima dell\'importazione</string>
+    <string name="smartshifts_import_conflict_resolution_title">Risoluzione Conflitti</string>
+    <string name="smartshifts_import_conflict_resolution_subtitle">Cosa fare se esistono già dati simili?</string>
+    <string name="smartshifts_import_skip_conflicts">Salta elementi esistenti</string>
+    <string name="smartshifts_import_replace_existing">Sostituisci elementi esistenti</string>
+    <string name="smartshifts_import_merge_data">Unisci con dati esistenti</string>
+    <string name="smartshifts_import_behavior_title">Comportamento Importazione</string>
+    <string name="smartshifts_import_preserve_existing_assignments">Mantieni assegnazioni esistenti</string>
+    <string name="smartshifts_import_update_existing_patterns">Aggiorna pattern esistenti</string>
+    <string name="smartshifts_import_allow_partial_import">Consenti importazione parziale</string>
+
+    <!-- Progress Dialog -->
+    <string name="smartshifts_progress_title">Operazione in corso…</string>
+    <string name="smartshifts_progress_export_title">Esportazione SmartShifts</string>
+    <string name="smartshifts_progress_import_title">Importazione SmartShifts</string>
+    <string name="smartshifts_progress_backup_title">Backup SmartShifts</string>
+    <string name="smartshifts_progress_restore_title">Ripristino SmartShifts</string>
+    <string name="smartshifts_progress_initializing">Inizializzazione…</string>
+    <string name="smartshifts_progress_processing">Elaborazione in corso…</string>
+    <string name="smartshifts_progress_with_item">%1$d di %2$d - %3$s</string>
+    <string name="smartshifts_progress_without_item">%1$d di %2$d</string>
+    <string name="smartshifts_progress_percentage_with_item">%1$d%% - %2$s</string>
+    <string name="smartshifts_progress_percentage">%1$d%%</string>
+
+    <!-- Conflict Resolution Dialog -->
+    <string name="smartshifts_conflict_warning_title">Conflitti Rilevati</string>
+    <string name="smartshifts_conflict_info_placeholder">Sono stati rilevati conflitti durante l\'importazione.</string>
+    <string name="smartshifts_conflict_items_title">Elementi in conflitto:</string>
+    <string name="smartshifts_conflict_list_placeholder">Lista elementi in conflitto</string>
+    <string name="smartshifts_conflict_and_more">… e altri %1$d elementi</string>
+    <string name="smartshifts_conflict_patterns_title">Conflitti Pattern Turni</string>
+    <string name="smartshifts_conflict_assignments_title">Conflitti Assegnazioni</string>
+    <string name="smartshifts_conflict_contacts_title">Conflitti Contatti</string>
+    <string name="smartshifts_conflict_events_title">Conflitti Eventi</string>
+    <string name="smartshifts_conflict_generic_title">Conflitti Rilevati</string>
+    <string name="smartshifts_conflict_patterns_info">%1$d pattern turni sono già presenti nel sistema.</string>
+    <string name="smartshifts_conflict_assignments_info">%1$d assegnazioni utenti sono già presenti nel sistema.</string>
+    <string name="smartshifts_conflict_contacts_info">%1$d contatti squadra sono già presenti nel sistema.</string>
+    <string name="smartshifts_conflict_events_info">%1$d eventi turni sono già presenti nel sistema.</string>
+    <string name="smartshifts_conflict_generic_info">%1$d elementi sono già presenti nel sistema.</string>
+    <string name="smartshifts_conflict_resolution_options_title">Opzioni di Risoluzione</string>
+    <string name="smartshifts_conflict_resolution_subtitle">Scegli come gestire gli elementi in conflitto:</string>
+    <string name="smartshifts_conflict_skip_existing">Salta elementi esistenti</string>
+    <string name="smartshifts_conflict_skip_existing_description">Non importa gli elementi che esistono già, mantieni quelli attuali</string>
+    <string name="smartshifts_conflict_replace_existing">Sostituisci elementi esistenti</string>
+    <string name="smartshifts_conflict_replace_existing_description">Sovrascrive gli elementi esistenti con quelli del file</string>
+    <string name="smartshifts_conflict_merge_data">Unisci dati</string>
+    <string name="smartshifts_conflict_merge_data_description" tools:ignore="Typos">Combina i dati esistenti con quelli del file quando possibile</string>
+
+    <!-- Operation Result Dialog -->
+    <string name="smartshifts_result_title_placeholder">Operazione Completata</string>
+    <string name="smartshifts_result_message_placeholder">L\'operazione è stata completata con successo.</string>
+    <string name="smartshifts_result_details_placeholder">Dettagli operazione</string>
+    <string name="smartshifts_result_status_icon_description">Icona stato operazione</string>
+
+    <!-- Success Titles -->
+    <string name="smartshifts_export_success_title">Esportazione Completata</string>
+    <string name="smartshifts_import_success_title">Importazione Completata</string>
+    <string name="smartshifts_backup_success_title">Backup Completato</string>
+    <string name="smartshifts_restore_success_title">Ripristino Completato</string>
+    <string name="smartshifts_operation_success_title">Operazione Completata</string>
+
+    <!-- Error Titles -->
+    <string name="smartshifts_export_error_title">Errore Esportazione</string>
+    <string name="smartshifts_import_error_title">Errore Importazione</string>
+    <string name="smartshifts_backup_error_title">Errore Backup</string>
+    <string name="smartshifts_restore_error_title">Errore Ripristino</string>
+    <string name="smartshifts_operation_error_title">Errore Operazione</string>
+
+    <!-- Success Messages -->
+    <string name="smartshifts_export_success_message">I dati SmartShifts sono stati esportati correttamente.</string>
+    <string name="smartshifts_import_success_message">I dati SmartShifts sono stati importati correttamente.</string>
+    <string name="smartshifts_backup_success_message">Il backup dei dati SmartShifts è stato creato correttamente.</string>
+    <string name="smartshifts_restore_success_message">I dati SmartShifts sono stati ripristinati correttamente.</string>
+
+    <!-- Error Messages -->
+    <string name="smartshifts_export_error_message">Si è verificato un errore durante l\'esportazione dei dati.</string>
+    <string name="smartshifts_import_error_message">Si è verificato un errore durante l\'importazione dei dati.</string>
+    <string name="smartshifts_backup_error_message">Si è verificato un errore durante la creazione del backup.</string>
+    <string name="smartshifts_restore_error_message">Si è verificato un errore durante il ripristino dei dati.</string>
+
+    <!-- Result Details -->
+    <string name="smartshifts_result_processed_count">Elementi elaborati: %1$d</string>
+    <string name="smartshifts_result_imported_count">Elementi importati: %1$d</string>
+    <string name="smartshifts_result_skipped_count">Elementi saltati: %1$d</string>
+    <string name="smartshifts_result_file_location">File salvato in: %1$s</string>
+    <string name="smartshifts_result_file_size">Dimensione file: %1$s</string>
+    <string name="smartshifts_result_warnings_title">Avvisi:</string>
+    <string name="smartshifts_result_errors_title">Errori:</string>
+
+    <!-- Sync Results -->
+    <string name="smartshifts_result_sync_applied">Modifiche applicate: %1$d</string>
+    <string name="smartshifts_result_sync_local">Modifiche locali: %1$d</string>
+    <string name="smartshifts_result_sync_remote">Modifiche remote: %1$d</string>
+    <string name="smartshifts_result_sync_conflicts">Conflitti risolti: %1$d</string>
+
+    <!-- Common Error Messages -->
+    <string name="error_package_name_required">Il nome del pacchetto è obbligatorio</string>
+    <string name="error_no_data_selected">Seleziona almeno un tipo di dati da esportare</string>
+    <string name="error_title">Errore</string>
+
+    <!-- Common Actions -->
+    <string name="action_export">Esporta</string>
+    <string name="action_import">Importa</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_ok">OK</string>
+    <string name="action_close">Chiudi</string>
+    <string name="action_share">Condividi</string>
+    <string name="action_open">Apri</string>
+    <string name="action_open_location">Apri Posizione</string>
+    <string name="action_retry">Riprova</string>
+    <string name="action_apply">Applica</string>
+    <string name="action_skip_all">Salta Tutti</string>
+
+    <!-- Color Resources for SmartShifts -->
+    <color name="smartshifts_success">#4CAF50</color>
+    <color name="smartshifts_error">#F44336</color>
+    <color name="smartshifts_warning">#FF9800</color>
+    <color name="smartshifts_info">#2196F3</color>
+
+
+    <!-- ============================================ -->
+    <!-- TEMPLATE STRINGS FOR CENTRALIZED ENUMS -->
+    <!-- ============================================ -->
+
+    <!-- Operation Type Templates -->
+    <string name="smartshifts_success_title_template">%1$s Completata</string>
+    <string name="smartshifts_error_title_template">Errore %1$s</string>
+    <string name="smartshifts_progress_title_template">%1$s in corso…</string>
+
+    <!-- Conflict Resolution Templates -->
+    <string name="smartshifts_conflict_title_template">Conflitti %1$s</string>
+    <string name="smartshifts_conflict_info_template">%1$d %2$s sono già presenti nel sistema.</string>
+
+    <!-- Format Display Names (matching enum) -->
+    <string name="smartshifts_format_json">JSON</string>
+    <string name="smartshifts_format_csv">CSV</string>
+    <string name="smartshifts_format_xml">XML</string>
+    <string name="smartshifts_format_ical">iCalendar</string>
+    <string name="smartshifts_format_excel">Excel</string>
+
+    <!-- Date Range Display Names (matching enum) -->
+    <string name="smartshifts_date_range_all">Tutti i Dati</string>
+    <string name="smartshifts_date_range_last_month">Ultimo Mese</string>
+    <string name="smartshifts_date_range_last_3_months">Ultimi 3 Mesi</string>
+    <string name="smartshifts_date_range_last_6_months">Ultimi 6 Mesi</string>
+    <string name="smartshifts_date_range_last_year">Ultimo Anno</string>
+    <string name="smartshifts_date_range_current_year">Anno Corrente</string>
+    <string name="smartshifts_date_range_custom">Intervallo Personalizzato</string>
+
+    <!-- Conflict Resolution Strategy Display Names -->
+    <string name="smartshifts_strategy_skip">Salta Esistenti</string>
+    <string name="smartshifts_strategy_replace">Sostituisci</string>
+    <string name="smartshifts_strategy_merge">Unisci</string>
+    <string name="smartshifts_strategy_rename">Rinomina</string>
+
+    <!-- Conflict Resolution Strategy Descriptions -->
+    <string name="smartshifts_strategy_skip_desc">Mantiene i dati esistenti, ignora quelli in conflitto</string>
+    <string name="smartshifts_strategy_replace_desc">Sostituisce i dati esistenti con quelli importati</string>
+    <string name="smartshifts_strategy_merge_desc" tools:ignore="Typos">Combina i dati esistenti con quelli importati quando possibile</string>
+    <string name="smartshifts_strategy_rename_desc">Rinomina gli elementi in conflitto per mantenere entrambi</string>
+
+    <!-- Conflict Type Display Names -->
+    <string name="smartshifts_conflict_type_shift_types">Tipi Turno</string>
+    <string name="smartshifts_conflict_type_shift_patterns">Pattern Turni</string>
+    <string name="smartshifts_conflict_type_user_assignments">Assegnazioni Utenti</string>
+    <string name="smartshifts_conflict_type_shift_events">Eventi Turni</string>
+    <string name="smartshifts_conflict_type_team_contacts">Contatti Squadra</string>
+    <string name="smartshifts_conflict_type_settings">Impostazioni</string>
+
+    <!-- Operation Type Display Names -->
+    <string name="smartshifts_operation_export">Esportazione</string>
+    <string name="smartshifts_operation_export_selective">Esportazione Selettiva</string>
+    <string name="smartshifts_operation_export_calendar">Esportazione Calendario</string>
+    <string name="smartshifts_operation_import">Importazione</string>
+    <string name="smartshifts_operation_import_cloud">Importazione Cloud</string>
+    <string name="smartshifts_operation_backup">Backup</string>
+    <string name="smartshifts_operation_restore">Ripristino</string>
+    <string name="smartshifts_operation_cloud_sync">Sincronizzazione Cloud</string>
+
+    <!-- Cloud Provider Display Names -->
+    <string name="smartshifts_cloud_google_drive">Google Drive</string>
+    <string name="smartshifts_cloud_dropbox">Dropbox</string>
+    <string name="smartshifts_cloud_onedrive">Microsoft OneDrive</string>
+    <string name="smartshifts_cloud_icloud">Apple iCloud</string>
+
+    <!-- Validation Severity Display Names -->
+    <string name="smartshifts_severity_info">Informazione</string>
+    <string name="smartshifts_severity_warning">Avviso</string>
+    <string name="smartshifts_severity_error">Errore</string>
+    <string name="smartshifts_severity_critical">Critico</string>
+
+    <!-- ============================================ -->
+    <!-- ENHANCED VALIDATION AND HELP STRINGS -->
+    <!-- ============================================ -->
+
+    <!-- Conflict Strategy Warnings -->
+    <string name="smartshifts_strategy_warning_destructive">⚠️ Attenzione: Questa opzione sovrascriverà i dati esistenti</string>
+    <string name="smartshifts_strategy_warning_safe">✅ Opzione sicura: I dati esistenti verranno preservati</string>
+
+    <!-- Operation Status Messages -->
+    <string name="smartshifts_status_preparing">Preparazione operazione…</string>
+    <string name="smartshifts_status_validating">Validazione dati…</string>
+    <string name="smartshifts_status_processing">Elaborazione…</string>
+    <string name="smartshifts_status_finalizing">Finalizzazione…</string>
+    <string name="smartshifts_status_complete">Operazione completata</string>
+    <string name="smartshifts_status_cancelled">Operazione annullata</string>
+    <string name="smartshifts_status_error">Errore durante l\'operazione</string>
+
+    <!-- Help and Tips -->
+    <string name="smartshifts_tip_backup_before_import">💡 Consiglio: Crea sempre un backup prima di importare dati</string>
+    <string name="smartshifts_tip_validate_data">💡 Consiglio: La validazione aiuta a prevenire errori di importazione</string>
+    <string name="smartshifts_tip_format_compatibility">💡 Consiglio: Usa JSON per la massima compatibilità</string>
+
+    <!-- Accessibility and Content Descriptions -->
+    <string name="smartshifts_export_options_description">Opzioni per l\'esportazione dei dati SmartShifts</string>
+
+    <!-- Enhanced UX Strings -->
+    <string name="smartshifts_export_privacy_warning">ℹ️ I contatti squadra contengono informazioni personali</string>
+    <string name="smartshifts_export_compression_info">Riduce la dimensione del file fino al 70%</string>
+
+    <!-- Format Recommendations (shown dynamically based on selection) -->
+    <string name="smartshifts_format_recommendation_json">💡 Raccomandato per import completo</string>
+    <string name="smartshifts_format_recommendation_csv">📊 Ideale per analisi in Excel</string>
+    <string name="smartshifts_format_recommendation_xml">🔧 Per integrazione con sistemi legacy</string>
+    <string name="smartshifts_format_recommendation_ical">📅 Per integrazione calendario</string>
+    <string name="smartshifts_format_recommendation_excel">📈 Per reporting e analisi avanzata</string>
+
+    <!-- Enhanced Tips and Warnings -->
+    <string name="smartshifts_tip_large_export">⚠️ L\'export di tutti i dati potrebbe richiedere più tempo</string>
+    <string name="smartshifts_tip_contacts_privacy">🔒 I contatti vengono esportati solo se esplicitamente selezionati</string>
+    <string name="smartshifts_tip_compression_benefit">💾 La compressione è consigliata per file di grandi dimensioni</string>
+    <string name="smartshifts_settings_help">Aiuto</string>
+    <string name="smartshifts_please_wait">Attendere prego</string>
+    <string name="smartshifts_operation_in_progress">Operazione in corso</string>
+
+
+    <!-- Conflict Resolution Dialog -->
+    <string name="smartshifts_conflict_resolution_title">Risoluzione Conflitti %1$s (%2$d elementi)</string>
+    <string name="smartshifts_conflict_information">Informazioni Conflitto</string>
+    <string name="smartshifts_resolution_strategy">Strategia di Risoluzione</string>
+    <string name="smartshifts_recommendation">Raccomandazione</string>
+    <string name="smartshifts_warning">Attenzione</string>
+    <string name="smartshifts_conflict_statistics">Statistiche Conflitto</string>
+    <string name="smartshifts_no_conflicts_details">Nessun conflitto rilevato</string>
+
+    <!-- Resolution Options -->
+    <string name="smartshifts_skip_existing_data">Mantieni Dati Esistenti</string>
+    <string name="smartshifts_skip_existing_description">Salta gli elementi in conflitto, mantiene i dati attuali senza modifiche</string>
+    <string name="smartshifts_replace_existing_data">Sostituisci Dati Esistenti</string>
+    <string name="smartshifts_replace_existing_description">Sostituisce completamente i dati esistenti con quelli importati</string>
+    <string name="smartshifts_merge_conflicting_data">Unisci Dati</string>
+    <string name="smartshifts_merge_data_description">Combina intelligentemente i dati esistenti con quelli importati</string>
+    <string name="smartshifts_rename_conflicting_items">Rinomina Elementi</string>
+    <string name="smartshifts_rename_conflicts_description">Crea nuovi elementi con nomi modificati per evitare conflitti</string>
+
+    <!-- Actions -->
+    <string name="smartshifts_action_resolve">Risolvi</string>
+    <string name="smartshifts_action_skip_all">Salta Tutti</string>
+    <string name="smartshifts_action_cancel">Annulla</string>
+    <string name="smartshifts_apply_to_all_conflicts">Applica a tutti i conflitti simili</string>
+
+    <!-- Info Messages -->
+    <string name="smartshifts_conflict_info_enhanced">Rilevati %2$d conflitti di tipo %1$s su %3$d elementi totali (%.1f%%) durante %5$s</string>
+    <string name="smartshifts_conflict_recommendation">Raccomandato: %1$s - %2$s</string>
+    <string name="smartshifts_destructive_operation_warning">Attenzione: %1$s è un\'operazione distruttiva che modificherà permanentemente i dati esistenti</string>
+    <string name="smartshifts_destructive_warning_default">Operazione distruttiva che modificherà permanentemente i dati esistenti</string>
+
+    <!-- Statistics -->
+    <string name="smartshifts_total_items">Totale</string>
+    <string name="smartshifts_conflicts">Conflitti</string>
+    <string name="smartshifts_success_rate">Successo</string>
+
+    <!-- Loading States -->
+    <string name="smartshifts_conflict_loading">Caricamento informazioni conflitto…</string>
+    <string name="smartshifts_loading_recommendation">Generando raccomandazione…</string>
+    <string name="smartshifts_conflict_details_loading">Analizzando conflitti…</string>
 
     <!--    FINE NUOVO SISTEMA-->
 

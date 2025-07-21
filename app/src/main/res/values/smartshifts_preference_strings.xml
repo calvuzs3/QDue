@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ============================================ -->
+    <!-- SMARTSHIFTS PREFERENCE KEYS (NON-TRANSLATABLE) -->
+    <!-- ============================================ -->
+
+    <!-- General Settings Keys -->
+    <string name="smartshifts_pref_theme" translatable="false">smartshifts_theme</string>
+    <string name="smartshifts_pref_language" translatable="false">smartshifts_language</string>
+    <string name="smartshifts_pref_startup_screen" translatable="false">smartshifts_startup_screen</string>
+    <string name="smartshifts_pref_auto_sync" translatable="false">smartshifts_auto_sync</string>
+    <string name="smartshifts_pref_debug_mode" translatable="false">smartshifts_debug_mode</string>
+
+    <!-- Calendar Settings Keys -->
+    <string name="smartshifts_pref_week_start_day" translatable="false">smartshifts_week_start_day</string>
+    <string name="smartshifts_pref_calendar_view_type" translatable="false">smartshifts_calendar_view_type</string>
+    <string name="smartshifts_pref_show_week_numbers" translatable="false">smartshifts_show_week_numbers</string>
+    <string name="smartshifts_pref_highlight_today" translatable="false">smartshifts_highlight_today</string>
+    <string name="smartshifts_pref_show_shift_times" translatable="false">smartshifts_show_shift_times</string>
+    <string name="smartshifts_pref_show_legend" translatable="false">smartshifts_show_legend</string>
+    <string name="smartshifts_pref_calendar_density" translatable="false">smartshifts_calendar_density</string>
+    <string name="smartshifts_pref_month_view_layout" translatable="false">smartshifts_month_view_layout</string>
+    <string name="smartshifts_pref_weekend_emphasis" translatable="false">smartshifts_weekend_emphasis</string>
+
+    <!-- Notification Settings Keys -->
+    <string name="smartshifts_pref_notifications_enabled" translatable="false">smartshifts_notifications_enabled</string>
+    <string name="smartshifts_pref_shift_reminders" translatable="false">smartshifts_shift_reminders</string>
+    <string name="smartshifts_pref_reminder_advance_time" translatable="false">smartshifts_reminder_advance_time</string>
+    <string name="smartshifts_pref_pattern_change_alerts" translatable="false">smartshifts_pattern_change_alerts</string>
+    <string name="smartshifts_pref_notification_sound" translatable="false">smartshifts_notification_sound</string>
+    <string name="smartshifts_pref_notification_vibration" translatable="false">smartshifts_notification_vibration</string>
+    <string name="smartshifts_pref_notification_priority" translatable="false">smartshifts_notification_priority</string>
+    <string name="smartshifts_pref_quiet_hours_enabled" translatable="false">smartshifts_quiet_hours_enabled</string>
+    <string name="smartshifts_pref_quiet_hours_start" translatable="false">smartshifts_quiet_hours_start</string>
+    <string name="smartshifts_pref_quiet_hours_end" translatable="false">smartshifts_quiet_hours_end</string>
+
+    <!-- Data Management Keys -->
+    <string name="smartshifts_pref_auto_backup" translatable="false">smartshifts_auto_backup</string>
+    <string name="smartshifts_pref_backup_frequency" translatable="false">smartshifts_backup_frequency</string>
+    <string name="smartshifts_pref_backup_location" translatable="false">smartshifts_backup_location</string>
+    <string name="smartshifts_pref_data_retention_days" translatable="false">smartshifts_data_retention_days</string>
+    <string name="smartshifts_pref_cloud_sync_provider" translatable="false">smartshifts_cloud_sync_provider</string>
+    <string name="smartshifts_pref_sync_wifi_only" translatable="false">smartshifts_sync_wifi_only</string>
+
+    <!-- Advanced Settings Keys -->
+    <string name="smartshifts_pref_generation_lookahead_months" translatable="false">smartshifts_generation_lookahead_months</string>
+    <string name="smartshifts_pref_cache_size_limit" translatable="false">smartshifts_cache_size_limit</string>
+    <string name="smartshifts_pref_performance_mode" translatable="false">smartshifts_performance_mode</string>
+    <string name="smartshifts_pref_experimental_features" translatable="false">smartshifts_experimental_features</string>
+
+    <!-- Team Contact Settings Keys -->
+    <string name="smartshifts_pref_contacts_integration" translatable="false">smartshifts_contacts_integration</string>
+    <string name="smartshifts_pref_contact_sync_frequency" translatable="false">smartshifts_contact_sync_frequency</string>
+    <string name="smartshifts_pref_contact_privacy_mode" translatable="false">smartshifts_contact_privacy_mode</string>
+
+    <!-- Pattern Validation Keys -->
+    <string name="smartshifts_pref_strict_validation" translatable="false">smartshifts_strict_validation</string>
+    <string name="smartshifts_pref_continuous_cycle_warnings" translatable="false">smartshifts_continuous_cycle_warnings</string>
+    <string name="smartshifts_pref_pattern_conflict_detection" translatable="false">smartshifts_pattern_conflict_detection</string>
+
+    <!-- Default Values (NON-TRANSLATABLE) -->
+    <string name="smartshifts_default_theme" translatable="false">system</string>
+    <string name="smartshifts_default_language" translatable="false">system</string>
+    <string name="smartshifts_default_startup_screen" translatable="false">calendar</string>
+    <string name="smartshifts_default_week_start_day" translatable="false">monday</string>
+    <string name="smartshifts_default_calendar_view_type" translatable="false">month</string>
+    <string name="smartshifts_default_reminder_advance_time" translatable="false">60</string>
+    <string name="smartshifts_default_backup_frequency" translatable="false">weekly</string>
+    <string name="smartshifts_default_generation_lookahead_months" translatable="false">12</string>
+    <string name="smartshifts_default_cache_size_limit" translatable="false">50</string>
+    <string name="smartshifts_default_data_retention_days" translatable="false">365</string>
+    <string name="smartshifts_default_notification_priority" translatable="false">normal</string>
+    <string name="smartshifts_default_performance_mode" translatable="false">balanced</string>
+
+    <!-- ============================================ -->
+    <!-- SMARTSHIFTS USER-FACING STRINGS (TRANSLATABLE) -->
+    <!-- ============================================ -->
+
+    <!-- Settings Activity -->
+    <string name="smartshifts_settings_title">Impostazioni SmartShifts</string>
+    <string name="smartshifts_settings_back">Indietro</string>
+
+    <!-- Root Settings -->
+    <string name="smartshifts_settings_general">Generali</string>
+    <string name="smartshifts_settings_general_summary">Tema, lingua e comportamento app</string>
+    <string name="smartshifts_settings_calendar">Calendario</string>
+    <string name="smartshifts_settings_calendar_summary">Personalizzazione vista calendario</string>
+    <string name="smartshifts_settings_notifications">Notifiche</string>
+    <string name="smartshifts_settings_notifications_summary">Promemoria turni e avvisi</string>
+    <string name="smartshifts_settings_data">Gestione Dati</string>
+    <string name="smartshifts_settings_data_summary">Backup, sincronizzazione e ripristino</string>
+    <string name="smartshifts_settings_about">Informazioni</string>
+    <string name="smartshifts_settings_about_summary">Versione, crediti e supporto</string>
+
+    <!-- General Settings -->
+    <string name="smartshifts_general_appearance">Aspetto</string>
+    <string name="smartshifts_general_behavior">Comportamento</string>
+    <string name="smartshifts_general_performance">Prestazioni</string>
+
+    <string name="smartshifts_theme_title">Tema</string>
+    <string name="smartshifts_theme_summary">Seleziona il tema dell\'interfaccia</string>
+
+    <string name="smartshifts_language_title">Lingua</string>
+    <string name="smartshifts_language_summary">Cambia lingua dell\'applicazione</string>
+
+    <string name="smartshifts_startup_screen_title">Schermata Iniziale</string>
+    <string name="smartshifts_startup_screen_summary">Scegli la vista di avvio predefinita</string>
+
+    <string name="smartshifts_auto_sync_title">Sincronizzazione Automatica</string>
+    <string name="smartshifts_auto_sync_summary">Sincronizza automaticamente i dati</string>
+
+    <string name="smartshifts_debug_mode_title">Modalità Debug</string>
+    <string name="smartshifts_debug_mode_summary">Attiva logging dettagliato per sviluppatori</string>
+
+    <!-- Calendar Settings -->
+    <string name="smartshifts_calendar_display">Visualizzazione</string>
+    <string name="smartshifts_calendar_layout">Layout</string>
+    <string name="smartshifts_calendar_features">Funzionalità</string>
+
+    <string name="smartshifts_week_start_day_title">Primo Giorno Settimana</string>
+    <string name="smartshifts_week_start_day_summary">Seleziona il primo giorno della settimana</string>
+
+    <string name="smartshifts_calendar_view_type_title">Vista Predefinita</string>
+    <string name="smartshifts_calendar_view_type_summary">Tipo di vista calendario all\'avvio</string>
+
+    <string name="smartshifts_show_week_numbers_title">Numeri Settimana</string>
+    <string name="smartshifts_show_week_numbers_summary">Mostra i numeri delle settimane nel calendario</string>
+
+    <string name="smartshifts_highlight_today_title">Evidenzia Oggi</string>
+    <string name="smartshifts_highlight_today_summary">Evidenzia la data odierna nel calendario</string>
+
+    <string name="smartshifts_show_shift_times_title">Orari Turni</string>
+    <string name="smartshifts_show_shift_times_summary">Mostra gli orari dei turni nel calendario</string>
+
+    <string name="smartshifts_show_legend_title">Legenda Turni</string>
+    <string name="smartshifts_show_legend_summary">Mostra la legenda dei colori turni</string>
+
+    <string name="smartshifts_calendar_density_title">Densità Calendario</string>
+    <string name="smartshifts_calendar_density_summary">Compatto, normale o espanso</string>
+
+    <string name="smartshifts_month_view_layout_title">Layout Vista Mese</string>
+    <string name="smartshifts_month_view_layout_summary">Griglia o lista per la vista mensile</string>
+
+    <string name="smartshifts_weekend_emphasis_title">Evidenzia Weekend</string>
+    <string name="smartshifts_weekend_emphasis_summary">Usa colori diversi per sabato e domenica</string>
+
+    <!-- Notification Settings -->
+    <string name="smartshifts_notifications_general">Generali</string>
+    <string name="smartshifts_notifications_reminders">Promemoria</string>
+    <string name="smartshifts_notifications_quiet_hours">Orari Silenziosi</string>
+
+    <string name="smartshifts_notifications_enabled_title">Attiva Notifiche</string>
+    <string name="smartshifts_notifications_enabled_summary">Abilita le notifiche di SmartShifts</string>
+
+    <string name="smartshifts_shift_reminders_title">Promemoria Turni</string>
+    <string name="smartshifts_shift_reminders_summary">Ricevi notifiche prima dei turni</string>
+
+    <string name="smartshifts_reminder_advance_time_title">Anticipo Promemoria</string>
+    <string name="smartshifts_reminder_advance_time_summary">Minuti di anticipo per i promemoria turni</string>
+
+    <string name="smartshifts_pattern_change_alerts_title">Avvisi Cambio Pattern</string>
+    <string name="smartshifts_pattern_change_alerts_summary">Notifica quando cambia il pattern turni</string>
+
+    <string name="smartshifts_notification_sound_title">Suono Notifica</string>
+    <string name="smartshifts_notification_sound_summary">Seleziona il suono per le notifiche</string>
+
+    <string name="smartshifts_notification_vibration_title">Vibrazione</string>
+    <string name="smartshifts_notification_vibration_summary">Vibra per le notifiche importanti</string>
+
+    <string name="smartshifts_notification_priority_title">Priorità Notifiche</string>
+    <string name="smartshifts_notification_priority_summary">Bassa, normale o alta priorità</string>
+
+    <string name="smartshifts_quiet_hours_enabled_title">Orari Silenziosi</string>
+    <string name="smartshifts_quiet_hours_enabled_summary">Disattiva notifiche in determinati orari</string>
+
+    <string name="smartshifts_quiet_hours_start_title">Inizio Orari Silenziosi</string>
+    <string name="smartshifts_quiet_hours_start_summary">Ora di inizio del periodo silenzioso</string>
+
+    <string name="smartshifts_quiet_hours_end_title">Fine Orari Silenziosi</string>
+    <string name="smartshifts_quiet_hours_end_summary">Ora di fine del periodo silenzioso</string>
+
+    <!-- Data Management Settings -->
+    <string name="smartshifts_data_backup">Backup</string>
+    <string name="smartshifts_data_sync">Sincronizzazione</string>
+    <string name="smartshifts_data_maintenance">Manutenzione</string>
+    <string name="smartshifts_data_actions">Azioni</string>
+
+    <string name="smartshifts_auto_backup_title">Backup Automatico</string>
+    <string name="smartshifts_auto_backup_summary">Esegui backup automatici dei dati</string>
+
+    <string name="smartshifts_backup_frequency_title">Frequenza Backup</string>
+    <string name="smartshifts_backup_frequency_summary">Ogni quanto eseguire i backup automatici</string>
+
+    <string name="smartshifts_backup_location_title">Posizione Backup</string>
+    <string name="smartshifts_backup_location_summary">Dove salvare i file di backup</string>
+
+    <string name="smartshifts_data_retention_days_title">Conservazione Dati</string>
+    <string name="smartshifts_data_retention_days_summary">Giorni di conservazione dei dati storici</string>
+
+    <string name="smartshifts_cloud_sync_provider_title">Provider Cloud</string>
+    <string name="smartshifts_cloud_sync_provider_summary">Servizio cloud per sincronizzazione</string>
+
+    <string name="smartshifts_sync_wifi_only_title">Solo WiFi</string>
+    <string name="smartshifts_sync_wifi_only_summary">Sincronizza solo quando connesso a WiFi</string>
+
+    <string name="smartshifts_backup_now_title">Backup Ora</string>
+    <string name="smartshifts_backup_now_summary">Esegui un backup immediato dei dati</string>
+
+    <string name="smartshifts_restore_backup_title">Ripristina Backup</string>
+    <string name="smartshifts_restore_backup_summary">Ripristina dati da un backup esistente</string>
+
+    <string name="smartshifts_export_data_title">Esporta Dati</string>
+    <string name="smartshifts_export_data_summary">Esporta tutti i dati in formato JSON</string>
+
+    <string name="smartshifts_import_data_title">Importa Dati</string>
+    <string name="smartshifts_import_data_summary">Importa dati da file JSON</string>
+
+    <string name="smartshifts_reset_settings_title">Ripristina Impostazioni</string>
+    <string name="smartshifts_reset_settings_summary">Riporta tutte le impostazioni ai valori predefiniti</string>
+
+    <string name="smartshifts_clear_cache_title">Svuota Cache</string>
+    <string name="smartshifts_clear_cache_summary">Cancella i dati temporanei dell\'applicazione</string>
+
+    <!-- About Section -->
+    <string name="smartshifts_about_app">Applicazione</string>
+    <string name="smartshifts_about_support">Supporto</string>
+    <string name="smartshifts_about_legal">Legale</string>
+
+    <string name="smartshifts_app_version_title">Versione</string>
+    <string name="smartshifts_app_version_summary">SmartShifts v%1$s (Build %2$d)</string>
+
+    <string name="smartshifts_app_info_title">Informazioni App</string>
+    <string name="smartshifts_app_info_summary">Sistema avanzato gestione turni per QDue</string>
+
+    <string name="smartshifts_credits_title">Crediti</string>
+    <string name="smartshifts_credits_summary">Sviluppatori e contributori</string>
+
+    <string name="smartshifts_changelog_title">Novità</string>
+    <string name="smartshifts_changelog_summary">Scopri le ultime funzionalità aggiunte</string>
+
+    <string name="smartshifts_feedback_title">Feedback</string>
+    <string name="smartshifts_feedback_summary">Invia suggerimenti e segnalazioni</string>
+
+    <string name="smartshifts_help_title">Aiuto</string>
+    <string name="smartshifts_help_summary">Guida all\'utilizzo di SmartShifts</string>
+
+    <string name="smartshifts_privacy_policy_title">Privacy Policy</string>
+    <string name="smartshifts_privacy_policy_summary">Come gestiamo i tuoi dati</string>
+
+    <string name="smartshifts_licenses_title">Licenze</string>
+    <string name="smartshifts_licenses_summary">Librerie e componenti utilizzati</string>
+
+    <!-- Array Values -->
+
+    <!-- Theme Options -->
+    <string-array name="smartshifts_theme_entries">
+        <item>Sistema</item>
+        <item>Chiaro</item>
+        <item>Scuro</item>
+        <item>Auto (Alba/Tramonto)</item>
+    </string-array>
+
+    <string-array name="smartshifts_theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+        <item>auto</item>
+    </string-array>
+
+    <!-- Language Options -->
+    <string-array name="smartshifts_language_entries">
+        <item>Sistema</item>
+        <item>Italiano</item>
+        <item>English</item>
+        <item>Français</item>
+        <item>Deutsch</item>
+        <item>Español</item>
+    </string-array>
+
+    <string-array name="smartshifts_language_values">
+        <item>system</item>
+        <item>it</item>
+        <item>en</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>es</item>
+    </string-array>
+
+    <!-- Startup Screen Options -->
+    <string-array name="smartshifts_startup_screen_entries">
+        <item>Calendario</item>
+        <item>Pattern Turni</item>
+        <item>Contatti Squadra</item>
+        <item>Ultima Vista Usata</item>
+    </string-array>
+
+    <string-array name="smartshifts_startup_screen_values">
+        <item>calendar</item>
+        <item>patterns</item>
+        <item>contacts</item>
+        <item>last_used</item>
+    </string-array>
+
+    <!-- Week Start Day Options -->
+    <string-array name="smartshifts_week_start_day_entries">
+        <item>Lunedì</item>
+        <item>Domenica</item>
+        <item>Sabato</item>
+    </string-array>
+
+    <string-array name="smartshifts_week_start_day_values">
+        <item>monday</item>
+        <item>sunday</item>
+        <item>saturday</item>
+    </string-array>
+
+    <!-- Calendar View Type Options -->
+    <string-array name="smartshifts_calendar_view_type_entries">
+        <item>Vista Mese</item>
+        <item>Vista Settimana</item>
+        <item>Vista Giorno</item>
+        <item>Vista Agenda</item>
+    </string-array>
+
+    <string-array name="smartshifts_calendar_view_type_values">
+        <item>month</item>
+        <item>week</item>
+        <item>day</item>
+        <item>agenda</item>
+    </string-array>
+
+    <!-- Calendar Density Options -->
+    <string-array name="smartshifts_calendar_density_entries">
+        <item>Compatto</item>
+        <item>Normale</item>
+        <item>Espanso</item>
+    </string-array>
+
+    <string-array name="smartshifts_calendar_density_values">
+        <item>compact</item>
+        <item>normal</item>
+        <item>expanded</item>
+    </string-array>
+
+    <!-- Reminder Advance Time Options -->
+    <string-array name="smartshifts_reminder_advance_time_entries">
+        <item>15 minuti</item>
+        <item>30 minuti</item>
+        <item>1 ora</item>
+        <item>2 ore</item>
+        <item>4 ore</item>
+        <item>1 giorno</item>
+    </string-array>
+
+    <string-array name="smartshifts_reminder_advance_time_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>240</item>
+        <item>1440</item>
+    </string-array>
+
+    <!-- Backup Frequency Options -->
+    <string-array name="smartshifts_backup_frequency_entries">
+        <item>Giornaliero</item>
+        <item>Settimanale</item>
+        <item>Mensile</item>
+        <item>Mai</item>
+    </string-array>
+
+    <string-array name="smartshifts_backup_frequency_values">
+        <item>daily</item>
+        <item>weekly</item>
+        <item>monthly</item>
+        <item>never</item>
+    </string-array>
+
+    <!-- Notification Priority Options -->
+    <string-array name="smartshifts_notification_priority_entries">
+        <item>Bassa</item>
+        <item>Normale</item>
+        <item>Alta</item>
+        <item>Massima</item>
+    </string-array>
+
+    <string-array name="smartshifts_notification_priority_values">
+        <item>low</item>
+        <item>normal</item>
+        <item>high</item>
+        <item>max</item>
+    </string-array>
+
+    <!-- Messages & Dialogs -->
+    <string name="smartshifts_backup_success">Backup completato con successo</string>
+    <string name="smartshifts_backup_failed">Backup fallito: %1$s</string>
+    <string name="smartshifts_restore_success">Ripristino completato con successo</string>
+    <string name="smartshifts_restore_failed">Ripristino fallito: %1$s</string>
+    <string name="smartshifts_export_success">Dati esportati con successo</string>
+    <string name="smartshifts_export_failed">Esportazione fallita: %1$s</string>
+    <string name="smartshifts_import_success">Dati importati con successo</string>
+    <string name="smartshifts_import_failed">Importazione fallita: %1$s</string>
+    <string name="smartshifts_reset_complete">Impostazioni ripristinate</string>
+    <string name="smartshifts_cache_cleared">Cache svuotata</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="smartshifts_confirm_reset_title">Ripristina Impostazioni</string>
+    <string name="smartshifts_confirm_reset_message">Tutte le impostazioni di SmartShifts verranno ripristinate ai valori predefiniti. Continuare?</string>
+    <string name="smartshifts_confirm_clear_cache_title">Svuota Cache</string>
+    <string name="smartshifts_confirm_clear_cache_message">Tutti i dati temporanei verranno cancellati. Continuare?</string>
+    <string name="smartshifts_confirm_backup_title">Backup Dati</string>
+    <string name="smartshifts_confirm_backup_message">Creare un backup completo di tutti i dati SmartShifts?</string>
+
+    <!-- Common -->
+    <string name="smartshifts_yes">Sì</string>
+    <string name="smartshifts_no">No</string>
+    <string name="smartshifts_cancel">Annulla</string>
+    <string name="smartshifts_ok">OK</string>
+    <string name="smartshifts_continue">Continua</string>
+    <string name="smartshifts_done">Fatto</string>
+
+
+</resources>

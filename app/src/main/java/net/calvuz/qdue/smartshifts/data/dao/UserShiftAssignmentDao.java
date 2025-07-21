@@ -106,10 +106,24 @@ public interface UserShiftAssignmentDao {
     List<UserShiftAssignment> getAssignmentsForPattern(String patternId);
 
     /**
-     * Get all active assignments
+     * Get all active assignments (LiveData for UI)
      */
     @Query("SELECT * FROM user_shift_assignments WHERE is_active = 1 ORDER BY assigned_at DESC")
     LiveData<List<UserShiftAssignment>> getAllActiveAssignments();
+
+    /**
+     * Get all active assignments synchronously (for export/import operations)
+     * ⚠️ IMPORTANT: This method should only be called from background threads
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE is_active = 1 ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getAllActiveAssignmentsSync();
+
+    /**
+     * Get all assignments (including inactive) synchronously (for complete export)
+     * ⚠️ IMPORTANT: This method should only be called from background threads
+     */
+    @Query("SELECT * FROM user_shift_assignments ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getAllAssignmentsSync();
 
     /**
      * Check if user has any active assignment
@@ -134,7 +148,51 @@ public interface UserShiftAssignmentDao {
      */
     @Query("SELECT * FROM user_shift_assignments WHERE id = :id")
     UserShiftAssignment getAssignmentById(String id);
+
+    // ===== ADDITIONAL SYNC METHODS FOR EXPORT/IMPORT =====
+
+    /**
+     * Get assignments for a user synchronously (including inactive)
+     * Used for user-specific exports
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE user_id = :userId ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getAllAssignmentsForUserSync(String userId);
+
+    /**
+     * Get active assignments for a user synchronously
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE user_id = :userId AND is_active = 1 ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getActiveAssignmentsForUserSync(String userId);
+
+    /**
+     * Get assignments by pattern synchronously
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE shift_pattern_id = :patternId ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getAllAssignmentsForPatternSync(String patternId);
+
+    /**
+     * Get assignments in date range synchronously (for period-specific exports)
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE start_date >= :startDate AND start_date <= :endDate AND is_active = 1 ORDER BY start_date ASC")
+    List<UserShiftAssignment> getAssignmentsInDateRangeSync(String startDate, String endDate);
+
+    /**
+     * Count total assignments (for statistics)
+     */
+    @Query("SELECT COUNT(*) FROM user_shift_assignments")
+    int getTotalAssignmentsCount();
+
+    /**
+     * Count active assignments (for statistics)
+     */
+    @Query("SELECT COUNT(*) FROM user_shift_assignments WHERE is_active = 1")
+    int getActiveAssignmentsCount();
+
+    /**
+     * Get assignments by team name synchronously (for team-specific operations)
+     */
+    @Query("SELECT * FROM user_shift_assignments WHERE team_name = :teamName AND is_active = 1 ORDER BY assigned_at DESC")
+    List<UserShiftAssignment> getAssignmentsByTeamSync(String teamName);
 }
 
 // =====================================================================
-

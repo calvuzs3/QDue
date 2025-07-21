@@ -33,6 +33,8 @@ public class RepositoryModule {
     @Singleton
     public SmartShiftsRepository provideSmartShiftsRepository(
             ShiftPatternDao patternDao,
+            ShiftTypeDao shiftTypeDao,
+            TeamContactDao teamContactDao,
             UserShiftAssignmentDao assignmentDao,
             SmartShiftEventDao eventDao,
             ShiftGeneratorEngine generatorEngine,
@@ -40,6 +42,8 @@ public class RepositoryModule {
     ) {
         return new SmartShiftsRepository(
                 patternDao,
+                shiftTypeDao,
+                teamContactDao,
                 assignmentDao,
                 eventDao,
                 generatorEngine,

@@ -8,7 +8,7 @@
     <!-- Dialog -->
     <string name="ok">OK</string>
     <string name="app_desc">Worker e-Shifts</string>
-    <string name="app_about">Applicazione per la gestione dei turni di lavoro 4-2</string>
+    <string name="app_about">Applicazione per la gestione dei turni di lavoro 4–2</string>
     <string name="app_libraries">Librerie utilizzate</string>
     <string name="app_libraries_used">• Android Support Library\n• Material Design Components\n• Navigation Component</string>
     <string name="app_author_str">Autore</string>
@@ -160,7 +160,7 @@
     <string name="header_friday">VEN</string>
     <string name="header_saturday">SAB</string>
     <string name="placeholder_calendar_month">month</string>
-    <string name="progress_bar_loading">Caricamento...</string>
+    <string name="progress_bar_loading">Caricamento…</string>
 
     <!-- Legenda -->
     <string name="legenda_title">Legenda</string>
@@ -467,9 +467,6 @@
     <string name="action_disable">Disable</string>
     <string name="action_preview">Preview</string>
     <string name="action_restore">Restore</string>
-    <string name="action_cancel">Cancel</string>
-    <string name="action_ok">OK</string>
-    <string name="action_close">Close</string>
     <string name="today">Oggi</string>
     <string name="no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
@@ -977,9 +974,15 @@
     <string name="text_author">Autore:</string>
     <string name="text_advanced_features">Features Avanzate</string>
     <string name="menu_title_smartshifts">SmartShifts</string>
+    <string name="placeholder_14_32">14:32</string>
+    <string name="placeholder_smartshifts_export_json">smartshifts_export_20250720_143255.json</string>
+    <string name="placeholder_mb">2.3 MB</string>
+    <string name="placeholder_12_secondi">12 secondi</string>
+    <string name="restore_from_previous_backups">Ripristina da backup precedenti</string>
+    <string name="common_yesterday">Ieri</string>
+
+
 
     <!-- ======================================================================= -->
-
-
 
 </resources>

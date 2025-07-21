@@ -12,6 +12,7 @@
     <dimen name="spacing_s">8dp</dimen>       <!-- Small -->
     <dimen name="spacing_sm">12dp</dimen>     <!-- Small Medium -->
     <dimen name="spacing_m">16dp</dimen>      <!-- Medium (standard) -->
+    <dimen name="spacing_ml">20dp</dimen>     <!-- Medium Large -->
     <dimen name="spacing_l">24dp</dimen>      <!-- Large -->
     <dimen name="spacing_xl">32dp</dimen>     <!-- Extra large -->
     <dimen name="spacing_xxl">48dp</dimen>    <!-- Double extra large -->
@@ -46,7 +47,7 @@
     <dimen name="fab_elevation">@dimen/spacing_s</dimen>
 
     <!-- Toolbar and AppBar -->
-<!--    <dimen name="toolbar_height">56dp</dimen>  defined at bottom -->
+    <!--    <dimen name="toolbar_height">56dp</dimen>  defined at bottom -->
     <dimen name="appbar_elevation">4dp</dimen>
 
     <!-- Card components -->
@@ -60,7 +61,7 @@
     <!-- ============================================ -->
 
     <!-- Calendar day cells -->
-<dimen name="calendar_day_size">48dp</dimen>
+    <dimen name="calendar_day_size">48dp</dimen>
     <dimen name="calendar_day_margin">1dp</dimen>
     <dimen name="calendar_day_padding">@dimen/spacing_xs</dimen>
     <dimen name="calendar_day_corner_radius">8dp</dimen>
@@ -167,7 +168,6 @@
     <dimen name="elevation_dialog">24dp</dimen>
 
 
-
     <!-- ============================================ -->
     <!-- APPBAR DIMENSIONS -->
     <!-- ============================================ -->
@@ -192,7 +192,6 @@
     <dimen name="toolbar_subtitle_margin_top">-2dp</dimen>
 
 
-
     <!-- ============================================ -->
     <!-- DRAWER DIMENSIONS -->
     <!-- ============================================ -->
@@ -205,6 +204,10 @@
     <dimen name="drawer_header_icon_size">48dp</dimen>
     <dimen name="drawer_header_icon_margin">12dp</dimen>
     <dimen name="drawer_header_icon_padding">8dp</dimen>
-    <dimen name="spacing_ml">20dp</dimen>
+
+    <dimen name="progress_bar_corner_radius">@dimen/spacing_xs</dimen>
+    <dimen name="card_elevation_high">@dimen/spacing_s</dimen>
+    <dimen name="card_elevation_low">@dimen/spacing_xxs</dimen>
+    <dimen name="card_elevation_medium">@dimen/spacing_xs</dimen>
 
 </resources>

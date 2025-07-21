@@ -8,7 +8,11 @@ import dagger.hilt.InstallIn;
 import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
 
-import net.calvuz.qdue.smartshifts.ui.usecases.*;
+import net.calvuz.qdue.smartshifts.domain.usecases.AssignPatternUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.CreatePatternUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.GetUserShiftsUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.ManageContactsUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.ValidatePatternUseCase;
 import net.calvuz.qdue.smartshifts.data.repository.*;
 import net.calvuz.qdue.smartshifts.domain.validators.ContinuousCycleValidator;
 

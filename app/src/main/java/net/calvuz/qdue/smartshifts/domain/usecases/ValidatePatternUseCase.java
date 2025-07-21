@@ -1,4 +1,4 @@
-package net.calvuz.qdue.smartshifts.ui.usecases;
+package net.calvuz.qdue.smartshifts.domain.usecases;
 
 import net.calvuz.qdue.smartshifts.data.repository.ShiftPatternRepository;
 import net.calvuz.qdue.smartshifts.domain.validators.ContinuousCycleValidator;

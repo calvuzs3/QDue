@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import net.calvuz.qdue.smartshifts.ui.usecases.AssignPatternUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.AssignPatternUseCase;
 
 import java.time.LocalDate;
 import java.util.concurrent.CompletableFuture;

@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel;
 import net.calvuz.qdue.smartshifts.data.entities.SmartShiftEvent;
 import net.calvuz.qdue.smartshifts.data.entities.UserShiftAssignment;
 import net.calvuz.qdue.smartshifts.data.entities.ShiftType;
-import net.calvuz.qdue.smartshifts.ui.usecases.GetUserShiftsUseCase;
+import net.calvuz.qdue.smartshifts.domain.usecases.GetUserShiftsUseCase;
 import net.calvuz.qdue.smartshifts.ui.calendar.models.CalendarDay;
 
 import java.time.LocalDate;

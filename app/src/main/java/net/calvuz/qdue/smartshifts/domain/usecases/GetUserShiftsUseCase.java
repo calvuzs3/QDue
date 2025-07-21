@@ -1,6 +1,6 @@
 // ===== PACKAGE: net.calvuz.qdue.smartshifts.ui.usecases =====
 
-package net.calvuz.qdue.smartshifts.ui.usecases;
+package net.calvuz.qdue.smartshifts.domain.usecases;
 
 import androidx.lifecycle.LiveData;
 
