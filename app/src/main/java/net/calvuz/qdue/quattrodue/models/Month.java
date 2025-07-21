@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a calendar month with its days and scheduled plant stops.
- *
+ * <p>
  * Manages a collection of days and applies predefined stop schedules.
  * Contains static stop data that should ideally be loaded from external source.
  *

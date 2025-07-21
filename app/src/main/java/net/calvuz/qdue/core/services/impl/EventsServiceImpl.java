@@ -6,13 +6,19 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.ConflictAnalysis;
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.actions.EventActionManager;
 import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.events.quickevents.QuickEventLogicAdapter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -1094,6 +1100,18 @@ public class EventsServiceImpl implements EventsService {
                     return OperationResult.failure(validation.getFormattedErrorMessage(), OperationResult.OperationType.CREATE);
                 }
 
+                // ✅ Additional Conflict validation
+                EventAction eventAction = ToolbarActionBridge.mapToEventAction(request.getSourceAction());
+                ConflictAnalysis conflicts = EventActionManager.analyzeConflicts(
+                        eventAction, request.getDate(), request.getUserId(), mEventDao); // ← CORREZIONE: usa mEventDao
+
+                if (conflicts.hasConflicts()) {
+                    String message = conflicts.getConflictSummary();
+                    return OperationResult.failure(message, OperationResult.OperationType.CREATE);
+                }
+
+
+
                 // ✅ Create LocalEvent from request
                 LocalEvent event = createEventFromRequest(request);
 
@@ -1144,6 +1162,11 @@ public class EventsServiceImpl implements EventsService {
                     Log.w(TAG, errorMessage);
                     return OperationResult.failure(errorMessage, OperationResult.OperationType.BULK_CREATE);
                 }
+
+
+                // TODO: add conflict validations
+                // ✅ Additional Conflict validation
+
 
                 // ✅ Create events from requests
                 List<LocalEvent> createdEvents = new ArrayList<>();
@@ -1196,6 +1219,7 @@ public class EventsServiceImpl implements EventsService {
                     return OperationResult.success(new ArrayList<>(), "No dates provided", OperationResult.OperationType.BULK_CREATE);
                 }
 
+                // TODO: update as above
                 // ✅ Create requests for each date
                 List<QuickEventRequest> requests = new ArrayList<>();
                 for (LocalDate date : dates) {
@@ -1473,38 +1497,55 @@ public class EventsServiceImpl implements EventsService {
      * Create LocalEvent from QuickEventRequest
      */
     private LocalEvent createEventFromRequest(QuickEventRequest request) {
-        LocalEvent event = new LocalEvent();
+        // Sostituire logica con:
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(request.getSourceAction());
+        LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, request.getDate(), request.getUserId());
 
-        // ✅ Basic properties
-        event.setId(UUID.randomUUID().toString());
-        event.setTitle(request.getDisplayName());
-        event.setDescription(request.getDescription());
-        event.setEventType(request.getEventType());
-        event.setPriority(request.getPriority());
-        event.setLocation(request.getLocation());
-        event.setAllDay(request.isAllDay());
-
-        // ✅ Timing
-        if (request.isAllDay()) {
-            event.setStartTime(request.getDate().atStartOfDay());
-            event.setEndTime(request.getDate().atTime(23, 59, 59));
-        } else {
-            event.setStartTime(request.getDate().atTime(request.getStartTime()));
-            event.setEndTime(request.getDate().atTime(request.getEndTime()));
+        // Aggiornare con dati da request
+        if (!request.getDisplayName().isEmpty()) {
+            event.setTitle(request.getDisplayName());
+        }
+        if (request.getDescription() != null) {
+            event.setDescription(request.getDescription());
         }
 
-        // ✅ Metadata
-        event.setLastUpdated(LocalDateTime.now());
-
-        // ✅ Custom properties with template metadata
-        Map<String, String> customProperties = new HashMap<>(request.getCustomProperties());
-        customProperties.put("template_id", request.getTemplateId());
-        customProperties.put("source_action", request.getSourceAction().name());
-        customProperties.put("quick_event", "true");
-        customProperties.put("created_at", String.valueOf(request.getCreatedAt()));
-        event.setCustomProperties(customProperties);
+        // Inizializzare metadata tracking
+        event = EventMetadataManager.initializeEditSessionMetadata(event, request.getUserId());
 
         return event;
+
+//        LocalEvent event = new LocalEvent();
+//
+//        // ✅ Basic properties
+//        event.setId(UUID.randomUUID().toString());
+//        event.setTitle(request.getDisplayName());
+//        event.setDescription(request.getDescription());
+//        event.setEventType(request.getEventType());
+//        event.setPriority(request.getPriority());
+//        event.setLocation(request.getLocation());
+//        event.setAllDay(request.isAllDay());
+//
+//        // ✅ Timing
+//        if (request.isAllDay()) {
+//            event.setStartTime(request.getDate().atStartOfDay());
+//            event.setEndTime(request.getDate().atTime(23, 59, 59));
+//        } else {
+//            event.setStartTime(request.getDate().atTime(request.getStartTime()));
+//            event.setEndTime(request.getDate().atTime(request.getEndTime()));
+//        }
+//
+//        // ✅ Metadata
+//        event.setLastUpdated(LocalDateTime.now());
+//
+//        // ✅ Custom properties with template metadata
+//        Map<String, String> customProperties = new HashMap<>(request.getCustomProperties());
+//        customProperties.put("template_id", request.getTemplateId());
+//        customProperties.put("source_action", request.getSourceAction().name());
+//        customProperties.put("quick_event", "true");
+//        customProperties.put("created_at", String.valueOf(request.getCreatedAt()));
+//        event.setCustomProperties(customProperties);
+//
+//        return event;
     }
 
     /**

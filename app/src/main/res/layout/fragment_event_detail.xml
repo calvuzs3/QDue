@@ -67,6 +67,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_schedule_24"
+                            android:contentDescription="@string/text_programming"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -86,7 +87,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Inizio: "
+                                    android:text="@string/text_quick_event_start_semicolon"
                                     android:textAppearance="?attr/textAppearanceBody2"
                                     android:textStyle="bold" />
 
@@ -107,7 +108,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Fine: "
+                                    android:text="@string/text_quick_event_end_semicolon"
                                     android:textAppearance="?attr/textAppearanceBody2"
                                     android:textStyle="bold" />
 
@@ -130,7 +131,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Durata: "
+                                    android:text="@string/text_duration_semicolon"
                                     android:textAppearance="?attr/textAppearanceCaption"
                                     android:textStyle="bold" />
 
@@ -148,7 +149,7 @@
                                 android:id="@+id/tv_all_day"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Evento tutto il giorno"
+                                android:text="@string/text_all_day"
                                 android:textAppearance="?attr/textAppearanceCaption"
                                 android:textColor="?attr/colorSecondary"
                                 android:textStyle="italic"
@@ -169,6 +170,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_location_on_24"
+                            android:contentDescription="@string/text_location"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -201,7 +203,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Classificazione"
+                        android:text="@string/text_classification"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
@@ -217,6 +219,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_category_24"
+                            android:contentDescription="@string/text_category"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -230,7 +233,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tipo: "
+                                android:text="@string/text_type_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -253,6 +256,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_priority_high_24"
+                            android:contentDescription="@string/text_priority"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -266,7 +270,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Priorità: "
+                                android:text="@string/text_priority_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -298,7 +302,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Stato Evento"
+                        android:text="@string/text_event_state"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp" />
@@ -315,6 +319,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_schedule_24"
+                            android:contentDescription="@string/text_status"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -328,7 +333,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Stato: "
+                                android:text="@string/text_state_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -352,6 +357,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_timer_24"
+                            android:contentDescription="@string/text_time_until"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorSecondary" />
@@ -404,6 +410,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_business_center_24"
+                            android:contentDescription="@string/text_cost_center"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -417,7 +424,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_department"
+                                android:text="@string/text_department_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -443,6 +450,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_account_balance_24"
+                            android:contentDescription="@string/text_center_of_cost_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -456,7 +464,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_center_of_cost"
+                                android:text="@string/text_center_of_cost_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -482,6 +490,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_group_24"
+                            android:contentDescription="@string/text_teams_involved_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -495,7 +504,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_teams_involved"
+                                android:text="@string/text_teams_involved_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -521,6 +530,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_person_24"
+                            android:contentDescription="@string/text_responsible_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -534,7 +544,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_responsible"
+                                android:text="@string/text_responsible_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -560,6 +570,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_alternate_email_24"
+                            android:contentDescription="@string/text_email_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -573,7 +584,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_email"
+                                android:text="@string/text_email_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -601,6 +612,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_contact_phone_24"
+                            android:contentDescription="@string/text_phone_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -614,7 +626,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_phone"
+                                android:text="@string/text_phone_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -642,6 +654,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_warning_24"
+                            android:contentDescription="@string/text_impact_level_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -655,7 +668,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_impact_level"
+                                android:text="@string/text_impact_level_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -809,6 +822,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_package_2_24"
+                            android:contentDescription="@string/text_package_id_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -822,7 +836,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_package_id"
+                                android:text="@string/text_package_id_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -847,6 +861,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_info_24"
+                            android:contentDescription="@string/text_version_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -860,7 +875,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_version"
+                                android:text="@string/text_version_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -885,6 +900,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_link_24"
+                            android:contentDescription="@string/text_url_origin_semicolon"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorPrimary" />
@@ -898,7 +914,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/text_url_origin"
+                                android:text="@string/text_url_origin_semicolon"
                                 android:textAppearance="?attr/textAppearanceBody2"
                                 android:textStyle="bold" />
 
@@ -927,7 +943,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/text_package_name"
+                            android:text="@string/text_package_name_semicolon"
                             android:textAppearance="?attr/textAppearanceCaption"
                             android:textStyle="bold" />
 
@@ -1000,6 +1016,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_rounded_warning_24"
+                            android:contentDescription="@string/text_warning"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
                             app:tint="?attr/colorError" />

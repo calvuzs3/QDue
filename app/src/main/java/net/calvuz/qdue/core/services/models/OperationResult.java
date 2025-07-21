@@ -8,13 +8,13 @@ import java.util.List;
 
 /**
  * STEP 1: Standardized Operation Result for Service Layer
- *
+ * <p>
  * Provides consistent return type for all service operations with:
  * - Success/failure status
  * - Data payload (nullable)
  * - Error messages and details
  * - Operation metadata
- *
+ * <p>
  * Used across all service implementations to ensure uniform error handling
  * and result processing throughout the application.
  */

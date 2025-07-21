@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * STEP 3: Restore Manager for Events System
- *
+ * <p>
  * Handles restoration of events from backup files with preview capabilities.
  * Features:
  * - Preview backup contents before restore

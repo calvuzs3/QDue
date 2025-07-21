@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Navigation Graph for Events Module -->
+<?xml version="1.0" encoding="utf-8"?><!-- Navigation Graph for Events Module -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,13 +15,15 @@
         <!-- Action to navigate to event details -->
         <action
             android:id="@+id/action_events_list_to_event_detail"
-            app:destination="@id/nav_event_detail"
-            />
-<!--        app:enterAnim="@anim/slide_in_right"-->
-<!--        app:exitAnim="@anim/slide_out_left"-->
-<!--        app:popEnterAnim="@anim/slide_in_left"-->
-<!--        app:popExitAnim="@anim/slide_out_right"-->
-<!--        -->
+            app:destination="@id/nav_event_detail" />
+        <!--        app:enterAnim="@anim/slide_in_right"-->
+        <!--        app:exitAnim="@anim/slide_out_left"-->
+        <!--        app:popEnterAnim="@anim/slide_in_left"-->
+        <!--        app:popExitAnim="@anim/slide_out_right"-->
+        <!--        -->
+        <action
+            android:id="@+id/action_events_list_to_event_edit"
+            app:destination="@id/nav_event_edit" />
     </fragment>
 
     <!-- Event Detail Fragment - Destination for selected event -->
@@ -41,12 +42,11 @@
         <!-- Action to navigate to edit -->
         <action
             android:id="@+id/action_event_detail_to_edit"
-            app:destination="@id/nav_event_edit"
-             />
-<!--        app:enterAnim="@anim/slide_in_right"-->
-<!--        app:exitAnim="@anim/slide_out_left"-->
-<!--        app:popEnterAnim="@anim/slide_in_left"-->
-<!--        app:popExitAnim="@anim/slide_out_right"-->
+            app:destination="@id/nav_event_edit" />
+        <!--        app:enterAnim="@anim/slide_in_right"-->
+        <!--        app:exitAnim="@anim/slide_out_left"-->
+        <!--        app:popEnterAnim="@anim/slide_in_left"-->
+        <!--        app:popExitAnim="@anim/slide_out_right"-->
 
         <!-- Optional: Back to list action (handled automatically by Navigation Component) -->
         <action

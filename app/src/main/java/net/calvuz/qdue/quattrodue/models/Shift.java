@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a work shift on a specific day.
- *
+ * <p>
  * A shift is characterized by a shift type and can include multiple teams.
  * Supports plant stops and cloning for template-based generation.
  *

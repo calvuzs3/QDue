@@ -2,7 +2,7 @@ package net.calvuz.qdue.quattrodue.utils;
 
 /**
  * Wrapper class for Android Log.
- *
+ * <p>
  * Enhanced version that maintains backward compatibility with original.
  * Provides centralized logging control and optional redirection to
  * warn level to avoid verbose ART messages.

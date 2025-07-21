@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * STEP 1: Core Backup System Models
- *
+ * <p>
  * Provides data structures for the unified backup system that handles
  * all entities in the QDue application, extending beyond just events.
  */

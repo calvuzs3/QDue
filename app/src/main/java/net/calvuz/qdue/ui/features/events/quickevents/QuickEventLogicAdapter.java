@@ -1,40 +1,50 @@
 package net.calvuz.qdue.ui.features.events.quickevents;
 
+import net.calvuz.qdue.events.actions.ConflictAnalysis;
+import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.actions.EventActionManager;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * QuickEventLogicAdapter - Business Logic Bridge per Eventi Utente
- *
- * STRATEGIA:
- * - Bridge pattern tra ToolbarAction e LocalEvent creation
- * - Applica business logic derivata da TurnException senza dipendenza diretta
- * - Gestisce creazione eventi user-managed con logica intelligente
- * - Future-proof: quando TurnException sarà rimosso, questo adapter rimane
- *
- * RESPONSABILITÀ:
- * - Applicare business rules per eventi utente (assenze, straordinari)
- * - Configurare customProperties con metadata appropriati
- * - Gestire validazione e constraints specifici per tipo evento
- * - Fornire defaults intelligenti basati su EventType
+ * MIGRATED: QuickEventLogicAdapter with EventAction Integration
+ * <p>
+ * This migrated version leverages the new EventAction system while maintaining
+ * backward compatibility with existing ToolbarAction-based functionality.
+ * <p>
+ * Key Migration Benefits:
+ * - Enhanced business logic through EventAction business rules
+ * - Improved metadata accuracy and consistency
+ * - Better validation and constraint checking
+ * - Cleaner separation between UI and business concerns
+ * - Forward compatibility with EventAction-based systems
+ * <p>
+ * Migration Strategy:
+ * - Primary logic now uses EventAction and EventActionManager
+ * - ToolbarAction support maintained through bridge pattern
+ * - Enhanced metadata generation with EventAction context
+ * - Improved validation using EventAction business rules
+ * - Seamless integration with existing quick event systems
  */
 public class QuickEventLogicAdapter {
 
     private static final String TAG = "QuickEventLogicAdapter";
 
-    // ==================== BUSINESS RULES CONSTANTS ====================
+    // ==================== ENHANCED METADATA CONSTANTS ====================
 
-    // Metadata keys for customProperties
+    // Core metadata keys (maintained for backward compatibility)
     private static final String PROP_QUICK_CREATED = "quick_created";
     private static final String PROP_TOOLBAR_SOURCE = "toolbar_source";
     private static final String PROP_USER_MANAGED = "user_managed";
@@ -44,7 +54,14 @@ public class QuickEventLogicAdapter {
     private static final String PROP_CREATION_TIMESTAMP = "creation_timestamp";
     private static final String PROP_CREATOR_TYPE = "creator_type";
 
-    // Event-specific metadata
+    // Enhanced EventAction metadata
+    private static final String PROP_EVENT_ACTION = "event_action";
+    private static final String PROP_ACTION_CATEGORY = "action_category";
+    private static final String PROP_ACTION_VERSION = "action_version";
+    private static final String PROP_BUSINESS_RULES_APPLIED = "business_rules_applied";
+    private static final String PROP_CONSTRAINTS_VALIDATED = "constraints_validated";
+
+    // EventAction-specific metadata
     private static final String PROP_ABSENCE_TYPE = "absence_type";
     private static final String PROP_OVERTIME_TYPE = "overtime_type";
     private static final String PROP_SHIFT_EXTENSION = "shift_extension";
@@ -53,271 +70,248 @@ public class QuickEventLogicAdapter {
     private static final String PROP_LAW_REFERENCE = "law_reference";
     private static final String PROP_LEAVE_CATEGORY = "leave_category";
 
-    // ==================== CORE ADAPTER METHODS ====================
+    // Enhanced business logic metadata
+    private static final String PROP_COST_IMPACT_FACTOR = "cost_impact_factor";
+    private static final String PROP_REQUIRES_DOCUMENTATION = "requires_documentation";
+    private static final String PROP_AFFECTS_OVERTIME_CALC = "affects_overtime_calculation";
+    private static final String PROP_MANAGER_APPROVAL_REQUIRED = "manager_approval_required";
+    private static final String PROP_MINIMUM_ADVANCE_NOTICE = "minimum_advance_notice_days";
+    private static final String PROP_MAXIMUM_DURATION = "maximum_duration_days";
+
+    // ==================== ENHANCED CORE ADAPTER METHODS ====================
 
     /**
-     * Create LocalEvent from ToolbarAction with intelligent defaults and business logic
-     * Main entry point for quick event creation
+     * ENHANCED: Create LocalEvent from EventAction with comprehensive business logic.
+     * This is the primary method that leverages EventAction business rules.
      *
-     * @param action ToolbarAction that triggered creation
+     * @param action EventAction that defines the business logic
      * @param date Date for the event
-     * @param userId User ID creating the event (optional, can be null)
-     * @return Configured LocalEvent ready for database save
+     * @param userId User ID creating the event (optional)
+     * @return Configured LocalEvent with enhanced metadata and validation
      */
-    public static LocalEvent createEventFromAction(ToolbarAction action, LocalDate date, Long userId) {
-        Log.d(TAG, "Creating event from action: " + action + " for date: " + date);
+    public static LocalEvent createEventFromEventAction(EventAction action, LocalDate date, Long userId) {
+        Log.d(TAG, "Creating event from EventAction: " + action + " for date: " + date);
 
-        // Validate inputs
         if (action == null || date == null) {
-            throw new IllegalArgumentException("Action and date cannot be null");
+            throw new IllegalArgumentException("EventAction and date cannot be null");
         }
 
-        EventType eventType = action.getMappedEventType();
-        if (eventType == null) {
-            throw new IllegalArgumentException("ToolbarAction must have mapped EventType: " + action);
+        try {
+            // Use EventActionManager for business logic and validation
+            LocalEvent event = EventActionManager.createEventFromAction(action, date, userId);
+
+            // Apply enhanced quick event metadata
+            applyEnhancedQuickEventMetadata(event, action, userId);
+
+            // Apply EventAction-specific business logic
+            applyEventActionSpecificLogic(event, action, userId);
+
+            Log.d(TAG, "Enhanced event created from EventAction " + action + ": " + event.getId());
+            return event;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating event from EventAction: " + e.getMessage());
+            throw new RuntimeException("Failed to create event from EventAction", e);
         }
-
-        // Create base LocalEvent
-        LocalEvent event = new LocalEvent();
-        event.setId(generateEventId(action, date));
-
-        // Apply basic configuration
-        applyBasicConfiguration(event, action, eventType, date);
-
-        // Apply business logic based on event type
-        applyBusinessLogic(event, action, eventType, userId);
-
-        // Apply custom properties with metadata
-        applyCustomProperties(event, action, eventType, userId);
-
-        // Validate final configuration
-        validateEventConfiguration(event, action);
-
-        Log.d(TAG, "Event created successfully: " + event.getTitle() + " (" + event.getId() + ")");
-        return event;
     }
 
     /**
-     * Update existing LocalEvent with user event business logic
-     * Used for editing events created via quick actions
+     * ENHANCED: Create LocalEvent from ToolbarAction with EventAction bridge.
+     * Maintains backward compatibility while leveraging EventAction improvements.
+     *
+     * @param action ToolbarAction (for backward compatibility)
+     * @param date Date for the event
+     * @param userId User ID creating the event (optional)
+     * @return Configured LocalEvent with EventAction-enhanced logic
      */
-    public static void updateEventWithUserLogic(LocalEvent event, ToolbarAction originalAction, Long userId) {
-        if (event == null || originalAction == null) return;
+    public static LocalEvent createEventFromAction(ToolbarAction action, LocalDate date, Long userId) {
+        Log.d(TAG, "Creating event from ToolbarAction: " + action + " (with EventAction bridge)");
 
-        EventType eventType = originalAction.getMappedEventType();
-        if (eventType == null) return;
+        if (action == null || date == null) {
+            throw new IllegalArgumentException("ToolbarAction and date cannot be null");
+        }
 
-        // Re-apply business logic (useful after event editing)
-        applyBusinessLogic(event, originalAction, eventType, userId);
+        try {
+            // Convert ToolbarAction to EventAction using bridge
+            EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
 
-        // Update modification timestamp
-        event.setLastUpdated(LocalDateTime.now());
+            // Create event using EventAction logic
+            LocalEvent event = createEventFromEventAction(eventAction, date, userId);
 
-        // Update custom properties
+            // Preserve ToolbarAction metadata for backward compatibility
+            preserveToolbarActionMetadata(event, action);
+
+            Log.d(TAG, "Event created from ToolbarAction " + action + " via EventAction " + eventAction + ": " + event.getId());
+            return event;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating event from ToolbarAction: " + e.getMessage());
+            throw new RuntimeException("Failed to create event from ToolbarAction", e);
+        }
+    }
+
+    /**
+     * ENHANCED: Check if an EventAction can be performed on a specific date.
+     * Uses EventAction business rules for accurate validation.
+     */
+    public static boolean canCreateEventActionOnDate(EventAction action, LocalDate date, Long userId) {
+        if (action == null || date == null) {
+            return false;
+        }
+
+        try {
+            return EventActionManager.canPerformAction(action, date, userId);
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking EventAction availability: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * ENHANCED: Check if a ToolbarAction can be performed (backward compatibility).
+     * Delegates to EventAction validation through bridge.
+     */
+    public static boolean canCreateEventOnDate(ToolbarAction action, LocalDate date, Long userId) {
+        if (action == null || date == null) {
+            return false;
+        }
+
+        try {
+            EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+            return canCreateEventActionOnDate(eventAction, date, userId);
+        } catch (Exception e) {
+            Log.e(TAG, "Error checking ToolbarAction availability: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Enhanced validation with conflict checking.
+     */
+    public static boolean canCreateEventActionOnDate(EventAction action, LocalDate date, Long userId, EventDao eventDao) {
+        // Validazione esistente
+        if (!EventActionManager.canPerformAction(action, date, userId)) {
+            return false;
+        }
+
+        // Nuova validazione conflitti
+        return !EventActionManager.hasConflictingEvents(action, date, userId, eventDao);
+    }
+
+    /**
+     * Create event with conflict validation.
+     */
+    public static LocalEvent createEventFromEventActionWithValidation(EventAction action, LocalDate date, Long userId, EventDao eventDao) throws Exception {
+        // Check conflicts before creation
+        ConflictAnalysis conflicts = EventActionManager.analyzeConflicts(action, date, userId, eventDao);
+        if (conflicts.hasConflicts()) {
+//            throw new EventConflictException("Conflitti rilevati: " + conflicts.getConflictSummary());
+            throw new Exception("Conflitti rilevati: " + conflicts.getConflictSummary());
+        }
+
+        return createEventFromEventAction(action, date, userId);
+    }
+
+    // ==================== ENHANCED METADATA APPLICATION ====================
+
+    /**
+     * Apply enhanced quick event metadata with EventAction context.
+     */
+    private static void applyEnhancedQuickEventMetadata(LocalEvent event, EventAction action, Long userId) {
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
 
-        props.put("last_modified", LocalDateTime.now().toString());
-        props.put("modified_by_logic", "user_event_adapter");
+        // Core quick event metadata (backward compatibility)
+        props.put(PROP_QUICK_CREATED, "true");
+        props.put(PROP_USER_MANAGED, "true");
+        props.put(PROP_CREATION_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        props.put(PROP_CREATOR_TYPE, "quick_event_logic_adapter");
+
+        // Enhanced EventAction metadata
+        props.put(PROP_EVENT_ACTION, action.name());
+        props.put(PROP_ACTION_CATEGORY, action.getCategory().name()); // getDisplayname(); // .name());
+        props.put(PROP_ACTION_VERSION, "2.0"); // EventAction-based version
+        props.put(PROP_BUSINESS_RULES_APPLIED, "true");
+        props.put(PROP_CONSTRAINTS_VALIDATED, "true");
+
+        // EventAction business rule metadata
+        props.put(PROP_AFFECTS_WORK, String.valueOf(action.affectsWorkSchedule()));
+        props.put(PROP_APPROVAL_REQUIRED, String.valueOf(action.requiresApproval()));
+        props.put(PROP_COST_IMPACT_FACTOR, String.valueOf(action.getCostImpactFactor()));
+        props.put(PROP_REQUIRES_DOCUMENTATION, String.valueOf(action.requiresDocumentation()));
+        props.put(PROP_AFFECTS_OVERTIME_CALC, String.valueOf(action.affectsOvertimeCalculation()));
+        props.put(PROP_MANAGER_APPROVAL_REQUIRED, String.valueOf(action.requiresManagerApproval()));
+        props.put(PROP_MINIMUM_ADVANCE_NOTICE, String.valueOf(action.getMinimumAdvanceNoticeDays()));
+        props.put(PROP_MAXIMUM_DURATION, String.valueOf(action.getMaximumDurationDays()));
+
+        // User context
+        if (userId != null) {
+            props.put("created_by_user", String.valueOf(userId));
+        }
 
         event.setCustomProperties(props);
-    }
-
-    // ==================== CONFIGURATION METHODS ====================
-
-    /**
-     * Apply basic event configuration (title, type, priority, timing)
-     */
-    private static void applyBasicConfiguration(LocalEvent event, ToolbarAction action,
-                                                EventType eventType, LocalDate date) {
-        // Basic properties
-        event.setTitle(eventType.getDisplayName());
-        event.setDescription(eventType.getDescription());
-        event.setEventType(eventType);
-        event.setPriority(eventType.getDefaultPriority());
-
-        // Timing configuration
-        boolean allDay = eventType.isDefaultAllDay();
-        event.setAllDay(allDay);
-
-        if (allDay) {
-            event.setStartTime(date.atStartOfDay());
-            event.setEndTime(date.atTime(23, 59, 59));
-        } else {
-            LocalTime startTime = eventType.getDefaultStartTime();
-            LocalTime endTime = eventType.getDefaultEndTime();
-            event.setStartTime(date.atTime(startTime));
-            event.setEndTime(date.atTime(endTime));
-        }
-
-        // Timestamps
-        event.setLastUpdated(LocalDateTime.now());
+        Log.d(TAG, "Enhanced quick event metadata applied for EventAction: " + action);
     }
 
     /**
-     * Apply business logic based on event type and user context
+     * Apply EventAction-specific business logic and metadata.
      */
-    private static void applyBusinessLogic(LocalEvent event, ToolbarAction action,
-                                           EventType eventType, Long userId) {
+    private static void applyEventActionSpecificLogic(LocalEvent event, EventAction action, Long userId) {
+        Map<String, String> props = event.getCustomProperties();
+        if (props == null) props = new HashMap<>();
 
-        // Work absence logic
-        if (eventType.isWorkAbsence()) {
-            applyWorkAbsenceLogic(event, eventType);
+        // Apply category-specific logic
+        switch (action.getCategory()) {
+            case ABSENCE:
+                applyAbsenceLogic(event, action, props);
+                break;
+            case WORK_ADJUSTMENT:
+                applyWorkAdjustmentLogic(event, action, props);
+                break;
+            case PRODUCTION:
+                applyProductionLogic(event, action, props);
+                break;
+            case DEVELOPMENT:
+                applyDevelopmentLogic(event, action, props);
+                break;
+            case GENERAL:
+                applyGeneralLogic(event, action, props);
+                break;
         }
 
-        // Overtime/work event logic
-        if (eventType == EventType.OVERTIME) {
-            applyOvertimeLogic(event);
+        // Apply urgency logic
+        if (action.isUrgentByNature()) {
+            applyUrgencyLogic(event, action);
         }
 
-        // Special leave logic
-        if (eventType == EventType.SPECIAL_LEAVE) {
-            applySpecialLeaveLogic(event);
+        // Apply approval workflow logic
+        if (action.requiresApproval()) {
+            applyApprovalLogic(event, action);
         }
 
-        // Sick leave logic
-        if (eventType == EventType.SICK_LEAVE) {
-            applySickLeaveLogic(event);
-        }
+        // Apply user-specific logic
+        applyUserSpecificLogic(event, userId, action);
 
-        // Approval workflow logic
-        if (eventType.requiresApproval()) {
-            applyApprovalLogic(event, eventType);
-        }
-
-        // User-specific logic
-        if (userId != null) {
-            applyUserSpecificLogic(event, userId, eventType);
-        }
+        event.setCustomProperties(props);
+        Log.d(TAG, "EventAction-specific logic applied for: " + action);
     }
 
     /**
-     * Apply work absence specific logic (vacation, personal leave, etc.)
+     * Apply absence-specific business logic.
      */
-    private static void applyWorkAbsenceLogic(LocalEvent event, EventType eventType) {
-        // Work absences are always all-day by default
-        if (!event.isAllDay()) {
-            Log.w(TAG, "Work absence should typically be all-day: " + eventType);
-        }
+    private static void applyAbsenceLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+        props.put(PROP_EVENT_CATEGORY, "absence");
 
-        // Set high priority for certain absences
-        if (eventType == EventType.SICK_LEAVE || eventType == EventType.SPECIAL_LEAVE) {
-            event.setPriority(EventPriority.HIGH);
-        }
-
-        // Set location to null (not applicable for absences)
-        event.setLocation(null);
-    }
-
-    /**
-     * Apply overtime specific logic
-     */
-    private static void applyOvertimeLogic(LocalEvent event) {
-        // Overtime should not be all-day
-        if (event.isAllDay()) {
-            Log.w(TAG, "Overtime should be timed event, not all-day");
-            event.setAllDay(false);
-
-            // Set default overtime hours (6:00-14:00)
-            LocalDate date = event.getStartTime().toLocalDate();
-            event.setStartTime(date.atTime(6, 0));
-            event.setEndTime(date.atTime(14, 0));
-        }
-
-        // Set high priority for overtime
-        event.setPriority(EventPriority.HIGH);
-    }
-
-    /**
-     * Apply special leave (Legge 104) specific logic
-     */
-    private static void applySpecialLeaveLogic(LocalEvent event) {
-        // Special leave has high priority and no approval required
-        event.setPriority(EventPriority.HIGH);
-    }
-
-    /**
-     * Apply sick leave specific logic
-     */
-    private static void applySickLeaveLogic(LocalEvent event) {
-        // Sick leave has high priority
-        event.setPriority(EventPriority.HIGH);
-
-        // Set urgent if created on same day (emergency sick leave)
-        LocalDate today = LocalDate.now();
-        LocalDate eventDate = event.getStartTime().toLocalDate();
-        if (eventDate.equals(today) || eventDate.equals(today.plusDays(1))) {
-            event.setPriority(EventPriority.URGENT);
-        }
-    }
-
-    /**
-     * Apply approval workflow logic
-     */
-    private static void applyApprovalLogic(LocalEvent event, EventType eventType) {
-        // Events requiring approval get normal priority unless overridden
-        if (event.getPriority() == null) {
-            event.setPriority(EventPriority.NORMAL);
-        }
-
-        // Set description to include approval note
-        String currentDesc = event.getDescription();
-        if (currentDesc == null) currentDesc = "";
-
-        if (!currentDesc.contains("approvazione")) {
-            event.setDescription(currentDesc + " (Richiede approvazione)");
-        }
-    }
-
-    /**
-     * Apply user-specific logic
-     */
-    private static void applyUserSpecificLogic(LocalEvent event, Long userId, EventType eventType) {
-        // Add user context to description if needed
-        // This is where user-specific business rules would go
-
-        // For now, just ensure user tracking in metadata
-        // (handled in applyCustomProperties)
-    }
-
-    /**
-     * Apply custom properties with comprehensive metadata
-     */
-    private static void applyCustomProperties(LocalEvent event, ToolbarAction action,
-                                              EventType eventType, Long userId) {
-        Map<String, String> props = new HashMap<>();
-
-        // Core metadata
-        props.put(PROP_QUICK_CREATED, "true");
-        props.put(PROP_TOOLBAR_SOURCE, action.name());
-        props.put(PROP_USER_MANAGED, String.valueOf(eventType.isUserManaged()));
-        props.put(PROP_AFFECTS_WORK, String.valueOf(eventType.affectsWorkSchedule()));
-        props.put(PROP_APPROVAL_REQUIRED, String.valueOf(eventType.requiresApproval()));
-        props.put(PROP_EVENT_CATEGORY, eventType.getCategory());
-        props.put(PROP_CREATION_TIMESTAMP, LocalDateTime.now().toString());
-        props.put(PROP_CREATOR_TYPE, "toolbar_quick_action");
-
-        // User tracking
-        if (userId != null) {
-            props.put("creator_user_id", String.valueOf(userId));
-        }
-
-        // Event type specific properties
-        switch (eventType) {
+        switch (action) {
             case VACATION:
                 props.put(PROP_ABSENCE_TYPE, "vacation");
-                props.put(PROP_LEAVE_CATEGORY, "annual_leave");
+                props.put(PROP_LEAVE_CATEGORY, "planned_leave");
                 break;
 
             case SICK_LEAVE:
-                props.put(PROP_ABSENCE_TYPE, "sick_leave");
-                props.put(PROP_MEDICAL_CERT, "pending");
-                props.put(PROP_LEAVE_CATEGORY, "medical_leave");
-                break;
-
-            case OVERTIME:
-                props.put(PROP_OVERTIME_TYPE, "scheduled");
-                props.put(PROP_SHIFT_EXTENSION, "true");
+                props.put(PROP_ABSENCE_TYPE, "sick");
+                props.put(PROP_MEDICAL_CERT, "may_be_required");
+                props.put(PROP_PROTECTED_LEAVE, "true");
                 break;
 
             case PERSONAL_LEAVE:
@@ -326,31 +320,224 @@ public class QuickEventLogicAdapter {
                 break;
 
             case SPECIAL_LEAVE:
-                props.put(PROP_ABSENCE_TYPE, "special_leave");
+                props.put(PROP_ABSENCE_TYPE, "special");
+                props.put(PROP_LAW_REFERENCE, "law_104");
                 props.put(PROP_PROTECTED_LEAVE, "true");
-                props.put(PROP_LAW_REFERENCE, "104/92");
-                props.put(PROP_LEAVE_CATEGORY, "protected_leave");
                 break;
 
             case SYNDICATE_LEAVE:
                 props.put(PROP_ABSENCE_TYPE, "syndicate");
                 props.put(PROP_LEAVE_CATEGORY, "union_leave");
+                props.put(PROP_PROTECTED_LEAVE, "true");
                 break;
         }
 
-        // Apply additional EventType default properties
-        Map<String, String> eventTypeProps = eventType.getDefaultCustomProperties();
-        props.putAll(eventTypeProps);
-
-        event.setCustomProperties(props);
+        Log.d(TAG, "Absence logic applied for: " + action);
     }
 
-    // ==================== VALIDATION & UTILITY ====================
+    /**
+     * Apply work adjustment specific business logic.
+     */
+    private static void applyWorkAdjustmentLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+        props.put(PROP_EVENT_CATEGORY, "work_adjustment");
+
+        switch (action) {
+            case OVERTIME:
+                props.put(PROP_OVERTIME_TYPE, "standard_overtime");
+                props.put(PROP_SHIFT_EXTENSION, "true");
+
+                // Adjust default timing for overtime
+                if (event.getStartTime() != null) {
+                    LocalTime startTime = event.getStartTime().toLocalTime();
+                    if (startTime.isBefore(LocalTime.of(17, 0))) {
+                        // If before 5 PM, assume after-hours overtime
+                        event.setStartTime(event.getStartTime().with(LocalTime.of(17, 0)));
+                        event.setEndTime(event.getStartTime().plusHours(3)); // 3 hours overtime
+                    }
+                }
+                break;
+
+            case SHIFT_SWAP:
+                props.put(PROP_OVERTIME_TYPE, "shift_swap");
+                props.put(PROP_SHIFT_EXTENSION, "false");
+                break;
+
+            case COMPENSATION:
+                props.put(PROP_OVERTIME_TYPE, "compensation");
+                props.put(PROP_SHIFT_EXTENSION, "false");
+                break;
+        }
+
+        Log.d(TAG, "Work adjustment logic applied for: " + action);
+    }
 
     /**
-     * Validate final event configuration
+     * Apply production-specific business logic.
      */
-    private static void validateEventConfiguration(LocalEvent event, ToolbarAction action) {
+    private static void applyProductionLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+        props.put(PROP_EVENT_CATEGORY, "production");
+
+        // Production events typically need location
+        if (event.getLocation() == null || event.getLocation().isEmpty()) {
+            event.setLocation("Area Produzione");
+        }
+
+        switch (action) {
+            case PLANNED_STOP:
+                props.put("stop_type", "planned");
+                props.put("production_impact", "scheduled");
+                break;
+
+            case UNPLANNED_STOP:
+                props.put("stop_type", "unplanned");
+                props.put("production_impact", "immediate");
+                // Unplanned stops are urgent
+                event.setPriority(EventPriority.URGENT);
+                break;
+
+            case MAINTENANCE:
+                props.put("maintenance_type", "scheduled");
+                props.put("production_impact", "planned");
+                break;
+
+            case EMERGENCY:
+                props.put("emergency_type", "production");
+                props.put("production_impact", "critical");
+                event.setPriority(EventPriority.URGENT);
+                break;
+        }
+
+        Log.d(TAG, "Production logic applied for: " + action);
+    }
+
+    /**
+     * Apply development-specific business logic.
+     */
+    private static void applyDevelopmentLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+        props.put(PROP_EVENT_CATEGORY, "development");
+
+        switch (action) {
+            case TRAINING:
+                props.put("training_type", "professional_development");
+                props.put("affects_productivity", "temporary");
+
+                // Training typically during business hours
+                if (!event.isAllDay() && event.getStartTime() != null) {
+                    LocalTime startTime = event.getStartTime().toLocalTime();
+                    if (startTime.isBefore(LocalTime.of(8, 0)) || startTime.isAfter(LocalTime.of(18, 0))) {
+                        // Adjust to business hours
+                        event.setStartTime(event.getStartTime().with(LocalTime.of(9, 0)));
+                        event.setEndTime(event.getStartTime().plusHours(8)); // Full day training
+                    }
+                }
+                break;
+
+            case MEETING:
+                props.put("meeting_type", "business");
+                props.put("affects_productivity", "minimal");
+                break;
+        }
+
+        Log.d(TAG, "Development logic applied for: " + action);
+    }
+
+    /**
+     * Apply general event logic.
+     */
+    private static void applyGeneralLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+        props.put(PROP_EVENT_CATEGORY, "general");
+        props.put("event_nature", "general_purpose");
+
+        Log.d(TAG, "General logic applied for: " + action);
+    }
+
+    /**
+     * Apply urgency-specific logic for time-sensitive events.
+     */
+    private static void applyUrgencyLogic(LocalEvent event, EventAction action) {
+        // Emergency events happening today or tomorrow get urgent priority
+        LocalDate today = LocalDate.now();
+        LocalDate eventDate = event.getStartTime().toLocalDate();
+
+        if (eventDate.equals(today) || eventDate.equals(today.plusDays(1))) {
+            event.setPriority(EventPriority.URGENT);
+
+            // Add urgency indicator to description
+            String description = event.getDescription();
+            if (description == null) description = "";
+            if (!description.contains("URGENTE")) {
+                event.setDescription("URGENTE: " + description);
+            }
+        }
+
+        Log.d(TAG, "Urgency logic applied for: " + action);
+    }
+
+    /**
+     * Apply approval workflow logic for events requiring authorization.
+     */
+    private static void applyApprovalLogic(LocalEvent event, EventAction action) {
+        // Events requiring approval get normal priority unless overridden
+        if (event.getPriority() == null) {
+            event.setPriority(EventPriority.NORMAL);
+        }
+
+        // Add approval note to description
+        String currentDesc = event.getDescription();
+        if (currentDesc == null) currentDesc = "";
+
+        if (!currentDesc.contains("approvazione")) {
+            String approvalNote = action.requiresManagerApproval() ?
+                    " (Richiede approvazione manager)" :
+                    " (Richiede approvazione)";
+            event.setDescription(currentDesc + approvalNote);
+        }
+
+        Log.d(TAG, "Approval logic applied for: " + action);
+    }
+
+    /**
+     * Apply user-specific business logic.
+     */
+    private static void applyUserSpecificLogic(LocalEvent event, Long userId, EventAction action) {
+        // Add user context to metadata
+        Map<String, String> props = event.getCustomProperties();
+        if (props == null) props = new HashMap<>();
+
+        if (userId != null) {
+            props.put("created_by_user", String.valueOf(userId));
+            props.put("user_action_performed", action.name());
+
+            // User-specific business rules could be added here
+            // For example, checking user permissions, quotas, etc.
+        }
+
+        event.setCustomProperties(props);
+        Log.d(TAG, "User-specific logic applied for user: " + userId + ", action: " + action);
+    }
+
+    /**
+     * Preserve ToolbarAction metadata for backward compatibility.
+     */
+    private static void preserveToolbarActionMetadata(LocalEvent event, ToolbarAction action) {
+        Map<String, String> props = event.getCustomProperties();
+        if (props == null) props = new HashMap<>();
+
+        // Preserve original ToolbarAction information
+        props.put(PROP_TOOLBAR_SOURCE, action.name());
+        props.put("original_ui_action", action.name());
+        props.put("migration_version", "toolbar_to_eventaction_v1");
+
+        event.setCustomProperties(props);
+        Log.d(TAG, "ToolbarAction metadata preserved for backward compatibility: " + action);
+    }
+
+    // ==================== ENHANCED VALIDATION & UTILITY ====================
+
+    /**
+     * Enhanced validation using EventAction business rules.
+     */
+    private static void validateEventConfiguration(LocalEvent event, EventAction action) {
         // Basic validation
         if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
             throw new IllegalStateException("Event title cannot be empty");
@@ -375,30 +562,71 @@ public class QuickEventLogicAdapter {
             }
         }
 
-        // EventType-specific validation
-        EventType eventType = event.getEventType();
-        if (!eventType.isValidConfiguration(event.isAllDay(),
-                event.getStartTime() != null ? event.getStartTime().toLocalTime() : null,
-                event.getEndTime() != null ? event.getEndTime().toLocalTime() : null)) {
-            Log.w(TAG, "Event configuration may not be optimal for event type: " + eventType);
+        // Enhanced: EventAction-specific validation
+        if (action != null) {
+            // Validate EventType consistency
+            if (event.getEventType() != action.getMappedEventType()) {
+                Log.w(TAG, "Event type " + event.getEventType() + " does not match EventAction " + action + " expected type " + action.getMappedEventType());
+            }
+
+            // Validate all-day setting consistency
+            if (event.isAllDay() != action.isDefaultAllDay()) {
+                Log.w(TAG, "All-day setting may not be optimal for EventAction: " + action);
+            }
+
+            // Validate date constraints
+            if (event.getStartTime() != null) {
+                LocalDate eventDate = event.getStartTime().toLocalDate();
+                if (!action.canPerformOnDate(eventDate)) {
+                    throw new IllegalStateException("EventAction " + action + " cannot be performed on date " + eventDate);
+                }
+            }
+
+            // Validate duration constraints
+            if (event.getStartTime() != null && event.getEndTime() != null) {
+                long durationDays = java.time.temporal.ChronoUnit.DAYS.between(
+                        event.getStartTime().toLocalDate(),
+                        event.getEndTime().toLocalDate()
+                ) + 1;
+
+                if (durationDays > action.getMaximumDurationDays()) {
+                    throw new IllegalStateException("Event duration " + durationDays + " days exceeds maximum " + action.getMaximumDurationDays() + " for action " + action);
+                }
+            }
         }
+
+        Log.d(TAG, "Enhanced event configuration validation completed for EventAction: " + action);
     }
 
     /**
-     * Generate unique event ID
+     * Generate enhanced event ID with EventAction context.
      */
-    private static String generateEventId(ToolbarAction action, LocalDate date) {
+    private static String generateEventId(EventAction action, LocalDate date) {
         String dateStr = date.toString().replace("-", "");
         String actionStr = action.name().toLowerCase();
         String randomSuffix = UUID.randomUUID().toString().substring(0, 8);
 
-        return String.format("quick_%s_%s_%s", actionStr, dateStr, randomSuffix);
+        return String.format("eventaction_%s_%s_%s", actionStr, dateStr, randomSuffix);
     }
 
-    // ==================== QUERY & ANALYSIS METHODS ====================
+    // ==================== ENHANCED QUERY & ANALYSIS METHODS ====================
 
     /**
-     * Check if LocalEvent was created via quick action
+     * Enhanced check if LocalEvent was created via EventAction.
+     */
+    public static boolean isEventActionCreatedEvent(LocalEvent event) {
+        if (event.getCustomProperties() == null) return false;
+
+        // Check for EventAction metadata
+        String eventAction = event.getCustomProperties().get(PROP_EVENT_ACTION);
+        if (eventAction != null) return true;
+
+        // Check for business rules applied flag
+        return "true".equals(event.getCustomProperties().get(PROP_BUSINESS_RULES_APPLIED));
+    }
+
+    /**
+     * Enhanced check if LocalEvent was created via quick action (backward compatibility).
      */
     public static boolean isQuickCreatedEvent(LocalEvent event) {
         if (event.getCustomProperties() == null) return false;
@@ -406,7 +634,24 @@ public class QuickEventLogicAdapter {
     }
 
     /**
-     * Get ToolbarAction that created this event (if any)
+     * Get EventAction that created this event.
+     */
+    public static EventAction getCreatorEventAction(LocalEvent event) {
+        if (event.getCustomProperties() == null) return null;
+
+        String actionName = event.getCustomProperties().get(PROP_EVENT_ACTION);
+        if (actionName == null) return null;
+
+        try {
+            return EventAction.valueOf(actionName);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Invalid EventAction name in metadata: " + actionName);
+            return null;
+        }
+    }
+
+    /**
+     * Get ToolbarAction that created this event (backward compatibility).
      */
     public static ToolbarAction getCreatorToolbarAction(LocalEvent event) {
         if (event.getCustomProperties() == null) return null;
@@ -417,102 +662,174 @@ public class QuickEventLogicAdapter {
         try {
             return ToolbarAction.valueOf(actionName);
         } catch (IllegalArgumentException e) {
+            Log.w(TAG, "Invalid ToolbarAction name in metadata: " + actionName);
             return null;
         }
     }
 
     /**
-     * Check if event affects work schedule (based on stored metadata)
+     * Enhanced check if event affects work schedule using EventAction metadata.
      */
-    public static boolean eventAffectsWorkSchedule(LocalEvent event) {
+    public static boolean affectsWorkSchedule(LocalEvent event) {
         if (event.getCustomProperties() == null) return false;
-        return "true".equals(event.getCustomProperties().get(PROP_AFFECTS_WORK));
+
+        // Try EventAction-based metadata first
+        String affectsWork = event.getCustomProperties().get(PROP_AFFECTS_WORK);
+        if (affectsWork != null) {
+            return "true".equals(affectsWork);
+        }
+
+        // Fallback to EventAction derivation
+        EventAction action = getCreatorEventAction(event);
+        if (action != null) {
+            return action.affectsWorkSchedule();
+        }
+
+        // Final fallback to EventType analysis
+        return affectsWorkScheduleLegacy(event.getEventType());
     }
 
     /**
-     * Check if event requires approval (based on stored metadata)
+     * Enhanced check if event requires approval using EventAction metadata.
      */
-    public static boolean eventRequiresApproval(LocalEvent event) {
+    public static boolean requiresApproval(LocalEvent event) {
         if (event.getCustomProperties() == null) return false;
-        return "true".equals(event.getCustomProperties().get(PROP_APPROVAL_REQUIRED));
+
+        // Try EventAction-based metadata first
+        String requiresApproval = event.getCustomProperties().get(PROP_APPROVAL_REQUIRED);
+        if (requiresApproval != null) {
+            return "true".equals(requiresApproval);
+        }
+
+        // Fallback to EventAction derivation
+        EventAction action = getCreatorEventAction(event);
+        if (action != null) {
+            return action.requiresApproval();
+        }
+
+        return false;
     }
 
     /**
-     * Get event category from metadata
+     * Get EventAction cost impact factor from metadata.
      */
-    public static String getEventCategory(LocalEvent event) {
-        if (event.getCustomProperties() == null) return "unknown";
-        return event.getCustomProperties().getOrDefault(PROP_EVENT_CATEGORY, "unknown");
+    public static double getCostImpactFactor(LocalEvent event) {
+        if (event.getCustomProperties() == null) return 0.0;
+
+        String costFactor = event.getCustomProperties().get(PROP_COST_IMPACT_FACTOR);
+        if (costFactor != null) {
+            try {
+                return Double.parseDouble(costFactor);
+            } catch (NumberFormatException e) {
+                Log.w(TAG, "Invalid cost impact factor in metadata: " + costFactor);
+            }
+        }
+
+        // Fallback to EventAction derivation
+        EventAction action = getCreatorEventAction(event);
+        if (action != null) {
+            return action.getCostImpactFactor();
+        }
+
+        return 0.0;
     }
 
-    // ==================== BUSINESS LOGIC QUERIES ====================
-
     /**
-     * Check if user can create this type of event on specified date
-     * Business rules validation
+     * Get comprehensive EventAction metadata summary.
      */
-    public static boolean canCreateEventOnDate(ToolbarAction action, LocalDate date, Long userId) {
-        if (action == null || date == null) return false;
+    public static String getEventActionMetadataSummary(LocalEvent event) {
+        if (event.getCustomProperties() == null) return "No EventAction metadata";
 
-        // Basic date validation
-        if (date.isBefore(LocalDate.now().minusDays(30))) {
-            Log.w(TAG, "Cannot create events more than 30 days in the past");
-            return false;
-        }
+        Map<String, String> props = event.getCustomProperties();
+        StringBuilder summary = new StringBuilder();
 
-        if (date.isAfter(LocalDate.now().plusYears(1))) {
-            Log.w(TAG, "Cannot create events more than 1 year in the future");
-            return false;
-        }
+        summary.append("EventAction Metadata Summary:\n");
+        summary.append("- EventAction: ").append(props.get(PROP_EVENT_ACTION)).append("\n");
+        summary.append("- Action Category: ").append(props.get(PROP_ACTION_CATEGORY)).append("\n");
+        summary.append("- Business Rules Applied: ").append(props.get(PROP_BUSINESS_RULES_APPLIED)).append("\n");
+        summary.append("- Affects Work Schedule: ").append(props.get(PROP_AFFECTS_WORK)).append("\n");
+        summary.append("- Requires Approval: ").append(props.get(PROP_APPROVAL_REQUIRED)).append("\n");
+        summary.append("- Cost Impact Factor: ").append(props.get(PROP_COST_IMPACT_FACTOR)).append("\n");
+        summary.append("- Requires Documentation: ").append(props.get(PROP_REQUIRES_DOCUMENTATION)).append("\n");
+        summary.append("- Manager Approval Required: ").append(props.get(PROP_MANAGER_APPROVAL_REQUIRED)).append("\n");
+        summary.append("- Min Advance Notice: ").append(props.get(PROP_MINIMUM_ADVANCE_NOTICE)).append(" days\n");
+        summary.append("- Max Duration: ").append(props.get(PROP_MAXIMUM_DURATION)).append(" days\n");
 
-        // Action-specific validation
-        EventType eventType = action.getMappedEventType();
-        if (eventType == null) return false;
+        // Backward compatibility info
+        summary.append("- Original ToolbarAction: ").append(props.get(PROP_TOOLBAR_SOURCE)).append("\n");
+        summary.append("- Action Version: ").append(props.get(PROP_ACTION_VERSION)).append("\n");
 
-        // Sick leave cannot be created too far in future
-        if (eventType == EventType.SICK_LEAVE && date.isAfter(LocalDate.now().plusDays(2))) {
-            Log.w(TAG, "Sick leave cannot be created more than 2 days in advance");
-            return false;
-        }
-
-        return true;
+        return summary.toString();
     }
 
     /**
-     * Get recommended title for event based on date and context
+     * Get recommended title for EventAction and date.
+     *
+     * @param action EventAction for the event
+     * @param date Date of the event
+     * @return Recommended title string
+     */
+    public static String getRecommendedTitle(EventAction action, LocalDate date) {
+        if (action == null) return "Evento";
+
+        String baseTitle = action.getDisplayName();
+
+        // Add date context for some actions
+        switch (action) {
+            case VACATION:
+                return "Ferie - " + date.format(DateTimeFormatter.ofPattern("dd/MM"));
+            case SICK_LEAVE:
+                return "Malattia - " + date.format(DateTimeFormatter.ofPattern("dd/MM"));
+            case OVERTIME:
+                return "Straordinario - " + date.format(DateTimeFormatter.ofPattern("dd/MM"));
+            case EMERGENCY:
+                return "URGENTE: " + baseTitle;
+            case PLANNED_STOP:
+            case UNPLANNED_STOP:
+            case MAINTENANCE:
+                return baseTitle + " - " + date.format(DateTimeFormatter.ofPattern("dd/MM"));
+            default:
+                return baseTitle;
+        }
+    }
+
+    /**
+     * Get recommended title for ToolbarAction (backward compatibility).
      */
     public static String getRecommendedTitle(ToolbarAction action, LocalDate date) {
-        EventType eventType = action.getMappedEventType();
-        if (eventType == null) return "Evento";
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+        return getRecommendedTitle(eventAction, date);
+    }
 
-        String baseTitle = eventType.getDisplayName();
+    // ==================== LEGACY COMPATIBILITY METHODS ====================
 
-        // Add date context for certain events
-        if (eventType == EventType.OVERTIME) {
-            return baseTitle + " - " + date.getDayOfWeek().toString();
+    /**
+     * Legacy work schedule check for backward compatibility.
+     */
+    private static boolean affectsWorkScheduleLegacy(EventType eventType) {
+        if (eventType == null) return false;
+
+        switch (eventType) {
+            case VACATION:
+            case SICK_LEAVE:
+            case PERSONAL_LEAVE:
+            case SPECIAL_LEAVE:
+            case SYNDICATE_LEAVE:
+            case OVERTIME:
+            case TRAINING:
+                return true;
+            default:
+                return false;
         }
-
-        return baseTitle;
     }
 
     /**
-     * Get debug summary for development/troubleshooting
+     * Legacy event creation method for backward compatibility.
+     * @deprecated Use createEventFromEventAction or createEventFromAction instead
      */
-    public static String getDebugSummary(LocalEvent event) {
-        if (event == null) return "NULL EVENT";
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("LocalEvent{");
-        sb.append("id=").append(event.getId());
-        sb.append(", title=").append(event.getTitle());
-        sb.append(", type=").append(event.getEventType());
-        sb.append(", date=").append(event.getStartTime() != null ? event.getStartTime().toLocalDate() : "NULL");
-        sb.append(", allDay=").append(event.isAllDay());
-        sb.append(", quickCreated=").append(isQuickCreatedEvent(event));
-        sb.append(", createdBy=").append(getCreatorToolbarAction(event));
-        sb.append(", category=").append(getEventCategory(event));
-        sb.append("}");
-
-        return sb.toString();
+    @Deprecated
+    public static LocalEvent createEventFromActionLegacy(ToolbarAction action, LocalDate date, Long userId) {
+        Log.w(TAG, "Using deprecated legacy event creation method. Consider migrating to EventAction-based methods.");
+        return createEventFromAction(action, date, userId);
     }
 }

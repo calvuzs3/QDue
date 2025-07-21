@@ -27,13 +27,13 @@ import java.util.Set;
 
 /**
  * Base adapter with user interaction support (clicks, selection mode).
- *
+ * <p>
  * Extends BaseAdapter with:
  * - Click and long-click handling
  * - Selection mode management
  * - Multi-selection support
  * - Event delegation to fragments
- *
+ * <p>
  * REFACTORED from BaseClickAdapterLegacy:
  * - More descriptive name
  * - Enhanced interaction handling
@@ -81,15 +81,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
      */
     private LocalDate mSingleSelectedDate = null;
 
-    /**
-     * Handle toolbar action execution - subclasses should implement
-     *
-     * @param action The action to be executed
-     * @param day    The day associated with the action
-     * @param date   The date associated with the action
-     */
-    protected abstract void handleToolbarAction(ToolbarAction action, Day day, LocalDate date);
-
     public BaseInteractiveAdapter(Context context, List<SharedViewModels.ViewItem> items,
                                   HalfTeam userHalfTeam, int numShifts) {
         super(context, items, userHalfTeam, numShifts);
@@ -97,7 +88,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         // Initialize floating toolbar
         //mFloatingToolbar = new FloatingDayToolbar(context);
 
-        Log.d(TAG, "BaseInteractiveAdapter: ✅ initialized with long-click support");
+        Log.v(TAG, "✅ BaseInteractiveAdapter initialized with long-click support");
     }
 
     /**
@@ -105,7 +96,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
      */
     public void setRegularClickListener(DayRegularClickListener listener) {
         mRegularClickListener = listener;
-        Log.d(TAG, "Regular click listener set: " + (listener != null ? "active" : "null"));
+        Log.v(TAG, "✅ Regular click listener set: " + (listener != null ? "active" : "null"));
     }
 
     /**
@@ -113,6 +104,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
      */
     public void setLongClickListener(DayLongClickListener listener) {
         mLongClickListener = listener;
+        Log.v(TAG, "✅ Long click listener set: " + (listener != null ? "active" : "null"));
     }
 
     /**
@@ -128,7 +120,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         longClickHolder.bindDayData(dayItem.day, dayItem.day.getLocalDate(), position, this);
 
         // NEW: Setup regular click listener
-        // TODO: find the correct way to implement RegularClickListener
         longClickHolder.setRegularClickListener(mRegularClickListener);
 
         // Update selection mode state
@@ -142,7 +133,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         boolean isSelected = mSelectedDates.contains(date);
         longClickHolder.setSelected(isSelected);
 
-        Log.v(TAG, "setupLongClickSupport: " + date +
+        Log.v(TAG, "✅ setupLongClickSupport: " + date +
                 " selectionMode=" + mIsSelectionMode +
                 " selected=" + isSelected);
     }
@@ -155,7 +146,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
      */
     private void updateSelectionSet(SelectionOperation operation, LocalDate date) {
         if (mUpdatingSelectionInternally) {
-            Log.v(TAG, "updateSelectionSet: Skip - already updating internally");
+            Log.v(TAG, "✅ updateSelectionSet: Skip - already updating internally");
             return;
         }
 
@@ -182,7 +173,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                     if (mMultipleSelectionEnabled) {
                         // ✅ MULTIPLE MODE: Add to set if not present
                         if (!mSelectedDates.contains(date)) {
-                            Log.d(TAG, "updateSelectionSet: ADD_SINGLE (multiple) - adding " + date);
+                            Log.d(TAG, "✅ updateSelectionSet: ADD_SINGLE (multiple) - adding " + date);
                             mSelectedDates.add(date);
                             changed = true;
                         }
@@ -190,7 +181,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                         // ✅ SINGLE MODE: Replace current selection
                         LocalDate previousSingle = mSingleSelectedDate;
                         if (!date.equals(previousSingle)) {
-                            Log.d(TAG, "updateSelectionSet: ADD_SINGLE (single) - replacing " +
+                            Log.d(TAG, "✅ updateSelectionSet: ADD_SINGLE (single) - replacing " +
                                     previousSingle + " with " + date);
 
                             mSelectedDates.clear();
@@ -210,7 +201,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
 
                 case REMOVE_SINGLE:
                     if (date != null && mSelectedDates.contains(date)) {
-                        Log.d(TAG, "updateSelectionSet: REMOVE_SINGLE - removing " + date);
+                        Log.d(TAG, "✅ updateSelectionSet: REMOVE_SINGLE - removing " + date);
                         mSelectedDates.remove(date);
 
                         // ✅ Update single selection tracking
@@ -224,7 +215,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
 
                 case ADD_ALL_VISIBLE:
                     if (mMultipleSelectionEnabled && mItems != null) {
-                        Log.d(TAG, "updateSelectionSet: ADD_ALL_VISIBLE");
+                        Log.d(TAG, "✅ updateSelectionSet: ADD_ALL_VISIBLE");
                         for (SharedViewModels.ViewItem item : mItems) {
                             if (item instanceof SharedViewModels.DayItem) {
                                 SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
@@ -240,14 +231,14 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                         // ✅ Clear single selection tracking in multiple mode
                         mSingleSelectedDate = null;
                     } else if (!mMultipleSelectionEnabled) {
-                        Log.w(TAG, "updateSelectionSet: ADD_ALL_VISIBLE ignored in single selection mode");
+                        Log.w(TAG, "✅ updateSelectionSet: ADD_ALL_VISIBLE ignored in single selection mode");
                     }
                     break;
             }
 
             if (changed) {
                 int newSize = mSelectedDates.size();
-                Log.d(TAG, "updateSelectionSet: Selection changed " + previousSize + " → " + newSize);
+                Log.d(TAG, "✅ updateSelectionSet: Selection changed " + previousSize + " → " + newSize);
 
                 // ✅ SELECTIVE UI UPDATE instead of notifyDataSetChanged()
                 performOptimalUIUpdate(operation, date, previousSelection);
@@ -260,7 +251,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                     scheduleAutoExit();
                 }
             } else {
-                Log.v(TAG, "updateSelectionSet: No change needed for " + operation);
+                Log.v(TAG, "✅ updateSelectionSet: No change needed for " + operation);
             }
 
         } finally {
@@ -820,28 +811,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         return false;
     }
 
-    // ==================== ✅ LOGGING OPTIMIZATION ====================
-
-    /**
-     * ✅ NEW: Concise selection state logging
-     * ✅ ENHANCED: Enhanced logging with mode info
-     */
-    private void logSelectionSummary(String context) {
-        Log.d(TAG, String.format(QDue.getLocale(),
-                "%s: mode=%s, count=%d, type=%s, dates=%s",
-                context,
-                mIsSelectionMode ? "ON" : "OFF",
-                mSelectedDates.size(),
-                mMultipleSelectionEnabled ? "MULTI" : "SINGLE",
-                mSelectedDates.size() <= 3 ? mSelectedDates.toString() :
-                        "[" + mSelectedDates.size() + " dates]"
-        ));
-    }
-
-    // Existing methods remain unchanged...
-    // (setupLongClickSupport, clearSelections, deselectAll, etc.)
-
-
 
 
 /// ///////////////////////////////////////////////////////////////////////////////////
@@ -1032,7 +1001,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
          */
         private void setupClickListener() {
             itemView.setOnClickListener(v -> {
-                Log.d(TAG, "Click detected - selection mode: " + mIsSelectionMode);
+                Log.i(TAG, "✅ Click detected - selection mode: " + mIsSelectionMode);
 
                 if (mIsSelectionMode) {
                     // Selection mode: toggle selection
@@ -1049,7 +1018,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
          */
         private void setupLongClickListener() {
             itemView.setOnLongClickListener(v -> {
-                Log.d(TAG, "Long click detected!");
+                Log.i(TAG, "✅ Long click detected!");
 
                 if (mLongClickListener != null && mCurrentDay != null) {
                     // Provide haptic feedback
@@ -1058,10 +1027,10 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                     // Trigger callback
                     mLongClickListener.onDayLongClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
 
-                    Log.d(TAG, "Long click callback triggered for date: " + mCurrentDate);
+                    Log.d(TAG, "✅ Long click callback triggered for date: " + mCurrentDate);
                     return true;
                 } else {
-                    Log.w(TAG, "Long click ignored - listener: " +
+                    Log.e(TAG, "Long click ignored - listener: " +
                             (mLongClickListener != null ? "OK" : "NULL") +
                             ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
                 }
@@ -1080,9 +1049,9 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                 // Notify listener
                 mLongClickListener.onDaySelectionChanged(mCurrentDay, mCurrentDate, mIsSelected);
 
-                Log.d(TAG, "Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
+                Log.d(TAG, "✅ Selection toggled for date: " + mCurrentDate + ", selected: " + mIsSelected);
             } else {
-                Log.w(TAG, "Selection mode click ignored - missing data or listener");
+                Log.e(TAG, "Selection mode click ignored - missing data or listener");
             }
         }
 
@@ -1094,9 +1063,9 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                 // Trigger regular click callback for events preview
                 mRegularClickListener.onDayRegularClick(mCurrentDay, mCurrentDate, itemView, mCurrentPosition);
 
-                Log.d(TAG, "Regular click triggered for date: " + mCurrentDate);
+                Log.d(TAG, "✅ Regular click triggered for date: " + mCurrentDate);
             } else {
-                Log.v(TAG, "Regular click ignored - listener: " +
+                Log.i(TAG, "Regular click ignored - listener: " +
                         (mRegularClickListener != null ? "OK" : "NULL") +
                         ", day: " + (mCurrentDay != null ? "OK" : "NULL"));
             }
@@ -1108,8 +1077,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
 
         @Override
         public void bindDayData(Day day, LocalDate date, int position, DayLongClickListener listener) {
-            Log.d(TAG, "bindDayData called for date: " + date);
-
             // Store day data for callbacks
             mCurrentDay = day;
             mCurrentDate = date;
@@ -1157,7 +1124,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         }
 
         // ===========================================
-        // Visual State Management (Enhanced)
+        // Visual State Management
         // ===========================================
 
         /**
@@ -1187,6 +1154,10 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
             }
         }
 
+        // ===========================================
+        // Debug methods
+        // ===========================================
+
         /**
          * 🔧 DEBUG: Metodo per verificare lo stato interno
          */
@@ -1211,6 +1182,5 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
             Log.d(TAG, "Has OnLongClickListener: " + (itemView.hasOnClickListeners()));
             Log.d(TAG, "=== END VIEWHOLDER DEBUG ===");
         }
-
     }
 }

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 /**
  * Represents a plant stop during a specific period.
- *
+ * <p>
  * A stop is defined by start date/shift and end date/shift.
  * Supports date range operations and overlap detection.
  *

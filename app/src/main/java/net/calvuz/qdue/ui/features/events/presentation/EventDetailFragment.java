@@ -34,6 +34,7 @@ import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -501,7 +502,7 @@ public class EventDetailFragment extends Fragment {
             mTimeUntilLayout.setVisibility(View.VISIBLE);
         } else if (status == EventStatus.CURRENT && mEvent.getEndTime() != null) {
             String timeRemaining = calculateTimeUntil(now, mEvent.getEndTime());
-            mTimeUntilView.setText("Termina " + timeRemaining);
+            mTimeUntilView.setText(MessageFormat.format(getString(R.string.format_text_ends_0), timeRemaining));
             mTimeUntilLayout.setVisibility(View.VISIBLE);
         } else {
             mTimeUntilLayout.setVisibility(View.GONE);

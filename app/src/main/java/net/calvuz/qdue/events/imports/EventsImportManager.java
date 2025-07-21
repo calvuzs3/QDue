@@ -39,7 +39,7 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * FIXED: Enhanced Import Manager with comprehensive validation and URL support
- *
+ * <p>
  * Features:
  * - File and URL import with JSON validation during download
  * - SSL integration with EventPackageManager settings

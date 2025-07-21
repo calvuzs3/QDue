@@ -83,6 +83,7 @@
             android:layout_height="16dp"
             android:layout_marginStart="8dp"
             android:src="@drawable/ic_rounded_priority_high_24"
+            android:contentDescription="@string/text_priority_high"
             android:visibility="gone"
             tools:visibility="visible"
             tools:tint="@color/priority_high" />

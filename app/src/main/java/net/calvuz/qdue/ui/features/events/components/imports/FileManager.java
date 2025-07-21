@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Modern file management using Storage Access Framework (SAF).
  * Handles file import operations without requiring storage permissions.
- *
+ * <p>
  * Features:
  * - SAF-based file selection (no storage permissions needed)
  * - Support for .json and .qdue files
@@ -33,7 +33,7 @@ import java.util.List;
  * - Content reading with proper encoding
  * - Error handling and validation
  * - Support for both Activity and Fragment contexts
- *
+ * <p>
  * Usage:
  * FileManager fileManager = new FileManager(this);
  * fileManager.importFile(callback);

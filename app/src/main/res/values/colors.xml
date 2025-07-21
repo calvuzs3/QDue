@@ -1,16 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- ============================================ -->
-    <!-- MATERIAL YOU + FALLBACK COLOR SYSTEM -->
-    <!-- Optimized for Dynamic Colors with Purple-Blue Fallback -->
+    <!-- SIMPLE MENU COLOR PALETTE -->
+    <!-- Material-style naming for menu components -->
     <!-- ============================================ -->
 
+    <!-- LIGHT THEME MENU COLORS -->
+    <color name="grey_50">#FAFAFA</color>          <!-- Light menu background -->
+    <color name="grey_100">#F5F5F5</color>         <!-- Light menu surface -->
+    <color name="grey_800">#424242</color>         <!-- Text on light menu -->
+    <color name="blue_500">#2196F3</color>         <!-- Primary action color -->
+    <color name="blue_100">#BBDEFB</color>         <!-- Selected/hover state -->
+    <color name="red_500">#F44336</color>          <!-- Destructive actions -->
+    <color name="purple_500">#673AB7</color>       <!-- Secondary action color -->
+
+    <color name="purple_200">#7C4DFF</color>
+    <color name="indigo_200">#536DFE</color>
+    <color name="purple_600">#5e35b1</color>
+    <color name="purple_700">#4527a0</color>"
+    <color name="green_700">#4CAF50</color>        <!-- Green -->
+
+
+    <!-- DARK THEME MENU COLORS -->
+    <color name="grey_900">#212121</color>         <!-- Dark menu background -->
+    <color name="grey_800_dark">#303030</color>    <!-- Dark menu surface (lighter) -->
+    <color name="grey_100_dark">#F5F5F5</color>    <!-- Text on dark menu -->
+    <color name="blue_300">#64B5F6</color>         <!-- Primary action color dark -->
+    <color name="blue_800">#1565C0</color>         <!-- Selected/hover state dark -->
+    <color name="red_300">#E57373</color>          <!-- Destructive actions dark -->
+    <color name="purple_300">#9575CD</color>       <!-- Secondary action color dark -->
+
+    <!-- ============================================ -->
+    <!-- APPBAR GRADIENT COLORS -->
+    <!-- ============================================ -->
+
+    <color name="appbar_gradient_center">@color/purple_200</color>      <!--Purple A200-->
+    <color name="appbar_gradient_end">@color/indigo_200</color>         <!--Indigo A200-->
+
+    <!-- Enhanced primary variants for deeper gradient -->
+    <color name="appbar_primary_variant">@color/purple_600</color>      <!-- Deep Purple 600 -->
+    <color name="appbar_primary_dark">@color/purple_700</color>         <!-- Deep Purple 700 -->
+
+
+
+
+
+    <!-- ============================================ -->
+    <!-- QDUE COLOR PALETTE - MATERIAL 3 COMPLIANT -->
+    <!-- Based on Purple-Blue gradient from app logo -->
+    <!-- Semantic naming for easy identification -->
+    <!-- ============================================ -->
+
+    <!-- ============================================ -->
+    <!-- 1. BRAND IDENTITY COLORS -->
+    <!-- ============================================ -->
+
+    <!-- QDue Logo Purple - Primary Brand Color -->
+    <color name="qdue_royal_purple">#6750A4</color>
+    <color name="qdue_royal_purple_light">#D0BCFF</color>
+    <color name="qdue_royal_purple_container">#EADDFF</color>
+    <color name="qdue_royal_purple_dark">#4F378B</color>
+
+    <!-- QDue Logo Blue - Secondary Brand Color -->
+    <color name="qdue_ocean_blue">#536DFE</color>
+    <color name="qdue_ocean_blue_light">#CCC2DC</color>
+    <color name="qdue_ocean_blue_container">#E8DEF8</color>
+    <color name="qdue_ocean_blue_dark">#4A4458</color>
+
+    <!-- ============================================ -->
+    <!-- 2. FUNCTIONAL COLORS - SHIFT MANAGEMENT -->
+    <!-- ============================================ -->
+
+    <!-- Shift Type Colors (8 Required Types) -->
+    <color name="qdue_morning_shift">#4CAF50</color>       <!-- Green - Fresh start -->
+    <color name="qdue_afternoon_shift">#FF9800</color>     <!-- Orange - Midday energy -->
+    <color name="qdue_night_shift">#3F51B5</color>         <!-- Indigo - Night calm -->
+    <color name="qdue_rest_shift">#9E9E9E</color>          <!-- Grey - Rest/off -->
+    <color name="qdue_extra_shift_1">#E91E63</color>       <!-- Pink - Special 1 -->
+    <color name="qdue_extra_shift_2">#9C27B0</color>       <!-- Purple - Special 2 -->
+    <color name="qdue_extra_shift_3">#673AB7</color>       <!-- Deep Purple - Special 3 -->
+    <color name="qdue_extra_shift_4">#2196F3</color>       <!-- Blue - Special 4 -->
+
+    <!-- ============================================ -->
+    <!-- 3. STATUS & STATE COLORS -->
+    <!-- ============================================ -->
+
+    <!-- Calendar Day States -->
+    <color name="qdue_today_highlight">#FF6B35</color>     <!-- Bright Orange - Today emphasis -->
+    <color name="qdue_user_day">#6750A4</color>           <!-- Brand Purple - User's shift -->
+    <color name="qdue_sunday_special">#FF5722</color>      <!-- Deep Orange - Weekend -->
+    <color name="qdue_holiday">#F44336</color>            <!-- Red - Public holiday -->
+
+    <!-- Combined States (Overlay Colors) -->
+    <color name="qdue_today_user">#BA68C8FF</color>         <!-- Purple variant - Today + User -->
+    <color name="qdue_today_sunday">#FF7043</color>       <!-- Orange variant - Today + Sunday -->
+    <color name="qdue_user_sunday">#7E57C2</color>        <!-- Purple variant - User + Sunday -->
+
+    <!-- ============================================ -->
+    <!-- 4. UI SEMANTIC COLORS -->
+    <!-- ============================================ -->
+
+    <!-- Success States -->
+    <color name="qdue_success_green">#4CAF50</color>      <!-- Confirmation, completed -->
+    <color name="qdue_success_light">#C8E6C9</color>     <!-- Light success background -->
+
+    <!-- Warning States -->
+    <color name="qdue_warning_amber">#FF9800</color>      <!-- Attention needed -->
+    <color name="qdue_warning_light">#FFE0B2</color>     <!-- Light warning background -->
+
+    <!-- Error States -->
+    <color name="qdue_error_red">#F44336</color>         <!-- Critical errors -->
+    <color name="qdue_error_light">#FFCDD2</color>       <!-- Light error background -->
+
+    <!-- Information States -->
+    <color name="qdue_info_blue">#2196F3</color>         <!-- General information -->
+    <color name="qdue_info_light">#BBDEFB</color>        <!-- Light info background -->
+
+    <!-- ============================================ -->
+    <!-- 5. NEUTRAL COLORS - SURFACES & BACKGROUNDS -->
+    <!-- ============================================ -->
+
+    <!-- Card & Container Colors -->
+    <color name="qdue_card_white">#FFFFFF</color>         <!-- Clean card background -->
+    <color name="qdue_card_grey">#F5F5F5</color>         <!-- Subtle card background -->
+    <color name="qdue_card_dark">#1C1B1F</color>         <!-- Dark theme cards -->
+
+    <!-- Border & Divider Colors -->
+    <color name="qdue_border_light">#E0E0E0</color>      <!-- Light borders -->
+    <color name="qdue_border_medium">#BDBDBD</color>     <!-- Medium borders -->
+    <color name="qdue_border_dark">#424242</color>       <!-- Dark theme borders -->
+
+    <!-- Text & Icon Colors -->
+    <color name="qdue_text_primary">#1C1B1F</color>      <!-- Main text -->
+    <color name="qdue_text_secondary">#49454F</color>    <!-- Secondary text -->
+    <color name="qdue_text_disabled">#9E9E9E</color>     <!-- Disabled text -->
+    <color name="qdue_text_on_dark">#FFFFFF</color>      <!-- Text on dark surfaces -->
+
+    <!-- ============================================ -->
+    <!-- 6. GRADIENT COLORS - MODERN UI EFFECTS -->
+    <!-- ============================================ -->
+
+    <!-- Header Gradients -->
+    <color name="qdue_gradient_start">#6750A4</color>    <!-- Brand purple start -->
+    <color name="qdue_gradient_middle">#7C4DFF</color>   <!-- Purple middle -->
+    <color name="qdue_gradient_end">#536DFE</color>      <!-- Blue end -->
+
+    <!-- Background Gradients -->
+    <color name="qdue_bg_gradient_light">#F8F9FA</color> <!-- Light background start -->
+    <color name="qdue_bg_gradient_dark">#ECEFF1</color>  <!-- Light background end -->
+
+    <!-- ============================================ -->
+    <!-- 7. ACCESSIBILITY COLORS -->
+    <!-- ============================================ -->
+
+    <!-- High Contrast Options -->
+    <color name="qdue_focus_blue">#2962FF</color>        <!-- Focus indicators -->
+    <color name="qdue_selection_blue">#1976D2</color>    <!-- Selection state -->
+    <color name="qdue_disabled_grey">#BDBDBD</color>     <!-- Disabled elements -->
+
+    <!-- ============================================ -->
+    <!-- 8. ALPHA VARIATIONS (WITH TRANSPARENCY) -->
+    <!-- ============================================ -->
+
+    <!-- Semi-transparent overlays -->
+    <color name="qdue_overlay_light">#80FFFFFF</color>   <!-- 50% white overlay -->
+    <color name="qdue_overlay_dark">#80000000</color>    <!-- 50% black overlay -->
+    <color name="qdue_scrim">#40000000</color>           <!-- 25% black scrim -->
+
+    <!-- Subtle backgrounds -->
+    <color name="qdue_highlight_subtle">#1A6750A4</color> <!-- 10% brand purple -->
+    <color name="qdue_selection_subtle">#1A2196F3</color> <!-- 10% selection blue -->
+
+
+    <!-- ============================================ -->
+    <!-- COLOR USAGE GUIDE -->
+    <!-- ============================================ -->
     <!-- PRIMARY PALETTE - Purple-Blue Gradient (Logo Colors) -->
     <!-- These will be overridden by Material You on Android 12+ -->
-    <color name="md_theme_light_primary">#6750A4</color>
+    <!--    <color name="md_theme_light_primary">#6750A4</color>-->
+    <color name="md_theme_light_primary">#283593</color> <!--Blue Material 800-->
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
     <color name="md_theme_light_primaryContainer">#EADDFF</color>
-    <color name="md_theme_light_onPrimaryContainer">#21005D</color>
+    <!--    <color name="md_theme_light_onPrimaryContainer">#21005D</color>-->
+    <color name="md_theme_light_onPrimaryContainer">#0091EA</color>
 
     <color name="md_theme_dark_primary">#D0BCFF</color>
     <color name="md_theme_dark_onPrimary">#381E72</color>
@@ -68,6 +241,37 @@
     <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
     <color name="md_theme_dark_outline">#938F99</color>
     <color name="md_theme_dark_outlineVariant">#49454F</color>
+    <!--
+    BRAND COLORS:
+    - qdue_royal_purple: Primary buttons, active states, brand elements
+    - qdue_ocean_blue: Secondary actions, links, accent elements
+
+    SHIFT COLORS:
+    - Use specific shift colors for calendar cells, badges, indicators
+    - Maintain consistency across all shift-related UI elements
+
+    STATUS COLORS:
+    - qdue_today_highlight: Always for current day indication
+    - qdue_user_day: User's assigned shifts
+    - qdue_sunday_special: Weekend/Sunday highlighting
+
+    UI SEMANTICS:
+    - Success: Confirmations, completed tasks
+    - Warning: Attention needed, cautions
+    - Error: Critical issues, validation errors
+    - Info: General information, tips
+
+    SURFACES:
+    - Use card colors for containers
+    - Border colors for separators
+    - Text colors based on surface contrast
+
+    ACCESSIBILITY:
+    - Ensure 4.5:1 contrast ratio for text
+    - Use focus colors for keyboard navigation
+    - Disabled colors for inactive elements
+    -->
+
 
     <!-- ============================================ -->
     <!-- SHIFT COLORS - FIXED FOR CONSISTENCY -->
@@ -76,11 +280,17 @@
 
     <!-- PRIMARY SHIFTS (Most Important) -->
     <!-- Morning Shift - Warm Orange/Amber -->
+    <color name="shift_afternoon">#FF8F00</color>           <!-- Deep Orange 600 -->
+    <color name="shift_afternoon_light">#FFCC02</color>     <!-- Amber 600 -->
+    <color name="shift_afternoon_dark">#E65100</color>      <!-- Deep Orange 900 -->
 <!--    <color name="shift_morning">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
     <color name="shift_morning_light">#FFCC02</color>     <!-- Amber 600 -->
     <color name="shift_morning_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
     <!-- Afternoon Shift - Forest Green -->
+    <color name="shift_morning">#388E3C</color>         <!-- Green 600 -->
+    <color name="shift_morning_light">#66BB6A</color>   <!-- Green 400 -->
+    <color name="shift_morning_dark">#1B5E20</color>    <!-- Green 900 -->
 <!--    <color name="shift_afternoon">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
     <color name="shift_afternoon_light">#66BB6A</color>   <!-- Green 400 -->
     <color name="shift_afternoon_dark">#1B5E20</color>    <!-- Green 900 -->
@@ -151,63 +361,33 @@
     <!-- These will be replaced by Material You when available -->
     <!-- ============================================ -->
 
-    <!-- System Color Aliases (for Material You) -->
-    <color name="system_primary">@color/md_theme_light_primary</color>
-    <color name="system_on_primary">@color/md_theme_light_onPrimary</color>
-    <color name="system_surface">@color/md_theme_light_surface</color>
-    <color name="system_on_surface">@color/md_theme_light_onSurface</color>
+<!--    &lt;!&ndash; System Color Aliases (for Material You) &ndash;&gt;-->
+<!--    <color name="system_primary">@color/md_theme_light_primary</color>-->
+<!--    <color name="system_on_primary">@color/md_theme_light_onPrimary</color>-->
+<!--    <color name="system_surface">@color/md_theme_light_surface</color>-->
+<!--    <color name="system_on_surface">@color/md_theme_light_onSurface</color>-->
 
-    <!-- ============================================ -->
-    <!-- SIMPLIFIED UI COLORS -->
-    <!-- Reduced to essential elements only -->
-    <!-- ============================================ -->
+<!--    &lt;!&ndash; ============================================ &ndash;&gt;-->
+<!--    &lt;!&ndash; SIMPLIFIED UI COLORS &ndash;&gt;-->
+<!--    &lt;!&ndash; Reduced to essential elements only &ndash;&gt;-->
+<!--    &lt;!&ndash; ============================================ &ndash;&gt;-->
 
-    <!-- Card and Container Colors -->
-    <color name="card_background">@color/md_theme_light_surface</color>
-    <color name="card_border">@color/md_theme_light_outline</color>
-    <color name="card_elevation">#1A000000</color>              <!-- 10% black for shadow -->
+<!--    &lt;!&ndash; Card and Container Colors &ndash;&gt;-->
+<!--    <color name="card_background">@color/md_theme_light_surface</color>-->
+<!--    <color name="card_border">@color/md_theme_light_outline</color>-->
+<!--    <color name="card_elevation">#1A000000</color>              &lt;!&ndash; 10% black for shadow &ndash;&gt;-->
 
-    <!-- Loading and Progress -->
-    <color name="loading_background">@color/md_theme_light_surfaceVariant</color>
-    <color name="loading_progress">@color/md_theme_light_primary</color>
+<!--    &lt;!&ndash; Loading and Progress &ndash;&gt;-->
+<!--    <color name="loading_background">@color/md_theme_light_surfaceVariant</color>-->
+<!--    <color name="loading_progress">@color/md_theme_light_primary</color>-->
 
-    <!-- Navigation -->
-    <color name="nav_background">@color/md_theme_light_surface</color>
-    <color name="nav_selected">@color/md_theme_light_primaryContainer</color>
-    <color name="nav_unselected">@color/md_theme_light_onSurfaceVariant</color>
-
-    <!-- ============================================ -->
-    <!-- LEGACY SUPPORT COLORS -->
-    <!-- Kept for backward compatibility, commented for future removal -->
-    <!-- ============================================ -->
-
-    <!-- TODO: Remove these in future versions when Material You is widespread -->
-    <!--
-    <color name="primary_legacy">#6750A4</color>
-    <color name="primary_variant_legacy">#4F378B</color>
-    <color name="secondary_legacy">#625B71</color>
-    <color name="background_legacy">#FFFBFE</color>
-    <color name="surface_legacy">#FFFBFE</color>
-    <color name="error_legacy">#BA1A1A</color>
-    -->
+<!--    &lt;!&ndash; Navigation &ndash;&gt;-->
+<!--    <color name="nav_background">@color/md_theme_light_surface</color>-->
+<!--    <color name="nav_selected">@color/md_theme_light_primaryContainer</color>-->
+<!--    <color name="nav_unselected">@color/md_theme_light_onSurfaceVariant</color>-->
 
 
-    <!--
-    Add these colors to res/values/colors.xml
-    For appbar modify
-    -->
 
-    <!-- ============================================ -->
-    <!-- APPBAR GRADIENT COLORS -->
-    <!-- ============================================ -->
-
-    <!-- Gradient colors for modern AppBar -->
-    <color name="appbar_gradient_center">#7C4DFF</color>     <!-- Purple A200 -->
-    <color name="appbar_gradient_end">#536DFE</color>        <!-- Indigo A200 -->
-
-    <!-- Enhanced primary variants for deeper gradient -->
-    <color name="appbar_primary_variant">#5E35B1</color>     <!-- Deep Purple 600 -->
-    <color name="appbar_primary_dark">#4527A0</color>        <!-- Deep Purple 700 -->
 
     <!-- ============================================ -->
     <!-- TOOLBAR BRANDING COLORS -->
@@ -274,11 +454,5 @@
     <color name="type_maintenance">#FF9800</color>     <!-- Orange - Maintenance -->
     <color name="type_meeting">#2196F3</color>         <!-- Blue - Meetings -->
     <color name="type_general">#9C27B0</color>         <!-- Purple - General events -->
-
-
-
-<!--    SMARTSHIFTS-->
-
-<!--    END SMARTSHIFTS-->
 
 </resources>

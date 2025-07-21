@@ -204,6 +204,10 @@
     <dimen name="drawer_header_icon_size">48dp</dimen>
     <dimen name="drawer_header_icon_margin">12dp</dimen>
     <dimen name="drawer_header_icon_padding">8dp</dimen>
+    <dimen name="spacing_ml">20dp</dimen>
+    <dimen name="radius_floating_menu">28dp</dimen>
+    <dimen name="radius_sm">12dp</dimen>
+    <dimen name="radius_m">16dp</dimen>
 
     <dimen name="progress_bar_corner_radius">@dimen/spacing_xs</dimen>
     <dimen name="card_elevation_high">@dimen/spacing_s</dimen>

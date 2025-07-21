@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/drawable/events_dot_background.xml -->
-<!-- Dot semplice per indicare presenza eventi -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
-    <solid android:color="?attr/colorPrimary" />
-</shape>

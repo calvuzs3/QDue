@@ -22,7 +22,7 @@ import okhttp3.Response;
 
 /**
  * Dynamic factory for creating and managing shift types.
- *
+ * <p>
  * Supports variable number of shifts with external JSON API loading.
  * Members access cached elements generated during setup phase rather
  * than static predefined elements. Provides both local persistence

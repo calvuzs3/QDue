@@ -13,11 +13,11 @@ import net.calvuz.qdue.quattrodue.models.Day;
 
 /**
  * Centralized data manager for calendar operations.
- *
+ * <p>
  * Eliminates duplication between DayslistViewFragment and CalendarViewFragment
  * by providing unified data access with intelligent caching and preloading.
  * Thread-safe implementation with performance optimizations.
- *
+ * <p>
  * It uniquely make use of quattroDue.getShiftsForMonth(normalizedDate);
  *
  * @author Updated 21/05/2025

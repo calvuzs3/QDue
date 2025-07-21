@@ -26,12 +26,12 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
  * QDueDatabase - Unified main database for Q-DUE application.
- *
+ * <p>
  * Database Evolution:
  * Version 1: Events only (LocalEvent)
  * Version 2: Events + TurnException
  * Version 3: Events + TurnException + User management (UNIFIED)
- *
+ * <p>
  * Features:
  * - Google Calendar-like event storage
  * - Turn pattern exception management with real Foreign Keys
@@ -52,7 +52,7 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
                 MacroDepartment.class,
                 SubDepartment.class
         },
-        version = 3,
+        version = 4,
         exportSchema = false
 )
 @TypeConverters({
@@ -232,26 +232,6 @@ public abstract class QDueDatabase extends RoomDatabase {
             stats.databaseSizeKB = getDatabaseSizeKB();
 
             return stats;
-        });
-    }
-
-    /**
-     * Optimize database performance
-     */
-    public void optimizeDatabase() {
-        runInTransaction(() -> {
-            try {
-                // Vacuum database to reclaim space
-                query("VACUUM", null);
-
-                // Analyze tables for query optimization
-                query("ANALYZE", null);
-
-                Log.i(TAG, "Database optimization completed");
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error optimizing database: " + e.getMessage());
-            }
         });
     }
 

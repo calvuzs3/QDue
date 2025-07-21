@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 /**
  * Injectable service interface for centralized back handling management.
- *
+ * <p>
  * This interface allows for dependency injection of back handling services
  * while maintaining loose coupling between components.
  */

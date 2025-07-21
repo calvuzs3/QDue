@@ -18,10 +18,12 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.quattrodue.Preferences;
 import net.calvuz.qdue.quattrodue.QuattroDue;
+import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * Settings Fragment with Scheme Date Preference handling
@@ -115,7 +117,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                     showDatePicker();
                 })
                 .setNegativeButton(R.string.scheme_date_cancel, null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.ic_rounded_warning_24)
                 .show();
     }
 
@@ -206,7 +208,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         } catch (Exception e) {
             Log.e(TAG, "Error updating scheme date: " + e.getMessage(), e);
             rollbackDate();
-            Toast.makeText(context, R.string.scheme_date_error, Toast.LENGTH_LONG).show();
+            Library.showError(context, R.string.scheme_date_error, Toast.LENGTH_LONG);
         }
     }
 
@@ -224,7 +226,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             currentSchemeDate = backupSchemeDate;
             updateSchemeDateSummary();
 
-            Toast.makeText(context, R.string.scheme_date_rollback, Toast.LENGTH_LONG).show();
+            Library.showSuccess(context, R.string.scheme_date_rollback, Toast.LENGTH_LONG);
 
         } catch (Exception rollbackError) {
             Log.e(TAG, "Critical rollback error: " + rollbackError.getMessage(), rollbackError);
@@ -242,7 +244,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             String currentViewMode = QDuePreferences.getDefaultViewMode(requireContext());
             viewModePref.setValue(currentViewMode);
 
-            Log.d(TAG, "View mode preference initialized with value: " + currentViewMode);
+            Log.d(TAG, "* View mode preference initialized: " + currentViewMode);
         } else {
             Log.w(TAG, "View mode preference not found in XML - check your root_preferences.xml");
         }
@@ -253,7 +255,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
      * This method is called when any preference value changes
      *
      * @param sharedPreferences The SharedPreferences that received the change
-     * @param key The key of the preference that was changed
+     * @param key               The key of the preference that was changed
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -275,7 +277,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private void handleViewModePreferenceChange(SharedPreferences sharedPreferences, String key) {
         String newViewMode = sharedPreferences.getString(key, QDue.Settings.VIEW_MODE_CALENDAR);
 
-        Log.d(TAG, "View mode preference changed to: " + newViewMode);
+        Log.d(TAG, "* View mode preference changed: " + newViewMode);
 
         try {
             // Save using QDuePreferences for consistency
@@ -288,19 +290,8 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             } else {
                 Log.w(TAG, "Parent activity is not QDueMainActivity - cannot notify of view mode change");
             }
-
-            // Show confirmation message to user
-            String displayName = getViewModeDisplayName(newViewMode);
-            String message = getString(R.string.settings_view_mode_changed, displayName);
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-
         } catch (Exception e) {
             Log.e(TAG, "Error handling view mode preference change", e);
-
-            // Show error message
-            Toast.makeText(requireContext(),
-                    "Errore nel cambiare la vista predefinita",
-                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -317,16 +308,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             // Save using QDuePreferences for consistency
             QDuePreferences.setDynamicColorsEnabled(requireContext(), dynamicColorsEnabled);
 
-            // Show confirmation message
-            String message = dynamicColorsEnabled ?
-                    "Colori dinamici attivati" : "Colori dinamici disattivati";
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-
             // Note: Dynamic colors change requires app restart to take full effect
             if (dynamicColorsEnabled) {
-                Toast.makeText(requireContext(),
-                        "Riavvia l'app per applicare completamente i colori dinamici",
-                        Toast.LENGTH_LONG).show();
+                Library.showSuccess(requireContext(),
+                        R.string.text_settings_reboot_app_to_apply_dynamic_colors,
+                        Toast.LENGTH_LONG);
             }
 
         } catch (Exception e) {
@@ -341,7 +327,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
      * @param viewMode The view mode constant
      * @return User-friendly display name
      */
-    private String getViewModeDisplayName(String viewMode) {
+    public String getViewModeDisplayName(String viewMode) {
         if (QDue.Settings.VIEW_MODE_DAYSLIST.equals(viewMode)) {
             return getString(R.string.menu_dayslist);
         } else {
@@ -377,7 +363,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onResume();
 
         // Register as listener for preference changes
-        getPreferenceScreen().getSharedPreferences()
+        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
                 .registerOnSharedPreferenceChangeListener(this);
 
         Log.d(TAG, "Registered as SharedPreferenceChangeListener");
@@ -398,7 +384,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         super.onPause();
 
         // Unregister listener to prevent memory leaks
-        getPreferenceScreen().getSharedPreferences()
+        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
                 .unregisterOnSharedPreferenceChangeListener(this);
 
         Log.d(TAG, "Unregistered SharedPreferenceChangeListener");

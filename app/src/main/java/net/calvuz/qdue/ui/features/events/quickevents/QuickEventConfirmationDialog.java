@@ -25,20 +25,24 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.actions.EventActionManager;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * PHASE 2: QuickEventConfirmationDialog Refactored - DI Integration
- *
+ * <p>
  * REFACTORED VERSION:
  * - ❌ REMOVED: Direct database access (EventDao)
  * - ❌ REMOVED: Direct database instance creation
@@ -47,7 +51,7 @@ import java.time.format.DateTimeFormatter;
  * - ✅ ADDED: Proper error handling with OperationResult
  * - ✅ ADDED: Async operations with CompletableFuture
  * - ✅ KEPT: All UI functionality and user experience
- *
+ * <p>
  * FEATURES:
  * - Service-based event creation with validation
  * - Dependency injection compliant
@@ -59,6 +63,8 @@ import java.time.format.DateTimeFormatter;
 public class QuickEventConfirmationDialog implements Injectable {
 
     private static final String TAG = "QuickEventDialog";
+
+    private static final String QUICK_EVENT_CONFIRMATION_DIALOG_VERSION = "2.1";
 
     // ==================== DEPENDENCIES (DI) ====================
 
@@ -80,7 +86,6 @@ public class QuickEventConfirmationDialog implements Injectable {
     private AlertDialog mDialog;
     private View mDialogView;
 
-
     // ==================== UI COMPONENTS ====================
 
     private TextInputEditText mTitleEdit;
@@ -101,14 +106,11 @@ public class QuickEventConfirmationDialog implements Injectable {
     private LocalTime mCurrentStartTime;
     private LocalTime mCurrentEndTime;
 
-
     //obsolete
 
 //    private final ToolbarAction mAction;
 
 //    private final EventDao mEventDao;
-
-
 
     // Event data (mutable during editing)
     private LocalEvent mEventData;
@@ -342,7 +344,6 @@ public class QuickEventConfirmationDialog implements Injectable {
         mCancelButton.setOnClickListener(v -> handleCancellation());
     }
 
-
     // ==================== UI UPDATE METHODS ====================
 
     /**
@@ -361,74 +362,19 @@ public class QuickEventConfirmationDialog implements Injectable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
         if (mCurrentStartTime != null) {
-            mStartTimeButton.setText("Inizio: " + mCurrentStartTime.format(formatter));
+            mStartTimeButton.setText(MessageFormat.format(mContext.getString(R.string.format_text_begin_semicolon_0), mCurrentStartTime.format(formatter)));
         } else {
-            mStartTimeButton.setText("Seleziona orario inizio");
+            mStartTimeButton.setText(R.string.text_select_hour_begin);
         }
 
         if (mCurrentEndTime != null) {
-            mEndTimeButton.setText("Fine: " + mCurrentEndTime.format(formatter));
+            mEndTimeButton.setText(MessageFormat.format(mContext.getString(R.string.format_text_end_semicolon_0), mCurrentEndTime.format(formatter)));
         } else {
-            mEndTimeButton.setText("Seleziona orario fine");
+            mEndTimeButton.setText(R.string.text_select_hour_end);
         }
     }
 
     // ==================== TIME PICKER METHODS ====================
-
-//    /**
-//     * Show start time picker
-//     */
-//    private void showStartTimePicker() {
-//        LocalTime initialTime = mCurrentStartTime != null ? mCurrentStartTime : LocalTime.of(9, 0);
-//
-//        MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
-//                .setTimeFormat(TimeFormat.CLOCK_24H)
-//                .setHour(initialTime.getHour())
-//                .setMinute(initialTime.getMinute())
-//                .setTitleText("Seleziona orario inizio")
-//                .build();
-//
-//        timePicker.addOnPositiveButtonClickListener(dialog -> {
-//            mCurrentStartTime = LocalTime.of(timePicker.getHour(), timePicker.getMinute());
-//
-//            // Auto-adjust end time if needed
-//            if (mCurrentEndTime == null || !mCurrentStartTime.isBefore(mCurrentEndTime)) {
-//                mCurrentEndTime = mCurrentStartTime.plusHours(1);
-//            }
-//
-//            updateTimeButtons();
-//            Log.d(TAG, "Start time selected: " + mCurrentStartTime);
-//        });
-//
-//        if (mContext instanceof Activity) {
-//            timePicker.show(((Activity) mContext).getSupportFragmentManager(), "START_TIME_PICKER");
-//        }
-//    }
-//
-//    /**
-//     * Show end time picker
-//     */
-//    private void showEndTimePicker() {
-//        LocalTime initialTime = mCurrentEndTime != null ? mCurrentEndTime : LocalTime.of(17, 0);
-//
-//        MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
-//                .setTimeFormat(TimeFormat.CLOCK_24H)
-//                .setHour(initialTime.getHour())
-//                .setMinute(initialTime.getMinute())
-//                .setTitleText("Seleziona orario fine")
-//                .build();
-//
-//        timePicker.addOnPositiveButtonClickListener(dialog -> {
-//            mCurrentEndTime = LocalTime.of(timePicker.getHour(), timePicker.getMinute());
-//            updateTimeButtons();
-//            Log.d(TAG, "End time selected: " + mCurrentEndTime);
-//        });
-//
-//        if (mContext instanceof Activity) {
-//            timePicker.show(((Activity) mContext).getSupportFragmentManager(), "END_TIME_PICKER");
-//        }
-//    }
-//
 
     /**
      * Show start time picker
@@ -487,8 +433,8 @@ public class QuickEventConfirmationDialog implements Injectable {
                 updateTimeButtonsText();
                 Log.d(TAG, "End time updated: " + mEndTime);
             } else {
-                Toast.makeText(mContext, "L'ora di fine deve essere successiva all'ora di inizio",
-                        Toast.LENGTH_SHORT).show();
+                Library.showWarning(mContext, R.string.long_text_finish_hour_must_be_post_begin_hour,
+                        Toast.LENGTH_SHORT);
             }
         });
 
@@ -504,7 +450,6 @@ public class QuickEventConfirmationDialog implements Injectable {
             showSimpleTimeInputDialog(false);
         }
     }
-
 
     // ==================== EVENT CREATION (SERVICE-BASED) ====================
 
@@ -539,7 +484,8 @@ public class QuickEventConfirmationDialog implements Injectable {
 
         } catch (Exception e) {
             Log.e(TAG, "Error during confirmation: " + e.getMessage(), e);
-            handleCreationError("Error creating event: " + e.getMessage());
+            handleCreationError(MessageFormat.format(
+                    mContext.getString(R.string.format_text_error_creating_event_semicolon_0), e.getMessage()));
         }
     }
 
@@ -570,24 +516,30 @@ public class QuickEventConfirmationDialog implements Injectable {
         // Time validation for timed events
         if (!mCurrentAllDay) {
             if (mCurrentStartTime == null) {
-                Library.showError( mContext, "Seleziona l'orario di inizio");
+                Library.showError(mContext, R.string.text_select_hour_begin, Toast.LENGTH_SHORT);
                 return false;
             }
 
             if (mCurrentEndTime == null) {
-                Library.showError( mContext, "Seleziona l'orario di fine");
+                Library.showError(mContext, R.string.text_select_hour_end);
                 return false;
             }
 
             if (!mCurrentStartTime.isBefore(mCurrentEndTime)) {
-                Library.showError( mContext, "L'orario di fine deve essere successivo all'orario di inizio");
+                Library.showError(mContext, R.string.long_text_finish_hour_must_be_post_begin_hour);
                 return false;
             }
         }
 
+        // Aggiungere validazione EventAction
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(mTemplate.getSourceAction());
+        if (!EventActionManager.canPerformAction(eventAction, mDate, mUserId)) {
+            Library.showError(mContext, R.string.long_text_action_not_permitted_on_this_date);
+            return false;
+        }
+
         return true;
     }
-
 
     /**
      * ✅ Create QuickEventRequest from UI input
@@ -599,14 +551,16 @@ public class QuickEventConfirmationDialog implements Injectable {
                 .eventType(mTemplate.getEventType())
                 .date(mDate)
                 .userId(mUserId)
-                .displayName(mCurrentTitle)
+                .displayName(mCurrentTitle.isEmpty() ?
+                        QuickEventLogicAdapter.getRecommendedTitle(mTemplate.getSourceAction(), mDate) :
+                        mCurrentTitle)
                 .description(mCurrentDescription.isEmpty() ? null : mCurrentDescription)
                 .priority(mTemplate.getDefaultPriority())
                 .allDay(mCurrentAllDay)
                 .startTime(mCurrentAllDay ? null : mCurrentStartTime)
                 .endTime(mCurrentAllDay ? null : mCurrentEndTime)
                 .customProperty("ui_created", "true")
-                .customProperty("dialog_version", "2.0")
+                .customProperty("dialog_version", QUICK_EVENT_CONFIRMATION_DIALOG_VERSION)
                 .build();
     }
 
@@ -622,7 +576,7 @@ public class QuickEventConfirmationDialog implements Injectable {
                     LocalEvent createdEvent = result.getData();
                     Log.d(TAG, "Event created successfully: " + createdEvent.getId());
 
-                    Library.showSuccess(mContext,"Evento creato con successo!");
+                    Library.showSuccess(mContext, "Evento creato con successo!");
                     mListener.onEventCreated(createdEvent, mTemplate.getSourceAction(), mDate);
 
                     // Auto-dismiss after short delay
@@ -647,7 +601,7 @@ public class QuickEventConfirmationDialog implements Injectable {
         if (mContext instanceof Activity) {
             ((Activity) mContext).runOnUiThread(() -> {
                 setLoadingState(false);
-                handleCreationError("Errore nella creazione dell'evento: " + throwable.getMessage());
+                handleCreationError(throwable.getMessage());
             });
         }
 
@@ -659,7 +613,7 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private void handleCreationError(String errorMessage) {
         Log.e(TAG, "Creation error: " + errorMessage);
-        Library.showError(mContext, errorMessage);
+        Library.showDialogError(mContext, mContext.getString(R.string.title_text_creation_error), errorMessage);
         mListener.onEventCreationFailed(mTemplate.getSourceAction(), mDate, errorMessage);
     }
 
@@ -680,8 +634,6 @@ public class QuickEventConfirmationDialog implements Injectable {
         mListener.onEventCreationCancelled(mTemplate.getSourceAction(), mDate);
     }
 
-
-
     // ==================== UI STATE MANAGEMENT ====================
 
     /**
@@ -690,7 +642,9 @@ public class QuickEventConfirmationDialog implements Injectable {
     private void setLoadingState(boolean loading) {
         if (mConfirmButton != null) {
             mConfirmButton.setEnabled(!loading);
-            mConfirmButton.setText(loading ? "Creazione..." : "Conferma");
+            mConfirmButton.setText(loading ?
+                    mContext.getString(R.string.text_creation_dots) :
+                    mContext.getString(R.string.text_confirm));
         }
 
         if (mCancelButton != null) {
@@ -712,7 +666,6 @@ public class QuickEventConfirmationDialog implements Injectable {
         if (mEndTimeButton != null) mEndTimeButton.setEnabled(enabled);
     }
 
-
     // ==================== CLEANUP ====================
 
     /**
@@ -729,13 +682,6 @@ public class QuickEventConfirmationDialog implements Injectable {
 
         Log.d(TAG, "Dialog cleanup completed");
     }
-
-
-
-
-
-
-
 
     /// /////////
     /**
@@ -917,13 +863,13 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private void updateTimeButtonsText() {
         if (mStartTime != null) {
-            mStartTimeButton.setText("Inizio: " + formatTimeForDisplay(mStartTime));
+            mStartTimeButton.setText(MessageFormat.format(mContext.getString(R.string.format_text_begin_semicolon_0),
+                    formatTimeForDisplay(mStartTime)));
         }
         if (mEndTime != null) {
-            mEndTimeButton.setText("Fine: " + formatTimeForDisplay(mEndTime));
+            mEndTimeButton.setText(MessageFormat.format(mContext.getString(R.string.format_text_end_semicolon_0), formatTimeForDisplay(mEndTime)));
         }
     }
-
 
     /**
      * Fallback simple time input dialog
@@ -931,7 +877,7 @@ public class QuickEventConfirmationDialog implements Injectable {
     private void showSimpleTimeInputDialog(boolean isStartTime) {
         // Simple fallback implementation using basic TimePickerDialog
         LocalTime currentTime = isStartTime ? mStartTime : mEndTime;
-        String title = isStartTime ? "Ora di inizio" : "Ora di fine";
+        String title = isStartTime ? mContext.getString(R.string.text_hour_begin) : mContext.getString(R.string.text_hour_end);
 
         android.app.TimePickerDialog timePickerDialog = new android.app.TimePickerDialog(
                 mContext,
@@ -947,8 +893,7 @@ public class QuickEventConfirmationDialog implements Injectable {
                         if (newTime.isAfter(mStartTime)) {
                             mEndTime = newTime;
                         } else {
-                            Toast.makeText(mContext, "L'ora di fine deve essere successiva all'ora di inizio",
-                                    Toast.LENGTH_SHORT).show();
+                            Library.showWarning(mContext, R.string.long_text_finish_hour_must_be_post_begin_hour);
                             return;
                         }
                     }
@@ -1169,13 +1114,20 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private int getEventTypeIcon(EventType eventType) {
         switch (eventType) {
-            case VACATION: return R.drawable.ic_rounded_beach_access_24;
-            case SICK_LEAVE: return R.drawable.ic_rounded_local_hospital_24;
-            case OVERTIME: return R.drawable.ic_rounded_engineering_24;
-            case PERSONAL_LEAVE: return R.drawable.ic_rounded_schedule_24;
-            case SPECIAL_LEAVE: return R.drawable.ic_rounded_accessible_24;
-            case SYNDICATE_LEAVE: return R.drawable.ic_rounded_clock_loader_40_24;
-            default: return R.drawable.ic_rounded_event_24;
+            case VACATION:
+                return R.drawable.ic_rounded_beach_access_24;
+            case SICK_LEAVE:
+                return R.drawable.ic_rounded_local_hospital_24;
+            case OVERTIME:
+                return R.drawable.ic_rounded_engineering_24;
+            case PERSONAL_LEAVE:
+                return R.drawable.ic_rounded_schedule_24;
+            case SPECIAL_LEAVE:
+                return R.drawable.ic_rounded_accessible_24;
+            case SYNDICATE_LEAVE:
+                return R.drawable.ic_rounded_clock_loader_40_24;
+            default:
+                return R.drawable.ic_rounded_event_24;
         }
     }
 
@@ -1184,11 +1136,15 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private String getPriorityDisplayName(EventPriority priority) {
         switch (priority) {
-            case HIGH: return "Alta";
-            case URGENT: return "Urgente";
-            case LOW: return "Bassa";
+            case HIGH:
+                return "Alta";
+            case URGENT:
+                return "Urgente";
+            case LOW:
+                return "Bassa";
             case NORMAL:
-            default: return "Normale";
+            default:
+                return "Normale";
         }
     }
 
@@ -1197,11 +1153,15 @@ public class QuickEventConfirmationDialog implements Injectable {
      */
     private int getPriorityColor(EventPriority priority) {
         switch (priority) {
-            case URGENT: return android.graphics.Color.parseColor("#D32F2F");
-            case HIGH: return android.graphics.Color.parseColor("#F57C00");
-            case LOW: return android.graphics.Color.parseColor("#616161");
+            case URGENT:
+                return android.graphics.Color.parseColor("#D32F2F");
+            case HIGH:
+                return android.graphics.Color.parseColor("#F57C00");
+            case LOW:
+                return android.graphics.Color.parseColor("#616161");
             case NORMAL:
-            default: return android.graphics.Color.parseColor("#1976D2");
+            default:
+                return android.graphics.Color.parseColor("#1976D2");
         }
     }
 

@@ -22,14 +22,14 @@ import java.util.Map;
 /**
  * Centralized permission management for the application.
  * Handles runtime permissions, permission requests, and status checks.
- *
+ * <p>
  * Features:
  * - Runtime permission handling for Android 6.0+
  * - Bulk permission requests
  * - Permission status checking
  * - Callback-based permission results
  * - Support for both Activity and Fragment contexts
- *
+ * <p>
  * Usage:
  * PermissionManager permissionManager = new PermissionManager(this);
  * permissionManager.requestPermission(Permission.CALENDAR_READ, callback);

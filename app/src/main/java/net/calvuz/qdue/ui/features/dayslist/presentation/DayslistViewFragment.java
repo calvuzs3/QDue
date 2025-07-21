@@ -75,26 +75,12 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-//        // Ensure selection state consistency
-//        if (mLegacyAdapter != null && mIsSelectionMode != mLegacyAdapter.isSelectionMode()) {
-//            Log.w(TAG, "Selection mode inconsistency detected, syncing...");
-//            mIsSelectionMode = mLegacyAdapter.isSelectionMode();
-//            updateSelectionUI();
-//        }
-
-        testEventsPreview();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
 
         // Exit selection mode when fragment is paused to avoid confusion
         if (isSelectionMode()) {
-            Log.d(TAG, "Exiting selection mode due to fragment pause");
+            Log.i(TAG, "✅ Exiting selection mode due to fragment pause");
             exitSelectionMode();
         }
     }
@@ -106,7 +92,6 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     private void loadDaysListData() {
         // TODO: Implement data loading
         // This should load the actual days data and update the adapter
-        Log.d(TAG, "Loading days list data - TODO: implement");
     }
 
     // ===========================================
@@ -154,7 +139,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     @Override
     protected void setupAdapter() {
         setupLegacyAdapter();
-        Log.d(TAG, "setupAdapter: ✅ Legacy adapter setup completed");
+        Log.i(TAG, "✅ Adapter setup completed");
     }
 
     @Override
@@ -184,7 +169,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
         // Update with events if available with better error handling
         updateAdapterWithEvents();
 
-        Log.d(TAG, "setupLegacyAdapter: ✅ Legacy adapter setup completed");
+        Log.i(TAG, "✅ Legacy adapter setup completed");
     }
 
     // ==================== EVENTS INTEGRATION ====================
@@ -193,24 +178,21 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      * Update adapter with current events data
      */
     private void updateAdapterWithEvents() {
-        final String mTAG = "updateAdapterWithEvents: ";
-
         if (mLegacyAdapter == null) {
-            Log.w(TAG, mTAG + "Adapter is null, cannot update with events");
+            Log.w(TAG, "Adapter is null, cannot update with events");
             return;
         }
 
         try {
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
-                Log.d(TAG, mTAG + "Found existing events cache with " + eventsCache.size() + " dates");
                 mLegacyAdapter.updateEventsData(eventsCache);
-                Log.d(TAG, mTAG + "✅ Adapter updated with events data");
+                Log.i(TAG,  "✅ Adapter updated with events data");
             } else {
-                Log.d(TAG, mTAG + "No events cache available yet");
+                Log.i(TAG, "No events cache available yet");
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error updating adapter with events: " + e.getMessage());
+            Log.e(TAG, "Error updating adapter with events: " + e.getMessage());
         }
     }
 
@@ -218,8 +200,6 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     protected void updateFabVisibility(int firstVisible, int lastVisible) {
-        Log.v(TAG, "updateFabVisibility: called.");
-
         if (mFabGoToToday == null) return;
 
         // Don't update FAB visibility if in selection mode
@@ -258,7 +238,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onOpenEventEditor(LocalDate date) {
-        Log.d(TAG, "DaysList: Opening event editor for date: " + date);
+        Log.d(TAG, "✅ Opening event editor for date: " + date);
 
         // TODO: Implement specific navigation for DaysList
         // For now, delegate to base implementation
@@ -276,11 +256,10 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
-        Log.d(TAG, "DaysList: Showing events dialog for date: " + date);
+        Log.d(TAG, "✅ Showing events dialog for date: " + date);
 
         // DaysList-specific events dialog
         if (events != null && !events.isEmpty()) {
-            // TODO: Create DaysListEventsDialog with specific features
             showDaysListEventsDialog(date, events);
         } else {
             super.onShowEventsDialog(date, events);
@@ -295,10 +274,10 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
-        Log.d(TAG, "DaysList: Quick event created: " + action + " for date: " + date);
+        Log.d(TAG, "✅ Quick event created: " + action + " for date: " + date);
 
         // Refresh data to show the new event
-        loadDaysListData();
+//        loadDaysListData();
         // DaysList-specific post-creation handling
 //        updateAdapterWithEventsDelayed();
     }
@@ -310,7 +289,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     protected void updateSelectionDependentUI(boolean hasSelection) {
         // DaysList-specific UI updates based on selection
-        Log.v(TAG, "DaysList: Updating selection-dependent UI, hasSelection: " + hasSelection);
+        Log.d(TAG, "✅ Updating selection-dependent UI, hasSelection: " + hasSelection);
 
         // Could add DaysList-specific UI updates here
         // For example: show/hide certain buttons, update status bar, etc.
@@ -324,7 +303,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      * Show DaysList-specific events dialog
      */
     private void showDaysListEventsDialog(LocalDate date, List<LocalEvent> events) {
-        Log.d(TAG, "Showing DaysList events dialog with " + events.size() + " events for " + date);
+        Log.v(TAG, "✅ Showing DaysList events dialog with " + events.size() + " events for " + date);
 
         // TODO: Implement DaysListEventsDialogFragment
         // For now, use base implementation
@@ -338,19 +317,19 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
         if (mMainHandler != null) {
             mMainHandler.postDelayed(() -> {
                 updateAdapterWithEvents();
-                Log.d(TAG, "Delayed adapter events update completed");
+                Log.i(TAG, "✅ Delayed adapter events update completed");
             }, 300);
         }
     }
 
     // ===========================================
-    // Events Refresh Integration (existing code enhanced)
+    // Events Refresh Integration
     // ===========================================
 
     @Override
     public void onEventsChanged(String changeType, int eventCount) {
         Log.d(TAG, String.format(QDue.getLocale(),
-                "DaysListFragment: Events changed %s (%d events)", changeType, eventCount));
+                "✅ Events changed %s (%d events)", changeType, eventCount));
 
         // Call parent implementation for base functionality
         super.onEventsChanged(changeType, eventCount);
@@ -361,7 +340,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     public void onForceEventsRefresh() {
-        Log.d(TAG, "DaysListFragment: Force refresh requested");
+        Log.d(TAG, "✅ Force refresh requested");
 
         // Call parent implementation for base functionality
         super.onForceEventsRefresh();
@@ -372,12 +351,13 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     public boolean isFragmentActive() {
-        // Enhanced check for DaysList fragment
         boolean baseActive = super.isFragmentActive();
         boolean isInDaysListView = isCurrentlyInDaysListView();
 
         boolean isActive = baseActive && isInDaysListView;
-        Log.v(TAG, String.format("Fragment activity check - base: %s, inDaysListView: %s, result: %s",
+
+        Log.d(TAG, String.format(QDue.getLocale(),
+                "✅ Fragment activity check - base: %s, inDaysListView: %s, result: %s",
                 baseActive, isInDaysListView, isActive));
 
         return isActive;
@@ -385,8 +365,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     protected void onEventsDataRefreshed() {
-        final String mTAG = "onEventsDataRefreshed: ";
-        Log.v(TAG, mTAG + "Events data refreshed for DaysListFragment");
+        Log.d(TAG, "✅ Events data refreshed");
 
         // Additional DaysList-specific refresh logic
         updateAdapterWithEventsDelayed();
@@ -397,7 +376,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     // ===========================================
 
     /**
-     * Check if fragment is currently in DaysList view (vs Calendar view)
+     * HELPER: Check if fragment is currently in DaysList view (vs Calendar view)
      */
     private boolean isCurrentlyInDaysListView() {
         try {
@@ -475,35 +454,6 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
         return false;
     }
 
-    /**
-     * Setup RegularClick specific integration
-     */
-    private void setupRegularClickIntegration() {
-        Log.d(TAG, "Setting up Regular Click DaysList expansion integration");
-
-        // Ensure RecyclerView settings support smooth expansion
-        if (mRecyclerView != null) {
-            // Disable item animator to prevent conflicts with expansion animations
-            mRecyclerView.setItemAnimator(null);
-
-            // Ensure nested scrolling is handled correctly
-            mRecyclerView.setNestedScrollingEnabled(true);
-
-            // Add scroll listener to handle expansion during scroll
-            mRecyclerView.addOnScrollListener(new ExpansionScrollListener());
-        }
-
-        // NEW: Configure compact mode for DaysList
-        if (mEventsPreviewManager != null) {
-            EventsPreviewInterface impl = mEventsPreviewManager.getCurrentImplementation();
-            if (impl instanceof DaysListEventsPreview daysListPreview) {
-                daysListPreview.setUseCompactMode(true); // Enable compact mode
-                Log.d(TAG, "Compact mode enabled for DaysList expansion");
-            }
-        }
-
-        Log.d(TAG, "Regular click integration setup completed");
-    }
 
     // ===========================================
     // Integration Test Methods
@@ -686,42 +636,6 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
         Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
     }
 
-    /**
-     * Called when day selection changes in multi-select mode
-     *
-     * @param day        The Day object
-     * @param date       The LocalDate
-     * @param isSelected Whether the day is now selected
-     */
-    @Override
-    public void onDaySelectionChanged(Day day, LocalDate date, boolean isSelected) {
 
-    }
 
-    // ===========================================
-    // Expansion Support
-    // ===========================================
-
-    /**
-     * Scroll listener to handle expansion during scroll
-     */
-    private class ExpansionScrollListener extends RecyclerView.OnScrollListener {
-
-        @Override
-        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-
-            // Collapse expanded cards when user starts scrolling
-            if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                if (mEventsPreviewManager != null && mEventsPreviewManager.isEventsPreviewShowing()) {
-                    if (mEventsPreviewManager.getCurrentImplementation() instanceof DaysListEventsPreview daysListPreview) {
-                        if (daysListPreview.hasExpandedCard()) {
-                            Log.d(TAG, "Collapsing expanded card due to scroll start");
-                            daysListPreview.collapseAll();
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

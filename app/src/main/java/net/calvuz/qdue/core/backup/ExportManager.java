@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -20,7 +21,7 @@ import java.util.List;
 
 /**
  * STEP 3: Export Manager for Events System
- *
+ * <p>
  * Handles export of events to JSON files in EventPackageJson format.
  * Features:
  * - Export all events or filtered selection
@@ -109,7 +110,7 @@ public class ExportManager {
 
         public String getSummary() {
             if (success) {
-                return String.format("Exported %d events (%s)", exportedEvents, getFormattedSize());
+                return String.format(QDue.getLocale(),"Exported %d events (%s)", exportedEvents, getFormattedSize());
             } else {
                 return "Export failed";
             }
@@ -119,9 +120,9 @@ public class ExportManager {
             if (fileSizeBytes < 1024) {
                 return fileSizeBytes + " B";
             } else if (fileSizeBytes < 1024 * 1024) {
-                return String.format("%.1f KB", fileSizeBytes / 1024.0);
+                return String.format(QDue.getLocale(),"%.1f KB", fileSizeBytes / 1024.0);
             } else {
-                return String.format("%.1f MB", fileSizeBytes / (1024.0 * 1024.0));
+                return String.format(QDue.getLocale(),"%.1f MB", fileSizeBytes / (1024.0 * 1024.0));
             }
         }
 
@@ -180,7 +181,7 @@ public class ExportManager {
                                             ExportOptions options, ExportCallback callback)
             throws IOException {
 
-        Log.d(TAG, String.format("Starting export of %d events to URI: %s",
+        Log.d(TAG, String.format(QDue.getLocale(),"Starting export of %d events to URI: %s",
                 events.size(), destinationUri.toString()));
 
         List<String> warnings = new ArrayList<>();
@@ -207,7 +208,7 @@ public class ExportManager {
         // Get file size (approximate for URI)
         long fileSize = estimateJsonSize(packageJson);
 
-        Log.i(TAG, String.format("Export completed to URI: %d events, %d bytes, %d warnings",
+        Log.i(TAG, String.format(QDue.getLocale(),"Export completed to URI: %d events, %d bytes, %d warnings",
                 events.size(), fileSize, warnings.size()));
 
         return ExportResult.success(destinationUri.toString(), events.size(), fileSize, warnings);
@@ -220,7 +221,7 @@ public class ExportManager {
                                              ExportOptions options, ExportCallback callback)
             throws IOException {
 
-        Log.d(TAG, String.format("Starting export of %d events to file: %s",
+        Log.d(TAG, String.format(QDue.getLocale(),"Starting export of %d events to file: %s",
                 events.size(), filePath));
 
         List<String> warnings = new ArrayList<>();
@@ -244,7 +245,7 @@ public class ExportManager {
         java.io.File file = new java.io.File(filePath);
         long fileSize = file.length();
 
-        Log.i(TAG, String.format("Export completed to file: %d events, %d bytes, %d warnings",
+        Log.i(TAG, String.format(QDue.getLocale(),"Export completed to file: %d events, %d bytes, %d warnings",
                 events.size(), fileSize, warnings.size()));
 
         return ExportResult.success(filePath, events.size(), fileSize, warnings);
@@ -382,7 +383,7 @@ public class ExportManager {
         } catch (Exception e) {
             // Rough estimation if JSON serialization fails
             int eventsCount = packageJson.events != null ? packageJson.events.size() : 0;
-            return eventsCount * 1000; // Approximately 1KB per event
+            return ((long)eventsCount) * 1000; // Approximately 1KB per event
         }
     }
 
@@ -399,7 +400,7 @@ public class ExportManager {
      */
     public static String generateExportFilename(ExportOptions options, int eventCount) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        return String.format("qdue_events_%s_%devents.json", timestamp, eventCount);
+        return String.format(QDue.getLocale(),"qdue_events_%s_%devents.json", timestamp, eventCount);
     }
 
     /**
@@ -432,7 +433,7 @@ public class ExportManager {
         }
 
         boolean valid = errors.isEmpty();
-        Log.d(TAG, String.format("Export validation: %s (%d events, %d warnings, %d errors)",
+        Log.d(TAG, String.format(QDue.getLocale(),"Export validation: %s (%d events, %d warnings, %d errors)",
                 valid ? "PASSED" : "FAILED", events.size(), warnings.size(), errors.size()));
 
         return new ValidationResult(valid, errors, warnings);
@@ -460,9 +461,9 @@ public class ExportManager {
             if (valid) {
                 return warnings.isEmpty() ?
                         "Ready to export" :
-                        String.format("Ready to export (%d warnings)", warnings.size());
+                        String.format(QDue.getLocale(),"Ready to export (%d warnings)", warnings.size());
             } else {
-                return String.format("Cannot export (%d errors)", errors.size());
+                return String.format(QDue.getLocale(),"Cannot export (%d errors)", errors.size());
             }
         }
     }

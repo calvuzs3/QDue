@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
 
     <!-- App info -->
@@ -6,7 +6,7 @@
     <string name="app_name" translatable="false">Q-Due</string>
 
     <!-- Dialog -->
-    <string name="ok">OK</string>
+    <string name="ok" translatable="false">OK</string>
     <string name="app_desc">Worker e-Shifts</string>
     <string name="app_about">Applicazione per la gestione dei turni di lavoro 4–2</string>
     <string name="app_libraries">Librerie utilizzate</string>
@@ -46,14 +46,14 @@
 
 
     <!-- Preferences per data schema -->
-    <string name="qd_preference_scheme_start_day">preference_scheme_start_day</string>
-    <string name="qd_preference_scheme_start_month">preference_scheme_start_month</string>
-    <string name="qd_preference_scheme_start_year">preference_scheme_start_year</string>
+    <string name="qd_preference_scheme_start_day" translatable="false">preference_scheme_start_day</string>
+    <string name="qd_preference_scheme_start_month" translatable="false">preference_scheme_start_month</string>
+    <string name="qd_preference_scheme_start_year" translatable="false">preference_scheme_start_year</string>
 
-    <!--    <string name="qd_preference_scheme_start_day">7</string>-->
-    <!--    <string name="qd_preference_scheme_start_month">11</string>-->
-    <!--    <string name="qd_preference_scheme_start_year">2018</string>-->
-    <!--    -->
+<!--    <string name="qd_preference_scheme_start_day">7</string>-->
+<!--    <string name="qd_preference_scheme_start_month">11</string>-->
+<!--    <string name="qd_preference_scheme_start_year">2018</string>-->
+<!--    -->
     <!-- Dialog warning e conferma -->
     <string name="scheme_date_warning_title">Attenzione: Modifica Data Schema</string>
     <string name="scheme_date_warning_message">La data di inizio schema influenza significativamente la rotazione dei turni.\n\nSi consiglia di:\n• Accettare la data proposta inizialmente (07/11/2018)\n• Modificare solo se necessario\n• Verificare i turni dopo la modifica\n\nVuoi procedere?</string>
@@ -96,10 +96,10 @@
     <!-- Navigation -->
     <string name="menu_dayslist">Tutti Turni</string>
     <string name="menu_calendar">Turno</string>
-    <string name="menu_title_about">About</string>
-    <string name="menu_title_settings">Settaggi</string>
-    <string name="nav_header_settings">Settaggi</string>
-    <string name="nav_header_advanced_settings">Settaggi Sistema</string>
+    <string name="menu_title_about" translatable="false">About</string>
+    <string name="menu_title_settings">Impostazioni</string>
+    <string name="nav_header_settings">Impostazioni</string>
+    <string name="nav_header_advanced_settings">Impostazioni Sistema</string>
     <string name="nav_header_other">Altro</string>
     <string name="nav_header_calendars">Calendari</string>
     <string name="nav_header_desc">Menu QDue</string>
@@ -144,22 +144,22 @@
     <!-- Stringhe per formattazione -->
     <string name="str_scheme">%1$s</string>
     <string name="str_scheme_num">%1$d</string>
-    <string name="qd_preference_user_team">preference_user_team</string>
-    <string name="qd_preference_show_stops">preference_show_stops</string>
-    <string name="qd_preference_scheme_start_date">preference_scheme_start_date</string>
-    <string name="qd_preference_signature">preference_signature</string>
-    <string name="qd_preference_sync">preference_sync</string>
+    <string name="qd_preference_user_team" translatable="false">preference_user_team</string>
+    <string name="qd_preference_show_stops" translatable="false">preference_show_stops</string>
+    <string name="qd_preference_scheme_start_date" translatable="false">preference_scheme_start_date</string>
+    <string name="qd_preference_signature" translatable="false">preference_signature</string>
+    <string name="qd_preference_sync" translatable="false">preference_sync</string>
 
-    <string name="placeholder_calendar_day">1</string>
-    <string name="placeholder_calendar_day_n">n</string>
+    <string name="placeholder_calendar_day" translatable="false">1</string>
+    <string name="placeholder_calendar_day_n" translatable="false">n</string>
     <string name="header_sunday">DOM</string>
     <string name="header_monday">LUN</string>
     <string name="header_tuesday">MAR</string>
-    <string name="header_thuersday">MER</string>
-    <string name="header_wednsday">GIO</string>
+    <string name="header_thursday">MER</string>
+    <string name="header_wednesday">GIO</string>
     <string name="header_friday">VEN</string>
     <string name="header_saturday">SAB</string>
-    <string name="placeholder_calendar_month">month</string>
+    <string name="placeholder_calendar_month" translatable="false">month</string>
     <string name="progress_bar_loading">Caricamento…</string>
 
     <!-- Legenda -->
@@ -214,7 +214,7 @@
     <string name="personal_phone_optional">Telefono Personale (opzionale)</string>
 
     <!-- Action Buttons -->
-    <string name="save_profile">Salva</string>
+    <string name="save_profile">"Salva Profilo"</string>
     <string name="reset_changes">Ripristina</string>
     <string name="change_profile_image">Scegli Immagine Profilo</string>
     <string name="choose_from_gallery">Scegli dalla Galleria</string>
@@ -264,7 +264,7 @@
     <string name="supervisor_name">Nome Supervisore</string>
 
     <!-- Google Web Client ID (replace with your actual client ID) -->
-    <string name="google_web_client_id">YOUR_GOOGLE_WEB_CLIENT_ID_HERE</string>
+    <string name="google_web_client_id" translatable="false">YOUR_GOOGLE_WEB_CLIENT_ID_HERE</string>
 
     <!-- Menu Items -->
     <string name="menu_user_profile">Profilo Utente</string>
@@ -394,85 +394,92 @@
 
 
     <!-- Strings for proto -->
-    <string name="nav_header_about">About</string>
+    <string name="error_loading_data">Errore caricamento dati (proto)</string>
+    <string name="nav_header_about" translatable="false">About</string>
 
     <!-- ==================== Additional Strings EVENTS ==================== -->
-    <string name="events_activity_title">Events Management</string>
-    <string name="events_empty_title">No Events Found</string>
-    <string name="events_empty_message">Import events from JSON files or create new ones</string>
-    <string name="events_import_success">Successfully imported %d events</string>
-    <string name="events_import_error">Failed to import events: %s</string>
-    <string name="events_export_error">Failed to export events: %s</string>
-    <string name="events_clear_all_title">Clear All Events</string>
-    <string name="events_clear_all_message">Are you sure you want to delete all local events? This action cannot be undone.</string>
-    <string name="events_clear_all_confirm">Clear All</string>
-    <string name="action_import_file">Import from File</string>
-    <string name="action_export_file">Export to File</string>
+    <string name="events_activity_title">Eventi</string>
+    <string name="events_empty_title">Nessun Evento Trovato</string>
+    <string name="events_empty_message">Impèorta eventi da file JSON o aggiungi nuovi eventi</string>
+    <string name="events_import_success">%d eventi importati correttamente</string>
+    <string name="events_import_error">Importazione fallita: %s</string>
+    <string name="events_export_success">Eventi esportati correttamente</string>
+    <string name="events_export_error">Esportazione fallita: %s</string>
+    <string name="events_clear_all_title">Pulisci tutti gli eventi</string>
+    <string name="events_clear_all_message">Sei sicuro di voler cancellare tutti gli eventi? Questa azione non può essere ripristinata.</string>
+    <string name="events_clear_all_confirm">Pulisci tutto</string>
+    <string name="action_import_file">Importa da File</string>
+    <string name="action_export_file">Esporta su File</string>
     <string name="action_clear_all">Pulisci tutti gli eventi</string>
-    <string name="btn_import_first">Import Events</string>
+    <string name="btn_import_first">Importa Eventi</string>
     <string name="location">Luogo</string>
 
 
     <!-- ==================== BACKUP ==================== -->
     <!-- Backup & Restore Strings -->
-    <string name="backup_restore_title">Backup &amp; Restore</string>
-    <string name="action_manual_backup">Create Backup Now</string>
-    <string name="action_restore_backup">Restore from Backup</string>
-    <string name="action_auto_backup_settings">Auto Backup Settings</string>
+    <string name="backup_restore_title">Backup &amp; Ripristino</string>
+    <string name="action_manual_backup">Crea Backup adesso</string>
+    <string name="action_restore_backup">Ripristina da Backup</string>
+    <string name="action_auto_backup_settings">Impostazioni Auto Backup</string>
     <string name="action_backup_status">Backup Status</string>
 
     <!-- Backup Messages -->
-    <string name="backup_creating">Creating backup...</string>
-    <string name="backup_success">Backup created successfully</string>
-    <string name="backup_failed">Backup failed</string>
-    <string name="backup_no_events">No events to backup</string>
-    <string name="backup_auto_enabled">Auto backup enabled</string>
-    <string name="backup_auto_disabled">Auto backup disabled</string>
+    <string name="backup_creating">Creando backup…</string>
+    <string name="backup_success">Backup creato con successo</string>
+    <string name="backup_failed">Backup fallito</string>
+    <string name="backup_no_events">Nessun evento per il backup</string>
+    <string name="backup_auto_enabled">Auto backup abilitato</string>
+    <string name="backup_auto_disabled">Auto backup disabilitato</string>
 
     <!-- Restore Messages -->
-    <string name="restore_select_backup">Select Backup to Restore</string>
-    <string name="restore_preview_title">Restore Preview</string>
-    <string name="restore_processing">Processing restore...</string>
-    <string name="restore_success">Events restored successfully</string>
-    <string name="restore_failed">Restore failed</string>
-    <string name="restore_no_backups">No backups available</string>
-    <string name="restore_merge">Restore (Merge)</string>
-    <string name="restore_replace">Restore (Replace All)</string>
-    <string name="restore_preview_failed">Cannot preview backup</string>
+    <string name="restore_select_backup">Scegli un Backup da Ripristinare</string>
+    <string name="restore_preview_title">Anteprima Ripristino</string>
+    <string name="restore_processing">Ripristinando…</string>
+    <string name="restore_success">Eventi ripristinati correttamente</string>
+    <string name="restore_failed">Ripristino fallito</string>
+    <string name="restore_no_backups">Nessun backups disponibile</string>
+    <string name="restore_merge">Ripristino (Unione)</string>
+    <string name="restore_replace">Ripristino (Sostituisci tutti)</string>
+    <string name="restore_preview_failed">Anteprima Backup non disponibile</string>
 
     <!-- Backup Status -->
     <string name="backup_status_title">Backup Status</string>
     <string name="backup_auto_status">Auto Backup: %1$s</string>
-    <string name="backup_last_time">Last Backup: %1$s</string>
-    <string name="backup_total_created">Total Created: %1$d</string>
-    <string name="backup_available_count">Available: %1$d</string>
-    <string name="backup_status_never">Never</string>
+    <string name="backup_last_time">Ultimo Backup: %1$s</string>
+    <string name="backup_total_created">Totale creato: %1$d</string>
+    <string name="backup_available_count">Disponibile: %1$d</string>
+    <string name="backup_status_never">Mai</string>
     <string name="backup_status_on">ON</string>
     <string name="backup_status_off">OFF</string>
 
     <!-- Clean Backups -->
-    <string name="backup_clean_title">Clean Backups</string>
-    <string name="backup_clean_message">This will delete all backup files. This action cannot be undone.\n\nAre you sure?</string>
-    <string name="backup_clean_all">Clean All</string>
-    <string name="backup_cleaned_success">All backups cleaned</string>
+    <string name="backup_clean_title">Pulisci Backups</string>
+    <string name="backup_clean_message">Questo cancellerà tutti i backups.\nQuesta azione non può essere ripristinata.
+        \n\nSei sicuro?</string>
+    <string name="backup_clean_all">Pulisci tutto</string>
+    <string name="backup_cleaned_success">Tutti i backups sono stati eliminati</string>
 
     <!-- Export/Import Messages -->
-    <string name="export_events_title">Export Events</string>
-    <string name="export_processing">Exporting events...</string>
-    <string name="export_failed">Export failed</string>
-    <string name="export_no_events">No events to export</string>
+    <string name="export_events_title">Esporta Eventi</string>
+    <string name="export_processing">Esportando eventi…</string>
+    <string name="export_success">Eventi esportati correttamente</string>
+    <string name="export_failed">Export fallito</string>
+    <string name="export_no_events">Nessun Evento da esportare</string>
 
     <!-- Common Actions -->
-    <string name="action_enable">Enable</string>
-    <string name="action_disable">Disable</string>
-    <string name="action_preview">Preview</string>
-    <string name="action_restore">Restore</string>
+    <string name="action_enable">Abilita</string>
+    <string name="action_disable">Disabilita</string>
+    <string name="action_preview">Anteprima</string>
+    <string name="action_restore">Ripristina</string>
+    <string name="action_cancel">Annulla</string>
+    <string name="action_ok">OK</string>
+    <string name="action_close">Chiudi</string>
     <string name="today">Oggi</string>
-    <string name="no_event_available">Nessun evento disponibile</string>
+    <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
-    <string name="import_events">Importa Eventi</string>
-    <string name="no_events_import_from_JSON_file_or_manually_add_event">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
-    <string name="create_new_event">Crea Nuovo Evento</string>
+    <string name="text_import_events">Importa Eventi</string>
+    <string name="long_text_no_events_to_show_import_from_JSON_file_or_manually_add_event" tools:ignore="Typos">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="text_create_new_event">Crea Nuovo Evento</string>
     <string name="tip_important_events_will_be_automatically_synchronized">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
     <string name="search_events">Cerca Eventi</string>
     <string name="update">Aggiorna</string>
@@ -520,16 +527,13 @@
 
     <!-- Menu Actions -->
     <string name="action_import_events">Importa Eventi</string>
-    <string name="action_export_events">Esporta Eventi</string>
     <string name="action_refresh_events">Aggiorna</string>
     <string name="action_search_events">Cerca Eventi</string>
     <string name="advanced_menu_events_list">Avanzate</string>
     <string name="action_events_settings">Impostazioni Eventi</string>
 
     <!-- Event Detail Actions -->
-    <string name="action_edit_event">Modifica Evento</string>
     <string name="action_share_event">Condividi Evento</string>
-    <string name="action_add_to_calendar">Aggiungi al Calendario</string>
     <string name="action_delete_event">Elimina Evento</string>
     <string name="action_copy_details">Copia Dettagli</string>
     <string name="action_view_source">Visualizza Pacchetto Origine</string>
@@ -589,16 +593,16 @@
 
     <!-- Empty State -->
     <string name="empty_no_events_title">Nessun evento disponibile</string>
-    <string name="empty_no_events_description">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
+    <string name="empty_no_events_description" tools:ignore="Typos">Non ci sono eventi da mostrare al momento.\nImporta eventi da file JSON o aggiungi nuovi eventi manualmente.</string>
     <string name="empty_import_events">Importa Eventi</string>
     <string name="empty_create_event">Crea Nuovo Evento</string>
     <string name="empty_help_text">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
 
     <!-- Loading State -->
-    <string name="loading_events">Caricamento eventi...</string>
-    <string name="loading_database">Sto recuperando gli eventi dal database...</string>
-    <string name="loading_importing">Importando eventi...</string>
-    <string name="loading_exporting">Esportando eventi...</string>
+    <string name="loading_events">Caricamento eventi…</string>
+    <string name="loading_database">Sto recuperando gli eventi dal database…</string>
+    <string name="loading_importing">Importando eventi…</string>
+    <string name="loading_exporting">Esportando eventi…</string>
     <string name="loading_cancel">Annulla</string>
 
     <!-- Accessibility -->
@@ -616,6 +620,24 @@
     <string name="text_capital_cancel">ANNULLA</string>
     <string name="text_delete">Elimina</string>
     <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
+
+    <!-- Events Bottom Toolbar Strings -->
+    <string name="close_selection">Chiudi selezione</string>
+    <string name="event_selection_count_single">%d evento</string>
+    <string name="event_selection_count_multiple">%d eventi</string>
+
+    <!-- Confirmation Dialogs -->
+    <string name="confirm_delete_single_event">Eliminare l\'evento \"%s\"?</string>
+    <string name="confirm_delete_multiple_events">Eliminare %d eventi selezionati?</string>
+    <string name="confirm_delete_title">Conferma eliminazione</string>
+    <string name="delete">Elimina</string>
+
+    <!-- Success Messages -->
+    <string name="events_deleted_success">Eliminati %d eventi</string>
+    <string name="event_copied_clipboard">Evento copiato negli appunti</string>
+    <string name="cannot_open_calendar">Impossibile aprire il calendario</string>
+
+
 
 
     <!-- ============================================ -->
@@ -643,7 +665,7 @@
     <string name="intro_benefits_title">Perché Scegliere QDue?</string>
 
     <!-- Benefits -->
-    <string name="intro_benefit_1">Calcolo automatico dei cicli 4-2 per eliminare errori di pianificazione</string>
+    <string name="intro_benefit_1">Calcolo automatico dei cicli 4–2 per eliminare errori di pianificazione</string>
     <string name="intro_benefit_2">Coordinamento semplificato tra tutte le 9 squadre</string>
     <string name="intro_benefit_3">Interfaccia intuitiva ottimizzata per l\'uso quotidiano</string>
     <string name="benefit_check">Beneficio verificato</string>
@@ -702,6 +724,7 @@
     <string name="team_selected_letter_format">Squadra %1$s selezionata</string>         <!-- "Squadra A selezionata" -->
 
     <!-- Team Names and Descriptions -->
+    <string name="team_name_format">Squadra %1$d</string>
     <string name="team_description_format">Turni coordinati squadra %1$d</string>
     <string name="team_selected_format">Squadra %1$d selezionata</string>
     <string name="selected_team_label">Squadra selezionata:</string>
@@ -767,7 +790,7 @@
 
     <!-- Quick Tips -->
     <string name="completion_tips_title">Suggerimenti Rapidi</string>
-    <string name="completion_tip_1">Tocca il menu per cambiare vista in qualsiasi momento</string>
+    <string name="completion_tip_1" tools:ignore="Typos">Tocca il menu per cambiare vista in qualsiasi momento</string>
     <string name="completion_tip_2">Usa il pulsante \"+\" per aggiungere eventi personalizzati</string>
     <string name="completion_tip_3">I turni si calcolano automaticamente dal tuo primo giorno</string>
 
@@ -803,7 +826,7 @@
     <!-- PERSONALIZATION ADDITIONAL STRINGS -->
     <!-- ============================================ -->
 
-    <string name="configuration_in_progress">Configurazione in corso...</string>
+    <string name="configuration_in_progress">Configurazione in corso…</string>
     <string name="configuration_complete">✓ Configurazione completata</string>
     <string name="completion_team_format">Squadra: %1$d</string>
     <string name="completion_view_format">Vista: %1$s</string>
@@ -955,34 +978,221 @@
     <string name="text_dayslist_empty_state">Nessun giorno disponibile</string>
     <string name="text_dayslist_empty_state_check_configuration">Controlla la configurazione del calendario</string>
     <string name="text_added_details">Dettagli Aggiuntivi</string>
-    <string name="text_department">Dipartimento:</string>
-    <string name="text_center_of_cost">Centro di Costo:</string>
-    <string name="text_teams_involved">Team Coinvolti:</string>
-    <string name="text_responsible">Responsabile:</string>
-    <string name="text_email">Email:</string>
-    <string name="text_phone">Telefono:</string>
-    <string name="text_impact_level">Livello Impatto:</string>
+    <string name="text_department_semicolon">Dipartimento:</string>
+    <string name="text_center_of_cost_semicolon">Centro di Costo:</string>
+    <string name="text_teams_involved_semicolon">Team Coinvolti:</string>
+    <string name="text_responsible_semicolon">Responsabile:</string>
+    <string name="text_email_semicolon">Email:</string>
+    <string name="text_phone_semicolon">Telefono:</string>
+    <string name="text_impact_level_semicolon">Livello Impatto:</string>
     <string name="text_tech_info">Informazioni Tecniche</string>
     <string name="text_id_event">ID Evento:</string>
     <string name="text_created">Creato:</string>
     <string name="text_origin">Origine:</string>
-    <string name="text_metadata_package">Metadati Pacchetto</string>
-    <string name="text_package_id">ID Pacchetto:</string>
-    <string name="text_version">Versione:</string>
-    <string name="text_url_origin">URL Origine:</string>
-    <string name="text_package_name">Nome Pacchetto:</string>
+    <string name="text_metadata_package">Metadati Package</string>
+    <string name="text_package_id_semicolon">ID Package:</string>
+    <string name="text_version_semicolon">Versione:</string>
+    <string name="text_url_origin_semicolon">URL Origine:</string>
+    <string name="text_package_name_semicolon">Nome Package:</string>
     <string name="text_author">Autore:</string>
     <string name="text_advanced_features">Features Avanzate</string>
-    <string name="menu_title_smartshifts">SmartShifts</string>
-    <string name="placeholder_14_32">14:32</string>
-    <string name="placeholder_smartshifts_export_json">smartshifts_export_20250720_143255.json</string>
-    <string name="placeholder_mb">2.3 MB</string>
-    <string name="placeholder_12_secondi">12 secondi</string>
-    <string name="restore_from_previous_backups">Ripristina da backup precedenti</string>
-    <string name="common_yesterday">Ieri</string>
-
-
+    <string name="toolbar_action">Azione</string>
+    <string name="text_settings_reboot_app_to_apply_dynamic_colors">Riavvia l\'app per applicare completamente i colori dinamici</string>
+    <string name="text_event_edit_base_info">Informazioni Base</string>
+    <string name="text_event_edit_hint_event_title">Titolo evento</string>
+    <string name="text_description">Descrizione</string>
+    <string name="text_event_edit_hint_location">Luogo</string>
+    <string name="text_event_edit_date_and_hour">Data e Orario</string>
+    <string name="text_event_edit_all_day">Tutto il giorno</string>
+    <string name="text_event_edit_start_asterisc">Inizio *</string>
+    <string name="text_event_edit_select_date">Seleziona data</string>
+    <string name="text_event_edit_select_hour">Seleziona ora</string>
+    <string name="text_event_edit_end_asterisk">Fine *</string>
+    <string name="text_classification">Classificazione</string>
+    <string name="text_event_edit_hint_event_type">Tipo evento</string>
+    <string name="text_priority">Priorità</string>
+    <string name="text_events_list_events_of_the_day">Eventi del giorno</string>
+    <string name="text_close">Chiudi</string>
+    <string name="text_selected_date">Data selezionata</string>
+    <string name="text_no_events_for_this_day">Nessun evento per questo giorno</string>
+    <string name="text_add_event">Aggiungi evento</string>
+    <string name="text_new_event">Nuovo evento</string>
+    <string name="text_all_day">Tutto il giorno</string>
+    <string name="text_quick_event_start_semicolon">"Inizio: "</string>
+    <string name="text_quick_event_end_semicolon">"Fine: "</string>
+    <string name="text_quick_event_absence_from_work">Assenza dal lavoro</string>
+    <string name="text_quick_event_requires_approval">Richiede approvazione</string>
+    <string name="text_create_event">Crea Evento</string>
+    <string name="text_hint_event_title">Titolo evento</string>
+    <string name="text_description_optional">Descrizione (opzionale)</string>
+    <string name="text_duration_semicolon">Durata:</string>
+    <string name="text_type_semicolon">Tipo:</string>
+    <string name="text_priority_semicolon">Priorità:</string>
+    <string name="text_event_state">Stato Evento</string>
+    <string name="text_state_semicolon">Stato:</string>
+    <string name="placeholder_backup_json_file" translatable="false">events_backup_20250613_143022.json</string>
+    <string name="placeholder_date_time_kilobytes" translatable="false">13/06/2025 14:30 – 15.2 KB</string>
+    <string name="text_backup_options">Backup options</string>
+    <string name="text_location">Luogo</string>
+    <string name="text_info">Informazioni</string>
+    <string name="text_priority_high">Priorità alta</string>
+    <string name="text_event_not_available">Evento non disponibile</string>
+    <string name="text_add">Aggiungi</string>
+    <string name="text_show_all">Vedi Tutti</string>
+    <string name="text_validation">Validazione</string>
+    <string name="text_validate_before_import">Valida prima di importare</string>
+    <string name="text_show_validation_results">Mostra i risultati di validazione</string>
+    <string name="text_duplicate_event">Duplica evento</string>
+    <string name="text_skip_duplicate_event">Salta la duplicazione evento</string>
+    <string name="text_substitute_existing_events">Sostituisci gli eventi esistenti</string>
+    <string name="text_rename_duplicated_events">Rinomina gli eventi duplicati</string>
+    <string name="text_import_behaviour">Comportamento di importazione</string>
+    <string name="text_show_import_progress">Mostra progressi di importazione</string>
+    <string name="text_keep_existing_events">Conserva gli eventi esistenti</string>
+    <string name="text_allow_partial_import_on_errors">Consenti importazione parziale in caso di errori</string>
+    <string name="text_advanced_restore_options">Opzioni di ripristino avanzate</string>
+    <string name="text_restore_mode">Modalità di ripristino</string>
+    <string name="text_merge_with_existing_events">Unione con eventi esistenti</string>
+    <string name="text_replace_all_existing_events">Sostituisci tutti gli eventi esistenti</string>
+    <string name="text_selective_restore_choose_events">Ripristino selettivo (scegli eventi)</string>
+    <string name="text_conflict_resolution">Risoluzione conflitti</string>
+    <string name="text_how_to_handle_events_with_duplicate_ids_semicolon">"Come gestire gli eventi con ID duplicati: "</string>
+    <string name="text_skip_duplicate_events">Salta gli eventi duplicati</string>
+    <string name="text_replace_existing_events">Sostituisci gli eventi esistenti</string>
+    <string name="text_create_new_events_with_different_ids">Crea nuovi eventi con ID differenti</string>
+    <string name="text_safety_options">Opzioni di sicurezza</string>
+    <string name="text_create_backup_before_restore">Crea un bcakup prima del ripristino</string>
+    <string name="text_validate_backup_file_integrity">Valida l\'integritaà del file</string>
+    <string name="text_show_detailed_progress_information">Mostra le informazioni di progresso</string>
+    <string name="text_filter_options">Opzioni di filtro</string>
+    <string name="text_enable_event_filters">Abilita filtri eventi</string>
+    <string name="text_only_restore_events_in_date_range">Ripristina solo gli eventi nel range di date</string>
+    <string name="text_from">Da</string>
+    <string name="text_to">A</string>
+    <string name="text_filter_by_event_types">Filtra per tipi evento</string>
+    <string name="text_restore_summary">Sommario Ripristino</string>
+    <string name="text_ready_to_restore_with_default_settings">Pronto al ripristino con settaggio di default</string>
+    <string name="text_char_backup_status">📊 Stato del backup</string>
+    <string name="text_auto_backup_on">Auto Backup: ON</string>
+    <string name="text_last_backup_never">Ultimo Backup: Mai</string>
+    <string name="total_created_0">Totale creato: 0</string>
+    <string name="text_available_0">Disponibile: 0</string>
+    <string name="text_char_recent_backups">📁 Backups recenti</string>
+    <string name="text_export_options">Opzioni Esportazione</string>
+    <string name="text_package_information">Informazioni Package</string>
+    <string name="text_package_name">Nome Package</string>
+    <string name="text_custom_events_export">Export Eventi Personalizzato</string>
+    <string name="text_custom_export_of_selected_events">"Export personalizzato di eventi selezionati "</string>
+    <string name="text_date_range_filter">Filtro Range di Date</string>
+    <string name="text_filter_by_date_range">Filtra per range di date</string>
+    <string name="text_from_date">Dalla Data</string>
+    <string name="text_to_date">Alla Data</string>
+    <string name="text_event_type_filter">Filtro Tipo Evento</string>
+    <string name="text_general_events">Eventi Generali</string>
+    <string name="text_planned_stops">Fermate Pianificate</string>
+    <string name="text_unplanned_stops">Fermate Non Pianificate</string>
+    <string name="text_maintenance">Manutenzione</string>
+    <string name="text_meetings">Meetings</string>
+    <string name="text_include_custom_properties">Includi le proprietà personalizzate</string>
+    <string name="text_format_json_for_readability">Formato JSON per leggibilità</string>
+    <string name="text_show_detailed_progress">Mostra progressi dettagliati</string>
+    <string name="text_export_summary">Sommario Esportazione</string>
+    <string name="text_ready_to_export_events">Pronto ad esportare gli eventi</string>
+    <string name="text_duplicate_events">Eventi duplicati</string>
+    <string name="text_advanced_import">Import Avanzato</string>
+    <string name="text_quick_actions">Azioni Rapide</string>
+    <string name="text_tap_to_retry">Tap per riprovare</string>
+    <string name="text_loading_dots">Caricamento…</string>
+    <string name="text_title">Titolo</string>
+    <string name="text_09_00_17_00">09:00 – 17:00</string>
+    <string name="text_general">Generale</string>
+    <string name="long_text_char_tip_semicolon_imported_events_will_be_automatically_synchronized">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
+    <string name="text_extended_menu">Menu Esteso</string>
+    <string name="format_text_ends_0">Termina {0}</string>
+    <string name="text_hour_not_specified">Orario non specificato</string>
+    <string name="text_unknown_state">Stato sconosciuto</string>
+    <string name="text_scheduled_on">In programma</string>
+    <string name="text_finished">Terminato</string>
+    <string name="text_in_progress">In corso</string>
+    <string name="text_all_day_long">Tutto il giorno</string>
+    <string name="format_text_begin_semicolon_0">Inizio: {0}</string>
+    <string name="text_select_hour_begin">Seleziona orario inizio</string>
+    <string name="format_text_end_semicolon_0">Fine: {0}</string>
+    <string name="text_select_hour_end">Seleziona orario fine</string>
+    <string name="long_text_finish_hour_must_be_post_begin_hour">L\'ora di fine deve essere successiva all\'ora di inizio</string>
+    <string name="format_text_error_creating_event_semicolon_0">Error creating event: {0}</string>
+    <string name="long_text_action_not_permitted_on_this_date">Azione non consentita per questa data</string>
+    <string name="title_text_creation_error">Errore Creazione</string>
+    <string name="text_creation_dots">Creazione…</string>
+    <string name="text_confirm">Conferma</string>
+    <string name="text_hour_begin">Ora di inizio</string>
+    <string name="text_hour_end">Ora di fine</string>
+    <string name="text_no_event">Nessun evento</string>
+    <string name="text_programming">Programmazione</string>
+    <string name="text_category">Categoria</string>
+    <string name="text_status">Stato</string>
+    <string name="text_time_until">Fino a</string>
+    <string name="text_cost_center">Centro di costo</string>
+    <string name="text_warning">Attenzione</string>
+    <string name="text_backup">Backup</string>
+    <string name="text_error_navigation">Errore navigazione</string>
+    <string name="text_error_event_not_valid">Evento non valido</string>
+    <string name="text_event_deleted">Evento eliminato</string>
+    <string name="text_error_in_share">Errore nella condivisione</string>
+    <string name="text_copied_into_clipboard">Copiato negli appunti</string>
+    <string name="text_error_in_copy_into_clipboard">Errore nella copia negli appunti</string>
+    <string name="text_error_in_duplicating">Errore nella duplicazione</string>
+    <string name="text_error_in_adding_to_calendar">Errore nella aggiunta al calendario</string>
+    <string name="text_events_updated">Eventi aggiornati</string>
+    <string name="text_coming_soon">Coming soon</string>
+    <string name="text_error_loading">Errore caricamento</string>
+    <string name="text_error_file_selection_failed_semicolon">"Selezione File fallita: "</string>
+    <string name="text_clear_all_events">Cancella tutti gli eventi</string>
+    <string name="long_text_are_you_sure_you_want_to_delete_all_local_events_this_action_cannot_be_undone">Sicuro di cancellare tutti gli eventi? Questa azione non può essere ripristinata</string>
+    <string name="text_clear_all">Cancella tutti</string>
+    <string name="text_all_events_cleared">Tutti gli eventi sono stati cancellati</string>
+    <string name="text_char_error_deleting_all_events">❌ Errore nel cancellare tutti gli eventi</string>
+    <string name="text_error_opening_file_saver">Errore apertura file saver</string>
+    <string name="text_exporting_events_dots">Esportando eventi...</string>
+    <string name="text_no_events_to_export">Nessun evento da esportare</string>
+    <string name="text_error_reading_events_from_db">Errore lettura eventi dal database</string>
+    <string name="format_text_exported_0_event_successfully">Esportati {0} eventi con successo</string>
+    <string name="text_error_during_export">Errore durante l\'export</string>
+    <string name="text_no_event_selected_for_export">Nessun evento selezionato per l\'export</string>
+    <string name="text_exporting_0_selected_events">Esportando {0} eventi selezionati...</string>
+    <string name="text_error_during_export_of_selected_events">Errore durante l\'export degli eventi selezionati</string>
+    <string name="format_text_location_semicolon_0">Luogo: {0}</string>
+    <string name="text_date_not_specified">Data non specificata</string>
+    <string name="text_opening_calendar_impossible">Impossibile aprire il calendario</string>
+    <string name="text_error_sharing">Errore condivisione</string>
+    <string name="text_share_event">Condividi Evento</string>
+    <string name="text_error">"Errore "</string>
+    <string name="text_event_deleted_definetly">Evento cancellato definitivamente</string>
+    <string name="text_deleting_cancelled">Eliminazione annullata</string>
+    <string name="text_parenthesis_cr_0_warnings_parenthesis">\n({0} avvisi)</string>
+    <string name="text_export_log_functionality_coming_soon">Log Esportazione ina arrivo presto</string>
+    <string name="text_showing_0_imported_events">Mostrando {0} eventi importati</string>
+    <string name="text_issues_found">Avvertimenti riscontrati</string>
+    <string name="text_import_completed">Import completato</string>
+    <string name="text_import_failed">Import fallito</string>
+    <string name="format_import_failed_semicolon_0">Import failed: {0}</string>
+    <string name="stringformat_importing_dots_d_d_s">Importing... (%d/%d) %s</string>
+    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi...</string>
+    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo...</string>
+    <string name="text_importing_events">Importazione Eventi</string>
+    <string name="text_reading_file">Lettura file...</string>
+    <string name="text_char_error_reading_file_semicolon">"❌ Error reading file: "</string>
+    <string name="text_char_unsupported_file_type">"❌ Tipo file non supportato "</string>
+    <string name="text_char_error_creating_event_space">❌ Error creating event</string>
+    <string name="text_create">Crea</string>
+    <string name="text_new_eventnuovo_evento">Nuovo Evento</string>
+    <string name="text_create_event_for_0_semicolon">Crea evento per {0}:</string>
+    <string name="text_event_not_found">Evento non trovato</string>
+    <string name="text_error_loading_event">Errore nel caricamento dell\'evento</string>
+    <string name="text_event_id_not_valid">ID evento non valido</string>
 
     <!-- ======================================================================= -->
+
+
 
 </resources>

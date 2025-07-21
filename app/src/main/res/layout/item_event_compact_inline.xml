@@ -6,7 +6,6 @@
      ========================================================================= -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -63,6 +62,7 @@
         android:layout_height="12dp"
         android:layout_marginStart="8dp"
         android:src="@drawable/ic_rounded_priority_high_24"
+        android:contentDescription="@string/text_priority_high"
         android:visibility="gone"
         tools:visibility="visible"
         tools:tint="@color/priority_high" />

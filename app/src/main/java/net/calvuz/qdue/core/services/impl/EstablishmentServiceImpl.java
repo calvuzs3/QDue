@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: EstablishmentServiceImpl - Dependency Injection Compliant
- *
+ * <p>
  * Centralized implementation for all Establishment operations with:
  * - Manual dependency injection via constructor
  * - Consistent OperationResult pattern throughout
@@ -30,7 +30,7 @@ import java.util.concurrent.Executors;
  * - Background operations with CompletableFuture
  * - Comprehensive validation and error handling
  * - Organization hierarchy management
- *
+ * <p>
  * Fully compliant with EstablishmentService interface contract.
  */
 public class EstablishmentServiceImpl implements EstablishmentService {

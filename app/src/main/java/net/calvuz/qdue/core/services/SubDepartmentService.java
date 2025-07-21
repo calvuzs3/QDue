@@ -8,10 +8,10 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * STEP 1: Core Service Interfaces for User and Organization Management
- *
+ * <p>
  * Provides centralized service layer for all user and organizational operations
  * with consistent backup, validation, and business logic.
- *
+ * <p>
  * These interfaces prepare the foundation for extending the Core Backup System
  * to all entities beyond just events.
  */

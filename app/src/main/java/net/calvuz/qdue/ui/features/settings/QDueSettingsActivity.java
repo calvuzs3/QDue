@@ -67,12 +67,6 @@ public class QDueSettingsActivity extends AppCompatActivity {
                 return;
             }
 
-            // Check if FragmentManager is available
-            if (getSupportFragmentManager() == null) {
-                Log.e(TAG, "FragmentManager is null");
-                return;
-            }
-
             // Check if activity is still valid
             if (isFinishing() || isDestroyed()) {
                 Log.w(TAG, "Activity is finishing or destroyed, skipping fragment transaction");
@@ -86,7 +80,7 @@ public class QDueSettingsActivity extends AppCompatActivity {
             transaction.replace(R.id.settings_container, settingsFragment);
 
             // Add to back stack for proper navigation
-            transaction.addToBackStack(null);
+            //transaction.addToBackStack(null); // this is intended for multiple fragments
 
             // Commit safely
             if (!getSupportFragmentManager().isStateSaved()) {
@@ -123,19 +117,6 @@ public class QDueSettingsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // No ActionBar menu - handled by toolbar click listener
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * Handle back press safely
-     */
-    @Override
-    public void onBackPressed() {
-        try {
-            super.onBackPressed();
-        } catch (Exception e) {
-            Log.e(TAG, "Error in onBackPressed: " + e.getMessage());
-            finish();
-        }
     }
 
     /**

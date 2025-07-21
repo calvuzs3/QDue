@@ -10,19 +10,19 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
 /**
  * Dependency injection module for back handling services using the project's
  * custom ServiceLocator pattern (no external libraries required).
- *
+ * <p>
  * This module follows the same singleton pattern used throughout the project:
  * - QuattroDue.getInstance(context)
  * - QDueDatabase.getInstance(context)
  * - CalendarDataManagerEnhanced.getEnhancedInstance()
- *
+ * <p>
  * Features:
  * - Thread-safe singleton implementation
  * - Lazy initialization
  * - Context-aware service creation
  * - Manual dependency resolution
  * - Consistent with project architecture
- *
+ * <p>
  * Usage:
  * BackHandlingService service = BackHandlingModule.getBackHandlingService(context);
  * BackHandlerFactory factory = BackHandlingModule.getBackHandlerFactory(context);
@@ -47,9 +47,9 @@ public class BackHandlingModule {
 
     /**
      * Get the singleton BackHandlingService instance.
-     *
+     * <p>
      * Thread-safe lazy initialization following the project's singleton pattern.
-     *
+     * <p>
      * @param context Application context for service initialization
      * @return BackHandlingService singleton instance
      */
@@ -59,7 +59,7 @@ public class BackHandlingModule {
             synchronized (SERVICE_LOCK) {
                 if (sBackHandlingService == null) {
                     Log.d(TAG, "Initializing BackHandlingService singleton");
-                    sBackHandlingService = new BackHandlingServiceImpl(context.getApplicationContext());
+                    sBackHandlingService = new BackHandlingServiceImpl(context);
                     Log.d(TAG, "BackHandlingService singleton created");
                 }
             }
@@ -69,9 +69,9 @@ public class BackHandlingModule {
 
     /**
      * Get the singleton BackHandlerFactory instance.
-     *
+     * <p>
      * Depends on BackHandlingService, so it will automatically initialize it if needed.
-     *
+     * <p>
      * @param context Application context for factory initialization
      * @return BackHandlerFactory singleton instance
      */
@@ -92,10 +92,10 @@ public class BackHandlingModule {
 
     /**
      * Initialize all services early (optional optimization).
-     *
+     * <p>
      * Call this from Application.onCreate() to pre-initialize services
      * and avoid potential delays during first access.
-     *
+     * <p>
      * @param context Application context
      */
     public static void initialize(@NonNull Context context) {
@@ -107,7 +107,7 @@ public class BackHandlingModule {
 
     /**
      * Clear all singleton instances (for testing or memory cleanup).
-     *
+     * <p>
      * Warning: This will invalidate all existing references to services.
      * Only use this for testing or when the application is shutting down.
      */
@@ -131,18 +131,17 @@ public class BackHandlingModule {
 
     /**
      * Get debug information about the module state (for testing/debugging).
-     *
+     * <p>
      * @return Debug information string
      */
     @NonNull
-    public static String getDebugInfo() {
+    public static String debugGetInfo() {
         StringBuilder info = new StringBuilder();
         info.append("=== BackHandlingModule Debug Info ===\n");
         info.append("BackHandlingService initialized: ").append(sBackHandlingService != null).append("\n");
         info.append("BackHandlerFactory initialized: ").append(sBackHandlerFactory != null).append("\n");
 
-        if (sBackHandlingService instanceof BackHandlingServiceImpl) {
-            BackHandlingServiceImpl impl = (BackHandlingServiceImpl) sBackHandlingService;
+        if (sBackHandlingService instanceof BackHandlingServiceImpl impl) {
             info.append("Registered handlers: ").append(impl.getRegisteredHandlerCount()).append("\n");
         }
 

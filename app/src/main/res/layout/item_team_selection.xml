@@ -34,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_marginBottom="@dimen/spacing_s"
-            android:background="@color/md_theme_light_primary"
+            android:background="?attr/colorPrimary"
             android:alpha="0.8" />
 
         <!-- ============================================ -->
@@ -47,7 +47,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_xs"
-            android:text="1"
+            android:text="@string/placeholder_calendar_day"
             style="@style/TextAppearance.QDue.HeadlineLarge"
             android:textColor="?attr/colorOnSurface"
             android:textSize="32sp"
@@ -80,7 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="4dp"
             android:layout_marginTop="@dimen/spacing_s"
-            android:background="@color/md_theme_light_primary"
+            android:background="?attr/colorSecondary"
             android:visibility="gone"
             android:alpha="0.9" />
 

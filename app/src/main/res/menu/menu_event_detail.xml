@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Menu for EventDetailFragment Toolbar -->
+<?xml version="1.0" encoding="utf-8"?><!-- Menu for EventDetailFragment Toolbar -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -7,66 +6,64 @@
     <!-- Edit Event Action -->
     <item
         android:id="@+id/action_edit_event"
-        android:title="@string/edit_event"
         android:icon="@drawable/ic_rounded_edit_24"
+        android:title="@string/edit_event"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
     <!-- Share Event Action -->
     <item
         android:id="@+id/action_share_event"
-        android:title="@string/share_event"
         android:icon="@drawable/ic_rounded_share_24"
+        android:title="@string/share_event"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
 
     <!-- Lets wait for a bit -->
     <!-- Add to Calendar Action -->
     <item
         android:id="@+id/action_add_to_calendar"
-        android:title="@string/add_to_calendar_app"
         android:icon="@drawable/ic_rounded_calendar_add_on_24"
+        android:title="@string/add_to_calendar_app"
+        android:visible="false"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="never" />
+
+    <!-- Delete Event -->
+    <item
+        android:id="@+id/action_delete_event"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/delete_event"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="never" />
+
+    <!-- Copy Event Details -->
+    <item
+        android:id="@+id/action_copy_details"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="@string/copy_details"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="never" />
+
+    <!-- View Source Package -->
+    <item
+        android:id="@+id/action_view_source"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="@string/show_origin_package"
+        android:visible="false"
+        app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="never"
-        android:visible="false"/>
+        tools:visible="true" />
 
-    <!-- More Actions (Overflow Menu) -->
-<!--    <item-->
-<!--        android:id="@+id/action_more_options"-->
-<!--        android:title="@string/other_options"-->
-<!--        android:icon="@android:drawable/ic_menu_more"-->
-<!--        app:showAsAction="never">-->
+    <!-- Export Event -->
+    <item
+        android:id="@+id/action_export_event"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="@string/export_event"
+        android:visible="false"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="never"
+        tools:visible="true" />
 
-<!--        <menu>-->
-            <!-- Delete Event -->
-            <item
-                android:id="@+id/action_delete_event"
-                android:title="@string/delete_event"
-                android:icon="@drawable/ic_rounded_delete_24"
-                app:showAsAction="never"/>
-
-            <!-- Copy Event Details -->
-            <item
-                android:id="@+id/action_copy_details"
-                android:title="@string/copy_details"
-                android:icon="@drawable/ic_rounded_content_copy_24"
-                app:showAsAction="never"/>
-
-            <!-- View Source Package -->
-            <item
-                android:id="@+id/action_view_source"
-                android:title="@string/show_origin_package"
-                android:icon="@android:drawable/ic_menu_info_details"
-                app:showAsAction="never"
-                tools:visible="true"
-                android:visible="false"/>
-
-            <!-- Export Event -->
-            <item
-                android:id="@+id/action_export_event"
-                android:title="@string/export_event"
-                android:icon="@android:drawable/ic_menu_save"
-                app:showAsAction="never"
-                tools:visible="true"
-                android:visible="false"/>
-<!--        </menu>-->
-<!--    </item>-->
 
 </menu>

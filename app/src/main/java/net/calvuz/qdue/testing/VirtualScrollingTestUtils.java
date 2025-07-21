@@ -93,7 +93,7 @@ public class VirtualScrollingTestUtils {
 
 /**
  * INTEGRATION CHECKLIST - Complete these steps in order:
- *
+ * <p>
  * □ 1. Add all proto package classes to your project
  * □ 2. Update gradle dependencies
  * □ 3. Add ProGuard rules
@@ -104,18 +104,18 @@ public class VirtualScrollingTestUtils {
  * □ 8. Monitor memory usage
  * □ 9. Test on different devices/API levels
  * □ 10. Gradual rollout to users
- *
+ * <p>
  * PERFORMANCE EXPECTATIONS:
  * - 80%+ reduction in memory usage
  * - 90%+ reduction in scroll lag
  * - 50%+ faster initial load time
  * - Smooth 60fps scrolling
- *
+ * <p>
  * FALLBACK STRATEGY:
  * - If virtual scrolling fails, app automatically falls back to legacy mode
  * - No user-visible errors or crashes
  * - All existing functionality remains available
- *
+ * <p>
  * MONITORING:
  * - Track performance metrics via MigrationHelper.logPerformanceMetric()
  * - Monitor crash rates during rollout
@@ -127,22 +127,22 @@ public class VirtualScrollingTestUtils {
 
 /**
  * SUGGESTED MIGRATION TIMELINE:
- *
+ * <p>
  * Week 1: Integration and Internal Testing
  * - Integrate all bridge classes
  * - Test on development devices
  * - Performance benchmarking
- *
+ * <p>
  * Week 2: Beta Testing
  * - Enable for internal testers only
  * - A/B test with feature flag
  * - Collect performance data
- *
+ * <p>
  * Week 3: Limited Rollout
  * - Enable for 10% of users
  * - Monitor crash rates and performance
  * - Adjust based on feedback
- *
+ * <p>
  * Week 4: Full Rollout
  * - Enable for all users if metrics are good
  * - Remove legacy code paths if stable

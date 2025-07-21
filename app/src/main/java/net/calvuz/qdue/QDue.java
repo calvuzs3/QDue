@@ -210,7 +210,7 @@ public class QDue extends Application {
     /**
      * Debug settings for virtual scrolling
      */
-    public class VirtualScrollingDebugSettings {
+    public static class VirtualScrollingDebugSettings {
 
         // Enable/disable debug logging
         public static final boolean DEBUG_VIRTUAL_SCROLLING = true;
@@ -268,7 +268,7 @@ public class QDue extends Application {
 
     /**
      * 🆕 Get BackHandlingService for the entire app
-     *
+     * <p>
      * Usage anywhere in the app:
      * BackHandlingService service = QDue.getBackHandlingService();
      */
@@ -278,7 +278,7 @@ public class QDue extends Application {
 
     /**
      * 🆕 Get BackHandlerFactory for the entire app
-     *
+     * <p>
      * Usage anywhere in the app:
      * BackHandlerFactory factory = QDue.getBackHandlerFactory();
      */

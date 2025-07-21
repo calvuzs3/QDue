@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- BOTTOM TOOLBAR CONTAINER STYLES -->
+    <!-- Add to res/values/styles.xml -->
+    <!-- ============================================ -->
+
+    <!-- ✅ UPDATED: Bottom Selection Toolbar Style -->
+    <style name="Widget.QDue.BottomSelectionToolbar" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">?attr/floatingMenuBackground</item>
+        <item name="cardCornerRadius">20dp</item>
+        <item name="cardElevation">12dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">?attr/floatingMenuOnBackground</item>
+        <item name="android:layout_margin">16dp</item>
+    </style>
+
+    <!-- ✅ UPDATED: Primary Action Button Style -->
+    <style name="Widget.QDue.ToolbarAction.Primary" parent="Widget.Material3.Button.TextButton">
+        <item name="android:background">@drawable/bg_menu_item</item>
+        <item name="backgroundTint">?attr/floatingMenuPrimary</item>
+        <item name="iconTint">?attr/floatingMenuOnBackground</item>
+        <item name="android:textColor">?attr/floatingMenuOnBackground</item>
+        <item name="rippleColor">?attr/floatingMenuSelected</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="iconSize">24dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <!-- ✅ NEW: Secondary Action Button Style -->
+    <style name="Widget.QDue.ToolbarAction.Secondary" parent="Widget.QDue.ToolbarAction.Primary">
+        <item name="backgroundTint">?attr/floatingMenuSurface</item>
+        <item name="iconTint">?attr/floatingMenuOnSurface</item>
+        <item name="android:textColor">?attr/floatingMenuOnSurface</item>
+    </style>
+
+    <!-- ✅ NEW: Destructive Action Button Style -->
+    <style name="Widget.QDue.ToolbarAction.Destructive" parent="Widget.QDue.ToolbarAction.Primary">
+        <item name="backgroundTint">@color/red_500</item>
+        <item name="iconTint">@color/grey_50</item>
+        <item name="android:textColor">@color/grey_50</item>
+        <item name="rippleColor">@color/red_300</item>
+    </style>
+
+    <!-- ✅ NEW: Close Button Style -->
+    <style name="Widget.QDue.ToolbarAction.Close" parent="Widget.Material3.Button.TextButton">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="iconTint">?attr/floatingMenuOnBackground</item>
+        <item name="rippleColor">?attr/floatingMenuSelected</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <!-- ✅ NEW: Selection Count Text Style -->
+    <style name="Widget.QDue.SelectionCountText" parent="Widget.Material3.CheckedTextView">
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="android:textColor">?attr/floatingMenuOnBackground</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <!-- ============================================ -->
+    <!-- ALTERNATIVE COMPACT LAYOUT -->
+    <!-- res/layout/compact_bottom_selection_toolbar.xml -->
+    <!-- For smaller screens or more compact design -->
+    <!-- ============================================ -->
+
+<!--    <?xml version="1.0" encoding="utf-8"?>-->
+<!--    &lt;!&ndash; Compact version for smaller screens &ndash;&gt;-->
+<!--    <com.google.android.material.card.MaterialCardView-->
+<!--        xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--        xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="12dp"-->
+<!--        android:layout_marginBottom="20dp"-->
+<!--        app:cardCornerRadius="16dp"-->
+<!--        app:cardElevation="8dp"-->
+<!--        app:cardBackgroundColor="?attr/floatingMenuBackground"-->
+<!--        app:strokeWidth="1dp"-->
+<!--        app:strokeColor="?attr/floatingMenuOnBackground"-->
+<!--        app:strokeAlpha="0.08">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:padding="12dp"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:background="?attr/floatingMenuSurface">-->
+
+<!--            &lt;!&ndash; Compact Close Button &ndash;&gt;-->
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/btn_close_selection"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="40dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:insetTop="0dp"-->
+<!--                android:insetBottom="0dp"-->
+<!--                android:insetLeft="0dp"-->
+<!--                android:insetRight="0dp"-->
+<!--                android:contentDescription="@string/selection_mode_clear"-->
+<!--                app:icon="@drawable/ic_rounded_close_24"-->
+<!--                app:iconSize="20dp"-->
+<!--                app:iconTint="?attr/floatingMenuOnBackground"-->
+<!--                app:cornerRadius="10dp"-->
+<!--                app:backgroundTint="@android:color/transparent"-->
+<!--                app:rippleColor="?attr/floatingMenuSelected"-->
+<!--                style="@style/Widget.Material3.Button.IconButton" />-->
+
+<!--            &lt;!&ndash; Compact Selection Count &ndash;&gt;-->
+<!--            <TextView-->
+<!--                android:id="@+id/tv_selection_count"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="0"-->
+<!--                android:textAppearance="@style/TextAppearance.Material3.BodySmall"-->
+<!--                android:textColor="?attr/floatingMenuOnBackground"-->
+<!--                android:fontFamily="sans-serif-medium"-->
+<!--                android:gravity="start|center_vertical"-->
+<!--                android:layout_marginEnd="8dp" />-->
+
+<!--            &lt;!&ndash; Compact Actions RecyclerView &ndash;&gt;-->
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/rv_quick_actions"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal"-->
+<!--                android:clipToPadding="false"-->
+<!--                android:scrollbars="none"-->
+<!--                android:overScrollMode="never"-->
+<!--                android:nestedScrollingEnabled="false" />-->
+
+<!--        </LinearLayout>-->
+
+<!--    </com.google.android.material.card.MaterialCardView>-->
+
+<!--    &lt;!&ndash; ============================================ &ndash;&gt;-->
+<!--    &lt;!&ndash; COMPACT ACTION BUTTON LAYOUT &ndash;&gt;-->
+<!--    &lt;!&ndash; res/layout/compact_bottom_toolbar_action.xml &ndash;&gt;-->
+<!--    &lt;!&ndash; ============================================ &ndash;&gt;-->
+
+<!--    <?xml version="1.0" encoding="utf-8"?>-->
+<!--    &lt;!&ndash; Compact action button for smaller screens &ndash;&gt;-->
+<!--    <com.google.android.material.button.MaterialButton-->
+<!--        xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--        xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--        android:id="@+id/btn_action"-->
+<!--        android:layout_width="48dp"-->
+<!--        android:layout_height="48dp"-->
+<!--        android:layout_margin="3dp"-->
+<!--        android:insetTop="0dp"-->
+<!--        android:insetBottom="0dp"-->
+<!--        android:insetLeft="0dp"-->
+<!--        android:insetRight="0dp"-->
+<!--        android:minWidth="48dp"-->
+<!--        android:minHeight="48dp"-->
+<!--        android:padding="10dp"-->
+<!--        app:cornerRadius="14dp"-->
+<!--        app:iconSize="20dp"-->
+<!--        app:iconTint="?attr/floatingMenuOnBackground"-->
+<!--        app:backgroundTint="?attr/floatingMenuSurface"-->
+<!--        app:rippleColor="?attr/floatingMenuSelected"-->
+<!--        android:focusable="true"-->
+<!--        android:clickable="true"-->
+<!--        android:elevation="0dp"-->
+<!--        style="@style/Widget.Material3.Button.IconButton">-->
+
+<!--        &lt;!&ndash; Icon will be set programmatically &ndash;&gt;-->
+
+<!--    </com.google.android.material.button.MaterialButton>-->
+
+    <!-- ============================================ -->
+    <!-- IMPLEMENTATION NOTES -->
+    <!-- ============================================ -->
+
+    <!--
+    🎯 KEY IMPROVEMENTS IMPLEMENTED:
+
+    1. **PALETTE COLORI CUSTOM**
+       - floatingMenuBackground per sfondo toolbar
+       - floatingMenuSurface per sfondo secondario
+       - floatingMenuOnBackground per testo/icone
+       - floatingMenuSelected per stati selected/hover
+       - floatingMenuPrimary per accenti
+
+    2. **DIMENSIONI AUMENTATE**
+       - Pulsanti da 48dp → 56dp per migliore accessibilità
+       - Icone da 20dp → 24dp per maggiore visibilità
+       - Touch target minimi 48dp garantiti
+
+    3. **LIMITE AZIONI**
+       - Massimo 4 azioni per UI pulita
+       - Selezione intelligente basata su priorità
+       - Layout ottimizzato per 4 elementi
+
+    4. **DESIGN SEMPLIFICATO**
+       - Rimosso titolo inutile
+       - Solo conteggio selezione compatto
+       - Focus su funzionalità essenziali
+
+    5. **FEEDBACK VISIVO ENHANCED**
+       - State animators per pressed/focused
+       - Haptic feedback sui click
+       - Animazioni smooth in/out
+       - Ripple effects personalizzati
+
+    6. **RESPONSIVE DESIGN**
+       - Layout normale per schermi standard
+       - Layout compact per schermi piccoli
+       - Adaptive sizing basato su disponibilità spazio
+
+    7. **ACCESSIBILITÀ**
+       - Content descriptions appropriate
+       - Touch targets minimi rispettati
+       - Contrast ratio ottimizzato
+       - Screen reader friendly
+
+    USAGE:
+    - Sostituire il layout esistente con enhanced_bottom_selection_toolbar.xml
+    - Aggiornare la classe Java per usare i nuovi attributi colore
+    - Applicare gli stili personalizzati
+    - Testare su diverse densità di schermo
+    -->
+</resources>

@@ -73,12 +73,12 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      * @param items        List of view items
      * @param userHalfTeam User's half team
      */
-    public CalendarAdapter(Context context, EventsService eventsService, List<SharedViewModels.ViewItem> items,
+    public CalendarAdapter(Context context, EventsService service, List<SharedViewModels.ViewItem> items,
                            HalfTeam userHalfTeam) {
         super(context, items, userHalfTeam, 1); // Calendar doesn't show detailed shift info
 
         // Initialize events service
-        mEventsService = eventsService;
+        mEventsService = service;
 
         setupMembers(context);
     }
@@ -110,7 +110,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         mEventsDatabase = QDueDatabase.getInstance(context);
         loadEventsFromDatabase();
 
-        Log.d(TAG, "CalendarAdapter: ✅ initialized");
+        Log.v(TAG, "✅ CalendarAdapter: initialized");
     }
 
     /**
@@ -173,79 +173,6 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
 
     }
 
-    // ===========================================
-    // Toolbar Action Handling
-    // ===========================================
-
-    /**
-     * Handle toolbar action execution
-     *
-     * @param action Toolbar action to handle
-     * @param day    Day associated with the action
-     * @param date   Date associated with the action
-     */
-    @Override
-    protected void handleToolbarAction(ToolbarAction action, Day day, LocalDate date) {
-        Log.d(TAG, "Handling toolbar action: " + action + " for date: " + date);
-
-        switch (action) {
-            case ADD_EVENT:
-                // Create new event for this date
-                createQuickEvent("Nuovo evento", date, EventType.GENERAL);
-                break;
-
-            case VIEW_EVENTS:
-                // This will be handled by fragment to show events list
-                Log.d(TAG, "VIEW_EVENTS action - delegating to fragment");
-                break;
-
-            case FERIE:
-                createQuickEvent("Ferie", date, EventType.GENERAL);
-                break;
-
-            case MALATTIA:
-                createQuickEvent("Malattia", date, EventType.GENERAL);
-                break;
-
-            case LEGGE_104:
-                createQuickEvent("Legge 104", date, EventType.GENERAL);
-                break;
-
-            case PERMESSO:
-                createQuickEvent("Permesso", date, EventType.GENERAL);
-                break;
-
-            default:
-                Log.w(TAG, "Unhandled toolbar action: " + action);
-        }
-    }
-
-    /**
-     * Create a quick event for the specified date
-     * This is a simplified event creation - full implementation would create LocalEvent
-     *
-     * @param title Title of the event
-     * @param date  Date of the event
-     * @param type  Type of the event
-     */
-    private void createQuickEvent(String title, LocalDate date, EventType type) {
-        Log.d(TAG, "Creating quick event: " + title + " for " + date);
-
-        // TODO: Create actual LocalEvent and save to database
-        // For now, just log the action and show a toast
-
-        if (mContext instanceof android.app.Activity) {
-            android.app.Activity activity = (android.app.Activity) mContext;
-            activity.runOnUiThread(() -> {
-                android.widget.Toast.makeText(mContext,
-                        "Evento '" + title + "' creato per " + date,
-                        android.widget.Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        // Refresh events after creation
-        loadEventsFromDatabase();
-    }
 
     /// /////////////////////////////////////////////////////////////////////////////////////
 
@@ -255,7 +182,8 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      * @param holder Calendar day view holder to reset
      */
     private void resetCalendarCellState(CalendarDayViewHolder holder) {
-        // ❌ NON RESETTARE i colori del testo - lasciare che HighlightingHelper li gestisca
+        // ❌ DON'T RESET colors
+        // HighlightingHelper does it
 
         // Reset events indicators
         if (holder.vEventsDot != null) {
@@ -324,8 +252,8 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             // FIX: Get priority color for tinting
             int priorityColor = mEventHelper.getHighestPriorityColor(events);
 
-            Log.d(TAG, mTAG + "Setting up events indicator for " + eventCount + " events");
-            Log.d(TAG, mTAG + "Priority color: " + Integer.toHexString(priorityColor));
+            Log.i(TAG, mTAG + "✅ Setting up events indicator for " + eventCount + " events");
+            Log.i(TAG, mTAG + "✅ Priority color: " + Integer.toHexString(priorityColor));
 
             // Multiple events - show count badge with color
             if (holder.vEventsDot != null) {
@@ -334,10 +262,10 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             if (holder.tvEventsCount != null) {
                 holder.tvEventsCount.setVisibility(View.VISIBLE);
                 if (eventCount == 1) {
-                    Log.d(TAG, mTAG + "Single event - showing empty badge");
+                    Log.i(TAG, mTAG + "✅ Single event - showing empty badge");
                     holder.tvEventsCount.setText("");
                 } else {
-                    Log.d(TAG, mTAG + "Multiple events - showing badge: " + eventCount);
+                    Log.i(TAG, mTAG + "✅ Multiple events - showing badge: " + eventCount);
                     holder.tvEventsCount.setText(eventCount > 9 ? "9+" : String.valueOf(eventCount));
                 }
 
@@ -429,7 +357,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         }
 
         mIsLoadingEvents.set(true);
-        Log.d(TAG, mTAG + "Starting to load events from database");
+        Log.i(TAG, mTAG + "✅ Starting to load events from database");
 
         // Calculate date range (current month ± 2 months for visible range)
         LocalDate now = LocalDate.now();
@@ -445,7 +373,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
 
                 List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
 
-                Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
+                Log.i(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
 
             } catch (Exception e) {
@@ -489,7 +417,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         // Update adapter with real data
         updateEventsData(eventsMap);
 
-        Log.d(TAG, mTAG + "Processed " + events.size() + " events into " + eventsMap.size() + " dates");
+        Log.i(TAG, mTAG + "Processed " + events.size() + " events into " + eventsMap.size() + " dates");
 
         // If no real events found
         if (eventsMap.isEmpty()) {
@@ -568,7 +496,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             return;
         }
 
-        Log.d(TAG, "updateEventsData on main thread with " +
+        Log.i(TAG, "updateEventsData on main thread with " +
                 (eventsMap != null ? eventsMap.size() : "null") + " entries");
 
         // Creare copia defensive per evitare modifiche concorrenti
@@ -581,10 +509,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             this.mEventsData = new HashMap<>();
         }
 
-        Log.d(TAG, "mEventsData updated with " + mEventsData.size() + " dates");
-
-        // Notificare IMMEDIATAMENTE
-//        notifyDataSetChanged();
+        Log.i(TAG, "mEventsData updated with " + mEventsData.size() + " dates");
     }
 
     /**
@@ -593,12 +518,9 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      * @param date Date to get events for
      */
     private List<LocalEvent> getEventsForDate(LocalDate date) {
-        Log.d(TAG, String.format(QDue.getLocale(),
-                "getEventsForDate: (%s) %d events in total", date, mEventsData.size()));
-
         List<LocalEvent> events = mEventsData.get(date);
 
-        return (events != null) ? events : new ArrayList<>();
+        return (events != null) ? events : new ArrayList<LocalEvent>();
     }
 
     /**
@@ -705,8 +627,6 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             tvEventsCount = itemView.findViewById(R.id.tv_events_count);
             tvShiftName = itemView.findViewById(R.id.tv_shift_name);
             vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);
-
-            Log.d(TAG, mTAG + "initialized");
         }
     }
 

@@ -17,7 +17,7 @@ import java.time.format.DateTimeParseException;
 
 /**
  * Extension methods for EventPackageManager to handle local file import
- *
+ * <p>
  * This class extends the existing EventPackageManager functionality
  * to support direct JSON string processing for local file imports
  */

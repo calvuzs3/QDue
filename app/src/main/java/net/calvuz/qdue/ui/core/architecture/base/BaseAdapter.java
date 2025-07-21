@@ -35,13 +35,13 @@ import java.util.Map;
 
 /**
  * Base adapter with common functionality for RecyclerView.
- *
+ * <p>
  * Provides:
  * - Standard ViewHolder patterns
  * - Data binding utilities
  * - Performance optimizations
  * - Memory management
- *
+ * <p>
  * REFACTORED from BaseAdapterLegacy:
  * - Removed "Legacy" suffix
  * - Enhanced performance
@@ -452,7 +452,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                     return R.drawable.ic_calendar; // Default calendar icon
             }
         } catch (Exception e) {
-            Log.w(TAG, "Error getting seasonal icon, using default: " + e.getMessage());
+            Log.e(TAG, "Error getting seasonal icon, using default: " + e.getMessage());
             return R.drawable.ic_calendar;
         }
     }

@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Helper class for managing event indicators in calendar and days list views.
  * Handles color mapping, priority logic, and visual setup for event type indicators and priority badges.
- *
+ * <p>
  * Key responsibilities:
  * - Determine dominant event type and priority for a given day
  * - Map event types to colors and priorities to badge styles

@@ -3,6 +3,8 @@ package net.calvuz.qdue.ui.features.events.presentation;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -12,8 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -25,46 +27,67 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
+import net.calvuz.qdue.events.actions.EventAction;
+import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
+import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.events.quickevents.QuickEventLogicAdapter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * EventEditFragment - Edit existing events
- * <p>
- * Features:
- * - Form-based editing of all event fields
- * - Date/time pickers
- * - Validation
- * - Save to database
- * - Cancel with confirmation
+ * UPDATED: Fragment for editing existing events with complete EventAction integration.
+ *
+ * <p>Enhanced Features with EventAction Framework:
+ * <ul>
+ *   <li>Complete EventAction integration for business logic validation</li>
+ *   <li>Advanced metadata tracking with turn impact analysis</li>
+ *   <li>EventAction-based constraint checking and validation</li>
+ *   <li>Enhanced change detection with business rule compliance</li>
+ *   <li>Dynamic EventType and EventPriority loading from enums</li>
+ *   <li>User-friendly display names with intelligent fallback</li>
+ *   <li>Comprehensive turn impact warnings and guidance</li>
+ *   <li>Advanced business impact assessment and analytics</li>
+ *   <li>Seamless backward compatibility with existing systems</li>
+ * </ul>
+ *
+ * <p>Migration Benefits:
+ * - EventAction business logic integration for accurate validation
+ * - Enhanced metadata with turn exception tracking
+ * - Improved user experience with intelligent warnings
+ * - Better analytics and reporting capabilities
+ * - Future-proof architecture with clean separation of concerns
  */
-public class EventEditFragment extends Fragment implements
-        UnsavedChangesHandler {
+public class EventEditFragment extends Fragment implements UnsavedChangesHandler {
 
     private static final String TAG = "EventEdit";
     private static final String ARG_EVENT_ID = "eventId";
 
-    // CORREZIONE 1: AGGIUNGERE INTERFACES
+    // ==================== INTERFACES ====================
+
     private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
     private EventsOperationsInterface mEventsOperationsInterface;
 
-    // Date formatters
-    private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    // ==================== UI COMPONENTS ====================
 
-    // Views
     private TextInputEditText mEditTitle;
     private TextInputEditText mEditDescription;
     private TextInputEditText mEditLocation;
@@ -76,28 +99,46 @@ public class EventEditFragment extends Fragment implements
     private MaterialAutoCompleteTextView mEventTypeSpinner;
     private MaterialAutoCompleteTextView mPrioritySpinner;
 
-    // Data
-    private LocalEvent mOriginalEvent; // NUOVO: per tracking changes
+    // ==================== DATA ====================
+
+    private LocalEvent mEvent;
+    private LocalEvent mOriginalEvent;
     private String mEventId;
     private LocalDateTime mStartDateTime;
     private LocalDateTime mEndDateTime;
 
-    // Data
-    private LocalEvent mEvent;
+    // Backup times for all-day toggle
+    private LocalDateTime mBackupStartDateTime;
+    private LocalDateTime mBackupEndDateTime;
+
+    // Enhanced enum management
+    private List<EventType> mAvailableEventTypes;
+    private List<EventPriority> mAvailablePriorities;
+    private ArrayAdapter<String> mEventTypeAdapter;
+    private ArrayAdapter<String> mPriorityAdapter;
+
+    // ==================== STATE ====================
+
     private boolean mHasUnsavedChanges = false;
     private boolean mIsSaving = false;
 
-    // Event types and priorities
-    private static final String[] EVENT_TYPES = {
-            "GENERAL", "STOP_PLANNED", "STOP_EMERGENCY", "MAINTENANCE", "MEETING"
-    };
+    // ==================== ENHANCED METADATA WITH EVENTACTION ====================
 
-    private static final String[] PRIORITIES = {
-            "NORMAL", "HIGH", "LOW"
-    };
+    private String mEditSessionId;
+    private long mEditSessionStartTime;
+    private int mSaveAttempts = 0;
+    private List<String> mChangedFields;
+    private boolean mMetadataInitialized = false;
+
+    // EventAction integration
+    private EventAction mOriginalEventAction;
+    private EventAction mCurrentEventAction;
+    private boolean mEventActionChanged = false;
+
+    // ==================== LIFECYCLE METHODS ====================
 
     /**
-     * Factory method
+     * Factory method for creating fragment with event ID.
      */
     public static EventEditFragment newInstance(String eventId) {
         EventEditFragment fragment = new EventEditFragment();
@@ -112,56 +153,23 @@ public class EventEditFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        // Init interfaces
+        // Initialize enhanced tracking
+        mChangedFields = new ArrayList<>();
+        mEditSessionStartTime = System.currentTimeMillis();
+
         initializeInterfaces();
+        initializeEnumData();
 
         if (getArguments() != null) {
             mEventId = getArguments().getString(ARG_EVENT_ID);
         }
-    }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-
-        // ✅ NUOVO: Unregister from back handling system
-        if (getActivity() instanceof EventsActivity activity) {
-            activity.unregisterBackHandler(this);
-            Log.d(TAG, "Unregistered back handler");
-        }
-    }
-
-    /**
-     * Initialize interfaces for communication with activity
-     */
-    private void initializeInterfaces() {
-        final String mTAG = "initializeInterfaces: ";
-
-        try {
-            if (getActivity() instanceof EventsDatabaseOperationsInterface) {
-                mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
-                Log.d(TAG, mTAG + "EventsDatabaseOperationsInterface initialized");
-            } else {
-                Log.w(TAG, mTAG + "Activity does not implement EventsDatabaseOperationsInterface");
-            }
-
-            if (getActivity() instanceof EventsOperationsInterface) {
-                mEventsOperationsInterface = (EventsOperationsInterface) getActivity();
-                Log.d(TAG, mTAG + "EventsOperationsInterface initialized");
-            } else {
-                Log.w(TAG, mTAG + "Activity does not implement EventsOperationsInterface");
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error initializing interfaces: " + e.getMessage());
-        }
+        Log.d(TAG, "Enhanced EventEditFragment initialized with EventAction integration");
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_event_edit, container, false);
     }
 
@@ -169,16 +177,219 @@ public class EventEditFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        setupBackHandling();
         initializeViews(view);
-        //setupBackHandling();  // handle Back button - moved forward in setupChangeTracker()
-        setupSpinners();
+        setupEnhancedSpinners();
         setupDateTimePickers();
-        loadEventData();  // call populateForm();
+        loadEventData();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Enhanced cleanup with EventAction logging
+        if (mMetadataInitialized && mEvent != null) {
+            try {
+                Log.d(TAG, "Final enhanced metadata summary before cleanup:");
+                logEnhancedMetadataSummary();
+            } catch (Exception e) {
+                Log.e(TAG, "Error in final enhanced metadata logging: " + e.getMessage());
+            }
+        }
+
+        // Cleanup resources
+        if (mChangedFields != null) {
+            mChangedFields.clear();
+        }
+
+        mEditSessionId = null;
+        mMetadataInitialized = false;
+        mOriginalEventAction = null;
+        mCurrentEventAction = null;
+
+        if (getActivity() instanceof EventsActivity) {
+            ((EventsActivity) getActivity()).unregisterBackHandler(this);
+        }
+
+        Log.d(TAG, "Enhanced EventEditFragment cleanup completed");
+    }
+
+    // ==================== ENHANCED INITIALIZATION ====================
+
+    /**
+     * Enhanced metadata tracking initialization with EventAction detection.
+     */
+    private void initializeEnhancedMetadataTracking() {
+        try {
+            Long currentUserId = getCurrentUserId();
+
+            // Initialize enhanced edit session metadata
+            mEvent = EventMetadataManager.initializeEditSessionMetadata(mEvent, currentUserId);
+            mMetadataInitialized = true;
+
+            // Extract session ID for tracking
+            if (mEvent.getCustomProperties() != null) {
+                mEditSessionId = mEvent.getCustomProperties().get("edit_session_id");
+            }
+
+            // Enhanced: Detect original EventAction
+            mOriginalEventAction = detectOriginalEventAction();
+            mCurrentEventAction = mOriginalEventAction;
+
+            Log.d(TAG, "Enhanced metadata tracking initialized - Session: " + mEditSessionId +
+                    ", Original EventAction: " + mOriginalEventAction);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing enhanced metadata tracking: " + e.getMessage());
+            mMetadataInitialized = false;
+        }
     }
 
     /**
-     * Initialize view references
+     * Detect original EventAction from event metadata and properties.
      */
+    private EventAction detectOriginalEventAction() {
+        if (mEvent == null) return null;
+
+        try {
+            // Strategy 1: Check for EventAction in metadata
+            EventAction fromMetadata = EventMetadataManager.getOriginalEventAction(mEvent);
+            if (fromMetadata != null) {
+                Log.d(TAG, "Original EventAction detected from metadata: " + fromMetadata);
+                return fromMetadata;
+            }
+
+            // Strategy 2: Use QuickEventLogicAdapter detection
+            EventAction fromAdapter = QuickEventLogicAdapter.getCreatorEventAction(mEvent);
+            if (fromAdapter != null) {
+                Log.d(TAG, "Original EventAction detected from adapter: " + fromAdapter);
+                return fromAdapter;
+            }
+
+            // Strategy 3: Try ToolbarAction bridge conversion
+            ToolbarAction toolbarAction = QuickEventLogicAdapter.getCreatorToolbarAction(mEvent);
+            if (toolbarAction != null) {
+                EventAction fromBridge = ToolbarActionBridge.mapToEventAction(toolbarAction);
+                Log.d(TAG, "Original EventAction derived from ToolbarAction: " + toolbarAction + " -> " + fromBridge);
+                return fromBridge;
+            }
+
+            // Strategy 4: Derive from EventType
+            if (mEvent.getEventType() != null) {
+                EventAction derived = deriveEventActionFromEventType(mEvent.getEventType());
+                Log.d(TAG, "Original EventAction derived from EventType: " + mEvent.getEventType() + " -> " + derived);
+                return derived;
+            }
+
+            Log.d(TAG, "No original EventAction could be detected");
+            return null;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error detecting original EventAction: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Derive EventAction from EventType for backward compatibility.
+     */
+    private EventAction deriveEventActionFromEventType(EventType eventType) {
+        if (eventType == null) return null;
+
+        switch (eventType) {
+            case VACATION:
+                return EventAction.VACATION;
+            case SICK_LEAVE:
+                return EventAction.SICK_LEAVE;
+            case PERSONAL_LEAVE:
+                return EventAction.PERSONAL_LEAVE;
+            case SPECIAL_LEAVE:
+                return EventAction.SPECIAL_LEAVE;
+            case SYNDICATE_LEAVE:
+                return EventAction.SYNDICATE_LEAVE;
+            case OVERTIME:
+                return EventAction.OVERTIME;
+            case SHIFT_SWAP:
+                return EventAction.SHIFT_SWAP;
+            case COMPENSATION:
+                return EventAction.COMPENSATION;
+            case STOP_PLANNED:
+                return EventAction.PLANNED_STOP;
+            case STOP_UNPLANNED:
+                return EventAction.UNPLANNED_STOP;
+            case MAINTENANCE:
+                return EventAction.MAINTENANCE;
+            case EMERGENCY:
+                return EventAction.EMERGENCY;
+            case TRAINING:
+                return EventAction.TRAINING;
+            case MEETING:
+                return EventAction.MEETING;
+            default:
+                return EventAction.GENERAL;
+        }
+    }
+
+    private void initializeInterfaces() {
+        try {
+            if (getActivity() instanceof EventsDatabaseOperationsInterface) {
+                mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+            }
+
+            if (getActivity() instanceof EventsOperationsInterface) {
+                mEventsOperationsInterface = (EventsOperationsInterface) getActivity();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing interfaces: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Initialize enum data by loading all available EventType and EventPriority values.
+     */
+    private void initializeEnumData() {
+        try {
+            mAvailableEventTypes = Arrays.asList(EventType.values());
+            Log.d(TAG, "Loaded " + mAvailableEventTypes.size() + " EventType values");
+
+            mAvailablePriorities = Arrays.asList(EventPriority.values());
+            Log.d(TAG, "Loaded " + mAvailablePriorities.size() + " EventPriority values");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing enum data: " + e.getMessage());
+            mAvailableEventTypes = new ArrayList<>();
+            mAvailablePriorities = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Sets up modern back handling with OnBackPressedDispatcher.
+     */
+    private void setupBackHandling() {
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (hasUnsavedChanges()) {
+                            handleUnsavedChanges(
+                                    () -> {
+                                        mHasUnsavedChanges = false;
+                                        navigateBack();
+                                    },
+                                    () -> {
+                                        // User cancelled - stay in fragment
+                                    }
+                            );
+                        } else {
+                            navigateBack();
+                        }
+                    }
+                }
+        );
+    }
+
     private void initializeViews(View view) {
         mEditTitle = view.findViewById(R.id.edit_event_title);
         mEditDescription = view.findViewById(R.id.edit_event_description);
@@ -192,90 +403,111 @@ public class EventEditFragment extends Fragment implements
         mPrioritySpinner = view.findViewById(R.id.spinner_priority);
     }
 
+    // ==================== ENHANCED SPINNER SETUP ====================
+
     /**
-     * Setup back handling with parent activity
+     * Enhanced spinner setup using actual enum values with display names.
      */
-    private void setupBackHandling() {
-        Log.d(TAG, "Setting up unsaved changes back handling");
-
-        if (getActivity() instanceof EventsActivity) {
-            EventsActivity activity = (EventsActivity) getActivity();
-
-            try {
-                // Register this fragment for unsaved changes handling
-                //activity.registerFragmentUnsavedChanges(this, this);
-                // ✅ CORREZIONE: Usare il metodo corretto che esiste
-                activity.registerUnsavedChangesHandler(this, this);
-
-                Log.d(TAG, "Registered unsaved changes handler with EventsActivity");
-
-                // ✅ DEBUG: Verificare che la registrazione sia avvenuta
-                String debugInfo = activity.getBackHandlingDebugInfo();
-                Log.d(TAG, "Back handling debug info after registration:\n" + debugInfo);
-            } catch (Exception e) {
-                Log.e(TAG, "❌ Error registering unsaved changes handler: " + e.getMessage());
-            }
-        } else {
-            Log.w(TAG, "Parent activity is not EventsActivity, cannot register back handler");
+    private void setupEnhancedSpinners() {
+        try {
+            setupEventTypeSpinner();
+            setupEventPrioritySpinner();
+            Log.d(TAG, "Enhanced spinners setup completed successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting up enhanced spinners: " + e.getMessage());
+            setupFallbackSpinners();
         }
     }
 
     /**
-     * Setup dropdown spinners
+     * Setup EventType spinner with dynamic enum loading and display names.
      */
-    private void setupSpinners() {
-        // Event type spinner
+    private void setupEventTypeSpinner() {
+        List<String> eventTypeDisplayNames = new ArrayList<>();
+
+        for (EventType eventType : mAvailableEventTypes) {
+            String displayName = eventType.getDisplayName();
+            if (displayName != null && !displayName.trim().isEmpty()) {
+                eventTypeDisplayNames.add(displayName);
+            } else {
+                eventTypeDisplayNames.add(eventType.name());
+            }
+        }
+
+        mEventTypeAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                eventTypeDisplayNames
+        );
+        mEventTypeSpinner.setAdapter(mEventTypeAdapter);
+
+        // Enhanced selection listener with EventAction tracking
+        mEventTypeSpinner.setOnItemClickListener((parent, view, position, id) -> {
+            mHasUnsavedChanges = true;
+            trackFieldChange("eventType");
+            handleEnhancedEventTypeChange();
+        });
+
+        Log.d(TAG, "EventType spinner setup with " + eventTypeDisplayNames.size() + " options");
+    }
+
+    /**
+     * Setup EventPriority spinner with dynamic enum loading and display names.
+     */
+    private void setupEventPrioritySpinner() {
+        List<String> priorityDisplayNames = new ArrayList<>();
+
+        for (EventPriority priority : mAvailablePriorities) {
+            String displayName = priority.getDisplayName();
+            if (displayName != null && !displayName.trim().isEmpty()) {
+                priorityDisplayNames.add(displayName);
+            } else {
+                priorityDisplayNames.add(priority.name());
+            }
+        }
+
+        mPriorityAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                priorityDisplayNames
+        );
+        mPrioritySpinner.setAdapter(mPriorityAdapter);
+
+        mPrioritySpinner.setOnItemClickListener((parent, view, position, id) -> {
+            mHasUnsavedChanges = true;
+            trackFieldChange("priority");
+        });
+
+        Log.d(TAG, "EventPriority spinner setup with " + priorityDisplayNames.size() + " options");
+    }
+
+    /**
+     * Fallback spinner setup in case of enum loading errors.
+     */
+    private void setupFallbackSpinners() {
+        Log.w(TAG, "Using fallback spinner setup");
+
+        String[] fallbackEventTypes = {"Generale", "Fermata Pianificata", "Emergenza", "Manutenzione", "Riunione"};
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
-                requireContext(), android.R.layout.simple_dropdown_item_1line, EVENT_TYPES);
+                requireContext(), android.R.layout.simple_dropdown_item_1line, fallbackEventTypes);
         mEventTypeSpinner.setAdapter(typeAdapter);
 
-        // Priority spinner
+        String[] fallbackPriorities = {"Bassa", "Normale", "Alta", "Urgente"};
         ArrayAdapter<String> priorityAdapter = new ArrayAdapter<>(
-                requireContext(), android.R.layout.simple_dropdown_item_1line, PRIORITIES);
+                requireContext(), android.R.layout.simple_dropdown_item_1line, fallbackPriorities);
         mPrioritySpinner.setAdapter(priorityAdapter);
     }
 
-    /**
-     * Setup date/time picker buttons
-     */
-    private void setupDateTimePickers() {
-        mStartDateButton.setOnClickListener(v -> showDatePicker(true));
-        mStartTimeButton.setOnClickListener(v -> showTimePicker(true));
-        mEndDateButton.setOnClickListener(v -> showDatePicker(false));
-        mEndTimeButton.setOnClickListener(v -> showTimePicker(false));
-
-        // All day switch listener
-        mAllDaySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            mStartTimeButton.setEnabled(!isChecked);
-            mEndTimeButton.setEnabled(!isChecked);
-
-            if (isChecked) {
-                // Set times to full day
-                if (mStartDateTime != null) {
-                    mStartDateTime = mStartDateTime.withHour(0).withMinute(0);
-                }
-                if (mEndDateTime != null) {
-                    mEndDateTime = mEndDateTime.withHour(23).withMinute(59);
-                }
-                updateTimeButtons();
-            }
-        });
-    }
+    // ==================== ENHANCED DATA LOADING ====================
 
     /**
-     * Load event data from database
-     * ENHANCED: Load event data with backup creation
+     * Enhanced event data loading with metadata and EventAction integration.
      */
     private void loadEventData() {
-        final String mTAG = "loadEventData: ";
-
         if (TextUtils.isEmpty(mEventId)) {
-            Log.e(TAG, mTAG + "No event ID provided");
-            showError("Errore: ID evento mancante");
+            Library.showError(getContext(), "Errore: ID evento mancante");
             return;
         }
-
-        Log.d(TAG, mTAG + "Loading event for editing: " + mEventId);
 
         new Thread(() -> {
             try {
@@ -287,39 +519,34 @@ public class EventEditFragment extends Fragment implements
                         try {
                             if (event != null) {
                                 mEvent = event;
-                                // NUOVO: Create backup for change detection
                                 mOriginalEvent = createEventCopy(event);
-                                populateForm();
-                                setupChangeTracking();
-                                Log.d(TAG, mTAG + "✅ Event loaded for editing: " + event.getTitle());
+
+                                // Enhanced: Initialize metadata tracking with EventAction
+                                initializeEnhancedMetadataTracking();
+
+                                populateFormWithEnhancedEnums();
+                                setupEnhancedChangeTracking();
                             } else {
-                                showError("Evento non trovato nel database");
+                                Library.showError(getContext(), "Evento non trovato nel database");
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, mTAG + "Error in UI update: " + e.getMessage());
-                            showError("Errore aggiornamento interfaccia");
+                            Log.e(TAG, "Error in UI update: " + e.getMessage());
+                            Library.showError(getContext(), "Errore aggiornamento interfaccia");
                         }
                     });
-                } else {
-                    Log.w(TAG, mTAG + "Activity is null, cannot update UI");
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, mTAG + "Error loading event: " + e.getMessage());
+                Log.e(TAG, "Error loading event: " + e.getMessage());
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() ->
-                            showError("Errore caricamento evento dal database"));
+                            Library.showError(getContext(), "Errore caricamento evento dal database"));
                 }
             }
         }).start();
     }
 
-    /**
-     * NUOVO: Create a copy of event for change tracking
-     */
     private LocalEvent createEventCopy(LocalEvent original) {
         try {
-            // Create a deep copy of the event for comparison
             LocalEvent copy = new LocalEvent();
             copy.setId(original.getId());
             copy.setTitle(original.getTitle());
@@ -330,6 +557,12 @@ public class EventEditFragment extends Fragment implements
             copy.setAllDay(original.isAllDay());
             copy.setEventType(original.getEventType());
             copy.setPriority(original.getPriority());
+
+            // Enhanced: Copy custom properties for metadata preservation
+            if (original.getCustomProperties() != null) {
+                copy.setCustomProperties(new java.util.HashMap<>(original.getCustomProperties()));
+            }
+
             return copy;
         } catch (Exception e) {
             Log.e(TAG, "Error creating event copy: " + e.getMessage());
@@ -337,127 +570,201 @@ public class EventEditFragment extends Fragment implements
         }
     }
 
+    // ==================== ENHANCED CHANGE TRACKING ====================
+
     /**
-     * NUOVO: Setup change tracking for unsaved changes detection
+     * Enhanced change tracking setup with EventAction integration.
      */
-    private void setupChangeTracking() {
-        final String mTAG = "setupChangeTracking: ";
+    private void setupEnhancedChangeTracking() {
+        // Setup field-specific text watchers
+        if (mEditTitle != null) {
+            mEditTitle.addTextChangedListener(createFieldSpecificTextWatcher("title"));
+        }
+        if (mEditDescription != null) {
+            mEditDescription.addTextChangedListener(createFieldSpecificTextWatcher("description"));
+        }
+        if (mEditLocation != null) {
+            mEditLocation.addTextChangedListener(createFieldSpecificTextWatcher("location"));
+        }
 
-        try {
-            // Add text watchers to detect changes
-            TextWatcher textWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
+        // Enhanced spinner tracking already setup in setupEnhancedSpinners()
 
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    mHasUnsavedChanges = true;
-                }
+        // Register legacy back handling for compatibility
+        if (getActivity() instanceof EventsActivity) {
+            ((EventsActivity) getActivity()).registerUnsavedChangesHandler(this, this);
+        }
 
-                @Override
-                public void afterTextChanged(android.text.Editable s) {
-                }
-            };
+        Log.d(TAG, "Enhanced change tracking setup completed");
+    }
 
-            if (mEditTitle != null) mEditTitle.addTextChangedListener(textWatcher);
-            if (mEditDescription != null) mEditDescription.addTextChangedListener(textWatcher);
-            if (mEditLocation != null) mEditLocation.addTextChangedListener(textWatcher);
-
-            // Add listeners to other controls
-            if (mAllDaySwitch != null) {
-                mAllDaySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    mHasUnsavedChanges = true;
-                    // Existing all day logic...
-                    mStartTimeButton.setEnabled(!isChecked);
-                    mEndTimeButton.setEnabled(!isChecked);
-
-                    if (isChecked) {
-                        if (mStartDateTime != null) {
-                            mStartDateTime = mStartDateTime.withHour(0).withMinute(0);
-                        }
-                        if (mEndDateTime != null) {
-                            mEndDateTime = mEndDateTime.withHour(23).withMinute(59);
-                        }
-                        updateTimeButtons();
-                    }
-                });
+    /**
+     * Create field-specific text watcher for granular tracking.
+     */
+    private TextWatcher createFieldSpecificTextWatcher(String fieldName) {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
-            // ✅ HERE - after everything is set up
-            setupBackHandling();
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mHasUnsavedChanges = true;
+                trackFieldChange(fieldName);
+            }
 
-            Log.d(TAG, mTAG + "Change tracking setup completed");
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        };
+    }
+
+    /**
+     * Enhanced EventType change handling with EventAction analysis.
+     */
+    private void handleEnhancedEventTypeChange() {
+        try {
+            EventType newEventType = convertDisplayNameToEventType(mEventTypeSpinner.getText().toString());
+            EventType originalEventType = mOriginalEvent != null ? mOriginalEvent.getEventType() : null;
+
+            if (newEventType != originalEventType) {
+                Log.d(TAG, "EventType changed from " + originalEventType + " to " + newEventType);
+
+                // Enhanced: Update current EventAction
+                EventAction newEventAction = deriveEventActionFromEventType(newEventType);
+                if (newEventAction != mCurrentEventAction) {
+                    mCurrentEventAction = newEventAction;
+                    mEventActionChanged = true;
+                    Log.d(TAG, "EventAction changed to: " + newEventAction);
+                }
+
+                // Enhanced: Check EventAction business rule impacts
+                if (hasEventActionBusinessImpact(newEventAction)) {
+                    showEnhancedTurnImpactWarning(originalEventType, newEventType, mOriginalEventAction, newEventAction);
+                }
+
+                // Update metadata immediately for real-time analysis
+                updateMetadataForCurrentChanges();
+            }
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error setting up change tracking: " + e.getMessage());
+            Log.e(TAG, "Error handling enhanced EventType change: " + e.getMessage());
         }
     }
 
     /**
-     * Populate form with event data
+     * Check if EventAction change has business impact.
      */
-    private void populateForm() {
-        if (mEvent == null) return;
+    private boolean hasEventActionBusinessImpact(EventAction newAction) {
+        if (mOriginalEventAction == null || newAction == null) return false;
 
-        // Basic fields
-        mEditTitle.setText(mEvent.getTitle());
-        mEditDescription.setText(mEvent.getDescription());
-        mEditLocation.setText(mEvent.getLocation());
+        // Check various business impact factors
+        if (mOriginalEventAction.getCategory() != newAction.getCategory()) return true;
+        if (mOriginalEventAction.affectsWorkSchedule() != newAction.affectsWorkSchedule())
+            return true;
+        if (mOriginalEventAction.requiresApproval() != newAction.requiresApproval()) return true;
+        if (mOriginalEventAction.requiresShiftCoverage() != newAction.requiresShiftCoverage())
+            return true;
 
-        // Date/time
-        mStartDateTime = mEvent.getStartTime();
-        mEndDateTime = mEvent.getEndTime();
-        updateDateTimeButtons();
-
-        // All day
-        mAllDaySwitch.setChecked(mEvent.isAllDay());
-
-        // Type and priority
-        if (mEvent.getEventType() != null) {
-            mEventTypeSpinner.setText(mEvent.getEventType().toString(), false);
-        }
-        if (mEvent.getPriority() != null) {
-            mPrioritySpinner.setText(mEvent.getPriority().toString(), false);
-        }
-
-        // Reset change flag after populating (already false btw)
-        mHasUnsavedChanges = false;
+        return false;
     }
 
     /**
-     * Update date/time button texts
+     * Track individual field changes for granular analytics.
      */
-    private void updateDateTimeButtons() {
-        if (mStartDateTime != null) {
-            mStartDateButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            mStartTimeButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-        }
+    private void trackFieldChange(String fieldName) {
+        if (!mChangedFields.contains(fieldName)) {
+            mChangedFields.add(fieldName);
+            Log.v(TAG, "Field changed: " + fieldName + " (total changes: " + mChangedFields.size() + ")");
 
-        if (mEndDateTime != null) {
-            mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+            if (mMetadataInitialized) {
+                updateMetadataForCurrentChanges();
+            }
         }
     }
 
     /**
-     * Update only time buttons
+     * Update metadata for current changes in real-time.
      */
-    private void updateTimeButtons() {
-        if (mStartDateTime != null) {
-            mStartTimeButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+    private void updateMetadataForCurrentChanges() {
+        if (!mMetadataInitialized || mEvent == null || mOriginalEvent == null) {
+            return;
         }
-        if (mEndDateTime != null) {
-            mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+
+        try {
+            long editDurationSeconds = (System.currentTimeMillis() - mEditSessionStartTime) / 1000;
+
+            // Enhanced: Update change tracking metadata with EventAction context
+            mEvent = EventMetadataManager.updateChangeTrackingMetadata(
+                    mEvent, mOriginalEvent, mChangedFields, editDurationSeconds);
+
+            Log.v(TAG, "Enhanced metadata updated for current changes");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating enhanced metadata for current changes: " + e.getMessage());
         }
     }
 
-    /**
-     * Show date picker with validation
-     */
-    private void showDatePicker(boolean isStart) {
-        final String mTAG = "showDatePicker: ";
+    // ==================== ENHANCED DATE/TIME PICKERS ====================
 
+    /**
+     * Enhanced date/time picker setup with change tracking and EventAction validation.
+     */
+    private void setupDateTimePickers() {
+        mStartDateButton.setOnClickListener(v -> {
+            trackFieldChange("startDate");
+            showEnhancedDatePicker(true);
+        });
+
+        mStartTimeButton.setOnClickListener(v -> {
+            trackFieldChange("startTime");
+            showTimePicker(true);
+        });
+
+        mEndDateButton.setOnClickListener(v -> {
+            trackFieldChange("endDate");
+            showEnhancedDatePicker(false);
+        });
+
+        mEndTimeButton.setOnClickListener(v -> {
+            trackFieldChange("endTime");
+            showTimePicker(false);
+        });
+
+        mAllDaySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mHasUnsavedChanges = true;
+            trackFieldChange("allDay");
+
+            mStartTimeButton.setEnabled(!isChecked);
+            mEndTimeButton.setEnabled(!isChecked);
+
+            if (isChecked) {
+                if (mStartDateTime != null) {
+                    mBackupStartDateTime = mStartDateTime;
+                    mStartDateTime = mStartDateTime.withHour(0).withMinute(0).withSecond(0);
+                }
+                if (mEndDateTime != null) {
+                    mBackupEndDateTime = mEndDateTime;
+                    mEndDateTime = mEndDateTime.withHour(23).withMinute(59).withSecond(59);
+                }
+                updateTimeButtons();
+            } else {
+                if (mBackupStartDateTime != null) {
+                    mStartDateTime = mBackupStartDateTime;
+                }
+                if (mBackupEndDateTime != null) {
+                    mEndDateTime = mBackupEndDateTime;
+                }
+                updateTimeButtons();
+            }
+
+            updateMetadataForCurrentChanges();
+        });
+    }
+
+    /**
+     * Enhanced date picker with EventAction constraint validation.
+     */
+    private void showEnhancedDatePicker(boolean isStart) {
         try {
             LocalDateTime dateTime = isStart ? mStartDateTime : mEndDateTime;
             if (dateTime == null) {
@@ -471,9 +778,15 @@ public class EventEditFragment extends Fragment implements
                     requireContext(),
                     (view, year, month, dayOfMonth) -> {
                         try {
-                            // Mark as changed
                             mHasUnsavedChanges = true;
+                            LocalDate selectedDate = LocalDate.of(year, month + 1, dayOfMonth);
 
+                            // Enhanced: Validate against EventAction constraints
+                            if (mCurrentEventAction != null && !validateDateAgainstEventAction(selectedDate)) {
+                                return; // Validation failed, don't update
+                            }
+
+                            // Update the datetime
                             if (isStart) {
                                 if (mStartDateTime == null) {
                                     mStartDateTime = LocalDateTime.of(year, month + 1, dayOfMonth, 9, 0);
@@ -483,7 +796,6 @@ public class EventEditFragment extends Fragment implements
                                             .withDayOfMonth(dayOfMonth);
                                 }
                                 mStartDateButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                                Log.d(TAG, mTAG + "Start date updated: " + mStartDateTime.toLocalDate());
                             } else {
                                 if (mEndDateTime == null) {
                                     mEndDateTime = LocalDateTime.of(year, month + 1, dayOfMonth, 17, 0);
@@ -493,44 +805,89 @@ public class EventEditFragment extends Fragment implements
                                             .withDayOfMonth(dayOfMonth);
                                 }
                                 mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                                Log.d(TAG, mTAG + "End date updated: " + mEndDateTime.toLocalDate());
                             }
 
-                            // NUOVO: Auto-adjust end date if it becomes before start date
-                            if (mStartDateTime != null && mEndDateTime != null && mEndDateTime.isBefore(mStartDateTime)) {
-                                if (isStart) {
-                                    // If start date was changed and now after end, adjust end date
-                                    mEndDateTime = mStartDateTime.plusHours(1);
-                                    mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                                    updateTimeButtons();
-                                    Toast.makeText(getContext(), "Data fine automaticamente aggiustata", Toast.LENGTH_SHORT).show();
-                                }
-                            }
+                            // Auto-adjust end date if needed
+                            autoAdjustEndDate(isStart);
 
                         } catch (Exception e) {
-                            Log.e(TAG, mTAG + "Error updating date: " + e.getMessage());
-                            Toast.makeText(getContext(), "Errore aggiornamento data", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Error updating date: " + e.getMessage());
+                            Library.showError(getContext(), "Errore aggiornamento data");
                         }
                     },
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)
             );
-
             dialog.show();
-
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error showing date picker: " + e.getMessage());
-            Toast.makeText(getContext(), "Errore apertura calendario", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error showing enhanced date picker: " + e.getMessage());
+            Library.showError(getContext(), "Errore apertura calendario");
         }
     }
 
     /**
-     * Show time picker with validation
+     * Validate selected date against EventAction business rules.
+     */
+    private boolean validateDateAgainstEventAction(LocalDate selectedDate) {
+        if (mCurrentEventAction == null) return true;
+
+        try {
+            // Check if EventAction can be performed on this date
+            if (!mCurrentEventAction.canPerformOnDate(selectedDate)) {
+                String message = "L'azione '" + mCurrentEventAction.getDisplayName() +
+                        "' non può essere eseguita in data " + selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+                // Add specific reason based on EventAction constraints
+                int minAdvanceNotice = mCurrentEventAction.getMinimumAdvanceNoticeDays();
+                if (minAdvanceNotice > 0) {
+                    long daysFromNow = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), selectedDate);
+                    if (daysFromNow < minAdvanceNotice) {
+                        message += "\nRichiede almeno " + minAdvanceNotice + " giorni di preavviso.";
+                    }
+                }
+
+                Library.showError(getContext(), message);
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Error validating date against EventAction: " + e.getMessage());
+            return true; // Allow if validation fails
+        }
+    }
+
+    /**
+     * Auto-adjust end date logic.
+     */
+    private void autoAdjustEndDate(boolean isStart) {
+        if (mStartDateTime != null && mEndDateTime != null) {
+            if (mAllDaySwitch.isChecked()) {
+                if (mEndDateTime.toLocalDate().isBefore(mStartDateTime.toLocalDate())) {
+                    if (isStart) {
+                        mEndDateTime = mStartDateTime.withHour(23).withMinute(59).withSecond(59);
+                        mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                        Library.showSuccess(getContext(), "Data fine automaticamente aggiustata");
+                    }
+                }
+            } else {
+                if (mEndDateTime.isBefore(mStartDateTime)) {
+                    if (isStart) {
+                        mEndDateTime = mStartDateTime.plusHours(1);
+                        mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                        updateTimeButtons();
+                        Library.showSuccess(getContext(), "Data fine automaticamente aggiustata");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Shows time picker dialog with validation.
      */
     private void showTimePicker(boolean isStart) {
-        final String mTAG = "showTimePicker: ";
-
         try {
             LocalDateTime dateTime = isStart ? mStartDateTime : mEndDateTime;
             if (dateTime == null) {
@@ -541,7 +898,6 @@ public class EventEditFragment extends Fragment implements
                     requireContext(),
                     (view, hourOfDay, minute) -> {
                         try {
-                            // Mark as changed
                             mHasUnsavedChanges = true;
 
                             if (isStart) {
@@ -551,7 +907,10 @@ public class EventEditFragment extends Fragment implements
                                     mStartDateTime = mStartDateTime.withHour(hourOfDay).withMinute(minute);
                                 }
                                 mStartTimeButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-                                Log.d(TAG, mTAG + "Start time updated: " + mStartDateTime.toLocalTime());
+
+                                if (!mAllDaySwitch.isChecked()) {
+                                    mBackupStartDateTime = mStartDateTime;
+                                }
                             } else {
                                 if (mEndDateTime == null) {
                                     mEndDateTime = LocalDateTime.now().withHour(hourOfDay).withMinute(minute);
@@ -559,12 +918,25 @@ public class EventEditFragment extends Fragment implements
                                     mEndDateTime = mEndDateTime.withHour(hourOfDay).withMinute(minute);
                                 }
                                 mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-                                Log.d(TAG, mTAG + "End time updated: " + mEndDateTime.toLocalTime());
+
+                                if (!mAllDaySwitch.isChecked()) {
+                                    mBackupEndDateTime = mEndDateTime;
+                                }
                             }
 
+                            // Validate time consistency for non-all-day events
+                            if (!mAllDaySwitch.isChecked() && mStartDateTime != null && mEndDateTime != null) {
+                                if (mEndDateTime.isBefore(mStartDateTime) || mEndDateTime.equals(mStartDateTime)) {
+                                    if (isStart) {
+                                        mEndDateTime = mStartDateTime.plusHours(1);
+                                        mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                                        Library.showSuccess(getContext(), "Orario fine automaticamente aggiustato");
+                                    }
+                                }
+                            }
                         } catch (Exception e) {
-                            Log.e(TAG, mTAG + "Error updating time: " + e.getMessage());
-                            Toast.makeText(getContext(), "Errore aggiornamento orario", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Error updating time: " + e.getMessage());
+                            Library.showError(getContext(), "Errore aggiornamento orario");
                         }
                     },
                     dateTime.getHour(),
@@ -573,22 +945,121 @@ public class EventEditFragment extends Fragment implements
             );
 
             dialog.show();
-
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error showing time picker: " + e.getMessage());
-            Toast.makeText(getContext(), "Errore apertura selezione orario", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error showing time picker: " + e.getMessage());
+            Library.showError(getContext(), "Errore apertura selezione orario");
+        }
+    }
+
+    // ==================== ENHANCED FORM POPULATION ====================
+
+    /**
+     * Enhanced form population with proper enum handling and display names.
+     */
+    private void populateFormWithEnhancedEnums() {
+        if (mEvent == null) return;
+
+        // Populate basic text fields
+        mEditTitle.setText(mEvent.getTitle());
+        mEditDescription.setText(mEvent.getDescription());
+        mEditLocation.setText(mEvent.getLocation());
+
+        // Populate date/time fields
+        mStartDateTime = mEvent.getStartTime();
+        mEndDateTime = mEvent.getEndTime();
+
+        mBackupStartDateTime = mStartDateTime;
+        mBackupEndDateTime = mEndDateTime;
+
+        updateDateTimeButtons();
+
+        // Set all-day switch
+        mAllDaySwitch.setChecked(mEvent.isAllDay());
+
+        // Enhanced EventType selection with display name matching
+        setEventTypeSelection(mEvent.getEventType());
+
+        // Enhanced EventPriority selection with display name matching
+        setEventPrioritySelection(mEvent.getPriority());
+
+        mHasUnsavedChanges = false;
+        Log.d(TAG, "Form populated successfully with enhanced enum handling");
+    }
+
+    /**
+     * Set EventType selection using display name matching for better UX.
+     */
+    private void setEventTypeSelection(EventType eventType) {
+        if (eventType == null || mEventTypeSpinner == null) {
+            return;
+        }
+
+        try {
+            String displayName = eventType.getDisplayName();
+            if (displayName != null && !displayName.trim().isEmpty()) {
+                mEventTypeSpinner.setText(displayName, false);
+                Log.d(TAG, "Set EventType selection to: " + displayName);
+            } else {
+                mEventTypeSpinner.setText(eventType.name(), false);
+                Log.d(TAG, "Set EventType selection to enum name: " + eventType.name());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting EventType selection: " + e.getMessage());
+            if (mEventTypeAdapter != null && mEventTypeAdapter.getCount() > 0) {
+                mEventTypeSpinner.setText(mEventTypeAdapter.getItem(0), false);
+            }
+        }
+    }
+
+    /**
+     * Set EventPriority selection using display name matching for better UX.
+     */
+    private void setEventPrioritySelection(EventPriority priority) {
+        if (priority == null || mPrioritySpinner == null) {
+            return;
+        }
+
+        try {
+            String displayName = priority.getDisplayName();
+            if (displayName != null && !displayName.trim().isEmpty()) {
+                mPrioritySpinner.setText(displayName, false);
+                Log.d(TAG, "Set EventPriority selection to: " + displayName);
+            } else {
+                mPrioritySpinner.setText(priority.name(), false);
+                Log.d(TAG, "Set EventPriority selection to enum name: " + priority.name());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting EventPriority selection: " + e.getMessage());
+            if (mPriorityAdapter != null && mPriorityAdapter.getCount() > 0) {
+                mPrioritySpinner.setText(mPriorityAdapter.getItem(0), false);
+            }
+        }
+    }
+
+    // ==================== UI UPDATES ====================
+
+    private void updateDateTimeButtons() {
+        if (mStartDateTime != null) {
+            mStartDateButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            mStartTimeButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+        }
+
+        if (mEndDateTime != null) {
+            mEndDateButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+        }
+    }
+
+    private void updateTimeButtons() {
+        if (mStartDateTime != null) {
+            mStartTimeButton.setText(mStartDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+        }
+        if (mEndDateTime != null) {
+            mEndTimeButton.setText(mEndDateTime.format(DateTimeFormatter.ofPattern("HH:mm")));
         }
     }
 
     // ==================== MENU HANDLING ====================
-
-    /**
-     * Method called by EventsActivity
-     */
-    public void onHomePressed() {
-        // Same logic as cancelEdit()
-        cancelEdit();
-    }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -601,9 +1072,7 @@ public class EventEditFragment extends Fragment implements
         int itemId = item.getItemId();
 
         if (itemId == android.R.id.home) {
-            Log.d(TAG, "🏠 HOME BUTTON PRESSED in EventsActivity");
-            // Intercepts toolbar's Home/Back button
-            cancelEdit(); // modify check same logic
+            cancelEdit();
             return true;
         } else if (itemId == R.id.action_save_event) {
             saveEvent();
@@ -616,28 +1085,30 @@ public class EventEditFragment extends Fragment implements
         return super.onOptionsItemSelected(item);
     }
 
+    // ==================== ENHANCED SAVE/CANCEL OPERATIONS ====================
+
     /**
-     * Save event to database
-     * ENHANCED: Save event with proper notification system
+     * Enhanced save operation with EventAction validation and metadata finalization.
      */
     private void saveEvent() {
-        final String mTAG = "saveEvent: ";
-
-        if (!validateForm()) {
+        if (!validateEnhancedForm()) {
+            mSaveAttempts++;
             return;
         }
 
-        Log.d(TAG, mTAG + "Saving event: " + mEvent.getTitle());
-
-        // Update event with form data
-        updateEventFromForm();
-
-        // Flag mIsSaving
+        updateEventFromFormWithEnhancedEnums();
+        mSaveAttempts++;
         mIsSaving = true;
 
-        // Save to database with enhanced error handling
         new Thread(() -> {
             try {
+                // Enhanced: Finalize metadata with EventAction context
+                if (mMetadataInitialized) {
+                    long totalEditDuration = (System.currentTimeMillis() - mEditSessionStartTime) / 1000;
+                    mEvent = EventMetadataManager.finalizeEditSessionMetadata(
+                            mEvent, mSaveAttempts, totalEditDuration);
+                }
+
                 EventDao eventDao = QDueDatabase.getInstance(requireContext()).eventDao();
                 int rowsAffected = eventDao.updateEvent(mEvent);
 
@@ -645,79 +1116,47 @@ public class EventEditFragment extends Fragment implements
                     getActivity().runOnUiThread(() -> {
                         try {
                             if (rowsAffected > 0) {
-                                Log.d(TAG, mTAG + "✅ Event updated successfully: " + mEvent.getTitle());
+                                // Enhanced: Log metadata summary for analytics
+                                logEnhancedMetadataSummary();
 
-                                // CORREZIONE: Notify activity of the change
                                 notifyActivityOfEventUpdate();
-
-                                // Show success message
-                                Toast.makeText(getContext(), "✅ Evento salvato", Toast.LENGTH_SHORT).show();
-
-                                // Mark as saved
+                                Library.showSuccess(getContext(), "Evento salvato con successo");
                                 mHasUnsavedChanges = false;
-
-                                // Navigate back
                                 navigateBack();
-
                             } else {
-                                Log.w(TAG, mTAG + "No rows affected during update");
-                                Library.showToast(getContext(), "⚠️ Nessuna modifica salvata", Toast.LENGTH_SHORT);
+                                Library.showError(getContext(), "Nessuna modifica salvata");
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, mTAG + "Error in UI update after save: " + e.getMessage());
-                            Library.showToast(getContext(), "⚠️ Errore post-salvataggio", Toast.LENGTH_SHORT);
+                            Log.e(TAG, "Error in UI update after save: " + e.getMessage());
+                            Library.showError(getContext(), "Errore post-salvataggio");
                         }
                     });
-                } else {
-                    Log.w(TAG, mTAG + "Activity is null, cannot update UI after save");
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, mTAG + "Error updating event in database: " + e.getMessage());
+                Log.e(TAG, "Error updating event in database: " + e.getMessage());
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() ->
-                            Toast.makeText(getContext(), "❌ Errore salvataggio", Toast.LENGTH_LONG).show());
+                            Library.showError(getContext(), "Errore durante il salvataggio"));
                 }
             }
         }).start();
     }
 
-    /**
-     * NUOVO: Notify activity of event update for proper state management
-     */
     private void notifyActivityOfEventUpdate() {
-        final String mTAG = "notifyActivityOfEventUpdate: ";
-
         try {
-            // Method 1: Update via EventsListFragment if activity has reference
             if (getActivity() instanceof EventsActivity) {
                 EventsActivity eventsActivity = (EventsActivity) getActivity();
                 eventsActivity.updateEventInList(mEvent);
-                Log.d(TAG, mTAG + "✅ Notified EventsActivity via updateEventInList");
             }
 
-            // Method 2: Notify MainActivity via activity result system
-            // This ensures MainActivity's fragments get refreshed when we return
             if (getActivity() != null) {
-                // Set activity result to indicate event was modified
                 getActivity().setResult(android.app.Activity.RESULT_OK, createResultIntent());
-                Log.d(TAG, mTAG + "✅ Set activity result for MainActivity notification");
             }
-
-            // Method 3: Direct interface notification if available
-            if (mEventsOperationsInterface != null) {
-                // Could add a method like triggerEventUpdated(LocalEvent event) to the interface
-                Log.d(TAG, mTAG + "Event operations interface available for future enhancements");
-            }
-
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error notifying activity: " + e.getMessage());
+            Log.e(TAG, "Error notifying activity: " + e.getMessage());
         }
     }
 
-    /**
-     * NUOVO: Create result intent for MainActivity notification
-     */
     private android.content.Intent createResultIntent() {
         android.content.Intent resultIntent = new android.content.Intent();
         resultIntent.putExtra(EventsActivity.EXTRA_EVENTS_CHANGED, true);
@@ -727,71 +1166,289 @@ public class EventEditFragment extends Fragment implements
         return resultIntent;
     }
 
+    // ==================== ENHANCED VALIDATION ====================
+
     /**
-     * Validate form fields
-     * with better error messages
+     * Enhanced form validation with EventAction business rules.
      */
-    private boolean validateForm() {
-        final String mTAG = "validateForm: ";
+    private boolean validateEnhancedForm() {
         boolean isValid = true;
+        List<String> validationErrors = new ArrayList<>();
 
         try {
-            // Title required
+            // Basic validation
             if (mEditTitle != null && TextUtils.isEmpty(mEditTitle.getText())) {
                 mEditTitle.setError("Titolo richiesto");
                 mEditTitle.requestFocus();
+                validationErrors.add("title_required");
+                Library.showError(getContext(), "Il titolo dell'evento è obbligatorio");
                 isValid = false;
-                Log.w(TAG, mTAG + "Validation failed: Title is empty");
             }
 
-            // Start date required
             if (mStartDateTime == null) {
-                Toast.makeText(getContext(), "Data inizio richiesta", Toast.LENGTH_SHORT).show();
+                validationErrors.add("start_date_required");
+                Library.showError(getContext(), "Data di inizio richiesta");
                 if (mStartDateButton != null) mStartDateButton.requestFocus();
                 isValid = false;
-                Log.w(TAG, mTAG + "Validation failed: Start date is null");
             }
 
-            // End date required
-            if (mEndDateTime == null) {
-                Toast.makeText(getContext(), "Data fine richiesta", Toast.LENGTH_SHORT).show();
-                if (mEndDateButton != null) mEndDateButton.requestFocus();
-                isValid = false;
-                Log.w(TAG, mTAG + "Validation failed: End date is null");
-            }
-
-            // End must be after start
-            if (mStartDateTime != null && mEndDateTime != null && mEndDateTime.isBefore(mStartDateTime)) {
-                Toast.makeText(getContext(), "La data fine deve essere dopo l'inizio", Toast.LENGTH_SHORT).show();
-                if (mEndDateButton != null) mEndDateButton.requestFocus();
-                isValid = false;
-                Log.w(TAG, mTAG + "Validation failed: End date before start date");
-            }
-
-            // NUOVO: Additional validation for reasonable duration
-            if (mStartDateTime != null && mEndDateTime != null) {
-                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(mStartDateTime, mEndDateTime);
-                if (daysBetween > 365) {
-                    Toast.makeText(getContext(), "⚠️ Durata evento superiore a 1 anno", Toast.LENGTH_LONG).show();
-                    Log.w(TAG, mTAG + "Warning: Event duration > 1 year (" + daysBetween + " days)");
+            // Enhanced: EventAction-specific validation
+            if (mCurrentEventAction != null && mStartDateTime != null) {
+                if (!validateEventActionConstraints(validationErrors)) {
+                    isValid = false;
                 }
             }
 
-            Log.d(TAG, mTAG + "Validation result: " + (isValid ? "PASSED" : "FAILED"));
+            // Date/time validation
+            if (!validateDateTimeConstraints(validationErrors)) {
+                isValid = false;
+            }
+
+            // Store validation errors in metadata
+            if (mMetadataInitialized && !validationErrors.isEmpty()) {
+                storeValidationErrors(validationErrors);
+            }
+
             return isValid;
 
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error during validation: " + e.getMessage());
+            Log.e(TAG, "Error during enhanced validation: " + e.getMessage());
+            validationErrors.add("validation_exception");
+            Library.showError(getContext(), "Errore durante la validazione");
+
+            if (mMetadataInitialized) {
+                storeValidationErrors(validationErrors);
+            }
+
             return false;
         }
     }
 
     /**
-     * Update event object with form data
+     * Validate EventAction-specific constraints.
      */
-    private void updateEventFromForm() {
+    private boolean validateEventActionConstraints(List<String> validationErrors) {
+        boolean isValid = true;
+
+        try {
+            // Check minimum advance notice
+            LocalDate eventDate = mStartDateTime.toLocalDate();
+            long daysUntilEvent = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), eventDate);
+            int requiredNotice = mCurrentEventAction.getMinimumAdvanceNoticeDays();
+
+            if (daysUntilEvent < requiredNotice) {
+                validationErrors.add("insufficient_advance_notice");
+                Library.showError(getContext(),
+                        "L'azione '" + mCurrentEventAction.getDisplayName() +
+                                "' richiede almeno " + requiredNotice + " giorni di preavviso");
+                isValid = false;
+            }
+
+            // Check maximum duration
+            if (mEndDateTime != null) {
+                long durationDays = java.time.temporal.ChronoUnit.DAYS.between(eventDate, mEndDateTime.toLocalDate()) + 1;
+                int maxDuration = mCurrentEventAction.getMaximumDurationDays();
+
+                if (durationDays > maxDuration) {
+                    validationErrors.add("duration_exceeds_maximum");
+                    Library.showError(getContext(),
+                            "L'azione '" + mCurrentEventAction.getDisplayName() +
+                                    "' non può durare più di " + maxDuration + " giorni");
+                    isValid = false;
+                }
+            }
+
+            // Check if action can be performed on this date
+            if (!mCurrentEventAction.canPerformOnDate(eventDate)) {
+                validationErrors.add("action_not_allowed_on_date");
+                Library.showError(getContext(),
+                        "L'azione '" + mCurrentEventAction.getDisplayName() +
+                                "' non può essere eseguita in questa data");
+                isValid = false;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error validating EventAction constraints: " + e.getMessage());
+            validationErrors.add("eventaction_validation_error");
+        }
+
+        return isValid;
+    }
+
+    /**
+     * Validate date/time constraints.
+     */
+    private boolean validateDateTimeConstraints(List<String> validationErrors) {
+        boolean isValid = true;
+
+        try {
+            if (mAllDaySwitch.isChecked()) {
+                if (mEndDateTime == null) {
+                    validationErrors.add("end_date_required_allday");
+                    Library.showError(getContext(), "Data di fine richiesta");
+                    if (mEndDateButton != null) mEndDateButton.requestFocus();
+                    isValid = false;
+                } else if (mStartDateTime != null) {
+                    LocalDate startDate = mStartDateTime.toLocalDate();
+                    LocalDate endDate = mEndDateTime.toLocalDate();
+
+                    if (endDate.isBefore(startDate)) {
+                        validationErrors.add("end_before_start_allday");
+                        Library.showError(getContext(), "La data di fine deve essere uguale o successiva alla data di inizio");
+                        if (mEndDateButton != null) mEndDateButton.requestFocus();
+                        isValid = false;
+                    }
+
+                    long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+                    if (daysBetween > 365) {
+                        validationErrors.add("duration_too_long");
+                        Library.showError(getContext(), "Durata evento superiore a 1 anno");
+                    }
+                }
+            } else {
+                if (mEndDateTime == null) {
+                    validationErrors.add("end_datetime_required_timed");
+                    Library.showError(getContext(), "Data e orario di fine richiesti");
+                    if (mEndDateButton != null) mEndDateButton.requestFocus();
+                    isValid = false;
+                } else if (mStartDateTime != null) {
+                    if (mEndDateTime.isBefore(mStartDateTime)) {
+                        validationErrors.add("end_before_start_timed");
+                        Library.showError(getContext(), "L'orario di fine deve essere successivo all'orario di inizio");
+                        if (mEndTimeButton != null) mEndTimeButton.requestFocus();
+                        isValid = false;
+                    } else if (mEndDateTime.equals(mStartDateTime)) {
+                        validationErrors.add("start_equals_end_timed");
+                        Library.showError(getContext(), "L'orario di fine deve essere diverso dall'orario di inizio");
+                        if (mEndTimeButton != null) mEndTimeButton.requestFocus();
+                        isValid = false;
+                    }
+
+                    long hoursBetween = java.time.temporal.ChronoUnit.HOURS.between(mStartDateTime, mEndDateTime);
+                    if (hoursBetween > 8760) {
+                        validationErrors.add("timed_duration_too_long");
+                        Library.showError(getContext(), "Durata evento superiore a 1 anno");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error validating date/time constraints: " + e.getMessage());
+            validationErrors.add("datetime_validation_error");
+        }
+
+        return isValid;
+    }
+
+    /**
+     * Store validation errors in metadata for analytics.
+     */
+    private void storeValidationErrors(List<String> validationErrors) {
+        try {
+            if (mEvent != null && mEvent.getCustomProperties() != null) {
+                Map<String, String> props = mEvent.getCustomProperties();
+                props.put("validation_errors", String.join(",", validationErrors));
+                mEvent.setCustomProperties(props);
+                Log.d(TAG, "Enhanced validation errors stored in metadata: " + validationErrors.size());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error storing validation errors: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Log EventAction-specific analytics.
+     */
+    private void logEventActionAnalytics() {
+        try {
+            Log.i(TAG, "=== EVENTACTION ANALYTICS ===");
+            Log.i(TAG, "Original EventAction: " + mOriginalEventAction);
+            Log.i(TAG, "Current EventAction: " + mCurrentEventAction);
+            Log.i(TAG, "EventAction Changed: " + mEventActionChanged);
+
+            if (mCurrentEventAction != null) {
+                Log.i(TAG, "Action Category: " + mCurrentEventAction.getCategory());
+                Log.i(TAG, "Affects Work Schedule: " + mCurrentEventAction.affectsWorkSchedule());
+                Log.i(TAG, "Requires Approval: " + mCurrentEventAction.requiresApproval());
+                Log.i(TAG, "Requires Shift Coverage: " + mCurrentEventAction.requiresShiftCoverage());
+                Log.i(TAG, "Cost Impact Factor: " + mCurrentEventAction.getCostImpactFactor());
+                Log.i(TAG, "Min Advance Notice: " + mCurrentEventAction.getMinimumAdvanceNoticeDays() + " days");
+                Log.i(TAG, "Max Duration: " + mCurrentEventAction.getMaximumDurationDays() + " days");
+            }
+
+            // Log QuickEventLogicAdapter metadata if available
+            if (QuickEventLogicAdapter.isEventActionCreatedEvent(mEvent)) {
+                Log.i(TAG, "Event was created via EventAction system");
+                String metadataSummary = QuickEventLogicAdapter.getEventActionMetadataSummary(mEvent);
+                Log.i(TAG, metadataSummary);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error logging EventAction analytics: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Log enhanced alerts for critical changes that may need attention.
+     */
+    private void logEnhancedCriticalChangeAlerts() {
+        try {
+            if (mEvent == null) return;
+
+            // Check if approval is required due to changes
+            if (EventMetadataManager.requiresApprovalDueToChanges(mEvent)) {
+                Log.w(TAG, "⚠️ ALERT: Event changes require approval workflow");
+            }
+
+            // Check business impact score
+            int businessImpact = EventMetadataManager.getBusinessImpactScore(mEvent);
+            if (businessImpact >= 7) {
+                Log.w(TAG, "⚠️ ALERT: High business impact detected (score: " + businessImpact + ")");
+            }
+
+            // Check change severity
+            EventMetadataManager.ChangeSeverity severity = EventMetadataManager.getChangeSeverity(mEvent);
+            if (severity == EventMetadataManager.ChangeSeverity.CRITICAL) {
+                Log.w(TAG, "⚠️ ALERT: Critical changes detected - may require immediate attention");
+            }
+
+            // Enhanced: Check EventAction-specific alerts
+            if (mEventActionChanged && mCurrentEventAction != null) {
+                Log.w(TAG, "⚠️ ALERT: EventAction changed to " + mCurrentEventAction.getDisplayName());
+
+                if (mCurrentEventAction.requiresApproval() && (mOriginalEventAction == null || !mOriginalEventAction.requiresApproval())) {
+                    Log.w(TAG, "⚠️ ALERT: Change now requires approval due to EventAction");
+                }
+
+                if (mCurrentEventAction.affectsWorkSchedule() && (mOriginalEventAction == null || !mOriginalEventAction.affectsWorkSchedule())) {
+                    Log.w(TAG, "⚠️ ALERT: Change now affects work schedule due to EventAction");
+                }
+            }
+
+            // Check if originally a quick event
+            if (EventMetadataManager.wasOriginallyQuickEvent(mEvent)) {
+                Log.i(TAG, "ℹ️ INFO: Originally created as quick event, now manually edited");
+            }
+
+            // Enhanced: Check EventAction business rule violations
+            List<String> violations = EventMetadataManager.getEventActionViolations(mEvent);
+            if (!violations.isEmpty()) {
+                Log.w(TAG, "⚠️ ALERT: EventAction business rule violations: " + violations);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error logging enhanced critical change alerts: " + e.getMessage());
+        }
+    }
+
+    // ==================== ENHANCED EVENT UPDATE ====================
+
+    /**
+     * Enhanced method to update event from form with EventAction integration.
+     */
+    private void updateEventFromFormWithEnhancedEnums() {
         if (mEvent == null) return;
 
+        // Update basic fields
         mEvent.setTitle(mEditTitle.getText().toString().trim());
         mEvent.setDescription(mEditDescription.getText().toString().trim());
         mEvent.setLocation(mEditLocation.getText().toString().trim());
@@ -799,135 +1456,307 @@ public class EventEditFragment extends Fragment implements
         mEvent.setEndTime(mEndDateTime);
         mEvent.setAllDay(mAllDaySwitch.isChecked());
 
-        // Event type
-        String eventTypeStr = mEventTypeSpinner.getText().toString();
-        if (!TextUtils.isEmpty(eventTypeStr)) {
-            try {
-                mEvent.setEventType(EventType.valueOf(eventTypeStr));
-            } catch (IllegalArgumentException e) {
-                mEvent.setEventType(EventType.GENERAL);
-            }
+        // Enhanced EventType conversion
+        EventType selectedEventType = convertDisplayNameToEventType(mEventTypeSpinner.getText().toString());
+        mEvent.setEventType(selectedEventType);
+
+        // Enhanced EventPriority conversion
+        EventPriority selectedPriority = convertDisplayNameToEventPriority(mPrioritySpinner.getText().toString());
+        mEvent.setPriority(selectedPriority);
+
+        // Enhanced: Update EventAction metadata if changed
+        if (mEventActionChanged && mCurrentEventAction != null) {
+            updateEventActionMetadata();
         }
 
-        // Priority
-        String priorityStr = mPrioritySpinner.getText().toString();
-        if (!TextUtils.isEmpty(priorityStr)) {
-            try {
-                mEvent.setPriority(EventPriority.valueOf(priorityStr));
-            } catch (IllegalArgumentException e) {
-                mEvent.setPriority(EventPriority.NORMAL);
-            }
+        // Enhanced: Apply EventAction business logic if appropriate
+        if (mCurrentEventAction != null) {
+            applyEventActionBusinessLogic();
         }
 
-        // Update last modified
         mEvent.setLastUpdated(LocalDateTime.now());
+
+        Log.d(TAG, "Enhanced event updated from form - Type: " + selectedEventType +
+                ", Priority: " + selectedPriority + ", EventAction: " + mCurrentEventAction);
     }
 
     /**
-     * Cancel editing with confirmation for unsaved changes
+     * Update EventAction-specific metadata.
      */
+    private void updateEventActionMetadata() {
+        try {
+            Map<String, String> props = mEvent.getCustomProperties();
+            if (props == null) props = new HashMap<>();
+
+            // Update current EventAction metadata
+            props.put("current_event_action", mCurrentEventAction.name());
+            props.put("action_category", mCurrentEventAction.getCategory().name());
+            props.put("event_action_changed", "true");
+            props.put("action_change_timestamp", String.valueOf(System.currentTimeMillis()));
+
+            // Update business rule metadata
+            props.put("affects_work_schedule", String.valueOf(mCurrentEventAction.affectsWorkSchedule()));
+            props.put("requires_approval", String.valueOf(mCurrentEventAction.requiresApproval()));
+            props.put("requires_shift_coverage", String.valueOf(mCurrentEventAction.requiresShiftCoverage()));
+            props.put("cost_impact_factor", String.valueOf(mCurrentEventAction.getCostImpactFactor()));
+            props.put("requires_documentation", String.valueOf(mCurrentEventAction.requiresDocumentation()));
+            props.put("manager_approval_required", String.valueOf(mCurrentEventAction.requiresManagerApproval()));
+
+            mEvent.setCustomProperties(props);
+            Log.d(TAG, "EventAction metadata updated for: " + mCurrentEventAction);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating EventAction metadata: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Apply EventAction business logic to the event.
+     */
+    private void applyEventActionBusinessLogic() {
+        try {
+            // Adjust priority based on EventAction defaults if not explicitly set by user
+            if (mEvent.getPriority() == null || !mChangedFields.contains("priority")) {
+                EventPriority defaultPriority = mCurrentEventAction.getDefaultPriority();
+                if (defaultPriority != null) {
+                    mEvent.setPriority(defaultPriority);
+                    Log.d(TAG, "Applied EventAction default priority: " + defaultPriority);
+                }
+            }
+
+            // Adjust all-day setting based on EventAction defaults if not explicitly set
+            if (!mChangedFields.contains("allDay")) {
+                boolean defaultAllDay = mCurrentEventAction.isDefaultAllDay();
+                if (mEvent.isAllDay() != defaultAllDay) {
+                    mEvent.setAllDay(defaultAllDay);
+                    Log.d(TAG, "Applied EventAction default all-day setting: " + defaultAllDay);
+                }
+            }
+
+            // Apply default times if not set and not all-day
+            if (!mEvent.isAllDay() && mStartDateTime != null && mEndDateTime != null) {
+                // Check if we should apply default times
+                if (!mChangedFields.contains("startTime") || !mChangedFields.contains("endTime")) {
+                    applyEventActionDefaultTimes();
+                }
+            }
+
+            // Add EventAction-specific description notes
+            addEventActionDescriptionNotes();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error applying EventAction business logic: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Apply EventAction default times if appropriate.
+     */
+    private void applyEventActionDefaultTimes() {
+        try {
+            java.time.LocalTime defaultStartTime = mCurrentEventAction.getDefaultStartTime();
+            java.time.LocalTime defaultEndTime = mCurrentEventAction.getDefaultEndTime();
+
+            if (defaultStartTime != null && !mChangedFields.contains("startTime")) {
+                mStartDateTime = mStartDateTime.with(defaultStartTime);
+                mEvent.setStartTime(mStartDateTime);
+                updateTimeButtons();
+                Log.d(TAG, "Applied EventAction default start time: " + defaultStartTime);
+            }
+
+            if (defaultEndTime != null && !mChangedFields.contains("endTime")) {
+                mEndDateTime = mEndDateTime.with(defaultEndTime);
+                mEvent.setEndTime(mEndDateTime);
+                updateTimeButtons();
+                Log.d(TAG, "Applied EventAction default end time: " + defaultEndTime);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error applying EventAction default times: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Add EventAction-specific description notes.
+     */
+    private void addEventActionDescriptionNotes() {
+        try {
+            String currentDescription = mEvent.getDescription();
+            if (currentDescription == null) currentDescription = "";
+
+            List<String> notes = new ArrayList<>();
+
+            if (mCurrentEventAction.requiresApproval() && !currentDescription.contains("approvazione")) {
+                String approvalNote = mCurrentEventAction.requiresManagerApproval() ?
+                        "Richiede approvazione manager" : "Richiede approvazione";
+                notes.add(approvalNote);
+            }
+
+            if (mCurrentEventAction.requiresDocumentation() && !currentDescription.contains("documentazione")) {
+                notes.add("Documentazione richiesta");
+            }
+
+            if (mCurrentEventAction.requiresShiftCoverage() && !currentDescription.contains("copertura")) {
+                notes.add("Richiede copertura turno");
+            }
+
+            if (!notes.isEmpty()) {
+                String notesString = String.join(", ", notes);
+                if (!currentDescription.isEmpty()) {
+                    currentDescription += " (" + notesString + ")";
+                } else {
+                    currentDescription = "(" + notesString + ")";
+                }
+                mEvent.setDescription(currentDescription);
+                Log.d(TAG, "Added EventAction description notes: " + notesString);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding EventAction description notes: " + e.getMessage());
+        }
+    }
+
+    // ==================== ENHANCED ENUM CONVERSION ====================
+
+    /**
+     * Convert display name back to EventType enum with intelligent matching.
+     */
+    private EventType convertDisplayNameToEventType(String displayName) {
+        if (TextUtils.isEmpty(displayName)) {
+            Log.w(TAG, "Empty display name for EventType, using default");
+            return EventType.GENERAL;
+        }
+
+        try {
+            // First try: exact display name matching
+            for (EventType eventType : mAvailableEventTypes) {
+                if (displayName.equals(eventType.getDisplayName())) {
+                    Log.d(TAG, "EventType matched by display name: " + displayName + " -> " + eventType);
+                    return eventType;
+                }
+            }
+
+            // Second try: case-insensitive display name matching
+            for (EventType eventType : mAvailableEventTypes) {
+                if (displayName.equalsIgnoreCase(eventType.getDisplayName())) {
+                    Log.d(TAG, "EventType matched by case-insensitive display name: " + displayName + " -> " + eventType);
+                    return eventType;
+                }
+            }
+
+            // Third try: enum name matching (fallback compatibility)
+            for (EventType eventType : mAvailableEventTypes) {
+                if (displayName.equals(eventType.name()) || displayName.equalsIgnoreCase(eventType.name())) {
+                    Log.d(TAG, "EventType matched by enum name: " + displayName + " -> " + eventType);
+                    return eventType;
+                }
+            }
+
+            Log.w(TAG, "No EventType match found for: " + displayName + ", using default GENERAL");
+            return EventType.GENERAL;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error converting display name to EventType: " + e.getMessage());
+            return EventType.GENERAL;
+        }
+    }
+
+    /**
+     * Convert display name back to EventPriority enum with intelligent matching.
+     */
+    private EventPriority convertDisplayNameToEventPriority(String displayName) {
+        if (TextUtils.isEmpty(displayName)) {
+            Log.w(TAG, "Empty display name for EventPriority, using default");
+            return EventPriority.NORMAL;
+        }
+
+        try {
+            // First try: exact display name matching
+            for (EventPriority priority : mAvailablePriorities) {
+                if (displayName.equals(priority.getDisplayName())) {
+                    Log.d(TAG, "EventPriority matched by display name: " + displayName + " -> " + priority);
+                    return priority;
+                }
+            }
+
+            // Second try: case-insensitive display name matching
+            for (EventPriority priority : mAvailablePriorities) {
+                if (displayName.equalsIgnoreCase(priority.getDisplayName())) {
+                    Log.d(TAG, "EventPriority matched by case-insensitive display name: " + displayName + " -> " + priority);
+                    return priority;
+                }
+            }
+
+            // Third try: enum name matching (fallback compatibility)
+            for (EventPriority priority : mAvailablePriorities) {
+                if (displayName.equals(priority.name()) || displayName.equalsIgnoreCase(priority.name())) {
+                    Log.d(TAG, "EventPriority matched by enum name: " + displayName + " -> " + priority);
+                    return priority;
+                }
+            }
+
+            Log.w(TAG, "No EventPriority match found for: " + displayName + ", using default NORMAL");
+            return EventPriority.NORMAL;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error converting display name to EventPriority: " + e.getMessage());
+            return EventPriority.NORMAL;
+        }
+    }
+
+    // ==================== NAVIGATION AND CLEANUP ====================
+
     private void cancelEdit() {
-        final String mTAG = "cancelEdit: ";
-
         if (mHasUnsavedChanges) {
-            Log.d(TAG, mTAG + "Has unsaved changes, showing confirmation dialog");
-            // showUnsavedChangesDialog();  // ❌ RIMUOVERE
-
-            // ✅ CORREZIONE: Usare direttamente l'interfaccia
             handleUnsavedChanges(this::navigateBack, () -> {
-                Log.d(TAG, "User cancelled navigation");
+                // User cancelled navigation
             });
         } else {
-            Log.d(TAG, mTAG + "No unsaved changes, navigating back directly");
             navigateBack();
         }
     }
 
     /**
-     * ENHANCED: Navigate back with proper error handling
+     * Navigates back with proper error handling and fallbacks.
      */
     private void navigateBack() {
-        final String mTAG = "navigateBack: ";
-
         try {
             if (getView() != null) {
                 Navigation.findNavController(requireView()).popBackStack();
-                Log.d(TAG, mTAG + "✅ Successfully navigated back via Navigation Component");
             } else {
                 throw new IllegalStateException("View is null");
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error with Navigation Component: " + e.getMessage());
-
-            // Fallback to activity back press
+            Log.e(TAG, "Error with Navigation Component: " + e.getMessage());
             if (getActivity() != null) {
                 getActivity().onBackPressed();
-                Log.d(TAG, mTAG + "Fallback: used activity back press");
-            } else {
-                Log.e(TAG, mTAG + "Cannot navigate back - both Navigation and Activity are unavailable");
             }
         }
     }
 
-    /**
-     * Show error with better UX
-     */
-    private void showError(String message) {
-        final String mTAG = "showError: ";
-
+    private void showErrorAndNavigateBack(String message) {
         try {
             if (getContext() != null) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                Log.e(TAG, mTAG + message);
+                Library.showError(getContext(), message);
 
-                // Navigate back after showing error
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     navigateBack();
-                }, 2000); // 2 second delay to let user read the error
-
-            } else {
-                Log.e(TAG, mTAG + "Context is null, cannot show error: " + message);
+                }, 2000);
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error showing error message: " + e.getMessage());
+            Log.e(TAG, "Error showing error message: " + e.getMessage());
         }
     }
 
-    // ==================== DEBUG METHODS ====================
+    // ==================== UNSAVED CHANGES INTERFACE ====================
 
-    /**
-     * Debug method to check fragment state
-     */
-    public void debugFragmentState() {
-        Log.d(TAG, "=== EVENT EDIT FRAGMENT DEBUG ===");
-        Log.d(TAG, "Event ID: " + mEventId);
-        Log.d(TAG, "Event Loaded: " + (mEvent != null ? mEvent.getTitle() : "null"));
-        Log.d(TAG, "Has Unsaved Changes: " + mHasUnsavedChanges);
-        Log.d(TAG, "Start DateTime: " + mStartDateTime);
-        Log.d(TAG, "End DateTime: " + mEndDateTime);
-        Log.d(TAG, "Database Operations Interface: " + (mEventsDatabaseOperationsInterface != null ? "available" : "null"));
-        Log.d(TAG, "Event Operations Interface: " + (mEventsOperationsInterface != null ? "available" : "null"));
-        Log.d(TAG, "=== END DEBUG ===");
-    }
-
-    /**
-     * Check if component has unsaved changes
-     *
-     * @return true if there are unsaved changes that would be lost on navigation
-     */
     @Override
     public boolean hasUnsavedChanges() {
         return mHasUnsavedChanges;
     }
 
     /**
-     * Handle unsaved changes with user confirmation
-     * <p>
-     * This method should present appropriate UI (dialog, snackbar, etc.) to let
-     * the user decide how to proceed with unsaved changes.
-     *
-     * @param onProceed Callback to execute if user wants to proceed (discard changes)
-     * @param onCancel  Callback to execute if user wants to cancel navigation
+     * Handles unsaved changes with user confirmation dialog.
      */
     @Override
     public void handleUnsavedChanges(@NonNull Runnable onProceed, @NonNull Runnable onCancel) {
@@ -936,26 +1765,357 @@ public class EventEditFragment extends Fragment implements
                     .setTitle("Modifiche non salvate")
                     .setMessage("Hai modifiche non salvate. Vuoi uscire senza salvare?")
                     .setPositiveButton("Esci senza salvare", (dialog, which) -> {
-                        Log.d(TAG, "User chose to exit without saving");
-                        mHasUnsavedChanges = false; // Reset flag
-                        onProceed.run(); // Chiama il callback per procedere
+                        mHasUnsavedChanges = false;
+                        onProceed.run();
                     })
                     .setNegativeButton("Continua modifica", (dialog, which) -> {
-                        Log.d(TAG, "User chose to continue editing");
-                        onCancel.run(); // Chiama il callback per annullare
+                        onCancel.run();
                     })
                     .setNeutralButton("Salva e esci", (dialog, which) -> {
-                        Log.d(TAG, "User chose to save and exit");
-                        // Salva i dati e poi procedi
-                        saveEvent(); // This will navigate back on success
+                        saveEvent();
                     })
-                    .setCancelable(false) // Impedisce la chiusura accidentale
+                    .setCancelable(false)
                     .show();
         } catch (Exception e) {
             Log.e(TAG, "Error showing unsaved changes dialog: " + e.getMessage());
-            // Fallback to direct navigation
             navigateBack();
         }
     }
 
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Get current user ID (implement based on your user management system).
+     */
+    private Long getCurrentUserId() {
+        try {
+            // TODO: Implement based on your user management system
+            return 1L; // Placeholder
+        } catch (Exception e) {
+            Log.w(TAG, "Could not retrieve current user ID: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Legacy method for toolbar home button handling.
+     */
+    public void onHomePressed() {
+        cancelEdit();
+    }
+
+    // ==================== ENHANCED DEBUG AND TESTING METHODS ====================
+
+    /**
+     * Get enhanced metadata summary for debugging purposes.
+     */
+    public String getEnhancedMetadataSummaryForDebugging() {
+        if (mEvent != null) {
+            return EventMetadataManager.getEnhancedEditSessionSummary(mEvent);
+        }
+        return "No enhanced metadata available";
+    }
+
+    /**
+     * Get current EventAction for debugging/testing purposes.
+     */
+    public EventAction getCurrentEventAction() {
+        return mCurrentEventAction;
+    }
+
+    /**
+     * Get original EventAction for debugging/testing purposes.
+     */
+    public EventAction getOriginalEventAction() {
+        return mOriginalEventAction;
+    }
+
+    /**
+     * Check if EventAction changed for debugging/testing purposes.
+     */
+    public boolean hasEventActionChanged() {
+        return mEventActionChanged;
+    }
+
+    /**
+     * Get current EventType selection for debugging/testing purposes.
+     */
+    public EventType getCurrentEventType() {
+        if (mEventTypeSpinner == null) return null;
+        return convertDisplayNameToEventType(mEventTypeSpinner.getText().toString());
+    }
+
+    /**
+     * Get current EventPriority selection for debugging/testing purposes.
+     */
+    public EventPriority getCurrentEventPriority() {
+        if (mPrioritySpinner == null) return null;
+        return convertDisplayNameToEventPriority(mPrioritySpinner.getText().toString());
+    }
+
+    /**
+     * Get changed fields list for testing.
+     */
+    public List<String> getChangedFieldsForTesting() {
+        return new ArrayList<>(mChangedFields);
+    }
+
+    /**
+     * Check if metadata tracking is properly initialized for testing.
+     */
+    public boolean isMetadataTrackingInitialized() {
+        return mMetadataInitialized;
+    }
+
+    /**
+     * Get edit session ID for testing.
+     */
+    public String getEditSessionIdForTesting() {
+        return mEditSessionId;
+    }
+
+    /**
+     * Force metadata update for testing purposes.
+     */
+    public void forceMetadataUpdateForTesting() {
+        if (mMetadataInitialized) {
+            updateMetadataForCurrentChanges();
+        }
+    }
+
+    /**
+     * Get available EventType options for debugging/testing purposes.
+     */
+    public List<EventType> getAvailableEventTypes() {
+        return new ArrayList<>(mAvailableEventTypes);
+    }
+
+    /**
+     * Get available EventPriority options for debugging/testing purposes.
+     */
+    public List<EventPriority> getAvailablePriorities() {
+        return new ArrayList<>(mAvailablePriorities);
+    }
+
+// ==================== ENHANCED METADATA LOGGING ====================
+
+    /**
+     * Log comprehensive enhanced metadata summary for analytics.
+     */
+    private void logEnhancedMetadataSummary() {
+        try {
+            if (mEvent != null) {
+                String summary = EventMetadataManager.getEnhancedEditSessionSummary(mEvent);
+                Log.i(TAG, "=== ENHANCED EDIT SESSION COMPLETED ===");
+                Log.i(TAG, summary);
+
+                // Enhanced: Log EventAction-specific information
+                logEventActionAnalytics();
+
+                // Check for critical changes that need attention
+                logEnhancedCriticalChangeAlerts();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error logging enhanced metadata summary: " + e.getMessage());
+        }
+    }
+
+// ==================== ENHANCED WARNING DIALOGS ====================
+
+    /**
+     * Enhanced turn impact warning with EventAction business context.
+     */
+    private void showEnhancedTurnImpactWarning(EventType originalType, EventType newType,
+                                               EventAction originalAction, EventAction newAction) {
+        try {
+            String message = buildEnhancedTurnImpactMessage(originalType, newType, originalAction, newAction);
+
+            new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Impatto Business dell'Azione")
+                    .setMessage(message)
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setPositiveButton("Continua", (dialog, which) -> {
+                        trackUserOverride("enhanced_turn_impact_acknowledged");
+                    })
+                    .setNegativeButton("Rivedi", (dialog, which) -> {
+                        restoreOriginalEventType();
+                    })
+                    .setNeutralButton("Dettagli", (dialog, which) -> {
+                        showEventActionDetailsDialog(newAction);
+                    })
+                    .setCancelable(false)
+                    .show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error showing enhanced turn impact warning: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Build enhanced impact message with EventAction business context.
+     */
+    private String buildEnhancedTurnImpactMessage(EventType originalType, EventType newType,
+                                                  EventAction originalAction, EventAction newAction) {
+        StringBuilder message = new StringBuilder();
+
+        message.append("Modifica dell'azione da ");
+
+        if (originalAction != null) {
+            message.append("'").append(originalAction.getDisplayName()).append("' (").append(originalAction.getCategory().getDisplayName()).append(")");
+        } else {
+            message.append("'").append(originalType != null ? originalType.getDisplayName() : "Non specificato").append("'");
+        }
+
+        message.append(" a ");
+
+        if (newAction != null) {
+            message.append("'").append(newAction.getDisplayName()).append("' (").append(newAction.getCategory().getDisplayName()).append(")");
+        } else {
+            message.append("'").append(newType != null ? newType.getDisplayName() : "Non specificato").append("'");
+        }
+
+        message.append("\n\n🔍 Analisi Impatti:\n");
+
+        if (originalAction != null && newAction != null) {
+            // Category change impact
+            if (originalAction.getCategory() != newAction.getCategory()) {
+                message.append("• Cambio categoria: ").append(originalAction.getCategory().getDisplayName())
+                        .append(" → ").append(newAction.getCategory().getDisplayName()).append("\n");
+            }
+
+            // Work schedule impact
+            if (originalAction.affectsWorkSchedule() != newAction.affectsWorkSchedule()) {
+                if (newAction.affectsWorkSchedule()) {
+                    message.append("• ⚠️ Ora impatta la schedulazione dei turni\n");
+                } else {
+                    message.append("• ✅ Non impatta più la schedulazione dei turni\n");
+                }
+            }
+
+            // Approval requirement change
+            if (originalAction.requiresApproval() != newAction.requiresApproval()) {
+                if (newAction.requiresApproval()) {
+                    message.append("• 📋 Ora richiede approvazione");
+                    if (newAction.requiresManagerApproval()) {
+                        message.append(" (manager)");
+                    }
+                    message.append("\n");
+                } else {
+                    message.append("• ✅ Non richiede più approvazione\n");
+                }
+            }
+
+            // Shift coverage change
+            if (originalAction.requiresShiftCoverage() != newAction.requiresShiftCoverage()) {
+                if (newAction.requiresShiftCoverage()) {
+                    message.append("• 👥 Richiede copertura del turno\n");
+                } else {
+                    message.append("• ✅ Non richiede più copertura del turno\n");
+                }
+            }
+
+            // Cost impact change
+            double originalCost = originalAction.getCostImpactFactor();
+            double newCost = newAction.getCostImpactFactor();
+            if (Math.abs(originalCost - newCost) > 0.1) {
+                message.append("• 💰 Impatto economico: ").append(originalCost)
+                        .append(" → ").append(newCost).append("\n");
+            }
+
+            // Documentation requirement
+            if (originalAction.requiresDocumentation() != newAction.requiresDocumentation()) {
+                if (newAction.requiresDocumentation()) {
+                    message.append("• 📄 Richiede documentazione aggiuntiva\n");
+                }
+            }
+
+            // Constraints differences
+            if (originalAction.getMinimumAdvanceNoticeDays() != newAction.getMinimumAdvanceNoticeDays()) {
+                message.append("• ⏰ Preavviso richiesto: ").append(originalAction.getMinimumAdvanceNoticeDays())
+                        .append(" → ").append(newAction.getMinimumAdvanceNoticeDays()).append(" giorni\n");
+            }
+
+            if (originalAction.getMaximumDurationDays() != newAction.getMaximumDurationDays()) {
+                message.append("• 📅 Durata massima: ").append(originalAction.getMaximumDurationDays())
+                        .append(" → ").append(newAction.getMaximumDurationDays()).append(" giorni\n");
+            }
+        }
+
+        message.append("\n🤔 Vuoi continuare con questa modifica?");
+
+        return message.toString();
+    }
+
+    /**
+     * Show EventAction details dialog.
+     */
+    private void showEventActionDetailsDialog(EventAction action) {
+        if (action == null) return;
+
+        StringBuilder details = new StringBuilder();
+        details.append("📋 Dettagli Azione: ").append(action.getDisplayName()).append("\n\n");
+        details.append("🏷️ Categoria: ").append(action.getCategory().getDisplayName()).append("\n");
+        details.append("💼 Impatta turni: ").append(action.affectsWorkSchedule() ? "Sì" : "No").append("\n");
+        details.append("✅ Richiede approvazione: ").append(action.requiresApproval() ? "Sì" : "No").append("\n");
+        details.append("👥 Richiede copertura: ").append(action.requiresShiftCoverage() ? "Sì" : "No").append("\n");
+        details.append("💰 Fattore costo: ").append(action.getCostImpactFactor()).append("\n");
+        details.append("📄 Richiede documentazione: ").append(action.requiresDocumentation() ? "Sì" : "No").append("\n");
+        details.append("⏰ Preavviso minimo: ").append(action.getMinimumAdvanceNoticeDays()).append(" giorni\n");
+        details.append("📅 Durata massima: ").append(action.getMaximumDurationDays()).append(" giorni\n");
+
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Dettagli Azione")
+                .setMessage(details.toString())
+                .setPositiveButton("Chiudi", null)
+                .show();
+    }
+
+    /**
+     * Restore original EventType if user wants to review.
+     */
+    private void restoreOriginalEventType() {
+        try {
+            if (mOriginalEvent != null && mOriginalEvent.getEventType() != null) {
+                setEventTypeSelection(mOriginalEvent.getEventType());
+
+                // Reset EventAction tracking
+                mCurrentEventAction = mOriginalEventAction;
+                mEventActionChanged = false;
+
+                // Remove the EventType change from tracked changes
+                mChangedFields.remove("eventType");
+                trackUserOverride("event_type_restored");
+
+                Log.d(TAG, "EventType restored to original value");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error restoring original EventType: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Track user overrides and manual corrections.
+     */
+    private void trackUserOverride(String overrideType) {
+        try {
+            if (mEvent != null && mEvent.getCustomProperties() != null) {
+                Map<String, String> props = mEvent.getCustomProperties();
+
+                String existingOverrides = props.get("user_overrides");
+                if (existingOverrides == null) {
+                    existingOverrides = overrideType;
+                } else {
+                    existingOverrides += "," + overrideType;
+                }
+
+                props.put("user_overrides", existingOverrides);
+                mEvent.setCustomProperties(props);
+
+                Log.d(TAG, "User override tracked: " + overrideType);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error tracking user override: " + e.getMessage());
+        }
+    }
 }
+

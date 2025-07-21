@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: CoreBackupManager - Unified Backup System
- *
+ * <p>
  * ✅ Eliminates dependency on legacy BackupIntegration and BackupManager
  * ✅ Unified backup system for all entities (Events, Users, Organizations)
  * ✅ Consistent OperationResult pattern throughout

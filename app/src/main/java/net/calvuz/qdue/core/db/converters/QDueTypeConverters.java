@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Unified Room TypeConverters for Q-DUE Database.
  * Handles conversion between Java objects and SQLite-compatible types for all entities.
- *
+ * <p>
  * Combines converters from:
  * - EventsTypeConverters (events)
  * - LocalDateConverter (users)

@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 
 /**
  * REFACTORED: MacroDepartmentServiceImpl - Dependency Injection Compliant
- *
+ * <p>
  * Centralized implementation for all MacroDepartment operations with:
  * - Manual dependency injection via constructor
  * - Consistent OperationResult pattern throughout
@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
  * - Background operations with CompletableFuture
  * - Comprehensive validation and error handling
  * - Hierarchical department management
- *
+ * <p>
  * Fully compliant with MacroDepartmentService interface contract.
  */
 public class MacroDepartmentServiceImpl implements MacroDepartmentService {

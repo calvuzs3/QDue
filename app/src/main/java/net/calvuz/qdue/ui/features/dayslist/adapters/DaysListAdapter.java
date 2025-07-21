@@ -241,96 +241,6 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         holder.itemView.setLayoutParams(params);
     }
 
-    // ===========================================
-    // Toolbar Action Handling
-    // ===========================================
-
-    /**
-     * Handle toolbar action execution
-     *
-     * @param action Toolbar action to handle
-     * @param day    Day associated with the action
-     * @param date   Date associated with the action
-     */
-    @Override
-    protected void handleToolbarAction(ToolbarAction action, Day day, LocalDate date) {
-        switch (action) {
-            case FERIE:
-                createQuickEvent("Ferie", date, EventType.GENERAL);
-                break;
-
-            case MALATTIA:
-                createQuickEvent("Malattia", date, EventType.GENERAL);
-                break;
-
-            case LEGGE_104:
-                createQuickEvent("Legge 104", date, EventType.GENERAL);
-                break;
-
-            case PERMESSO:
-                createQuickEvent("Permesso", date, EventType.GENERAL);
-                break;
-
-            case PERMESSO_SINDACALE:
-                createQuickEvent("Permesso Sindacale", date, EventType.GENERAL);
-                break;
-
-            case ADD_EVENT:
-                // This will be handled by fragment to open event editor
-                Log.d(TAG, "ADD_EVENT action - delegating to fragment");
-                break;
-
-            case VIEW_EVENTS:
-                // This will be handled by fragment to show events list
-                Log.d(TAG, "VIEW_EVENTS action - delegating to fragment");
-                break;
-
-            default:
-                Log.w(TAG, "Unknown toolbar action: " + action);
-        }
-    }
-
-    /**
-     * Create a quick event for the specified date
-     * This is a simplified event creation - full implementation would create LocalEvent
-     *
-     * @param title Title of the event
-     * @param date  Date of the event
-     * @param type  Type of the event
-     */
-    private void createQuickEvent(String title, LocalDate date, EventType type) {
-        Log.d(TAG, "Creating quick event: " + title + " for date: " + date);
-
-        // TODO: Create actual LocalEvent and save to database
-        // For now, just log the action
-
-        // Example implementation:
-        /*
-        LocalEvent quickEvent = new LocalEvent();
-        quickEvent.setTitle(title);
-        quickEvent.setStartDate(date);
-        quickEvent.setEndDate(date);
-        quickEvent.setEventType(type);
-        quickEvent.setAllDay(true);
-        quickEvent.setCreatedAt(LocalDateTime.now());
-
-        // Save to database asynchronously
-        CompletableFuture.runAsync(() -> {
-            try {
-                mEventsDatabase.eventDao().insert(quickEvent);
-
-                // Refresh events data on main thread
-                ((Activity) mContext).runOnUiThread(() -> {
-                    refreshEventsFromDatabase();
-                    Log.d(TAG, "Quick event created and saved: " + title);
-                });
-            } catch (Exception e) {
-                Log.e(TAG, "Error saving quick event: " + e.getMessage());
-            }
-        });
-        */
-    }
-
     /// /////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -512,7 +422,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         }
 
         mIsLoadingEvents.set(true);
-        Log.d(TAG, mTAG + "Starting to load events from database");
+        Log.i(TAG, mTAG + "Starting to load events from database");
 
         // Calculate date range (current month ± 2 months for visible range)
         LocalDate now = LocalDate.now();
@@ -528,7 +438,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
 
                 List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
 
-                Log.d(TAG, mTAG + "Loaded " + events.size() + " events from database");
+                Log.i(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
 
             } catch (Exception e) {
@@ -723,7 +633,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
     private void validateExpansionSupport() {
         // This method can be called during adapter initialization
         // to ensure all ViewHolders support expansion
-        Log.d(TAG, "Validating expansion support for DaysList rows");
+        Log.v(TAG, "Validating expansion support for DaysList rows");
 
         // The validation happens in ViewHolder constructor
         // This method serves as a placeholder for future checks
@@ -735,11 +645,11 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         super.setupLongClickSupport(holder, dayItem, position);
 
         // Additional check for expansion support
-        if (holder instanceof DayslistDayViewHolder dayslistHolder) {
-            if (!dayslistHolder.supportsExpansion()) {
-                Log.w(TAG, "ViewHolder at position " + position + " does not support expansion");
-            }
-        }
+//        if (holder instanceof DayslistDayViewHolder dayslistHolder) {
+//            if (!dayslistHolder.supportsExpansion()) {
+//                Log.v(TAG, "ViewHolder at position " + position + " does not support expansion");
+//            }
+//        }
     }
 
     /// /////////////////////////////////////////////////////////////////////////////////////
@@ -772,8 +682,6 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
             if (eventsIndicator != null) {
                 eventsIndicator.setVisibility(View.GONE);
             }
-
-            Log.d(TAG, "DayslistDayViewHolder: initialized");
         }
 
         /**

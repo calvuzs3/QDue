@@ -9,10 +9,10 @@ import java.util.List;
 
 /**
  * STEP 3: Backup Integration Helper
- *
+ * <p>
  * Provides seamless integration of automatic backup functionality
  * with existing EventsActivity and EventPackageManager systems.
- *
+ * <p>
  * This class acts as a bridge between the events management system
  * and the backup/restore functionality, ensuring backups are triggered
  * automatically when events are modified.

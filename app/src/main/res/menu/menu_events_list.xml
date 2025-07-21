@@ -18,39 +18,28 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
 
-    <!-- Import Events -->
+
+    <!-- Import from a file -->
     <item
-        android:id="@+id/action_import_events"
-        android:icon="@drawable/ic_rounded_input_24"
-        android:title="@string/import_events"
-        android:visible="true"
-        app:showAsAction="never">
-        <menu>
+        android:id="@+id/action_import_events_file"
+        android:icon="@drawable/ic_rounded_upload_file_24"
+        android:title="@string/import_events_file"
+        android:visible="true" />
 
-            <!-- Import from a file -->
-            <item
-                android:id="@+id/action_import_events_file"
-                android:icon="@drawable/ic_rounded_upload_file_24"
-                android:title="@string/import_events_file"
-                android:visible="true" />
+    <!-- Import from API -->
+    <item
+        android:id="@+id/action_import_events_url"
+        android:icon="@drawable/ic_rounded_link_24"
+        android:title="@string/import_events_url"
+        android:visible="true" />
 
-            <!-- Import from API -->
-            <item
-                android:id="@+id/action_import_events_url"
-                android:icon="@drawable/ic_rounded_link_24"
-                android:title="@string/import_events_url"
-                android:visible="true" />
-
-        </menu>
-
-    </item>
 
     <!-- Export Events -->
     <item
         android:id="@+id/action_export_events"
         android:icon="@drawable/ic_rounded_save_24"
         android:title="@string/export_events"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="never" />
 
     <!-- Existing menu items -->

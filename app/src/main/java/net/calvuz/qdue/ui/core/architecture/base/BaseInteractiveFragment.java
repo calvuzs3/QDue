@@ -2,6 +2,8 @@ package net.calvuz.qdue.ui.core.architecture.base;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +25,12 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
+import net.calvuz.qdue.events.actions.EventAction;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.core.components.toolbars.BottomSelectionToolbar;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
@@ -34,6 +39,7 @@ import net.calvuz.qdue.ui.core.common.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.features.events.quickevents.QuickEventConfirmationDialog;
+import net.calvuz.qdue.ui.features.events.quickevents.QuickEventLogicAdapter;
 import net.calvuz.qdue.ui.features.events.quickevents.QuickEventTemplate;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -52,8 +58,6 @@ import java.util.concurrent.CompletableFuture;
  * Base fragment with long-click and selection support
  * Enhanced with Quick Events creation system
  * Intermediate layer between BaseFragment and specific implementations
- * <p>
- * PHASE 3: BaseInteractiveFragment - Service Integration
  * <p>
  * REFACTORED VERSION:
  * - ✅ ADDED: Dependency injection support (Injectable)
@@ -81,6 +85,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     // old untouched
     // Bottom Selection Toolbar
     protected BottomSelectionToolbar mBottomToolbar;
+//    protected FloatingDayToolbar mBottomToolbar;
 
     // Selection mode support
     protected boolean mHasSelectionHiddenFab = false;
@@ -123,8 +128,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Find and setup views.
-     *
-     * @param rootView
      */
     @Override
     protected void findViews(View rootView) {
@@ -133,9 +136,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Convert data in fragment specific format.
-     *
-     * @param days
-     * @param monthDate
      */
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
@@ -162,8 +162,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     /**
      * Set adapter, an extension of BaseAdapter
-     *
-     * @param adapter
      */
     @Override
     protected void setFragmentAdapter(BaseAdapter adapter) {
@@ -360,6 +358,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * ✅ REFACTORED: Service-based quick event creation
      */
     protected void createQuickEvent(ToolbarAction action, LocalDate date) {
+        // EventAction validation
+        EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+        if (!QuickEventLogicAdapter.canCreateEventActionOnDate(eventAction, date, mCurrentUserId)) {
+            showQuickEventError("Azione non consentita per questa data", action, date);
+            return;
+        }
+
         if (!areDependenciesReady()) {
             showQuickEventError("Services not available", action, date);
             return;
@@ -558,6 +563,20 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         }
 
         try {
+
+            // TODO: Sostituire creazione con:
+//            for (LocalDate date : selectedDates) {
+//                EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
+//                LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, mCurrentUserId);
+//
+//                // Inizializzare metadata
+//                event = EventMetadataManager.initializeEditSessionMetadata(event, mCurrentUserId);
+//
+//                // Salvare nel database
+//                long rowId = eventDao.insertEvent(event);
+//                // ...
+//            }
+//
             // Create base request from template
             LocalDate firstDate = dates.get(0);
             QuickEventRequest baseRequest = template.createEventRequest(firstDate, mCurrentUserId);
@@ -780,14 +799,87 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     // Setup Methods (Enhanced)
     // ===========================================
 
+
+
+    /**
+     * 🆕 HELPER: Get current user team for validation from adapter
+     * Gets the user team directly from the BaseAdapter
+     */
+    protected HalfTeam getCurrentUserTeam() {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter != null) {
+            // Access mUserHalfTeam from BaseAdapter
+            return adapter.mUserHalfTeam;
+        }
+
+        Log.w(TAG, "getCurrentUserTeam: No adapter available, returning null");
+        return null;
+    }
+
+    /**
+     * 🆕 HELPER: Get current day map for validation - SIMPLE IMPLEMENTATION
+     * Builds a basic day map from adapter's mItems for toolbar validation
+     */
+    protected Map<LocalDate, Day> getCurrentDayMap() {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter == null || adapter.mItems == null) {
+            Log.w(TAG, "getCurrentDayMap: No adapter or items available");
+            return new HashMap<>();
+        }
+
+        Map<LocalDate, Day> dayMap = new HashMap<>();
+
+        // Extract Day objects from adapter's ViewItems
+        for (SharedViewModels.ViewItem item : adapter.mItems) {
+            if (item instanceof SharedViewModels.DayItem) {
+                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
+                if (dayItem.day != null) {
+                    dayMap.put(dayItem.day.getLocalDate(), dayItem.day);
+                }
+            }
+        }
+
+        Log.d(TAG, "getCurrentDayMap: Built day map with " + dayMap.size() + " days");
+        return dayMap;
+    }
+
+
     /**
      * Initialize bottom selection toolbar
      */
     private void setupBottomToolbar() {
         if (getContext() == null) return;
 
-        mBottomToolbar = new BottomSelectionToolbar(getContext());
+        // Get current user team for smart validation
+        HalfTeam userTeam = getCurrentUserTeam();
+
+        // Create enhanced toolbar with user team context
+        mBottomToolbar = new BottomSelectionToolbar(getContext(), userTeam);
+
+        // Set day map for validation context (if available)
+        setupValidationContext();
+
         Log.d(TAG, "setupBottomToolbar: ✅ Bottom toolbar initialized");
+    }
+
+
+    /**
+     * 🆕 Setup validation context for enhanced toolbar
+     */
+    private void setupValidationContext() {
+        if (mBottomToolbar == null) return;
+
+        // Get day map from data source (if available)
+        Map<LocalDate, Day> dayMap = getCurrentDayMap();
+        if (dayMap != null) {
+            mBottomToolbar.setDayMap(dayMap);
+        }
+
+        // Update user team if it changed
+        HalfTeam userTeam = getCurrentUserTeam();
+        if (userTeam != null) {
+            mBottomToolbar.setUserTeam(userTeam);
+        }
     }
 
     /**
@@ -856,15 +948,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 showEventsDialog(date);
                 break;
 
-            // ✅ ENHANCED: Quick Event Actions with proper integration
             case FERIE:
             case MALATTIA:
             case LEGGE_104:
             case PERMESSO:
             case PERMESSO_SINDACALE:
             case STRAORDINARIO:
-                // These are handled by adapter, but we can show confirmation
-//                handleQuickEventCreation(action, date); break;  // OLD version without services
+                // These are no more handled by adapter, we handle them here
                 createQuickEvent(action, date);
                 break;
 
@@ -974,8 +1064,8 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 //     * ✅ ENHANCED: Handle quick event creation with confirmation dialog
 //     * Main entry point for toolbar action → confirmation dialog → actual event creation
 //     */
-//    private void handleQuickEventCreation(ToolbarAction action, LocalDate date) {
-//        Log.d(TAG, "handleQuickEventCreation: Creating quick event " + action + " for date " + date);
+//    private void createQuickEvent(ToolbarAction action, LocalDate date) {
+//        Log.d(TAG, "createQuickEvent: Creating quick event " + action + " for date " + date);
 //
 //        // Validate Quick Events system initialization
 //        if (!mQuickEventsInitialized) {
@@ -1144,9 +1234,9 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 //     * Replaces the simple Toast implementation
 //     */
 //    protected void showQuickEventConfirmation(ToolbarAction action, LocalDate date) {
-//        // This method is now handled by handleQuickEventCreation
+//        // This method is now handled by createQuickEvent
 //        // Keeping for backward compatibility
-//        handleQuickEventCreation(action, date);
+//        createQuickEvent(action, date);
 //        //onQuickEventCreated(action, date);
 //    }
 
@@ -1158,33 +1248,119 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * Proxy for ADAPTER: Enter selection mode (update UI accordingly?)
      */
     protected void enterSelectionMode() {
+        Log.i(TAG, "✅ Entering selection mode with coordinated timing");
+
         BaseInteractiveAdapter adapter = getClickAdapter();
         if (adapter != null && !adapter.isSelectionMode()) {
             adapter.setSelectionMode(true);
         }
 
         hideFabForSelection();
-        showBottomToolbar();
         updateActionBarForSelection(isSelectionMode());
-        updateBottomToolbar();
-        // TODO: update fab visibility
-        //toggleFabVisibility(mFabGoToToday);
-        updateActionBarTitle(getCurrentSelectionCount());
 
-        Log.d(TAG, "enterSelectionMode: Entered selection mode");
+        // 🔧 CRITICAL: Coordinate bottom nav and toolbar timing
+        coordinateBottomNavAndToolbar(true);
+
+        updateActionBarTitle(getCurrentSelectionCount());
     }
 
     /**
-     * ✅ REFACTORED: Exit selection mode - eliminato clear diretto
+     * Coordinate bottom navigation hiding and toolbar showing
+     */
+    private void coordinateBottomNavAndToolbar(boolean enteringSelectionMode) {
+        if (!(getActivity() instanceof QDueMainActivity)) {
+            // No bottom nav to coordinate - show toolbar immediately
+            showToolbarAfterDelay(0);
+            return;
+        }
+
+        QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+        View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+        if (bottomNav == null || bottomNav.getVisibility() != View.VISIBLE) {
+            // Bottom nav not visible - show toolbar immediately
+            showToolbarAfterDelay(0);
+            return;
+        }
+
+        if (enteringSelectionMode) {
+            Log.d(TAG, "Coordinating bottom nav hide with toolbar show");
+
+            // Start bottom nav hide animation
+            bottomNav.animate()
+                    .translationY(bottomNav.getHeight())
+                    .alpha(0f)
+                    .setDuration(200)
+                    .withStartAction(() -> {
+                        // 🔧 Show toolbar slightly after bottom nav starts hiding
+                        showToolbarAfterDelay(100);
+                    })
+                    .withEndAction(() -> {
+                        bottomNav.setVisibility(View.INVISIBLE);
+                        bottomNav.setAlpha(1.0f);  // ← CRITICAL: Reset to full opacity
+                        Log.d(TAG, "✅ Bottom navigation hidden");
+                    })
+                    .start();
+        } else {
+            // Exiting - hide toolbar first, then show bottom nav
+            hideBottomToolbar();
+
+            // Show bottom nav after toolbar is hidden
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(() -> {
+                bottomNav.setVisibility(View.VISIBLE);
+                bottomNav.setTranslationY(bottomNav.getHeight());
+                bottomNav.setAlpha(0f);
+
+                bottomNav.animate()
+                        .translationY(0)
+                        .alpha(1.0f)
+                        .setDuration(200)
+                        .start();
+            }, 150);
+        }
+    }
+
+
+    /**
+     * 🔧 NEW: Show toolbar with coordinated delay
+     */
+    private void showToolbarAfterDelay(int delayMs) {
+        BaseInteractiveAdapter adapter = getClickAdapter();
+        if (adapter == null || adapter.getSelectedCount() == 0) {
+            Log.w(TAG, "showToolbarAfterDelay: No selections to show");
+            return;
+        }
+
+        if (mMainHandler == null) {
+            mMainHandler = new Handler(Looper.getMainLooper());
+        }
+
+        mMainHandler.postDelayed(() -> {
+            try {
+                showBottomToolbar();
+                updateBottomToolbar();
+                Log.d(TAG, "✅ Toolbar shown after coordinated delay: " + delayMs + "ms");
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing toolbar after delay: " + e.getMessage(), e);
+            }
+        }, delayMs);
+    }
+
+    /**
+     * Exit selection mode - eliminato clear diretto
      */
     protected void exitSelectionMode() {
+        Log.i(TAG, "✅ Exiting selection mode");
+
         if (isSelectionMode()) return; // false is ok(already updated)
 
         // ✅ Update action bar/toolbar
         updateActionBarForSelection(false);
 
-        // ✅ Show FAB again
+        // ✅ Show again
         showFabAfterSelection();
+        showBottomNavigation();
 
         // ✅ Hide bottom toolbar
         hideBottomToolbar();
@@ -1194,54 +1370,46 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         if (adapter != null && adapter.isSelectionMode()) {
             adapter.setSelectionMode(false); // ✅ Questo gestirà automaticamente il clear se necessario
         }
-
-        Log.d(TAG, "exitSelectionMode: Exited selection mode");
     }
-//    /**
-//     * Exit selection mode - restore normal UI
-//     */
-//    protected void exitSelectionMode() {
-//        // Exit if in selection mode
-//        if (!isSelectionMode()) return;
-//
-//        // Update action bar/toolbar
-//        updateActionBarForSelection(false);
-//
-//        // Show FAB again
-//        showFabAfterSelection();
-//
-//        // Hide bottom toolbar
-//        hideBottomToolbar();
-//
-//        // Disable selection mode in adapter
-//        BaseInteractiveAdapter adapter = getClickAdapter();
-//        if (adapter != null && adapter.isSelectionMode()) {
-//            adapter.setSelectionMode(false);
-//            adapter.clearSelections();
-//        }
-//
-//        Log.d(TAG, "exitSelectionMode: Exited selection mode");
-//    }
 
     /**
      * Show bottom toolbar with current selection
      */
     private void showBottomToolbar() {
         if (mBottomToolbar == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ Bottom toolbar is null");
-            return;
+            Log.e(TAG, "❌ showBottomToolbar: Bottom toolbar is null - reinitializing");
+            setupBottomToolbar(); // Reinitialize if needed
+
+            if (mBottomToolbar == null) {
+                Log.e(TAG, "❌ showBottomToolbar: Failed to initialize bottom toolbar");
+                return;
+            }
         }
 
         BaseInteractiveAdapter adapter = getClickAdapter();
-        if (adapter == null) return;
-
-        ViewGroup container = getToolbarContainer();
-        if (container == null) {
-            Log.e(TAG, "showBottomToolbar: ❌ No toolbar container available");
+        if (adapter == null) {
+            Log.e(TAG, "❌ showBottomToolbar: No adapter available");
             return;
         }
 
+        ViewGroup container = getToolbarContainer();
+        if (container == null) {
+            Log.e(TAG, "❌ showBottomToolbar: No toolbar container available");
+            return;
+        }
+
+        // 🔧 UPDATE: Setup validation context before showing
+        setupValidationContext();
+
+        // Get selected dates
         Set<LocalDate> selectedDates = adapter.getSelectedDates();
+        if (selectedDates == null || selectedDates.isEmpty()) {
+            Log.w(TAG, "⚠️ No dates selected");
+            Log.w(TAG, "⚠️ Not Skipping return for test");
+            return;
+        }
+
+        // Show enhanced toolbar with smart validation
         mBottomToolbar.show(container, selectedDates, this);
     }
 
@@ -1384,18 +1552,47 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
      * Update bottom toolbar with current selection
      */
     private void updateBottomToolbar() {
-        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
+        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) {
+            return;
+        }
 
         BaseInteractiveAdapter adapter = getClickAdapter();
-        if (adapter != null) {
-            Set<LocalDate> selectedDates = adapter.getSelectedDates();
-            mBottomToolbar.updateSelection(selectedDates);
+        if (adapter == null) {
+            hideBottomToolbar();
+            return;
         }
+
+        Set<LocalDate> selectedDates = adapter.getSelectedDates();
+        if (selectedDates == null || selectedDates.isEmpty()) {
+            hideBottomToolbar();
+            return;
+        }
+
+        // 🆕 NEW: Update selection with enhanced validation
+        mBottomToolbar.updateSelection(selectedDates);
+
+//        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
+//
+//        BaseInteractiveAdapter adapter = getClickAdapter();
+//        if (adapter != null) {
+//            Set<LocalDate> selectedDates = adapter.getSelectedDates();
+//            mBottomToolbar.updateSelection(selectedDates);
+//        }
     }
 
     // ===========================================
     // Helper Methods
     // ===========================================
+
+    /**
+     * 🆕 NEW: Refresh validation context when data changes
+     * Call this when day data or user team changes
+     */
+    protected void refreshToolbarValidation() {
+        if (mBottomToolbar != null) {
+            setupValidationContext();
+        }
+    }
 
     /**
      * Check if currently in selection mode with items selected
@@ -2586,6 +2783,62 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 .count();
     }
 
+
+
+
+    /// /////////////////////////////////
+    /**
+     * Hide bottom navigation during selection mode
+     */
+    private void hideBottomNavigation() {
+        if (getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+            if (bottomNav != null && bottomNav.getVisibility() == View.VISIBLE) {
+                Log.d(TAG, "Hiding bottom navigation for selection mode");
+
+                // Animate hide
+                bottomNav.animate()
+                        .translationY(bottomNav.getHeight())
+                        .setDuration(250)
+                        .withEndAction(() -> {
+                            bottomNav.setVisibility(View.GONE);
+                            Log.d(TAG, "✅ Bottom navigation hidden");
+                        })
+                        .start();
+            }
+        }
+    }
+
+    /**
+     * Show bottom navigation after selection mode
+     */
+    private void showBottomNavigation() {
+        if (getActivity() instanceof QDueMainActivity) {
+            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+
+            if (bottomNav != null && bottomNav.getVisibility() != View.VISIBLE) {
+                Log.d(TAG, "Showing bottom navigation after selection mode");
+
+                bottomNav.setVisibility(View.VISIBLE);
+                bottomNav.setTranslationY(bottomNav.getHeight());
+
+                // Animate show
+                bottomNav.animate()
+                        .translationY(0)
+                        .setDuration(250)
+                        .withEndAction(() -> {
+                            Log.d(TAG, "✅ Bottom navigation shown");
+                        })
+                        .start();
+            }
+        }
+    }
+    /// ////////////////////////////////
+
+
     // ===========================================
     // Debug Methods Enhanced
     // ===========================================
@@ -2701,4 +2954,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         Log.d(TAG, "View Type: " + getEventsPreviewViewType().name());
         Log.d(TAG, "========================");
     }
+
+
+
 }

@@ -22,7 +22,7 @@ import java.util.Calendar;
 
 /**
  * Custom DatePicker Preference for Scheme Start Date
- *
+ * <p>
  * Handles the complex workflow:
  * 1. Warning dialog about impact
  * 2. Date picker
