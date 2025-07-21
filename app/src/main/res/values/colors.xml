@@ -280,20 +280,14 @@
 
     <!-- PRIMARY SHIFTS (Most Important) -->
     <!-- Morning Shift - Warm Orange/Amber -->
-    <color name="shift_afternoon">#FF8F00</color>           <!-- Deep Orange 600 -->
+<!--    <color name="shift_afternoon">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
     <color name="shift_afternoon_light">#FFCC02</color>     <!-- Amber 600 -->
     <color name="shift_afternoon_dark">#E65100</color>      <!-- Deep Orange 900 -->
-<!--    <color name="shift_morning">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
-    <color name="shift_morning_light">#FFCC02</color>     <!-- Amber 600 -->
-    <color name="shift_morning_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
     <!-- Afternoon Shift - Forest Green -->
-    <color name="shift_morning">#388E3C</color>         <!-- Green 600 -->
+<!--    <color name="shift_morning">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
     <color name="shift_morning_light">#66BB6A</color>   <!-- Green 400 -->
     <color name="shift_morning_dark">#1B5E20</color>    <!-- Green 900 -->
-<!--    <color name="shift_afternoon">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
-    <color name="shift_afternoon_light">#66BB6A</color>   <!-- Green 400 -->
-    <color name="shift_afternoon_dark">#1B5E20</color>    <!-- Green 900 -->
 
     <!-- Night Shift - Deep Blue -->
 <!--    <color name="shift_night">#1976D2</color>             &lt;!&ndash; Blue 600 &ndash;&gt;-->

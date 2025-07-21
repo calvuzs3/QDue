@@ -88,10 +88,11 @@
                     android:id="@+id/text_operation_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/placeholder_14_32"
+                    android:text="14:32"
                     android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="14:32" />
+                    tools:text="14:32"
+                    tools:ignore="HardcodedText" />
 
             </LinearLayout>
 
@@ -214,12 +215,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="@string/placeholder_smartshifts_export_json"
+                android:text="placeholder_export_json_file.json"
                 android:textSize="11sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:maxLines="1"
                 android:ellipsize="middle"
-                tools:text="smartshifts_export_20250720_143255.json" />
+                tools:text="smartshifts_export_20250720_143255.json"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 
@@ -243,10 +245,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="@string/placeholder_mb"
+                android:text="placeholder MB"
                 android:textSize="11sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="2.3 MB" />
+                tools:text="2.3 MB"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 
@@ -270,10 +273,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
-                android:text="@string/placeholder_12_secondi"
+                android:text="placeholder 12 seconds"
                 android:textSize="11sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                tools:text="12 secondi" />
+                tools:text="12 secondi"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
 

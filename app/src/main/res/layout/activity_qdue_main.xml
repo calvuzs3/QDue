@@ -20,7 +20,6 @@
             android:layout_height="wrap_content"
                     android:background="@drawable/appbar_gradient_background"
                     app:elevation="4dp"
-                    app:liftOnScroll="true"
             android:fitsSystemWindows="true" >
 
 

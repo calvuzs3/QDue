@@ -5,6 +5,8 @@
 
     <string name="smartshifts_title">SmartShifts</string>
 
+    <string name="menu_title_smartshifts">@string/smartshifts_title</string>
+
     <!-- ===== MENU & NAVIGATION ===== -->
     <string name="menu_smart_shifts">SmartShifts</string>
     <string name="nav_calendar">Calendario</string>
@@ -568,7 +570,12 @@
     <string name="smartshifts_conflict_loading">Caricamento informazioni conflitto…</string>
     <string name="smartshifts_loading_recommendation">Generando raccomandazione…</string>
     <string name="smartshifts_conflict_details_loading">Analizzando conflitti…</string>
+    <string name="restore_from_previous_backups">Ripristina da backups precedenti</string>
+    <string name="common_yesterday">ieri</string>
 
     <!--    FINE NUOVO SISTEMA-->
+
+
+
 
 </resources>

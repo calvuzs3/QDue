@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 /**
  * Comprehensive Export/Import Manager for SmartShifts.
  * <p>
@@ -54,7 +56,7 @@ import javax.inject.Singleton;
  * @since Phase 4 - Advanced Features
  */
 @Singleton
-public class SmartShiftsExportImportManager {
+public class SmartShiftsExportImportManager  {
 
     private static final String TAG = "SmartShiftsExportImport";
 
@@ -490,7 +492,7 @@ public class SmartShiftsExportImportManager {
     ///
     @Inject
     public SmartShiftsExportImportManager(
-            @NonNull Context context,
+            @ApplicationContext Context context,
             @NonNull SmartShiftsRepository repository
     ) {
         this.context = context;

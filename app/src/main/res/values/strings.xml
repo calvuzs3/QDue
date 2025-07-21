@@ -394,7 +394,6 @@
 
 
     <!-- Strings for proto -->
-    <string name="error_loading_data">Errore caricamento dati (proto)</string>
     <string name="nav_header_about" translatable="false">About</string>
 
     <!-- ==================== Additional Strings EVENTS ==================== -->
@@ -403,7 +402,6 @@
     <string name="events_empty_message">Impèorta eventi da file JSON o aggiungi nuovi eventi</string>
     <string name="events_import_success">%d eventi importati correttamente</string>
     <string name="events_import_error">Importazione fallita: %s</string>
-    <string name="events_export_success">Eventi esportati correttamente</string>
     <string name="events_export_error">Esportazione fallita: %s</string>
     <string name="events_clear_all_title">Pulisci tutti gli eventi</string>
     <string name="events_clear_all_message">Sei sicuro di voler cancellare tutti gli eventi? Questa azione non può essere ripristinata.</string>
@@ -462,7 +460,6 @@
     <!-- Export/Import Messages -->
     <string name="export_events_title">Esporta Eventi</string>
     <string name="export_processing">Esportando eventi…</string>
-    <string name="export_success">Eventi esportati correttamente</string>
     <string name="export_failed">Export fallito</string>
     <string name="export_no_events">Nessun Evento da esportare</string>
 
@@ -471,9 +468,6 @@
     <string name="action_disable">Disabilita</string>
     <string name="action_preview">Anteprima</string>
     <string name="action_restore">Ripristina</string>
-    <string name="action_cancel">Annulla</string>
-    <string name="action_ok">OK</string>
-    <string name="action_close">Chiudi</string>
     <string name="today">Oggi</string>
     <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
@@ -724,7 +718,6 @@
     <string name="team_selected_letter_format">Squadra %1$s selezionata</string>         <!-- "Squadra A selezionata" -->
 
     <!-- Team Names and Descriptions -->
-    <string name="team_name_format">Squadra %1$d</string>
     <string name="team_description_format">Turni coordinati squadra %1$d</string>
     <string name="team_selected_format">Squadra %1$d selezionata</string>
     <string name="selected_team_label">Squadra selezionata:</string>
