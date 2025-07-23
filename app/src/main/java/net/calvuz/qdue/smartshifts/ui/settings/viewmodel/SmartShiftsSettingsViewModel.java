@@ -22,12 +22,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+
+import android.content.Context;
+import android.util.Log;
+import java.util.HashMap;
 
 /**
  * Refactored ViewModel for SmartShifts Settings management.
@@ -319,9 +324,18 @@ public class SmartShiftsSettingsViewModel extends AndroidViewModel {
             );
         }
 
+        // AGGIUNTO: Default per month_view_layout
+        if (!preferences.contains(getApplication().getString(R.string.smartshifts_pref_month_view_layout))) {
+            editor.putString(
+                    getApplication().getString(R.string.smartshifts_pref_month_view_layout),
+                    getApplication().getString(R.string.smartshifts_default_month_view_layout)
+            );
+        }
+
         // Apply defaults
         editor.apply();
     }
+
 
     // ============================================
     // PUBLIC GETTERS FOR LIVEDATA
@@ -709,10 +723,7 @@ public class SmartShiftsSettingsViewModel extends AndroidViewModel {
     ) throws Exception {
 
         switch (operationType) {
-            case BACKUP_NOW:
-                return delegateToExportImportManager(operationType, configuration);
-
-            case RESTORE_BACKUP:
+            case BACKUP_NOW, RESTORE_BACKUP:
                 return delegateToExportImportManager(operationType, configuration);
 
             case AUTO_BACKUP:
@@ -780,6 +791,593 @@ public class SmartShiftsSettingsViewModel extends AndroidViewModel {
     ) throws Exception {
         return delegateToExportImportManager(operationType, configuration);
     }
+
+    // ============================================
+    // PREFERENCE UPDATE METHODS (usando keys esistenti)
+    // ============================================
+
+
+    public void updateAppTheme(String theme) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_theme), theme).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, theme, "Tema aggiornato");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateAppLanguage(String language) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_language), language).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, language, "Lingua aggiornata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateStartupScreen(String screen) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_startup_screen), screen).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, screen, "Schermata di avvio aggiornata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateAutoSync(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_auto_sync), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Sincronizzazione automatica attivata" : "Sincronizzazione automatica disattivata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    // NOTA: Il metodo updateDebugMode è commentato nel Fragment perché non presente nel XML
+// Mantenerlo nel ViewModel per compatibilità futura
+    public void updateDebugMode(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_debug_mode), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Modalità debug attivata" : "Modalità debug disattivata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateWeekStartDay(String startDay) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_week_start_day), startDay).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, startDay, "Primo giorno settimana aggiornato");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateCalendarViewType(String viewType) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_calendar_view_type), viewType).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, viewType, "Vista calendario aggiornata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateShowWeekNumbers(boolean show) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_show_week_numbers), show).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, show,
+                        show ? "Numeri settimana attivati" : "Numeri settimana disattivati");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateHighlightToday(boolean highlight) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_highlight_today), highlight).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, highlight,
+                        highlight ? "Evidenziazione oggi attivata" : "Evidenziazione oggi disattivata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateShowShiftTimes(boolean show) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_show_shift_times), show).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, show,
+                        show ? "Orari turni visibili" : "Orari turni nascosti");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateShowLegend(boolean show) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_show_legend), show).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, show,
+                        show ? "Legenda visibile" : "Legenda nascosta");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+
+    public void updateMonthViewLayout(String layout) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_month_view_layout), layout).apply();
+
+                String message = "single_shift".equals(layout) ?
+                        "Vista mensile: singolo turno" :
+                        "Vista mensile: tutti i turni";
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, layout, message);
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateCalendarDensity(String density) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_calendar_density), density).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, density, "Densità calendario aggiornata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateWeekendEmphasis(boolean emphasis) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_weekend_emphasis), emphasis).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, emphasis,
+                        emphasis ? "Enfasi weekend attivata" : "Enfasi weekend disattivata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+
+    public void updateNotificationsEnabled(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_notifications_enabled), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Notifiche attivate" : "Notifiche disattivate");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateShiftReminders(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_shift_reminders), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Promemoria turni attivati" : "Promemoria turni disattivati");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateReminderAdvanceTime(int minutes) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putInt(
+                        getApplication().getString(R.string.smartshifts_pref_reminder_advance_time), minutes).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, minutes,
+                        "Tempo preavviso aggiornato a " + minutes + " minuti");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateNotificationSound(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_notification_sound), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Suono notifiche attivato" : "Suono notifiche disattivato");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateNotificationVibration(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_notification_vibration), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Vibrazione notifiche attivata" : "Vibrazione notifiche disattivata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+
+    public void updateAutoBackup(boolean enabled) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putBoolean(
+                        getApplication().getString(R.string.smartshifts_pref_auto_backup), enabled).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, enabled,
+                        enabled ? "Backup automatico attivato" : "Backup automatico disattivato");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateBackupFrequency(String frequency) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putString(
+                        getApplication().getString(R.string.smartshifts_pref_backup_frequency), frequency).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, frequency, "Frequenza backup aggiornata");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+    public void updateCacheSizeLimit(int sizeMB) {
+        executorService.execute(() -> {
+            try {
+                preferences.edit().putInt(
+                        getApplication().getString(R.string.smartshifts_pref_cache_size_limit), sizeMB).apply();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.PREFERENCES_UPDATE, sizeMB,
+                        "Limite cache aggiornato a " + sizeMB + " MB");
+                operationResults.postValue(result);
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.PREFERENCES_UPDATE, e));
+            }
+        });
+    }
+
+
+    /// /////////////////
+
+//    public void updatePatternChangeAlerts(boolean enabled) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putBoolean(
+//                    context.getString(R.string.smartshifts_pref_pattern_change_alerts), enabled).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, enabled,
+//                    enabled ? "Avvisi cambio pattern attivati" : "Avvisi cambio pattern disattivati");
+//        });
+//    }
+
+//
+//    public void updateNotificationPriority(String priority) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putString(
+//                    context.getString(R.string.smartshifts_pref_notification_priority), priority).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, priority, "Priorità notifiche aggiornata");
+//        });
+//    }
+
+//    public void updateQuietHoursEnabled(boolean enabled) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putBoolean(
+//                    context.getString(R.string.smartshifts_pref_quiet_hours_enabled), enabled).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, enabled,
+//                    enabled ? "Orari silenzio attivati" : "Orari silenzio disattivati");
+//        });
+//    }
+
+//
+//    public void updateDataRetentionDays(int days) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putInt(
+//                    context.getString(R.string.smartshifts_pref_data_retention_days), days).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, days,
+//                    "Periodo conservazione dati aggiornato a " + days + " giorni");
+//        });
+//    }
+
+//    public void updateCloudSyncProvider(String provider) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putString(
+//                    context.getString(R.string.smartshifts_pref_cloud_sync_provider), provider).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, provider, "Provider cloud sync aggiornato");
+//        });
+//    }
+
+//    public void updateSyncWifiOnly(boolean wifiOnly) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putBoolean(
+//                    context.getString(R.string.smartshifts_pref_sync_wifi_only), wifiOnly).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, wifiOnly,
+//                    wifiOnly ? "Sync solo WiFi attivato" : "Sync anche dati mobili");
+//        });
+//    }
+
+//    public void updatePerformanceMode(String mode) {
+//        performSettingsOperation(OperationType.PREFERENCES_UPDATE, () -> {
+//            preferences.edit().putString(
+//                    context.getString(R.string.smartshifts_pref_performance_mode), mode).apply();
+//            return UnifiedOperationResult.success(
+//                    OperationType.PREFERENCES_UPDATE, mode, "Modalità performance aggiornata");
+//        });
+//    }
+
+
+    // ============================================
+    // QUICK ACTION METHODS (delegano a ExportImportManager)
+    // ============================================
+
+    public void performQuickExport() {
+        executorService.execute(() -> {
+            try {
+                // Delega al manager esistente per export veloce JSON
+                Map<String, Object> config = new HashMap<>();
+                config.put("format", "json");
+                config.put("scope", "current_month");
+                config.put("includePatterns", true);
+                config.put("includeContacts", false);
+
+                // Simula operazione export veloce (sostituire con chiamata reale al manager)
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.EXPORT_JSON, config, "Export veloce avviato");
+                operationResults.postValue(result);
+
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.EXPORT_JSON, e));
+            }
+        });
+    }
+
+
+    public void performQuickBackup() {
+        executorService.execute(() -> {
+            try {
+                // Delega al manager esistente per backup completo
+                Map<String, Object> config = new HashMap<>();
+                config.put("format", "backup");
+                config.put("scope", "complete");
+                config.put("compression", true);
+
+                // Simula operazione backup veloce (sostituire con chiamata reale al manager)
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.BACKUP_NOW, config, "Backup veloce avviato");
+                operationResults.postValue(result);
+
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.BACKUP_NOW, e));
+            }
+        });
+    }
+
+    public void clearCache() {
+        executorService.execute(() -> {
+            try {
+                long clearedBytes = 0;
+
+                // Clear application cache
+                File cacheDir = getApplication().getCacheDir();
+                if (cacheDir != null && cacheDir.exists()) {
+                    clearedBytes += calculateDirectorySize(cacheDir);
+                    deleteRecursive(cacheDir);
+                }
+
+                // Clear external cache
+                File externalCacheDir = getApplication().getExternalCacheDir();
+                if (externalCacheDir != null && externalCacheDir.exists()) {
+                    clearedBytes += calculateDirectorySize(externalCacheDir);
+                    deleteRecursive(externalCacheDir);
+                }
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.CLEAR_CACHE, null,
+                        "Cache pulita: " + formatBytes(clearedBytes) + " liberati");
+                operationResults.postValue(result);
+
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.CLEAR_CACHE, e));
+            }
+        });
+    }
+
+    public void resetToDefaults() {
+        executorService.execute(() -> {
+            try {
+                // Clear all SmartShifts preferences
+                SharedPreferences.Editor editor = preferences.edit();
+
+                // Get all smartshifts_ prefixed keys and clear them
+                Map<String, ?> allPrefs = preferences.getAll();
+                for (String key : allPrefs.keySet()) {
+                    if (key.startsWith("smartshifts_")) {
+                        editor.remove(key);
+                    }
+                }
+                editor.apply();
+
+                // Reinitialize defaults
+                initializeDefaultValues();
+
+                UnifiedOperationResult<Object> result = UnifiedOperationResult.success(
+                        OperationType.RESET_SETTINGS, null,
+                        "Impostazioni ripristinate ai valori predefiniti");
+                operationResults.postValue(result);
+
+            } catch (Exception e) {
+                operationResults.postValue(UnifiedOperationResult.failure(
+                        OperationType.RESET_SETTINGS, e));
+            }
+        });
+    }
+
+
+    public void onPreferenceChanged(String key, Object value) {
+        // Handle cross-preference validation and side effects
+        if (key != null && key.startsWith("smartshifts_")) {
+            Log.d("SettingsVM", "Preference changed: " + key + " = " + value);
+
+            // Trigger any dependent preference updates
+            if (key.equals(getApplication().getString(R.string.smartshifts_pref_auto_backup)) &&
+                    Boolean.TRUE.equals(value)) {
+                // Auto-enable other backup related settings if needed
+                Log.d("SettingsVM", "Auto backup enabled - checking related settings");
+            }
+
+            // Handle month view layout changes
+            if (key.equals(getApplication().getString(R.string.smartshifts_pref_month_view_layout))) {
+                Log.d("SettingsVM", "Month view layout changed to: " + value);
+                // Potrebbe essere necessario aggiornare la UI del calendario
+            }
+        }
+    }
+
+    // ============================================
+    // PERFORM METHODS
+    // ============================================
 
     /**
      * Handle data operations

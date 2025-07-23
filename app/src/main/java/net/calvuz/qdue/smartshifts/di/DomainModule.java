@@ -10,10 +10,10 @@ import dagger.hilt.components.SingletonComponent;
 
 import net.calvuz.qdue.smartshifts.domain.generators.ShiftGeneratorEngine;
 import net.calvuz.qdue.smartshifts.domain.generators.RecurrenceRuleParser;
-import net.calvuz.qdue.smartshifts.domain.validators.ContinuousCycleValidator;
-import net.calvuz.qdue.smartshifts.domain.validators.ShiftTimeValidator;
 import net.calvuz.qdue.smartshifts.data.dao.ShiftTypeDao;
 import net.calvuz.qdue.smartshifts.data.dao.ShiftPatternDao;
+import net.calvuz.qdue.smartshifts.domain.validators.ContinuousCycleValidator;
+import net.calvuz.qdue.smartshifts.domain.validators.ShiftTimeValidator;
 
 import javax.inject.Singleton;
 
@@ -54,7 +54,7 @@ public class DomainModule {
     }
 
     /**
-     * Provide continuous cycle validator
+     * Provide continuous cycle validator (now STATIC METHODS)
      */
     @Provides
     @Singleton
@@ -65,7 +65,7 @@ public class DomainModule {
     }
 
     /**
-     * Provide shift time validator
+     * Provide shift time validator (now STATIC METHODS)
      */
     @Provides
     @Singleton

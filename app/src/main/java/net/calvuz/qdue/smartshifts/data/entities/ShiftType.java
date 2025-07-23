@@ -118,6 +118,7 @@ public class ShiftType {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "ShiftType{" +
@@ -128,6 +129,49 @@ public class ShiftType {
                 ", isWorkingShift=" + isWorkingShift +
                 '}';
     }
+
+
+    @NonNull
+    public String getId() {
+        return id;
+    }
+
+    @NonNull
+    public String getName() {
+        return name;
+    }
+
+    @NonNull
+    public String getDescription() {
+        return name;
+    }
+    @NonNull
+    public String getStartTime() {
+        return startTime;
+    }
+
+    @NonNull
+    public String getEndTime() {
+        return endTime;
+    }
+
+    @NonNull
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setName(@NonNull String name) {
+        this.name = name;
+    }
+
+    public void setStartTime(@NonNull String startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(@NonNull String endTime) {
+        this.endTime = endTime;
+    }
+
 }
 
 // =====================================================================

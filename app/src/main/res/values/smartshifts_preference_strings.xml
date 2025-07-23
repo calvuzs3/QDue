@@ -72,6 +72,7 @@
     <string name="smartshifts_default_data_retention_days" translatable="false">365</string>
     <string name="smartshifts_default_notification_priority" translatable="false">normal</string>
     <string name="smartshifts_default_performance_mode" translatable="false">balanced</string>
+    <string name="smartshifts_default_month_view_layout" translatable="false">single_shift</string>
 
     <!-- ============================================ -->
     <!-- SMARTSHIFTS USER-FACING STRINGS (TRANSLATABLE) -->
@@ -288,18 +289,31 @@
     </string-array>
 
     <!-- Startup Screen Options -->
-    <string-array name="smartshifts_startup_screen_entries">
+    <string-array name="smartshifts_startup_entries">
         <item>Calendario</item>
-        <item>Pattern Turni</item>
-        <item>Contatti Squadra</item>
-        <item>Ultima Vista Usata</item>
+        <item>Pattern</item>
+        <item>Contatti</item>
+        <item>Impostazioni</item>
     </string-array>
 
-    <string-array name="smartshifts_startup_screen_values">
+    <string-array name="smartshifts_startup_values">
         <item>calendar</item>
         <item>patterns</item>
         <item>contacts</item>
-        <item>last_used</item>
+        <item>settings</item>
+    </string-array>
+
+    <!-- Calendar View Type Options -->
+    <string-array name="smartshifts_calendar_view_entries">
+        <item>Vista Mensile</item>
+        <item>Vista Settimanale</item>
+        <item>Vista Agenda</item>
+    </string-array>
+
+    <string-array name="smartshifts_calendar_view_values">
+        <item>month</item>
+        <item>week</item>
+        <item>agenda</item>
     </string-array>
 
     <!-- Week Start Day Options -->
@@ -390,6 +404,17 @@
         <item>normal</item>
         <item>high</item>
         <item>max</item>
+    </string-array>
+
+    <!-- Month View Layout Options -->
+    <string-array name="smartshifts_month_view_layout_entries">
+        <item>Singolo Turno</item>
+        <item>Tutti i Turni</item>
+    </string-array>
+
+    <string-array name="smartshifts_month_view_layout_values">
+        <item>single_shift</item>
+        <item>all_shifts</item>
     </string-array>
 
     <!-- Messages & Dialogs -->

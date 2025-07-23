@@ -38,25 +38,33 @@ public class UnifiedOperationResult<T> {
     private final long fileSize;
 
     // ============================================
-    // UNIFIED OPERATION TYPE ENUM
+    // UNIFIED OPERATION TYPE ENUM - EXTENDED
     // ============================================
 
     /**
-     * Unified operation types covering all SmartShifts operations.
-     * Replaces fragmented enums across different components.
+     * Comprehensive operation types covering all SmartShifts operations.
+     * Extended to support detailed error categorization and recovery suggestions.
      */
     public enum OperationType {
-        // Settings operations
+
+        // ============================================
+        // SETTINGS OPERATIONS
+        // ============================================
+        PREFERENCES_UPDATE("preferences_update", "Aggiornamento Preferenze", OperationCategory.SETTINGS),
         VALIDATE_SETTINGS("validate_settings", "Validazione Impostazioni", OperationCategory.SETTINGS),
         RESET_SETTINGS("reset_settings", "Reset Impostazioni", OperationCategory.SETTINGS),
         CLEAR_CACHE("clear_cache", "Pulizia Cache", OperationCategory.SETTINGS),
 
-        // Backup operations
+        // ============================================
+        // BACKUP OPERATIONS
+        // ============================================
         BACKUP_NOW("backup_now", "Backup Immediato", OperationCategory.BACKUP),
         RESTORE_BACKUP("restore_backup", "Ripristino Backup", OperationCategory.BACKUP),
         AUTO_BACKUP("auto_backup", "Backup Automatico", OperationCategory.BACKUP),
 
-        // Export operations
+        // ============================================
+        // EXPORT OPERATIONS (estesi per tutti i formati)
+        // ============================================
         EXPORT_COMPLETE("export_complete", "Esportazione Completa", OperationCategory.EXPORT),
         EXPORT_SELECTIVE("export_selective", "Esportazione Selettiva", OperationCategory.EXPORT),
         EXPORT_CALENDAR("export_calendar", "Esportazione Calendario", OperationCategory.EXPORT),
@@ -66,7 +74,9 @@ public class UnifiedOperationResult<T> {
         EXPORT_ICAL("export_ical", "Esportazione iCal", OperationCategory.EXPORT),
         EXPORT_EXCEL("export_excel", "Esportazione Excel", OperationCategory.EXPORT),
 
-        // Import operations
+        // ============================================
+        // IMPORT OPERATIONS (estesi per tutti i formati)
+        // ============================================
         IMPORT_FILE("import_file", "Importazione File", OperationCategory.IMPORT),
         IMPORT_CLOUD("import_cloud", "Importazione Cloud", OperationCategory.IMPORT),
         IMPORT_JSON("import_json", "Importazione JSON", OperationCategory.IMPORT),
@@ -75,17 +85,85 @@ public class UnifiedOperationResult<T> {
         IMPORT_ICAL("import_ical", "Importazione iCal", OperationCategory.IMPORT),
         IMPORT_EXCEL("import_excel", "Importazione Excel", OperationCategory.IMPORT),
 
-        // Cloud operations
+        // ============================================
+        // NETWORK & CLOUD OPERATIONS (NUOVI)
+        // ============================================
+        NETWORK_SYNC("network_sync", "Sincronizzazione Rete", OperationCategory.NETWORK),
         CLOUD_SYNC("cloud_sync", "Sincronizzazione Cloud", OperationCategory.CLOUD),
         CLOUD_UPLOAD("cloud_upload", "Upload Cloud", OperationCategory.CLOUD),
         CLOUD_DOWNLOAD("cloud_download", "Download Cloud", OperationCategory.CLOUD),
 
-        // Data operations
+        // ============================================
+        // DATABASE OPERATIONS (NUOVI)
+        // ============================================
+        DATABASE_QUERY("database_query", "Query Database", OperationCategory.DATABASE),
+        DATABASE_UPDATE("database_update", "Aggiornamento Database", OperationCategory.DATABASE),
+        DATABASE_MIGRATION("database_migration", "Migrazione Database", OperationCategory.DATABASE),
+        DATABASE_BACKUP("database_backup", "Backup Database", OperationCategory.DATABASE),
+
+        // ============================================
+        // PATTERN OPERATIONS (NUOVI)
+        // ============================================
+        PATTERN_VALIDATION("pattern_validation", "Validazione Pattern", OperationCategory.PATTERN),
+        PATTERN_CREATE("pattern_create", "Creazione Pattern", OperationCategory.PATTERN),
+        PATTERN_UPDATE("pattern_update", "Aggiornamento Pattern", OperationCategory.PATTERN),
+        PATTERN_DELETE("pattern_delete", "Eliminazione Pattern", OperationCategory.PATTERN),
+
+        // ============================================
+        // SHIFT GENERATION OPERATIONS (NUOVI)
+        // ============================================
+        SHIFT_GENERATION("shift_generation", "Generazione Turni", OperationCategory.SHIFT),
+        SHIFT_VALIDATION("shift_validation", "Validazione Turni", OperationCategory.SHIFT),
+        SHIFT_ASSIGNMENT("shift_assignment", "Assegnazione Turni", OperationCategory.SHIFT),
+
+        // ============================================
+        // CONTACT MANAGEMENT OPERATIONS (NUOVI)
+        // ============================================
+        CONTACT_MANAGEMENT("contact_management", "Gestione Contatti", OperationCategory.CONTACT),
+        CONTACT_CREATE("contact_create", "Creazione Contatto", OperationCategory.CONTACT),
+        CONTACT_UPDATE("contact_update", "Aggiornamento Contatto", OperationCategory.CONTACT),
+        CONTACT_DELETE("contact_delete", "Eliminazione Contatto", OperationCategory.CONTACT),
+        CONTACT_SYNC("contact_sync", "Sincronizzazione Contatti", OperationCategory.CONTACT),
+
+        // ============================================
+        // DATA OPERATIONS
+        // ============================================
         DATA_VALIDATION("data_validation", "Validazione Dati", OperationCategory.DATA),
         DATA_MIGRATION("data_migration", "Migrazione Dati", OperationCategory.DATA),
         DATA_CLEANUP("data_cleanup", "Pulizia Dati", OperationCategory.DATA),
 
-        // Unknown/Error states
+        // ============================================
+        // USER INTERFACE OPERATIONS (NUOVI)
+        // ============================================
+        UI_REFRESH("ui_refresh", "Aggiornamento Interfaccia", OperationCategory.UI),
+        UI_NAVIGATION("ui_navigation", "Navigazione", OperationCategory.UI),
+        UI_VALIDATION("ui_validation", "Validazione Input", OperationCategory.UI),
+
+        // ============================================
+        // FILE SYSTEM OPERATIONS (NUOVI)
+        // ============================================
+        FILE_READ("file_read", "Lettura File", OperationCategory.FILE_SYSTEM),
+        FILE_WRITE("file_write", "Scrittura File", OperationCategory.FILE_SYSTEM),
+        FILE_DELETE("file_delete", "Eliminazione File", OperationCategory.FILE_SYSTEM),
+        FILE_COPY("file_copy", "Copia File", OperationCategory.FILE_SYSTEM),
+
+        // ============================================
+        // PERMISSION OPERATIONS (NUOVI)
+        // ============================================
+        PERMISSION_REQUEST("permission_request", "Richiesta Permessi", OperationCategory.PERMISSION),
+        PERMISSION_GRANTED("permission_granted", "Permessi Concessi", OperationCategory.PERMISSION),
+        PERMISSION_DENIED("permission_denied", "Permessi Negati", OperationCategory.PERMISSION),
+
+        // ============================================
+        // VALIDATION OPERATIONS (NUOVI)
+        // ============================================
+        VALIDATION_INPUT("validation_input", "Validazione Input", OperationCategory.VALIDATION),
+        VALIDATION_BUSINESS_RULE("validation_business_rule", "Validazione Regole Business", OperationCategory.VALIDATION),
+        VALIDATION_DATA_INTEGRITY("validation_data_integrity", "Validazione Integrità Dati", OperationCategory.VALIDATION),
+
+        // ============================================
+        // UNKNOWN/ERROR STATES
+        // ============================================
         UNKNOWN("unknown", "Operazione Sconosciuta", OperationCategory.UNKNOWN);
 
         private final String value;
@@ -101,6 +179,40 @@ public class UnifiedOperationResult<T> {
         public String getValue() { return value; }
         public String getDisplayName() { return displayName; }
         public OperationCategory getCategory() { return category; }
+
+        // ============================================
+        // OPERATION CATEGORY ENUM (ESTESO)
+        // ============================================
+
+        /**
+         * Operation categories for grouping related operations
+         */
+        public enum OperationCategory {
+            SETTINGS("Impostazioni"),
+            BACKUP("Backup"),
+            EXPORT("Esportazione"),
+            IMPORT("Importazione"),
+            NETWORK("Rete"),
+            CLOUD("Cloud"),
+            DATABASE("Database"),
+            PATTERN("Pattern"),
+            SHIFT("Turni"),
+            CONTACT("Contatti"),
+            DATA("Dati"),
+            UI("Interfaccia"),
+            FILE_SYSTEM("File System"),
+            PERMISSION("Permessi"),
+            VALIDATION("Validazione"),
+            UNKNOWN("Sconosciuto");
+
+            private final String displayName;
+
+            OperationCategory(String displayName) {
+                this.displayName = displayName;
+            }
+
+            public String getDisplayName() { return displayName; }
+        }
 
         /**
          * Get operation type from legacy string values
@@ -132,6 +244,141 @@ public class UnifiedOperationResult<T> {
             }
         }
 
+
+        // ============================================
+        // UTILITY METHODS
+        // ============================================
+
+        /**
+         * Check if this operation type is related to export functionality
+         */
+        public boolean isExportOperation() {
+            return this.category == OperationCategory.EXPORT;
+        }
+
+        /**
+         * Check if this operation type is related to import functionality
+         */
+        public boolean isImportOperation() {
+            return this.category == OperationCategory.IMPORT;
+        }
+
+        /**
+         * Check if this operation type is related to backup functionality
+         */
+        public boolean isBackupOperation() {
+            return this.category == OperationCategory.BACKUP;
+        }
+
+        /**
+         * Check if this operation type is related to settings
+         */
+        public boolean isSettingsOperation() {
+            return this.category == OperationCategory.SETTINGS;
+        }
+
+        /**
+         * Check if this operation type involves network activity
+         */
+        public boolean isNetworkOperation() {
+            return this.category == OperationCategory.NETWORK ||
+                    this.category == OperationCategory.CLOUD;
+        }
+
+        /**
+         * Check if this operation type involves database activity
+         */
+        public boolean isDatabaseOperation() {
+            return this.category == OperationCategory.DATABASE;
+        }
+
+        /**
+         * Check if this operation type involves pattern management
+         */
+        public boolean isPatternOperation() {
+            return this.category == OperationCategory.PATTERN;
+        }
+
+        /**
+         * Check if this operation type involves shift management
+         */
+        public boolean isShiftOperation() {
+            return this.category == OperationCategory.SHIFT;
+        }
+
+        /**
+         * Check if this operation type involves contact management
+         */
+        public boolean isContactOperation() {
+            return this.category == OperationCategory.CONTACT;
+        }
+
+        /**
+         * Check if this operation type involves validation
+         */
+        public boolean isValidationOperation() {
+            return this.category == OperationCategory.VALIDATION;
+        }
+
+        /**
+         * Check if this operation type typically requires user interaction
+         */
+        public boolean requiresUserInteraction() {
+            switch (this) {
+                case PERMISSION_REQUEST:
+                case PERMISSION_DENIED:
+                case VALIDATION_INPUT:
+                case UI_VALIDATION:
+                case RESET_SETTINGS:
+                case CLEAR_CACHE:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /**
+         * Check if this operation type is typically long-running
+         */
+        public boolean isLongRunningOperation() {
+            switch (this.category) {
+                case EXPORT:
+                case IMPORT:
+                case BACKUP:
+                case CLOUD:
+                case NETWORK:
+                case DATABASE:
+                case SHIFT:
+                case DATA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /**
+         * Get typical progress steps for this operation type
+         */
+        public int getTypicalProgressSteps() {
+            switch (this.category) {
+                case EXPORT:
+                case IMPORT:
+                    return 4; // Prepare → Validate → Process → Finalize
+                case BACKUP:
+                    return 3; // Prepare → Backup → Verify
+                case DATABASE:
+                case DATA:
+                    return 5; // Analyze → Prepare → Migrate → Validate → Cleanup
+                case SHIFT:
+                    return 3; // Validate Pattern → Generate → Store
+                default:
+                    return 1; // Single step operation
+            }
+        }
+
+
+    // Rest of UnifiedOperationResult class remains unchanged...
+    // (Core result properties, builders, getters, etc.)
         /**
          * Check if operation requires user confirmation before execution
          */
@@ -195,30 +442,6 @@ public class UnifiedOperationResult<T> {
         }
     }
 
-    // ============================================
-    // OPERATION CATEGORY ENUM
-    // ============================================
-
-    /**
-     * High-level categories for operation types
-     */
-    public enum OperationCategory {
-        SETTINGS("Impostazioni"),
-        BACKUP("Backup"),
-        EXPORT("Esportazione"),
-        IMPORT("Importazione"),
-        CLOUD("Cloud"),
-        DATA("Dati"),
-        UNKNOWN("Sconosciuto");
-
-        private final String displayName;
-
-        OperationCategory(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() { return displayName; }
-    }
 
     // ============================================
     // OPERATION METADATA CLASS

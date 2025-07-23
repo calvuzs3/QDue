@@ -1,75 +1,29 @@
-//package net.calvuz.qdue.smartshifts.utils;
-//
-//import javax.inject.Inject;
-//import javax.inject.Singleton;
-//
-///**
-// * Utility class for input validation
-// */
-//@Singleton
-//public class ValidationHelper {
-//
-//    @Inject
-//    public ValidationHelper() {}
-//
-//    /**
-//     * Validate cycle length
-//     */
-//    public boolean isValidCycleLength(int cycleLength) {
-//        return cycleLength >= 1 && cycleLength <= 365;
-//    }
-//
-//    /**
-//     * Validate pattern name
-//     */
-//    public boolean isValidPatternName(String name) {
-//        return name != null && name.trim().length() >= 2 && name.trim().length() <= 100;
-//    }
-//
-//    /**
-//     * Validate contact name
-//     */
-//    public boolean isValidContactName(String name) {
-//        return name != null && name.trim().length() >= 1 && name.trim().length() <= 50;
-//    }
-//
-//    /**
-//     * Validate user ID format
-//     */
-//    public boolean isValidUserId(String userId) {
-//        return userId != null && userId.trim().length() > 0;
-//    }
-//
-//    /**
-//     * Validate UUID format
-//     */
-//    public boolean isValidUUID(String uuid) {
-//        if (uuid == null) return false;
-//        return uuid.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-//    }
-//}
-//
-//// =====================================================================
-////
 package net.calvuz.qdue.smartshifts.utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.smartshifts.utils.validation.ValidationResult;
+import net.calvuz.qdue.smartshifts.utils.validation.ValidationError;
+import net.calvuz.qdue.smartshifts.utils.validation.MultiValidationResult;
+import net.calvuz.qdue.smartshifts.utils.validation.ValidationCheck;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
- * Helper class for validation operations in SmartShifts.
- *
- * Provides utility methods for:
- * - Settings validation
- * - Time and date validation
- * - String format validation
- * - Numeric range validation
- * - Business logic validation
+ * Generic validation helper for common validation operations.
+ * <p>
+ * Handles validation of:
+ * - Basic data types (strings, numbers, emails, etc.)
+ * - Time and date formats
+ * - File operations
+ * - Settings and preferences
+ * - Generic business rules
+ * <p>
+ * For shift-specific validations, use ShiftValidationHelper.
+ * All validation methods return ValidationResult with error codes for i18n support.
  *
  * @author SmartShifts Team
  * @since Phase 4 - Advanced Features
@@ -219,7 +173,7 @@ public class ValidationHelper {
     }
 
     /**
-     * Validate time range (start before end)
+     * Validate time range (start before end, or allow night shifts)
      */
     public static boolean isValidTimeRange(@Nullable String startTime, @Nullable String endTime) {
         if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
@@ -230,7 +184,7 @@ public class ValidationHelper {
             LocalTime start = DateTimeHelper.parseTime(startTime);
             LocalTime end = DateTimeHelper.parseTime(endTime);
 
-            // Allow night shifts that cross midnight
+            // Allow night shifts that cross midnight, but not identical times
             return !start.equals(end);
         } catch (DateTimeParseException e) {
             return false;
@@ -293,7 +247,7 @@ public class ValidationHelper {
     }
 
     /**
-     * Validate pattern name
+     * Validate pattern name (used by both generic and shift validations)
      */
     public static boolean isValidPatternName(@Nullable String name) {
         if (StringHelper.isEmpty(name)) return false;
@@ -355,7 +309,7 @@ public class ValidationHelper {
     }
 
     /**
-     * Validate cycle length for shift patterns
+     * Validate cycle length for patterns
      */
     public static boolean isValidCycleLength(int cycleLength) {
         return isValidIntegerRange(cycleLength, 1, 365); // 1 day to 1 year
@@ -376,164 +330,132 @@ public class ValidationHelper {
     }
 
     // ============================================
-    // BUSINESS LOGIC VALIDATION
+    // FILE AND EXPORT VALIDATION
     // ============================================
-
-    /**
-     * Validate shift pattern sequence
-     */
-    public static ValidationResult validateShiftPatternSequence(@Nullable String patternJson) {
-        if (StringHelper.isEmpty(patternJson)) {
-            return new ValidationResult(false, "Pattern JSON cannot be empty");
-        }
-
-        try {
-            // Basic JSON validation
-            if (!JsonHelper.isValidJson(patternJson)) {
-                return new ValidationResult(false, "Invalid JSON format");
-            }
-
-            // TODO: Add specific pattern validation logic
-            // - Check if pattern has valid cycle length
-            // - Validate shift type references
-            // - Check for continuous cycle compliance
-
-            return new ValidationResult(true, "Pattern validation passed");
-
-        } catch (Exception e) {
-            return new ValidationResult(false, "Pattern validation failed: " + e.getMessage());
-        }
-    }
 
     /**
      * Validate export configuration
      */
+    @NonNull
     public static ValidationResult validateExportConfiguration(@NonNull String format, @Nullable String destination) {
         if (StringHelper.isEmpty(format)) {
-            return new ValidationResult(false, "Export format cannot be empty");
+            return ValidationResult.error(ValidationError.EXPORT_UNSUPPORTED_FORMAT, "format");
         }
 
         if (!isValidExportFormat(format)) {
-            return new ValidationResult(false, "Unsupported export format: " + format);
+            return ValidationResult.error(ValidationError.EXPORT_UNSUPPORTED_FORMAT, format);
         }
 
         if (StringHelper.isEmpty(destination)) {
-            return new ValidationResult(false, "Export destination cannot be empty");
+            return ValidationResult.error(ValidationError.EXPORT_INVALID_DESTINATION, "destination");
         }
 
-        return new ValidationResult(true, "Export configuration is valid");
+        return ValidationResult.success("Export configuration is valid");
     }
 
     /**
      * Validate import file
      */
+    @NonNull
     public static ValidationResult validateImportFile(@Nullable java.io.File file) {
         if (file == null) {
-            return new ValidationResult(false, "Import file cannot be null");
+            return ValidationResult.error(ValidationError.IMPORT_INVALID_FILE, "file_null");
         }
 
         if (!file.exists()) {
-            return new ValidationResult(false, "Import file does not exist");
+            return ValidationResult.error(ValidationError.IMPORT_INVALID_FILE, "file_not_exists");
         }
 
         if (!file.canRead()) {
-            return new ValidationResult(false, "Cannot read import file");
+            return ValidationResult.error(ValidationError.IMPORT_INVALID_FILE, "file_not_readable");
         }
 
         if (file.length() == 0) {
-            return new ValidationResult(false, "Import file is empty");
+            return ValidationResult.error(ValidationError.IMPORT_INVALID_FILE, "file_empty");
         }
 
         // Check file size (max 100MB)
         long maxSize = 100 * 1024 * 1024;
         if (file.length() > maxSize) {
-            return new ValidationResult(false,
-                    String.format("Import file too large: %s (max: %s)",
-                            StringHelper.formatFileSize(file.length()),
-                            StringHelper.formatFileSize(maxSize)));
+            return ValidationResult.error(ValidationError.GENERIC_FILE_TOO_LARGE,
+                    file.length(), maxSize);
         }
 
-        return new ValidationResult(true, "Import file is valid");
+        return ValidationResult.success("Import file is valid");
     }
 
     /**
      * Validate backup configuration
      */
+    @NonNull
     public static ValidationResult validateBackupConfiguration(@NonNull String location, int retentionDays) {
         if (StringHelper.isEmpty(location)) {
-            return new ValidationResult(false, "Backup location cannot be empty");
+            return ValidationResult.error(ValidationError.EXPORT_INVALID_DESTINATION, "backup_location");
         }
 
         if (!isValidRetentionDays(String.valueOf(retentionDays))) {
-            return new ValidationResult(false, "Invalid retention days: " + retentionDays);
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_RETENTION_DAYS, retentionDays);
         }
 
         // Check if location is writable
         java.io.File backupDir = new java.io.File(location);
         if (!backupDir.exists()) {
             if (!backupDir.mkdirs()) {
-                return new ValidationResult(false, "Cannot create backup directory: " + location);
+                return ValidationResult.error(ValidationError.SYSTEM_FILE_SYSTEM_ERROR,
+                        "Cannot create backup directory: " + location);
             }
         }
 
         if (!backupDir.canWrite()) {
-            return new ValidationResult(false, "Cannot write to backup directory: " + location);
+            return ValidationResult.error(ValidationError.SYSTEM_FILE_SYSTEM_ERROR,
+                    "Cannot write to backup directory: " + location);
         }
 
-        return new ValidationResult(true, "Backup configuration is valid");
+        return ValidationResult.success("Backup configuration is valid");
     }
 
     /**
      * Validate team contact information
      */
+    @NonNull
     public static ValidationResult validateTeamContact(@Nullable String name, @Nullable String phone, @Nullable String email) {
         if (!isValidContactName(name)) {
-            return new ValidationResult(false, "Invalid contact name");
+            return ValidationResult.error(ValidationError.GENERIC_REQUIRED_FIELD_MISSING, "contact_name");
         }
 
         // Phone and email are optional, but if provided must be valid
         if (StringHelper.isNotEmpty(phone) && !isValidPhoneNumber(phone)) {
-            return new ValidationResult(false, "Invalid phone number format");
+            return ValidationResult.error(ValidationError.GENERIC_INVALID_PHONE, "phone");
         }
 
         if (StringHelper.isNotEmpty(email) && !isValidEmail(email)) {
-            return new ValidationResult(false, "Invalid email format");
+            return ValidationResult.error(ValidationError.GENERIC_INVALID_EMAIL, "email");
         }
 
-        return new ValidationResult(true, "Contact information is valid");
+        return ValidationResult.success("Contact information is valid");
     }
 
     // ============================================
-    // HELPER METHODS
+    // SECURITY VALIDATION
     // ============================================
-
-    /**
-     * Check if export format is supported
-     */
-    private static boolean isValidExportFormat(@NonNull String format) {
-        return format.equals("json") ||
-                format.equals("csv") ||
-                format.equals("xml") ||
-                format.equals("ics") ||
-                format.equals("xlsx");
-    }
 
     /**
      * Validate password strength (for future security features)
      */
+    @NonNull
     public static ValidationResult validatePasswordStrength(@Nullable String password) {
         if (StringHelper.isEmpty(password)) {
-            return new ValidationResult(false, "Password cannot be empty");
+            return ValidationResult.error(ValidationError.GENERIC_REQUIRED_FIELD_MISSING, "password");
         }
 
         String trimmed = password.trim();
 
         if (trimmed.length() < 8) {
-            return new ValidationResult(false, "Password must be at least 8 characters long");
+            return ValidationResult.error(ValidationError.GENERIC_STRING_TOO_SHORT, "password", 8);
         }
 
         if (trimmed.length() > 128) {
-            return new ValidationResult(false, "Password must be less than 128 characters long");
+            return ValidationResult.error(ValidationError.GENERIC_STRING_TOO_LONG, "password", 128);
         }
 
         boolean hasLower = trimmed.matches(".*[a-z].*");
@@ -548,10 +470,11 @@ public class ValidationHelper {
         if (hasSpecial) strength++;
 
         if (strength < 3) {
-            return new ValidationResult(false, "Password must contain at least 3 of: lowercase, uppercase, digits, special characters");
+            return ValidationResult.error(ValidationError.BUSINESS_RULE_VIOLATION,
+                    "Password must contain at least 3 character types");
         }
 
-        return new ValidationResult(true, "Password strength is adequate");
+        return ValidationResult.success("Password strength is adequate");
     }
 
     /**
@@ -604,44 +527,18 @@ public class ValidationHelper {
     }
 
     // ============================================
-    // VALIDATION RESULT CLASS
+    // HELPER METHODS
     // ============================================
 
     /**
-     * Validation result container
+     * Check if export format is supported
      */
-    public static class ValidationResult {
-        private final boolean valid;
-        private final String message;
-        private final String field;
-
-        public ValidationResult(boolean valid, String message) {
-            this(valid, message, null);
-        }
-
-        public ValidationResult(boolean valid, String message, String field) {
-            this.valid = valid;
-            this.message = message;
-            this.field = field;
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getField() {
-            return field;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("ValidationResult{valid=%s, message='%s', field='%s'}",
-                    valid, message, field);
-        }
+    private static boolean isValidExportFormat(@NonNull String format) {
+        return format.equals("json") ||
+                format.equals("csv") ||
+                format.equals("xml") ||
+                format.equals("ics") ||
+                format.equals("xlsx");
     }
 
     // ============================================
@@ -651,117 +548,409 @@ public class ValidationHelper {
     /**
      * Validate multiple fields and return all errors
      */
-    public static MultiValidationResult validateMultiple(ValidationCheck... checks) {
+    @NonNull
+    public static MultiValidationResult validateMultiple(@NonNull ValidationCheck... checks) {
         MultiValidationResult result = new MultiValidationResult();
 
         for (ValidationCheck check : checks) {
             ValidationResult fieldResult = check.validate();
-            if (!fieldResult.isValid()) {
-                result.addError(fieldResult);
-            }
+            result.addResult(fieldResult);
         }
 
         return result;
     }
 
-    /**
-     * Interface for validation checks
-     */
-    public interface ValidationCheck {
-        ValidationResult validate();
-    }
-
-    /**
-     * Multiple validation result container
-     */
-    public static class MultiValidationResult {
-        private final java.util.List<ValidationResult> errors = new java.util.ArrayList<>();
-
-        public void addError(ValidationResult error) {
-            errors.add(error);
-        }
-
-        public boolean isValid() {
-            return errors.isEmpty();
-        }
-
-        public java.util.List<ValidationResult> getErrors() {
-            return new java.util.ArrayList<>(errors);
-        }
-
-        public String getErrorSummary() {
-            if (errors.isEmpty()) return "No errors";
-
-            StringBuilder summary = new StringBuilder();
-            for (int i = 0; i < errors.size(); i++) {
-                if (i > 0) summary.append("; ");
-                summary.append(errors.get(i).getMessage());
-            }
-
-            return summary.toString();
-        }
-
-        public int getErrorCount() {
-            return errors.size();
-        }
-    }
-
     // ============================================
-    // COMMON VALIDATION PATTERNS
+    // VALIDATION CHECK FACTORY METHODS
     // ============================================
 
     /**
      * Create validation check for required string field
      */
-    public static ValidationCheck requiredString(String fieldName, String value) {
-        return () -> {
-            if (StringHelper.isEmpty(value)) {
-                return new ValidationResult(false, fieldName + " è obbligatorio", fieldName);
-            }
-            return new ValidationResult(true, "OK", fieldName);
-        };
+    @NonNull
+    public static ValidationCheck requiredString(@NonNull String fieldName, @Nullable String value) {
+        return ValidationCheck.requiredString(fieldName, value);
     }
 
     /**
      * Create validation check for string length
      */
-    public static ValidationCheck stringLength(String fieldName, String value, int minLength, int maxLength) {
-        return () -> {
-            if (StringHelper.isEmpty(value)) {
-                return new ValidationResult(true, "OK", fieldName); // Let required check handle empty
-            }
-
-            int length = value.trim().length();
-            if (length < minLength || length > maxLength) {
-                return new ValidationResult(false,
-                        String.format(Locale.getDefault(),"%s deve essere tra %d e %d caratteri", fieldName, minLength, maxLength),
-                        fieldName);
-            }
-
-            return new ValidationResult(true, "OK", fieldName);
-        };
+    @NonNull
+    public static ValidationCheck stringLength(@NonNull String fieldName, @Nullable String value, int minLength, int maxLength) {
+        return ValidationCheck.stringLength(fieldName, value, minLength, maxLength);
     }
 
     /**
      * Create validation check for numeric range
      */
-    public static ValidationCheck numericRange(String fieldName, String value, int min, int max) {
-        return () -> {
-            if (StringHelper.isEmpty(value)) {
-                return new ValidationResult(true, "OK", fieldName); // Let required check handle empty
+    @NonNull
+    public static ValidationCheck numericRange(@NonNull String fieldName, @Nullable String value, int min, int max) {
+        return ValidationCheck.numericRange(fieldName, value, min, max);
+    }
+
+    /**
+     * Create validation check for email format
+     */
+    @NonNull
+    public static ValidationCheck emailFormat(@NonNull String fieldName, @Nullable String email) {
+        return ValidationCheck.emailFormat(fieldName, email);
+    }
+
+    /**
+     * Create validation check for phone format
+     */
+    @NonNull
+    public static ValidationCheck phoneFormat(@NonNull String fieldName, @Nullable String phone) {
+        return ValidationCheck.phoneFormat(fieldName, phone);
+    }
+
+    /**
+     * Create validation check for time format
+     */
+    @NonNull
+    public static ValidationCheck timeFormat(@NonNull String fieldName, @Nullable String timeString) {
+        return ValidationCheck.timeFormat(fieldName, timeString);
+    }
+
+    // ============================================
+    // SETTINGS VALIDATION WITH ERROR CODES
+    // ============================================
+
+    /**
+     * Validate theme setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateThemeSetting(@Nullable String theme) {
+        if (!isValidTheme(theme)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_THEME, theme);
+        }
+        return ValidationResult.success("Valid theme setting");
+    }
+
+    /**
+     * Validate week start setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateWeekStartSetting(@Nullable String weekStart) {
+        if (!isValidWeekStartDay(weekStart)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_WEEK_START, weekStart);
+        }
+        return ValidationResult.success("Valid week start setting");
+    }
+
+    /**
+     * Validate reminder time setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateReminderTimeSetting(@Nullable String reminderTime) {
+        if (!isValidReminderTime(reminderTime)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_REMINDER_TIME, reminderTime);
+        }
+        return ValidationResult.success("Valid reminder time setting");
+    }
+
+    /**
+     * Validate retention days setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateRetentionDaysSetting(@Nullable String retentionDays) {
+        if (!isValidRetentionDays(retentionDays)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_RETENTION_DAYS, retentionDays);
+        }
+        return ValidationResult.success("Valid retention days setting");
+    }
+
+    /**
+     * Validate backup frequency setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateBackupFrequencySetting(@Nullable String frequency) {
+        if (!isValidBackupFrequency(frequency)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_BACKUP_FREQUENCY, frequency);
+        }
+        return ValidationResult.success("Valid backup frequency setting");
+    }
+
+    /**
+     * Validate notification priority setting with proper error codes
+     */
+    @NonNull
+    public static ValidationResult validateNotificationPrioritySetting(@Nullable String priority) {
+        if (!isValidNotificationPriority(priority)) {
+            return ValidationResult.error(ValidationError.SETTINGS_INVALID_NOTIFICATION_PRIORITY, priority);
+        }
+        return ValidationResult.success("Valid notification priority setting");
+    }
+
+    // ============================================
+    // COMPREHENSIVE VALIDATION METHODS
+    // ============================================
+
+    /**
+     * Validate complete user profile information
+     */
+    @NonNull
+    public static MultiValidationResult validateUserProfile(
+            @Nullable String name,
+            @Nullable String email,
+            @Nullable String phone
+    ) {
+        return validateMultiple(
+                requiredString("name", name),
+                stringLength("name", name, 2, 50),
+                emailFormat("email", email),
+                phoneFormat("phone", phone)
+        );
+    }
+
+    /**
+     * Validate complete settings configuration
+     */
+    @NonNull
+    public static MultiValidationResult validateSettingsConfiguration(
+            @Nullable String theme,
+            @Nullable String weekStart,
+            @Nullable String reminderTime,
+            @Nullable String retentionDays,
+            @Nullable String backupFrequency,
+            @Nullable String notificationPriority
+    ) {
+        MultiValidationResult result = new MultiValidationResult();
+
+        result.addResult(validateThemeSetting(theme));
+        result.addResult(validateWeekStartSetting(weekStart));
+        result.addResult(validateReminderTimeSetting(reminderTime));
+        result.addResult(validateRetentionDaysSetting(retentionDays));
+        result.addResult(validateBackupFrequencySetting(backupFrequency));
+        result.addResult(validateNotificationPrioritySetting(notificationPriority));
+
+        return result;
+    }
+
+    // ============================================
+    // JSON VALIDATION
+    // ============================================
+
+    /**
+     * Validate JSON structure with error codes
+     */
+    @NonNull
+    public static ValidationResult validateJsonStructure(@Nullable String json, @NonNull String[] requiredFields) {
+        if (StringHelper.isEmpty(json)) {
+            return ValidationResult.error(ValidationError.GENERIC_REQUIRED_FIELD_MISSING, "json");
+        }
+
+        if (!JsonHelper.isValidJson(json)) {
+            return ValidationResult.error(ValidationError.GENERIC_INVALID_JSON, "Invalid JSON format");
+        }
+
+        try {
+            JsonHelper.ValidationResult structureResult = JsonHelper.validateJsonStructure(json, requiredFields);
+            if (!structureResult.isValid()) {
+                return ValidationResult.error(ValidationError.IMPORT_INVALID_DATA_STRUCTURE,
+                        structureResult.getMessage());
             }
 
-            try {
-                int intValue = Integer.parseInt(value.trim());
-                if (!isValidIntegerRange(intValue, min, max)) {
-                    return new ValidationResult(false,
-                            String.format("%s deve essere tra %d e %d", fieldName, min, max),
-                            fieldName);
-                }
-                return new ValidationResult(true, "OK", fieldName);
-            } catch (NumberFormatException e) {
-                return new ValidationResult(false, fieldName + " deve essere un numero valido", fieldName);
-            }
-        };
+            return ValidationResult.success("JSON structure is valid");
+
+        } catch (Exception e) {
+            return ValidationResult.error(ValidationError.GENERIC_INVALID_JSON, e.getMessage());
+        }
     }
+
+    /**
+     * Validate backup JSON structure
+     */
+    @NonNull
+    public static ValidationResult validateBackupJson(@Nullable String json) {
+        String[] requiredFields = {"metadata", "shiftTypes", "shiftPatterns", "userAssignments"};
+        return validateJsonStructure(json, requiredFields);
+    }
+
+    // ============================================
+    // SYSTEM INTEGRATION VALIDATION
+    // ============================================
+
+    /**
+     * Validate system component integrations
+     */
+    @NonNull
+    public static MultiValidationResult validateSystemIntegration() {
+        MultiValidationResult result = new MultiValidationResult();
+
+        result.addResult(validateDateTimeHelperIntegration());
+        result.addResult(validateJsonHelperIntegration());
+        result.addResult(validateStringHelperIntegration());
+
+        return result;
+    }
+
+    /**
+     * Validate DateTimeHelper integration
+     */
+    @NonNull
+    private static ValidationResult validateDateTimeHelperIntegration() {
+        try {
+            // Test basic parsing
+            LocalTime testTime = DateTimeHelper.parseTime("12:30");
+            String formatted = DateTimeHelper.formatTime(testTime);
+
+            if (!"12:30".equals(formatted)) {
+                return ValidationResult.error(ValidationError.SYSTEM_DATETIME_HELPER_ERROR,
+                        "Time formatting failed");
+            }
+
+            // Test duration calculation
+            int duration = DateTimeHelper.calculateShiftDurationMinutes(
+                    LocalTime.of(8, 0), LocalTime.of(16, 0));
+
+            if (duration != 480) { // 8 hours = 480 minutes
+                return ValidationResult.error(ValidationError.SYSTEM_DATETIME_HELPER_ERROR,
+                        "Duration calculation failed");
+            }
+
+            return ValidationResult.success("DateTimeHelper integration OK");
+
+        } catch (Exception e) {
+            return ValidationResult.error(ValidationError.SYSTEM_DATETIME_HELPER_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Validate JsonHelper integration
+     */
+    @NonNull
+    private static ValidationResult validateJsonHelperIntegration() {
+        try {
+            // Test basic JSON operations
+            String testJson = "{\"test\": \"value\", \"number\": 42}";
+
+            if (!JsonHelper.isValidJson(testJson)) {
+                return ValidationResult.error(ValidationError.SYSTEM_JSON_HELPER_ERROR,
+                        "JSON validation failed");
+            }
+
+            java.util.Map<String, Object> map = JsonHelper.fromJsonToMap(testJson);
+            if (!"value".equals(map.get("test"))) {
+                return ValidationResult.error(ValidationError.SYSTEM_JSON_HELPER_ERROR,
+                        "JSON parsing failed");
+            }
+
+            return ValidationResult.success("JsonHelper integration OK");
+
+        } catch (Exception e) {
+            return ValidationResult.error(ValidationError.SYSTEM_JSON_HELPER_ERROR, e.getMessage());
+        }
+    }
+
+    /**
+     * Validate StringHelper integration
+     */
+    @NonNull
+    private static ValidationResult validateStringHelperIntegration() {
+        try {
+            // Test basic string operations
+            if (!StringHelper.isEmpty(null) || !StringHelper.isEmpty("")) {
+                return ValidationResult.error(ValidationError.SYSTEM_STRING_HELPER_ERROR,
+                        "isEmpty validation failed");
+            }
+
+            if (StringHelper.isNotEmpty(null) || StringHelper.isNotEmpty("")) {
+                return ValidationResult.error(ValidationError.SYSTEM_STRING_HELPER_ERROR,
+                        "isNotEmpty validation failed");
+            }
+
+            return ValidationResult.success("StringHelper integration OK");
+
+        } catch (Exception e) {
+            return ValidationResult.error(ValidationError.SYSTEM_STRING_HELPER_ERROR, e.getMessage());
+        }
+    }
+
+    // ============================================
+    // UTILITY AND CONVENIENCE METHODS
+    // ============================================
+
+    /**
+     * Quick validation for basic requirements
+     */
+    @NonNull
+    public static ValidationResult quickValidate(@NonNull String fieldName, @Nullable String value, boolean required) {
+        if (required && StringHelper.isEmpty(value)) {
+            return ValidationResult.requiredField(fieldName);
+        }
+
+        return ValidationResult.success("Quick validation passed");
+    }
+
+    /**
+     * Validate field with custom condition
+     */
+    @NonNull
+    public static ValidationResult validateCondition(@NonNull String fieldName, boolean condition, @NonNull ValidationError errorCode) {
+        if (!condition) {
+            return ValidationResult.error(errorCode, fieldName);
+        }
+
+        return ValidationResult.success("Condition validation passed");
+    }
+
+    /**
+     * Create a reusable validation check for common patterns
+     */
+    @NonNull
+    public static ValidationCheck createCommonValidation(@NonNull String fieldName, @Nullable String value, boolean required, int minLength, int maxLength) {
+        ValidationCheck baseCheck = required ?
+                requiredString(fieldName, value) :
+                ValidationCheck.alwaysValid();
+
+        return baseCheck.and(stringLength(fieldName, value, minLength, maxLength));
+    }
+
+    // ============================================
+    // BACKWARD COMPATIBILITY METHODS
+    // ============================================
+
+    /**
+     * Legacy method - returns simple boolean for backward compatibility
+     * @deprecated Use validatePatternName with ValidationResult instead
+     */
+    @Deprecated
+    public static boolean isValidPatternNameLegacy(@Nullable String name) {
+        return isValidPatternName(name);
+    }
+
+    /**
+     * Legacy method - returns simple boolean for backward compatibility
+     * @deprecated Use validateTeamContact with ValidationResult instead
+     */
+    @Deprecated
+    public static boolean isValidContactNameLegacy(@Nullable String name) {
+        return isValidContactName(name);
+    }
+
+    // ============================================
+    // CONSTANTS FOR EXTERNAL USE
+    // ============================================
+
+    /** Minimum pattern name length */
+    public static final int MIN_PATTERN_NAME_LENGTH = 2;
+
+    /** Maximum pattern name length */
+    public static final int MAX_PATTERN_NAME_LENGTH = 50;
+
+    /** Minimum contact name length */
+    public static final int MIN_CONTACT_NAME_LENGTH = 1;
+
+    /** Maximum contact name length */
+    public static final int MAX_CONTACT_NAME_LENGTH = 100;
+
+    /** Maximum file name length */
+    public static final int MAX_FILE_NAME_LENGTH = 255;
+
+    /** Maximum backup retention days */
+    public static final int MAX_RETENTION_DAYS = 3650;
+
+    /** Maximum reminder time in minutes (24 hours) */
+    public static final int MAX_REMINDER_TIME_MINUTES = 1440;
 }

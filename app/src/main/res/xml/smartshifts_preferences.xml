@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- General Settings Category -->
+    <PreferenceCategory
+        android:title="@string/smartshifts_settings_general"
+        android:icon="@drawable/ic_rounded_settings_24">
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_theme"
+            android:title="@string/smartshifts_theme_title"
+            android:summary="@string/smartshifts_theme_summary"
+            android:entries="@array/smartshifts_theme_entries"
+            android:entryValues="@array/smartshifts_theme_values"
+            android:defaultValue="@string/smartshifts_default_theme"
+            android:icon="@drawable/ic_rounded_palette_24" />
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_language"
+            android:title="@string/smartshifts_language_title"
+            android:summary="@string/smartshifts_language_summary"
+            android:entries="@array/smartshifts_language_entries"
+            android:entryValues="@array/smartshifts_language_values"
+            android:defaultValue="@string/smartshifts_default_language"
+            android:icon="@drawable/ic_rounded_language_24" />
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_startup_screen"
+            android:title="@string/smartshifts_startup_screen_title"
+            android:summary="@string/smartshifts_startup_screen_summary"
+            android:entries="@array/smartshifts_startup_entries"
+            android:entryValues="@array/smartshifts_startup_values"
+            android:defaultValue="@string/smartshifts_default_startup_screen"
+            android:icon="@drawable/ic_rounded_home_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_auto_sync"
+            android:title="@string/smartshifts_auto_sync_title"
+            android:summary="@string/smartshifts_auto_sync_summary"
+            android:defaultValue="false"
+            android:icon="@drawable/ic_rounded_sync_24" />
+
+    </PreferenceCategory>
+
+    <!-- Calendar Settings Category -->
+    <PreferenceCategory
+        android:title="@string/smartshifts_settings_calendar"
+        android:icon="@drawable/ic_rounded_calendar_month_24">
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_week_start_day"
+            android:title="@string/smartshifts_week_start_day_title"
+            android:summary="@string/smartshifts_week_start_day_summary"
+            android:entries="@array/smartshifts_week_start_day_entries"
+            android:entryValues="@array/smartshifts_week_start_day_values"
+            android:defaultValue="@string/smartshifts_default_week_start_day"
+            android:icon="@drawable/ic_rounded_date_range_24" />
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_calendar_view_type"
+            android:title="@string/smartshifts_calendar_view_type_title"
+            android:summary="@string/smartshifts_calendar_view_type_summary"
+            android:entries="@array/smartshifts_calendar_view_entries"
+            android:entryValues="@array/smartshifts_calendar_view_values"
+            android:defaultValue="@string/smartshifts_default_calendar_view_type"
+            android:icon="@drawable/ic_rounded_view_module_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_show_week_numbers"
+            android:title="@string/smartshifts_show_week_numbers_title"
+            android:summary="@string/smartshifts_show_week_numbers_summary"
+            android:defaultValue="false"
+            android:icon="@drawable/ic_rounded_numbers_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_highlight_today"
+            android:title="@string/smartshifts_highlight_today_title"
+            android:summary="@string/smartshifts_highlight_today_summary"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_rounded_today_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_show_shift_times"
+            android:title="@string/smartshifts_show_shift_times_title"
+            android:summary="@string/smartshifts_show_shift_times_summary"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_rounded_schedule_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_show_legend"
+            android:title="@string/smartshifts_show_legend_title"
+            android:summary="@string/smartshifts_show_legend_summary"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_rounded_legend_toggle_24" />
+
+        <!-- NUOVA PREFERENZA: Month View Layout -->
+        <ListPreference
+            android:key="@string/smartshifts_pref_month_view_layout"
+            android:title="@string/smartshifts_month_view_layout_title"
+            android:summary="@string/smartshifts_month_view_layout_summary"
+            android:entries="@array/smartshifts_month_view_layout_entries"
+            android:entryValues="@array/smartshifts_month_view_layout_values"
+            android:defaultValue="@string/smartshifts_default_month_view_layout"
+            android:icon="@drawable/ic_rounded_view_agenda_24" />
+
+    </PreferenceCategory>
+
+    <!-- Notification Settings Category -->
+    <PreferenceCategory
+        android:title="@string/smartshifts_settings_notifications"
+        android:icon="@drawable/ic_rounded_notifications_24">
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_notifications_enabled"
+            android:title="@string/smartshifts_notifications_enabled_title"
+            android:summary="@string/smartshifts_notifications_enabled_summary"
+            android:defaultValue="true"
+            android:icon="@drawable/ic_rounded_notifications_active_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_shift_reminders"
+            android:title="@string/smartshifts_shift_reminders_title"
+            android:summary="@string/smartshifts_shift_reminders_summary"
+            android:defaultValue="true"
+            android:dependency="@string/smartshifts_pref_notifications_enabled"
+            android:icon="@drawable/ic_rounded_alarm_24" />
+
+        <SeekBarPreference
+            android:key="@string/smartshifts_pref_reminder_advance_time"
+            android:title="@string/smartshifts_reminder_advance_time_title"
+            android:summary="@string/smartshifts_reminder_advance_time_summary"
+            android:max="120"
+            android:min="5"
+            android:defaultValue="@string/smartshifts_default_reminder_advance_time"
+            android:dependency="@string/smartshifts_pref_shift_reminders"
+            android:icon="@drawable/ic_rounded_timer_24"
+            app:showSeekBarValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_notification_sound"
+            android:title="@string/smartshifts_notification_sound_title"
+            android:summary="Riproduci suono per le notifiche"
+            android:defaultValue="true"
+            android:dependency="@string/smartshifts_pref_notifications_enabled"
+            android:icon="@drawable/ic_rounded_volume_up_24" />
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_notification_vibration"
+            android:title="@string/smartshifts_notification_vibration_title"
+            android:summary="Vibra per le notifiche"
+            android:defaultValue="true"
+            android:dependency="@string/smartshifts_pref_notifications_enabled"
+            android:icon="@drawable/ic_rounded_mobile_vibrate_24" />
+
+    </PreferenceCategory>
+
+    <!-- Data Management Category -->
+    <PreferenceCategory
+        android:title="@string/smartshifts_settings_data"
+        android:icon="@drawable/ic_rounded_storage_24">
+
+        <SwitchPreferenceCompat
+            android:key="@string/smartshifts_pref_auto_backup"
+            android:title="@string/smartshifts_auto_backup_title"
+            android:summary="@string/smartshifts_auto_backup_summary"
+            android:defaultValue="false"
+            android:icon="@drawable/ic_rounded_backup_24" />
+
+        <ListPreference
+            android:key="@string/smartshifts_pref_backup_frequency"
+            android:title="@string/smartshifts_backup_frequency_title"
+            android:summary="@string/smartshifts_backup_frequency_summary"
+            android:entries="@array/smartshifts_backup_frequency_entries"
+            android:entryValues="@array/smartshifts_backup_frequency_values"
+            android:defaultValue="@string/smartshifts_default_backup_frequency"
+            android:dependency="@string/smartshifts_pref_auto_backup"
+            android:icon="@drawable/ic_rounded_schedule_24" />
+
+        <SeekBarPreference
+            android:key="@string/smartshifts_pref_cache_size_limit"
+            android:title="Limite Cache (MB)"
+            android:summary="Dimensione massima cache applicazione"
+            android:max="200"
+            android:min="10"
+            android:defaultValue="@string/smartshifts_default_cache_size_limit"
+            android:icon="@drawable/ic_rounded_memory_24"
+            app:showSeekBarValue="true" />
+
+    </PreferenceCategory>
+
+    <!-- Quick Actions Category -->
+    <PreferenceCategory
+        android:title="Azioni Rapide"
+        android:icon="@drawable/ic_rounded_flash_on_24">
+
+        <Preference
+            android:key="quick_export"
+            android:title="@string/smartshifts_export_data_title"
+            android:summary="@string/smartshifts_export_data_summary"
+            android:icon="@drawable/ic_rounded_download_24" />
+
+        <Preference
+            android:key="quick_backup"
+            android:title="Backup Rapido"
+            android:summary="Crea backup rapido dei dati correnti"
+            android:icon="@drawable/ic_rounded_backup_24" />
+
+        <Preference
+            android:key="clear_cache"
+            android:title="@string/smartshifts_clear_cache_title"
+            android:summary="@string/smartshifts_clear_cache_summary"
+            android:icon="@drawable/ic_rounded_clear_all_24" />
+
+        <Preference
+            android:key="reset_settings"
+            android:title="@string/smartshifts_reset_settings_title"
+            android:summary="@string/smartshifts_reset_settings_summary"
+            android:icon="@drawable/ic_rounded_settings_backup_restore_24" />
+
+    </PreferenceCategory>
+
+    <!-- Advanced Settings Category -->
+    <PreferenceCategory
+        android:title="Avanzate"
+        android:icon="@drawable/ic_rounded_settings_applications_24">
+
+        <Preference
+            android:key="advanced_settings"
+            android:title="@string/smartshifts_settings_data"
+            android:summary="@string/smartshifts_settings_data_summary"
+            android:icon="@drawable/ic_outline_settings_panorama_24" />
+
+        <Preference
+            android:key="about_smartshifts"
+            android:title="@string/smartshifts_app_info_title"
+            android:summary="@string/smartshifts_app_info_summary"
+            android:icon="@drawable/ic_info_outline" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

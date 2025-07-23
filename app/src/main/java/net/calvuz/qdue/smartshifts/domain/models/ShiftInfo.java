@@ -3,7 +3,7 @@ package net.calvuz.qdue.smartshifts.domain.models;
 /**
  * Domain model representing shift information for a specific day
  */
-public class ShiftInfo {
+public class  ShiftInfo {
 
     private final String shiftType;
     private final int cycleDay;

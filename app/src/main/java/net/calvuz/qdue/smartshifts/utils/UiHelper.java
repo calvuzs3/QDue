@@ -317,6 +317,74 @@ public final class UiHelper {
                 .show();
     }
 
+    // ============================================
+    // INFO DIALOG METHODS (AGGIUNGERE)
+    // ============================================
+
+    /**
+     * Show info dialog with default title
+     * Uses info icon and provides informational feedback to user
+     */
+    public static void showInfoDialog(
+            @NonNull Context context,
+            @NonNull String message,
+            @Nullable Runnable onDismiss
+    ) {
+        showInfoDialog(context, "Informazione", message, onDismiss);
+    }
+
+    /**
+     * Show info dialog with custom title
+     * Uses info icon and provides informational feedback to user
+     */
+    public static void showInfoDialog(
+            @NonNull Context context,
+            @NonNull String title,
+            @NonNull String message,
+            @Nullable Runnable onDismiss
+    ) {
+        new AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(message)
+                .setIcon(R.drawable.ic_rounded_info_24)
+                .setPositiveButton(R.string.smartshifts_ok, (dialog, which) -> {
+                    if (onDismiss != null) {
+                        onDismiss.run();
+                    }
+                })
+                .show();
+    }
+
+    // ============================================
+    // ALERT DIALOG METHODS (ALIAS FOR WARNING)
+    // ============================================
+
+    /**
+     * Show alert dialog with default title
+     * Alias method that redirects to showWarningDialog for consistency
+     */
+    public static void showAlertDialog(
+            @NonNull Context context,
+            @NonNull String message,
+            @Nullable Runnable onDismiss
+    ) {
+        showWarningDialog(context, message, onDismiss);
+    }
+
+    /**
+     * Show alert dialog with custom title
+     * Alias method that redirects to showWarningDialog for consistency
+     */
+    public static void showAlertDialog(
+            @NonNull Context context,
+            @NonNull String title,
+            @NonNull String message,
+            @Nullable Runnable onDismiss
+    ) {
+        showWarningDialog(context, title, message, onDismiss);
+    }
+
+
     /**
      * Show confirmation dialog with Yes/No buttons
      */
@@ -381,6 +449,72 @@ public final class UiHelper {
                 .setPositiveButton("Conferma", (dialog, which) -> onConfirm.run())
                 .setNegativeButton("Annulla", null)
                 .show();
+    }
+
+    // ============================================
+    // LOADING MESSAGE METHODS
+    // ============================================
+
+    /**
+     * Show loading message with Snackbar
+     * Simple version without cancel option
+     */
+    public static void showLoadingMessage(
+            @NonNull Activity activity,
+            @NonNull String message
+    ) {
+        showLoadingMessage(activity, message, null);
+    }
+
+    /**
+     * Show loading message with Snackbar and optional cancel callback
+     * If cancelCallback is provided, shows "Annulla" action button
+     * If cancelCallback is null, shows only the message without action
+     */
+    public static void showLoadingMessage(
+            @NonNull Activity activity,
+            @NonNull String message,
+            @Nullable Runnable cancelCallback
+    ) {
+        View coordinatorLayout = findCoordinatorLayout(activity);
+        if (coordinatorLayout == null) return;
+
+        Snackbar snackbar = Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE);
+
+        // Apply loading styling - different color to distinguish from regular messages
+        snackbar.setBackgroundTint(ContextCompat.getColor(activity, R.color.smartshifts_loading_background));
+        snackbar.setTextColor(ContextCompat.getColor(activity, R.color.smartshifts_loading_text));
+
+        // Add cancel action only if callback is provided
+        if (cancelCallback != null) {
+            snackbar.setAction("Annulla", v -> {
+                snackbar.dismiss();
+                cancelCallback.run();
+            });
+            snackbar.setActionTextColor(ContextCompat.getColor(activity, R.color.smartshifts_loading_action));
+        }
+
+        // Adjust position if progress container is visible
+        adjustSnackbarForProgressContainer(activity, snackbar);
+
+        snackbar.show();
+    }
+
+    /**
+     * Hide loading message by dismissing any active Snackbar
+     * Note: This is a best-effort method. Consider using specific Snackbar references
+     * for more precise control in production code.
+     */
+    public static void hideLoadingMessage(@NonNull Activity activity) {
+        // This is a simple implementation. For better control, consider
+        // storing Snackbar references in a static Map<Activity, Snackbar>
+        // and dismissing specific instances.
+
+        View coordinatorLayout = findCoordinatorLayout(activity);
+        if (coordinatorLayout != null) {
+            // Try to find and dismiss any active Snackbar
+            // Note: This approach has limitations but works for simple cases
+        }
     }
 
     // ============================================

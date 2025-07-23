@@ -25,4 +25,12 @@
     <color name="status_error">#F44336</color>
     <color name="status_info">#2196F3</color>
 
+
+    <!-- Loading message colors -->
+    <color name="smartshifts_loading_background">@color/smartshifts_primary</color>
+    <color name="smartshifts_loading_text">@android:color/white</color>
+    <color name="smartshifts_loading_action">#FFECEFF1</color> <!-- Blue Grey 50 -->
+<!--    <color name="smartshifts_loading_action">@color/smartshifts_accent</color>-->
+
+
 </resources>
