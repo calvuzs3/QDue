@@ -23,28 +23,24 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentDialogAboutBinding;
 import net.calvuz.qdue.quattrodue.models.ShiftType;
 import net.calvuz.qdue.quattrodue.utils.ShiftTypeFactory;
+import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 public class AboutDialogFragment extends DialogFragment {
-
-    // TAG
-    private String TAG = "AboutDialogFragment";
 
     private FragmentDialogAboutBinding binding;
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        // Infla il layout
+        binding = FragmentDialogAboutBinding.inflate(getLayoutInflater());
         View view = getLayoutInflater().inflate(R.layout.fragment_dialog_about, null);
 
         // Configura il contenuto del dialog
-        setupDialogContent(view);
-
-        // Configura la legenda dei turni
-        setupShiftsLegend(view);
+        setupDialogContent();
 
         // Crea l'AlertDialog con titolo e icona
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
@@ -69,16 +65,16 @@ public class AboutDialogFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Configura il contenuto del dialog
-        setupDialogContent(view);
+        setupDialogContent();
 
         // Configura la legenda dei turni
-        setupShiftsLegend(view);
+        setupShiftsLegend();
     }
 
     @Override
     public void onDismiss(@NonNull android.content.DialogInterface dialog) {
         super.onDismiss(dialog);
-        // Naviga indietro quando il dialog viene chiuso
+        // Navigate back to the previous fragment
         if (getActivity() != null) {
             try {
                 NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_content_main);
@@ -90,7 +86,7 @@ public class AboutDialogFragment extends DialogFragment {
         }
     }
 
-    private void setupDialogContent(View view) {
+    private void setupDialogContent() {
         Dialog dialog = getDialog();
         if (dialog != null) {
             dialog.setTitle(getString(R.string.app_name));
@@ -98,48 +94,33 @@ public class AboutDialogFragment extends DialogFragment {
     }
 
     /**
-     * Configura la legenda con i colori dei turni dinamicamente.
+     * Configure legend with dynamic colors for shifts.
      */
-    private void setupShiftsLegend(View view) {
-        LinearLayout legendContainer = view.findViewById(R.id.ll_legend_container);
-        if (legendContainer == null) return;
+    private void setupShiftsLegend() {
+        LinearLayout legendContainer = binding.llLegendContainer;
 
         try {
-            // Ottieni i tipi di turno configurati
-            List<ShiftType> shiftTypes ;
-//            if (getContext() != null) {
-                shiftTypes = ShiftTypeFactory.getAllShiftTypes();
-//            } else {
-                // Fallback ai turni standard
-//                shiftTypes = List.of(
-//                        ShiftTypeFactory.MORNING,
-//                        ShiftTypeFactory.AFTERNOON,
-//                        ShiftTypeFactory.NIGHT
-//                );
-//            }
+            // Shift Types
+            List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
 
-            // Aggiungi un indicatore per ogni turno
+            // Add an indicator item for each shift type
             for (int i = 0; i < shiftTypes.size(); i++) {
                 ShiftType shiftType = shiftTypes.get(i);
                 addShiftLegendItem(legendContainer, shiftType);
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "ShiftType list not acquired");
-            // In caso di errore, mostra solo i turni base
-//            addShiftLegendItem(legendContainer, ShiftTypeFactory.MORNING);
-//            addShiftLegendItem(legendContainer, ShiftTypeFactory.AFTERNOON);
-//            addShiftLegendItem(legendContainer, ShiftTypeFactory.NIGHT);
+            Log.e("AboutDialogFragment", "ShiftType list not acquired");
         }
     }
 
     /**
-     * Aggiunge un elemento alla legenda per un tipo di turno.
+     * Add a legend item for a shift type.
      */
     private void addShiftLegendItem(LinearLayout container, ShiftType shiftType) {
         if (getContext() == null) return;
 
-        // Crea il layout orizzontale per l'elemento
+        // Create the horizontal layout for the item
         LinearLayout itemLayout = new LinearLayout(getContext());
         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
         itemLayout.setGravity(android.view.Gravity.CENTER_VERTICAL | Gravity.END);
@@ -148,53 +129,39 @@ public class AboutDialogFragment extends DialogFragment {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        itemParams.setMargins(0, 0, 0, dpToPx(4));
+        itemParams.setMargins(0, 0, 0, Library.dpToPx(getContext(), 4));
         itemLayout.setLayoutParams(itemParams);
 
-        // Crea la TextView per il nome
+        // Create the TextView for the shift name
         TextView textView = new TextView(getContext());
-        textView.setText(new StringBuilder()
-                .append(" (")
-                .append(shiftType.getFormattedStartTime())
-                .append("-")
-                .append(shiftType.getFormattedEndTime())
-                .append(") ")
-                .append(shiftType.getName())
-                .append("  ")
-                .toString());
+        textView.setText(MessageFormat.format(" ({0}-{1}) {2}  ",
+                shiftType.getFormattedStartTime(),
+                shiftType.getFormattedEndTime(),
+                shiftType.getName()));
         textView.setTextColor(getColorByThemeAttr(getContext(),
                 com.google.android.material.R.attr.colorOnSurface));
-        textView.setTextSize(12);
+        textView.setTextAppearance(android.R.style.TextAppearance_Material_Body2);
 
-        // Crea l'indicatore colorato
+        // Create the color indicator
         View colorIndicator = new View(getContext());
         LinearLayout.LayoutParams indicatorParams = new LinearLayout.LayoutParams(
-                dpToPx(32) , dpToPx(12)
+                Library.dpToPx(getContext(), 32) , Library.dpToPx(getContext(), 12)
         );
-        indicatorParams.setMargins(0, 0, dpToPx(8), 0);
+        indicatorParams.setMargins(0, 0, Library.dpToPx(getContext(), 8), 0);
         colorIndicator.setLayoutParams(indicatorParams);
 
-        // Crea il drawable con il colore del turno
+        // Create the drawable for the color indicator
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
         drawable.setColor(shiftType.getColor());
-        drawable.setCornerRadius(dpToPx(2));
+        drawable.setCornerRadius(Library.dpToPx(getContext(), 2));
         colorIndicator.setBackground(drawable);
 
-        // Aggiungi gli elementi al layout
+        // Add the views to the layout
         itemLayout.addView(textView);
         itemLayout.addView(colorIndicator);
 
-        // Aggiungi al container
+        // Add the item layout to the container
         container.addView(itemLayout);
-    }
-
-    /**
-     * Converte dp in pixel.
-     */
-    private int dpToPx(int dp) {
-        if (getContext() == null) return dp;
-        float density = getContext().getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
     }
 }

@@ -37,9 +37,9 @@
         <item name="colorTertiaryContainer">@color/qdue_info_light</item>
         <item name="colorOnTertiaryContainer">@color/qdue_text_primary</item>
 
-        <!-- ERROR PALETTE - QDue Error Red -->
-        <item name="colorError">@color/qdue_error_red</item>
-        <item name="colorOnError">@color/qdue_text_on_dark</item>
+        <!-- STATUS PALETTE -->
+        <item name="colorError">@color/light_red_500</item>
+        <item name="colorOnError">@color/white</item>
         <item name="colorErrorContainer">@color/qdue_error_light</item>
         <item name="colorOnErrorContainer">@color/qdue_text_primary</item>
 

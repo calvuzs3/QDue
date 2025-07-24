@@ -49,7 +49,7 @@ public class FloatingDayToolbar {
     private View mToolbarView;
     private TextView mToolbarHeader;
     private RecyclerView mActionsRecyclerView;
-    private EnhancedToolbarActionsAdapter mActionsAdapter;
+    private BottomSelectionToolbarAdapter mActionsAdapter;
     private boolean mIsDestroyed = false;
 
     // Current state
@@ -84,8 +84,7 @@ public class FloatingDayToolbar {
         );
 
         // Setup enhanced adapter
-        //mActionsAdapter = new ToolbarActionsAdapter();
-        mActionsAdapter = new EnhancedToolbarActionsAdapter(mContext);
+        mActionsAdapter = new BottomSelectionToolbarAdapter(mContext);
         mActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Create popup with enhanced properties

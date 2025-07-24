@@ -62,6 +62,14 @@
         <attr name="colorLoadingBackground" format="color|reference" />
         <attr name="colorLoadingProgress" format="color|reference" />
 
+        <!-- Status Colors -->
+        <attr name="colorError" format="color|reference" />
+        <attr name="colorOnError" format="color|reference" />
+        <attr name="colorErrorContainer" format="color|reference" />
+        <attr name="colorOnErrorContainer" format="color|reference" />
+
+
+
     </declare-styleable>
 
     <!-- ============================================ -->

@@ -29,7 +29,7 @@ import java.util.List;
  * RecyclerView Adapter for Toolbar Action Buttons
  * Supports different action types with custom styling
  */
-public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<EnhancedToolbarActionsAdapter.ActionViewHolder> {
+public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSelectionToolbarAdapter.ActionViewHolder> {
 
     private static final String TAG = "EnhancedActionsAdapter";
 
@@ -37,7 +37,7 @@ public class EnhancedToolbarActionsAdapter extends RecyclerView.Adapter<Enhanced
     private List<ToolbarAction> mActions = new ArrayList<>();
     private OnActionClickListener mClickListener;
 
-    public EnhancedToolbarActionsAdapter(@NonNull Context context) {
+    public BottomSelectionToolbarAdapter(@NonNull Context context) {
         mContext = context;
     }
 

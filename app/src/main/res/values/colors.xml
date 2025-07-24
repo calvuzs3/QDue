@@ -7,6 +7,7 @@
     <!-- ============================================ -->
 
     <!-- LIGHT THEME MENU COLORS -->
+    <color name="white">#E0F7FA</color>            <!-- White -->"
     <color name="grey_50">#FAFAFA</color>          <!-- Light menu background -->
     <color name="grey_100">#F5F5F5</color>         <!-- Light menu surface -->
     <color name="grey_800">#424242</color>         <!-- Text on light menu -->
@@ -19,8 +20,12 @@
     <color name="indigo_200">#536DFE</color>
     <color name="purple_600">#5e35b1</color>
     <color name="purple_700">#4527a0</color>"
-    <color name="green_700">#4CAF50</color>        <!-- Green -->
 
+    <!-- Primarly for status messages -->
+    <color name="light_green_500">#4CAF50</color>   <!-- Light Green 500 ex 4CAF50 -->
+    <color name="dark_yellow_500">#FF9800</color>   <!-- Dark Yellow 500 ex ff9800 -->
+    <color name="light_red_500">#F44336</color>     <!-- Light Red 500 ex F44336 -->
+    <color name="dark_cyan_500">#2196F3</color>     <!-- Dark Cyan ex 2196F3 -->
 
     <!-- DARK THEME MENU COLORS -->
     <color name="grey_900">#212121</color>         <!-- Dark menu background -->

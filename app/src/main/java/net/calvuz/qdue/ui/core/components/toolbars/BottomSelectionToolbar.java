@@ -10,8 +10,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -81,7 +79,7 @@ public class BottomSelectionToolbar {
     private RecyclerView mQuickActionsRecyclerView;
 
     // Data and state
-    private EnhancedToolbarActionsAdapter mActionsAdapter;
+    private BottomSelectionToolbarAdapter mActionsAdapter;
     private DayLongClickListener mListener;
     private Set<LocalDate> mSelectedDates = new HashSet<>();
     private boolean mIsVisible = false;
@@ -566,7 +564,7 @@ public class BottomSelectionToolbar {
         layoutManager.setInitialPrefetchItemCount(MAX_ACTIONS);
         mQuickActionsRecyclerView.setLayoutManager(layoutManager);
 
-        mActionsAdapter = new EnhancedToolbarActionsAdapter(mContext);
+        mActionsAdapter = new BottomSelectionToolbarAdapter(mContext);
         mQuickActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Performance optimizations
