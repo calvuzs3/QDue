@@ -1,4 +1,4 @@
-package net.calvuz.qdue.smartshifts.utils.validation;
+package net.calvuz.qdue.smartshifts.utils.validators;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

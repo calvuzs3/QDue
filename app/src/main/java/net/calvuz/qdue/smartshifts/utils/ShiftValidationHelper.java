@@ -5,10 +5,10 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.smartshifts.data.entities.ShiftType;
 import net.calvuz.qdue.smartshifts.domain.models.ShiftInfo;
-import net.calvuz.qdue.smartshifts.utils.validation.ValidationResult;
-import net.calvuz.qdue.smartshifts.utils.validation.ValidationError;
-import net.calvuz.qdue.smartshifts.utils.validation.MultiValidationResult;
-import net.calvuz.qdue.smartshifts.utils.validation.ValidationCheck;
+import net.calvuz.qdue.smartshifts.utils.validators.ValidationResult;
+import net.calvuz.qdue.smartshifts.utils.validators.ValidationError;
+import net.calvuz.qdue.smartshifts.utils.validators.MultiValidationResult;
+import net.calvuz.qdue.smartshifts.utils.validators.ValidationCheck;
 
 import java.time.LocalTime;
 import java.util.List;

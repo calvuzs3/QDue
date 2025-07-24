@@ -1,4 +1,4 @@
-package net.calvuz.qdue.smartshifts.utils.validation;
+package net.calvuz.qdue.smartshifts.utils.validators;
 
 /**
  * Enumeration of validation error codes for internationalization support.
