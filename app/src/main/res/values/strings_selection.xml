@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selection Toolbar Framework String Resources -->
+<resources>
+
+    <!-- Generic Selection Toolbar Messages -->
+    <string name="selection_toolbar_no_actions_available">No actions available for this selection</string>
+    <string name="selection_toolbar_action_not_available">This action is not available</string>
+    <string name="selection_toolbar_empty_selection">No items selected</string>
+    <string name="selection_toolbar_loading">Loading actions…</string>
+
+    <!-- Validation Messages -->
+    <string name="selection_validation_no_permission">You don\'t have permission to perform this action</string>
+    <string name="selection_validation_invalid_selection">Invalid selection for this action</string>
+    <string name="selection_validation_too_many_items">Too many items selected (max: %1$d)</string>
+    <string name="selection_validation_too_few_items">Too few items selected (min: %1$d)</string>
+
+    <!-- Action Results -->
+    <string name="selection_action_success">Action completed successfully</string>
+    <string name="selection_action_error">Action failed</string>
+    <string name="selection_action_cancelled">Action cancelled</string>
+
+    <!-- Calendar-specific Actions -->
+    <string name="action_vacation_label">Vacation</string>
+    <string name="action_vacation_desc">Request vacation for selected days</string>
+    <string name="action_sick_leave_label">Sick Leave</string>
+    <string name="action_sick_leave_desc">Report sick leave for selected days</string>
+    <string name="action_permission_label">Permission</string>
+    <string name="action_permission_desc">Request permission for selected days</string>
+    <string name="action_law_104_label">Law 104</string>
+    <string name="action_law_104_desc">Request Law 104 leave for selected days</string>
+    <string name="action_overtime_label">Overtime</string>
+    <string name="action_overtime_desc">Register overtime for selected days</string>
+    <string name="action_add_event_label">Add Event</string>
+    <string name="action_add_event_desc">Add event to selected days</string>
+
+    <!-- Calendar Validation Messages -->
+    <string name="calendar_validation_no_work_days">This action requires work days to be selected</string>
+    <string name="calendar_validation_no_off_days">This action requires off days to be selected</string>
+    <string name="calendar_validation_past_dates">Cannot apply this action to past dates</string>
+    <string name="calendar_validation_too_many_vacation_days">Maximum %1$d consecutive vacation days allowed</string>
+    <string name="calendar_validation_mixed_selection">Cannot apply this action to mixed work/off days</string>
+    <string name="calendar_validation_weekend_only">This action is only available for weekends</string>
+
+    <!-- Calendar Success Messages -->
+    <string name="calendar_vacation_requested">Vacation request submitted for %1$d days</string>
+    <string name="calendar_sick_leave_reported">Sick leave reported successfully</string>
+    <string name="calendar_permission_requested">Permission request submitted</string>
+    <string name="calendar_overtime_registered">Overtime registered for %1$d days</string>
+    <string name="calendar_event_added">Event added to calendar</string>
+
+    <!-- Calendar Error Messages -->
+    <string name="calendar_error_vacation_request">Failed to submit vacation request</string>
+    <string name="calendar_error_sick_leave_report">Failed to report sick leave</string>
+    <string name="calendar_error_permission_request">Failed to submit permission request</string>
+    <string name="calendar_error_overtime_register">Failed to register overtime</string>
+    <string name="calendar_error_add_event">Failed to add event to calendar</string>
+    <string name="calendar_error_network">Network error. Please try again</string>
+    <string name="calendar_error_server">Server error. Please try again later</string>
+
+    <!-- Generic List Actions -->
+    <string name="action_delete_label">Delete</string>
+    <string name="action_delete_desc">Delete selected items</string>
+    <string name="action_share_label">Share</string>
+    <string name="action_share_desc">Share selected items</string>
+    <string name="action_export_label">Export</string>
+    <string name="action_export_desc">Export selected items</string>
+    <string name="action_archive_label">Archive</string>
+    <string name="action_archive_desc">Archive selected items</string>
+    <string name="action_move_label">Move</string>
+    <string name="action_move_desc">Move selected items</string>
+
+    <!-- Plurals for item counts -->
+    <plurals name="selection_item_count">
+        <item quantity="one">%1$d item selected</item>
+        <item quantity="other">%1$d items selected</item>
+    </plurals>
+
+    <plurals name="selection_day_count">
+        <item quantity="one">%1$d day selected</item>
+        <item quantity="other">%1$d days selected</item>
+    </plurals>
+
+    <!-- Accessibility -->
+    <string name="selection_toolbar_content_desc">Selection toolbar with %1$d actions</string>
+    <string name="selection_action_button_desc">%1$s action button</string>
+
+</resources>
