@@ -7,7 +7,7 @@
  *
  * <h2>Components</h2>
  * <ul>
- *   <li><strong>SmartShiftsActivity</strong> - Main activity with bottom navigation</li>
+ *   <li><strong>SmartshiftsActivity</strong> - Main activity with bottom navigation</li>
  *   <li><strong>SmartShiftsViewModel</strong> - App-level state management</li>
  * </ul>
  *

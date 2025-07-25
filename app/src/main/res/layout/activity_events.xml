@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- EventsActivity Layout - Responsive with Navigation Component Support -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!-- EventsActivity Layout - Responsive with Navigation Component Support -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator_layout"
@@ -14,17 +12,16 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+        android:layout_height="wrap_content">
 
         <!-- Toolbar -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar_events"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.QDue.Toolbar"
-            app:title="@string/nav_eventi"
-            app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24" />
+            android:theme="@style/ThemeOverlay.QDue.Toolbar"
+            app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24"
+            app:title="@string/nav_eventi" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -72,8 +69,7 @@
         android:layout_marginBottom="@dimen/spacing_l"
         android:contentDescription="@string/text_create_new_event"
         android:src="@drawable/ic_rounded_calendar_add_on_24"
-        app:srcCompat="@drawable/ic_rounded_calendar_add_on_24"
-        />
-<!--    app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
+        app:srcCompat="@drawable/ic_rounded_calendar_add_on_24" />
+    <!--    app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

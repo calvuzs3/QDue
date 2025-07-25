@@ -35,7 +35,8 @@
         <item name="android:layout_marginStart">@dimen/spacing_s</item>
         <item name="android:layout_marginEnd">@dimen/spacing_s</item>
         <item name="android:layout_marginTop">@dimen/spacing_s</item>
-        <item name="android:layout_marginBottom">@dimen/spacing_s</item> <!-- layout_margin sovrascrive tutti i margins -->
+        <item name="android:layout_marginBottom">@dimen/spacing_s
+        </item> <!-- layout_margin sovrascrive tutti i margins -->
     </style>
 
     <style name="Widget.QDue.FloatingActionButton.Portrait" parent="Widget.QDue.FloatingActionButton">
@@ -45,10 +46,13 @@
 
     <!-- FAB Behavior for CoordinatorLayout (Portrait) -->
     <style name="Widget.QDue.FloatingActionButton.Behavior">
-        <item name="layout_behavior">com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior</item>
+        <item name="layout_behavior">
+            com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior
+        </item>
     </style>
-3
+    3
     !-- Extended FAB for Landscape Mode (NavigationRail) -->
+
     <style name="Widget.QDue.ExtendedFAB" parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
         <item name="backgroundTint">?attr/colorPrimaryContainer</item>
         <item name="android:textColor">?attr/colorOnPrimaryContainer</item>
@@ -117,7 +121,8 @@
         <item name="android:background">?attr/colorSurface</item>
         <item name="itemTextColor">@color/nav_rail_item_color</item>
         <item name="itemIconTint">@color/nav_rail_item_color</item>
-        <item name="itemActiveIndicatorStyle">@style/Widget.QDue.NavigationRail.ActiveIndicator</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.QDue.NavigationRail.ActiveIndicator
+        </item>
         <item name="itemRippleColor">@color/navigation_ripple_color</item>
         <item name="elevation">3dp</item>
         <item name="android:minWidth">72dp</item>
@@ -152,23 +157,17 @@
     <!-- TOOLBAR THEME OVERLAYS -->
     <!-- ============================================ -->
 
-    <style name="ThemeOverlay.QDue.Toolbar" parent="ThemeOverlay.Material3.Toolbar.Surface">
-        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
-        <item name="android:textColorSecondary">?attr/colorOnSecondary</item>
+    <style name="ThemeOverlay.QDue.Toolbar" parent="ThemeOverlay.Material3.Light">
         <item name="actionMenuTextColor">?attr/colorOnPrimary</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
         <item name="colorControlNormal">?attr/colorOnPrimary</item>
         <item name="colorOnSurface">?attr/colorOnPrimary</item> <!-- THIS to change icons and menu items -->
     </style>
 
     <style name="ThemeOverlay.QDue.Toolbar.Popup" parent="ThemeOverlay.Material3.Light">
         <item name="android:colorBackground">?attr/colorSurface</item>
-        <item name="colorSurface">?attr/colorSurface</item>
-        <item name="colorOnSurface">?attr/colorOnSurface</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
-        <item name="android:textColorPrimary">?attr/colorOnSurfaceVariant</item>
-        <item name="android:textColorSecondary">?attr/colorOnSurfaceVariant</item>
-        <item name="elevation">8dp</item>
-        <item name="android:windowElevation">8dp</item>
+        <item name="colorSurface">?attr/colorSurfaceVariant</item>
+        <item name="colorOnSurface">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <!-- ============================================ -->
@@ -176,15 +175,17 @@
     <!-- ============================================ -->
 
     <style name="Widget.QDue.Toolbar.Enhanced" parent="Widget.Material3.Toolbar">
-        <item name="android:background">@drawable/appbar_gradient_background</item>
+        <item name="android:background">?attr/colorPrimary</item>
         <item name="titleTextAppearance">@style/TextAppearance.QDue.Toolbar.Title</item>
         <item name="subtitleTextAppearance">@style/TextAppearance.QDue.Toolbar.Subtitle</item>
         <item name="titleTextColor">?attr/colorOnPrimary</item>
         <item name="subtitleTextColor">?attr/colorOnPrimary</item>
         <item name="navigationIconTint">?attr/colorOnPrimary</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="android:iconTint">?attr/colorOnPrimary</item>
         <item name="android:minHeight">?attr/actionBarSize</item>
         <item name="contentInsetStart">@dimen/spacing_m</item>
-        <item name="contentInsetStartWithNavigation">16dp</item>
+        <item name="contentInsetStartWithNavigation">@dimen/spacing_m</item>
         <item name="popupTheme">@style/ThemeOverlay.QDue.Toolbar.Popup</item>
         <item name="theme">@style/ThemeOverlay.QDue.Toolbar</item>
     </style>
@@ -220,45 +221,45 @@
 
     <!-- Display styles (Bold) -->
     <style name="TextAppearance.QDue.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.QDue.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <!-- Headline styles (Bold) -->
     <style name="TextAppearance.QDue.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.QDue.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.QDue.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <!-- Title styles (Bold for Large, Regular for Medium/Small) -->
     <style name="TextAppearance.QDue.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.QDue.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">normal</item>
     </style>
 
     <style name="TextAppearance.QDue.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
-        <item name="fontFamily">roboto_black</item>
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">normal</item>
     </style>
@@ -281,6 +282,7 @@
 
     <!-- Label styles (Regular) -->
     <style name="TextAppearance.QDue.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="sizePercent">150</item>
         <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
@@ -299,18 +301,12 @@
     <!-- TOOLBAR TYPOGRAPHY WITH CORRECT FONTS -->
     <!-- ============================================ -->
 
-    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.QDue.HeadlineSmall">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:letterSpacing">0.02</item>
-        <item name="fontFamily">roboto_black</item>
+    <style name="TextAppearance.QDue.Toolbar.Title" parent="TextAppearance.QDue.HeadlineMedium">
+        <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 
-    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.QDue.BodyMedium">
-        <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:alpha">0.87</item>
+    <style name="TextAppearance.QDue.Toolbar.Subtitle" parent="TextAppearance.QDue.HeadlineSmall">
         <item name="fontFamily">roboto</item>
         <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
@@ -344,7 +340,7 @@
 
     <style name="ThemeOverlay.QDue.Drawer.Header" parent="ThemeOverlay.Material3.Dark">
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
-        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnSecondary</item>
         <item name="colorOnSurface">?attr/colorOnPrimary</item>
         <item name="colorSurface">@android:color/transparent</item>
     </style>

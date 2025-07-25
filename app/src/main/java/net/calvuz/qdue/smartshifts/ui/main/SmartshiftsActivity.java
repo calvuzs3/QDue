@@ -28,7 +28,7 @@ import net.calvuz.qdue.smartshifts.ui.setup.ShiftSetupWizardActivity;
  * Manages bottom navigation and fragment switching
  */
 @AndroidEntryPoint
-public class SmartShiftsActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
+public class SmartshiftsActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener {
 
     private ActivitySmartShiftsBinding binding;
     private SmartShiftsViewModel viewModel;

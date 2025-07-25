@@ -7,6 +7,8 @@
 
     <style name="Theme.QDue" parent="Theme.Material3.DayNight">
 
+        <item name="colorAccent">@color/qdue_success_green</item>
+
         <!-- ✅ Floating Menu Attributes (LIGHT THEME) -->
         <item name="floatingMenuBackground">@color/grey_800</item>          <!-- Light background -->
         <item name="floatingMenuOnBackground">@color/grey_100</item>        <!-- Dark text on light -->
@@ -20,16 +22,16 @@
         <!-- ============================================ -->
 
         <!-- PRIMARY PALETTE - QDue Royal Purple -->
-        <item name="colorPrimary">@color/qdue_royal_purple</item>
+        <item name="colorPrimary">@color/blue_800</item>
         <item name="colorOnPrimary">@color/qdue_text_on_dark</item>
         <item name="colorPrimaryContainer">@color/qdue_royal_purple_container</item>
-        <item name="colorOnPrimaryContainer">@color/qdue_royal_purple_dark</item>
+        <item name="colorOnPrimaryContainer">@color/qdue_text_primary</item>
 
         <!-- SECONDARY PALETTE - QDue Ocean Blue -->
         <item name="colorSecondary">@color/qdue_ocean_blue</item>
         <item name="colorOnSecondary">@color/qdue_text_on_dark</item>
         <item name="colorSecondaryContainer">@color/qdue_ocean_blue_container</item>
-        <item name="colorOnSecondaryContainer">@color/qdue_ocean_blue_dark</item>
+        <item name="colorOnSecondaryContainer">@color/qdue_text_primary</item>
 
         <!-- TERTIARY PALETTE - Accent Colors -->
         <item name="colorTertiary">@color/qdue_info_blue</item>
@@ -101,14 +103,14 @@
         <!-- ============================================ -->
 
         <!-- System bars and navigation -->
-        <item name="android:statusBarColor">@color/qdue_gradient_start</item>
-        <item name="android:navigationBarColor">?attr/colorSurface</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="android:windowLightNavigationBar">true</item>
+<!--        <item name="android:statusBarColor">@color/qdue_gradient_start</item>-->
+<!--        <item name="android:navigationBarColor">?attr/colorSurface</item>-->
+<!--        <item name="android:windowLightStatusBar">false</item>-->
+<!--        <item name="android:windowLightNavigationBar">true</item>-->
 
         <!-- Window and activity styling -->
-        <item name="android:windowBackground">?attr/colorSurface</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+<!--        <item name="android:windowBackground">?attr/colorSurface</item>-->
+<!--        <item name="android:windowDrawsSystemBarBackgrounds">true</item>-->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 

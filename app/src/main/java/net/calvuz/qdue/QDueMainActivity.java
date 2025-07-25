@@ -304,7 +304,7 @@ public class QDueMainActivity extends BaseActivity {
         drawerLayout = binding.drawerLayout;
 
         // Detect available navigation components
-        bottomNavigation = findViewById(R.id.bottom_navigation);
+//        bottomNavigation = findViewById(R.id.bottom_navigation);
         navigationRail = findViewById(R.id.navigation_rail);
         drawerNavigation = findViewById(R.id.nav_drawer_secondary);
         sidebarNavigation = findViewById(R.id.sidebar_navigation);
@@ -324,7 +324,7 @@ public class QDueMainActivity extends BaseActivity {
         Log.v(TAG, mTAG + "Navigation mode: " + currentNavigationMode);
         Log.v(TAG, mTAG + "Available components:");
         Log.v(TAG, mTAG + "  - Toolbar: " + (toolbar != null));
-        Log.v(TAG, mTAG + "  - BottomNavigation: " + (bottomNavigation != null));
+//        Log.v(TAG, mTAG + "  - BottomNavigation: " + (bottomNavigation != null));
         Log.v(TAG, mTAG + "  - NavigationRail: " + (navigationRail != null));
         Log.v(TAG, mTAG + "  - DrawerNavigation: " + (drawerNavigation != null));
         Log.v(TAG, mTAG + "  - ExtendedDrawer: " + (extendedDrawer != null));
@@ -341,13 +341,14 @@ public class QDueMainActivity extends BaseActivity {
         int smallestScreenWidthDp = config.smallestScreenWidthDp;
         boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 
-        if (bottomNavigation != null && drawerLayout != null && !isLandscape) {
+        /*if (bottomNavigation != null && drawerLayout != null && !isLandscape) {
             // Phone portrait with BottomNavigation + DrawerLayout
             return NavigationMode.PHONE_PORTRAIT;
         } else if (bottomNavigation != null) {
             // Fallback phone portrait
             return NavigationMode.PHONE_PORTRAIT;
-        } else if (navigationRail != null && drawerLayout != null && !isLandscape) {
+        } else*/
+        if (navigationRail != null && drawerLayout != null && !isLandscape) {
             // Tablet portrait with NavigationRail + DrawerLayout
             return NavigationMode.TABLET_PORTRAIT;
         } else if (sidebarNavigation != null) {

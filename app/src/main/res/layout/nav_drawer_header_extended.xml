@@ -4,11 +4,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="140dp"
+    android:layout_height="240dp"
     android:orientation="vertical"
     android:gravity="bottom|start"
     android:padding="16dp"
-    android:background="@drawable/appbar_gradient_background"
+    android:background="?attr/colorPrimary"
     >
 
     <!-- App branding section -->
@@ -27,6 +27,7 @@
             android:src="@mipmap/ic_launcher"
             android:contentDescription="@string/app_name"
             android:background="@drawable/ic_launcher_foreground"
+            android:foregroundTint="?attr/colorOnPrimary"
             android:padding="8dp"
             app:tint="?attr/colorOnPrimary" />
 
@@ -41,13 +42,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:textAppearance="@style/TextAppearance.QDue.HeadlineMedium" />
+                android:textAppearance="@style/TextAppearance.QDue.HeadlineMedium"
+                android:textColor="?attr/colorOnPrimary"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/text_extended_menu"
                 android:textAppearance="@style/TextAppearance.QDue.BodyMedium"
+                android:textColor="?attr/colorOnPrimary"
                 android:alpha="0.8" />
 
         </LinearLayout>
@@ -60,6 +63,7 @@
         android:layout_height="wrap_content"
         android:text="@string/app_version_dynamic"
         android:textAppearance="@style/TextAppearance.QDue.BodySmall"
+        android:textColor="?attr/colorOnPrimary"
         android:alpha="0.6" />
 
 </LinearLayout>

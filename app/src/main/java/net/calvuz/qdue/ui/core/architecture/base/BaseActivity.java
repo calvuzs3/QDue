@@ -17,7 +17,6 @@ import androidx.navigation.NavController;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.navigationrail.NavigationRailView;
 
@@ -57,7 +56,8 @@ public abstract class BaseActivity extends AppCompatActivity implements
     protected SharedPreferences sharedPreferences;
 
     // Navigation Components (only one will be active based on layout)
-    protected BottomNavigationView bottomNavigation;
+/* THIS FIRST */
+//    protected BottomNavigationView bottomNavigation;
     protected NavigationRailView navigationRail;
     protected NavigationView drawerNavigation;
     protected DrawerLayout drawerLayout;
@@ -197,13 +197,13 @@ public abstract class BaseActivity extends AppCompatActivity implements
         Log.v(TAG, "setupPhonePortraitNavigation: called.");
 
         // Setup BottomNavigation for primary navigation
-        if (bottomNavigation != null && navController != null) {
-            NavigationUI.setupWithNavController(bottomNavigation, navController);
-
-            bottomNavigation.setOnItemSelectedListener(item -> {
-                return handleNavigationItemSelected(item.getItemId());
-            });
-        }
+//        if (bottomNavigation != null && navController != null) {
+//            NavigationUI.setupWithNavController(bottomNavigation, navController);
+//
+//            bottomNavigation.setOnItemSelectedListener(item -> {
+//                return handleNavigationItemSelected(item.getItemId());
+//            });
+//        }
 
         // Setup DrawerNavigation for extended menu
         if (drawerNavigation != null) {

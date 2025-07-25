@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.ActivityShiftSetupWizardBinding;
-import net.calvuz.qdue.smartshifts.ui.main.SmartShiftsActivity;
+import net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity;
 import net.calvuz.qdue.smartshifts.ui.setup.fragments.WelcomeStepFragment;
 import net.calvuz.qdue.smartshifts.ui.setup.fragments.PatternSelectionStepFragment;
 import net.calvuz.qdue.smartshifts.ui.setup.fragments.StartDateStepFragment;
@@ -178,7 +178,7 @@ public class ShiftSetupWizardActivity extends AppCompatActivity {
      * Finish setup and go to main activity
      */
     private void finishSetup() {
-        Intent intent = new Intent(this, SmartShiftsActivity.class);
+        Intent intent = new Intent(this, SmartshiftsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();

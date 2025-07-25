@@ -22,33 +22,31 @@
 
         <!-- SmartShifts Activities -->
         <activity
-            android:name="net.calvuz.qdue.smartshifts.ui.main.SmartShiftsActivity"
+            android:name="net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity"
             android:exported="false"
-            android:theme="@style/Theme.SmartShifts"
+            android:label="@string/smartshifts_title"
             android:screenOrientation="portrait"
-            android:label="@string/smartshifts_title" />
+            android:theme="@style/Theme.SmartShifts" />
 
         <activity
             android:name="net.calvuz.qdue.smartshifts.ui.setup.ShiftSetupWizardActivity"
             android:exported="false"
-            android:theme="@style/Theme.SmartShifts"
+            android:label="@string/setup_wizard_title"
             android:screenOrientation="portrait"
-            android:label="@string/setup_wizard_title" />
+            android:theme="@style/Theme.SmartShifts" />
 
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.features.welcome.presentation.WelcomeActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            />
-<!--        android:theme="@style/Theme.QDue.Welcome"-->
+            android:screenOrientation="portrait" />
+        <!--        android:theme="@style/Theme.QDue.Welcome"-->
 
         <!-- MainActivity -->
         <activity
             android:name=".QDueMainActivity"
-            android:exported="true"
-            >
-<!--            android:theme="@style/Theme.QDue"-->
+            android:exported="true">
+            <!--            android:theme="@style/Theme.QDue"-->
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,18 +61,19 @@
             android:exported="false"
             android:label="@string/menu_title_settings"
             android:parentActivityName=".QDueMainActivity">
-            <!--        android:theme="@style/Theme.QDue.Settings"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />
         </activity>
 
+
         <activity
             android:name=".ui.features.events.presentation.EventsActivity"
             android:exported="true"
-            android:label="@string/nav_eventi"
-            >
-<!--            android:theme="@style/Theme.QDue"-->
+            android:label="@string/menu_title_events">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".QDueMainActivity" />
 
             <!-- Standard activity launch -->
             <intent-filter>
@@ -92,6 +91,7 @@
                 <data android:host="com.android.externalstorage.documents" />
                 <data android:pathPattern=".*\\.qdue" />
             </intent-filter>
+
             <intent-filter android:priority="96">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -102,6 +102,7 @@
                 <data android:host="com.android.providers.downloads.documents" />
                 <data android:pathPattern=".*\\.qdue" />
             </intent-filter>
+
             <intent-filter android:priority="92">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -134,6 +135,7 @@
                 <data android:host="com.android.externalstorage.documents" />
                 <data android:pathPattern=".*\\.json" />
             </intent-filter>
+
             <intent-filter android:priority="82">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -165,7 +167,6 @@
                     android:host="${applicationId}.fileprovider"
                     android:scheme="content" />
             </intent-filter>
-
         </activity>
 
         <!-- UserProfileActivity -->
@@ -175,7 +176,7 @@
             android:label="@string/user_profile"
             android:parentActivityName=".QDueMainActivity"
             android:windowSoftInputMode="adjustResize">
-<!--            android:theme="@style/Theme.QDue"-->
+            <!--            android:theme="@style/Theme.QDue"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />

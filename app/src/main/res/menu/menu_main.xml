@@ -14,7 +14,7 @@
         android:contentDescription="@string/menu_title_about"
         android:icon="@drawable/ic_rounded_info_24"
         android:title="@string/menu_title_about"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_smart_shifts"

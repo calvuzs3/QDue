@@ -185,10 +185,10 @@
     <!-- These will be overridden by Material You on Android 12+ -->
     <!--    <color name="md_theme_light_primary">#6750A4</color>-->
     <color name="md_theme_light_primary">#283593</color> <!--Blue Material 800-->
-    <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#EADDFF</color>
+    <color name="md_theme_light_onPrimary">#E3F2FD</color>
+    <color name="md_theme_light_primaryContainer">#7D5260</color><!--#EADDFF-->
     <!--    <color name="md_theme_light_onPrimaryContainer">#21005D</color>-->
-    <color name="md_theme_light_onPrimaryContainer">#0091EA</color>
+    <color name="md_theme_light_onPrimaryContainer">#332D41</color><!--#0091EA-->
 
     <color name="md_theme_dark_primary">#D0BCFF</color>
     <color name="md_theme_dark_onPrimary">#381E72</color>

@@ -96,12 +96,13 @@
     <!-- Navigation -->
     <string name="menu_dayslist">Tutti Turni</string>
     <string name="menu_calendar">Turno</string>
-    <string name="menu_title_about" translatable="false">About</string>
+    <string name="menu_title_about" translatable="false">Info</string>
     <string name="menu_title_settings">Impostazioni</string>
+    <string name="menu_title_events">Eventi</string>
     <string name="nav_header_settings">Impostazioni</string>
     <string name="nav_header_advanced_settings">Impostazioni Sistema</string>
     <string name="nav_header_other">Altro</string>
-    <string name="nav_header_calendars">Calendari</string>
+    <string name="nav_header_calendars">Visuale</string>
     <string name="nav_header_desc">Menu QDue</string>
     <string name="navigation_drawer_open">Apri il cassetto menu</string>
     <string name="navigation_drawer_close">Chiudi il cassetto menu</string>
@@ -394,12 +395,12 @@
 
 
     <!-- Strings for proto -->
-    <string name="nav_header_about" translatable="false">About</string>
+    <string name="nav_header_about" translatable="false">Info</string>
 
     <!-- ==================== Additional Strings EVENTS ==================== -->
     <string name="events_activity_title">Eventi</string>
     <string name="events_empty_title">Nessun Evento Trovato</string>
-    <string name="events_empty_message">Impèorta eventi da file JSON o aggiungi nuovi eventi</string>
+    <string name="events_empty_message">Importa eventi da file JSON o aggiungi nuovi eventi</string>
     <string name="events_import_success">%d eventi importati correttamente</string>
     <string name="events_import_error">Importazione fallita: %s</string>
     <string name="events_export_error">Esportazione fallita: %s</string>
@@ -1183,6 +1184,8 @@
     <string name="text_event_not_found">Evento non trovato</string>
     <string name="text_error_loading_event">Errore nel caricamento dell\'evento</string>
     <string name="text_event_id_not_valid">ID evento non valido</string>
+    <string name="nav_header_events">Eventi</string>
+    <string name="menu_events">Eventi</string>
 
     <!-- ======================================================================= -->
 

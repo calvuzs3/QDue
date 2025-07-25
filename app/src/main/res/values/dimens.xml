@@ -43,7 +43,7 @@
     <dimen name="button_height">48dp</dimen>
     <dimen name="fab_size">56dp</dimen>
     <dimen name="fab_margin">@dimen/spacing_m</dimen>
-    <dimen name="fab_margin_bottom">185dp</dimen>   <!-- Portrait mode -->
+    <dimen name="fab_margin_bottom">32dp</dimen>            <!-- Portrait mode -->
     <dimen name="fab_elevation">@dimen/spacing_s</dimen>
 
     <!-- Toolbar and AppBar -->

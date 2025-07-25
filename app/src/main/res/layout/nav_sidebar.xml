@@ -19,27 +19,28 @@
         <!-- COMPACT HEADER for smartphones -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="82dp"
-            android:orientation="horizontal"
+            android:layout_height="160dp"
+            android:background="?attr/colorPrimary"
             android:elevation="@dimen/spacing_s"
-            android:padding="16dp"
-            android:gravity="center_vertical"
-            android:background="@drawable/sidebar_header_gradient">
+            android:gravity="bottom|end"
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <!-- Compact App Icon -->
-<!--            <ImageView-->
-<!--                android:layout_width="32dp"-->
-<!--                android:layout_height="32dp"-->
-<!--                android:layout_marginEnd="12dp"-->
-<!--                android:src="@mipmap/ic_launcher"-->
-<!--                android:contentDescription="@string/app_name"-->
-<!--                app:tint="?attr/colorOnPrimary" />-->
+            <!--            <ImageView-->
+            <!--                android:layout_width="32dp"-->
+            <!--                android:layout_height="32dp"-->
+            <!--                android:layout_marginEnd="12dp"-->
+            <!--                android:src="@mipmap/ic_launcher"-->
+            <!--                android:contentDescription="@string/app_name"-->
+            <!--                app:tint="?attr/colorOnPrimary" />-->
 
             <!-- Compact Text -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:gravity="bottom|end"
                 android:orientation="vertical">
 
                 <TextView
@@ -47,14 +48,15 @@
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
                     android:textAppearance="@style/TextAppearance.QDue.HeadlineMedium"
-                     />
+                    android:textColor="?attr/colorOnPrimary" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:alpha="0.8"
                     android:text="@string/app_desc"
                     android:textAppearance="@style/TextAppearance.QDue.BodyMedium"
-                    android:alpha="0.8" />
+                    android:textColor="?attr/colorOnPrimary" />
 
             </LinearLayout>
 
@@ -70,12 +72,12 @@
             android:paddingTop="8dp"
             app:menu="@menu/sidebar_navigation_menu"
             app:itemTextAppearance="@style/TextAppearance.QDue.LabelLarge"
-            app:itemIconSize="22dp"
+            app:itemIconSize="24dp"
             app:itemShapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
             app:itemShapeFillColor="?attr/colorSecondaryContainer"
-            app:itemShapeInsetStart="12dp"
+            app:itemShapeInsetStart="24dp"
             app:itemShapeInsetEnd="12dp"
-            app:itemShapeInsetTop="2dp"
+            app:itemShapeInsetTop="6dp"
             app:itemShapeInsetBottom="2dp"
             app:itemVerticalPadding="12dp"
             app:itemHorizontalPadding="16dp"

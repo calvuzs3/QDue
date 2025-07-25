@@ -3,7 +3,7 @@ package net.calvuz.qdue.smartshifts.integration;
 import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
 
-import net.calvuz.qdue.smartshifts.ui.main.SmartShiftsActivity;
+import net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity;
 
 /**
  * Integration class for launching SmartShifts from main QDue app
@@ -26,7 +26,7 @@ public class SmartShiftsLauncher {
      * Launch SmartShifts activity from QDue main app
      */
     public static void launch(AppCompatActivity fromActivity) {
-        Intent intent = new Intent(fromActivity, SmartShiftsActivity.class);
+        Intent intent = new Intent(fromActivity, SmartshiftsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         fromActivity.startActivity(intent);
     }
@@ -44,7 +44,7 @@ public class SmartShiftsLauncher {
      * Launch SmartShifts with specific configuration
      */
     public static void launchWithConfig(AppCompatActivity fromActivity, String config) {
-        Intent intent = new Intent(fromActivity, SmartShiftsActivity.class);
+        Intent intent = new Intent(fromActivity, SmartshiftsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("config", config);
         fromActivity.startActivity(intent);
