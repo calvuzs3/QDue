@@ -70,8 +70,8 @@ public class BottomSelectionToolbar {
     // 🎯 UX CONSTANTS
     private static final int MAX_ACTIONS = 5;              // Limit actions for clean UI
     private static final int ANIMATION_DURATION = 250;     // Smooth animations
-    private static final int ICON_SIZE_DP = 24;           // Larger icons for visibility
-    private static final int BUTTON_SIZE_DP = 48;         // Larger touch targets
+    public static final int ICON_SIZE_DP = 32;           // Larger icons for visibility
+    public static final int BUTTON_SIZE_DP = 32;         // Larger touch targets
 
     // Views
     private final Context mContext;
@@ -538,8 +538,8 @@ public class BottomSelectionToolbar {
         );
 
         // 🔧 Match Events toolbar elevation and styling
-        mToolbarContainer.setCardElevation(dpToPx(12));
-        mToolbarContainer.setRadius(dpToPx(20));
+        mToolbarContainer.setCardElevation(dpToPx(6));
+        mToolbarContainer.setRadius(dpToPx(24));
 
         // Stroke
         mToolbarContainer.setStrokeWidth(dpToPx(1));

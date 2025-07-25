@@ -22,9 +22,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="horizontal"
-                android:clipToPadding="false"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp" />
+                android:orientation="horizontal" />
         </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

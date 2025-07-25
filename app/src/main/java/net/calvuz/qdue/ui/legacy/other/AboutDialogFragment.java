@@ -37,14 +37,16 @@ public class AboutDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         binding = FragmentDialogAboutBinding.inflate(getLayoutInflater());
-        View view = getLayoutInflater().inflate(R.layout.fragment_dialog_about, null);
 
         // Configura il contenuto del dialog
         setupDialogContent();
 
+        // Configura la legenda dei turni
+        setupShiftsLegend();
+
         // Crea l'AlertDialog con titolo e icona
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setView(view)
+                .setView(binding.getRoot())
                 .setTitle(R.string.app_name)
                 .setIcon(R.mipmap.ic_launcher)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> dismiss());

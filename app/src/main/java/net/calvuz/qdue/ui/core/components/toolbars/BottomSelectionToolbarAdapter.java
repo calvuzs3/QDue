@@ -5,6 +5,9 @@
  */
 package net.calvuz.qdue.ui.core.components.toolbars;
 
+import static net.calvuz.qdue.ui.core.components.toolbars.BottomSelectionToolbar.BUTTON_SIZE_DP;
+import static net.calvuz.qdue.ui.core.components.toolbars.BottomSelectionToolbar.ICON_SIZE_DP;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.util.TypedValue;
@@ -126,14 +129,14 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
 
             // Base styling
             int iconSize = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 24,
+                    TypedValue.COMPLEX_UNIT_DIP, ICON_SIZE_DP,
                     context.getResources().getDisplayMetrics()
             );
             actionButton.setIconSize(iconSize);
 
             // Minimum touch target
             int minTouchTarget = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, 48,
+                    TypedValue.COMPLEX_UNIT_DIP, BUTTON_SIZE_DP,
                     context.getResources().getDisplayMetrics()
             );
             actionButton.setMinHeight(minTouchTarget);

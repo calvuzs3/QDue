@@ -1,24 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/item_toolbar_action.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/item_toolbar_action.xml -->
 <!-- Individual action button layout for the floating toolbar -->
-<com.google.android.material.button.MaterialButton
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/btn_toolbar_action"
-    android:layout_width="48dp"
-    android:layout_height="48dp"
-    android:layout_margin="4dp"
+    style="@style/Widget.Material3.Button.TextButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="@drawable/bg_menu_item"
-    android:insetTop="0dp"
-    android:insetBottom="0dp"
-    android:insetLeft="0dp"
-    android:insetRight="0dp"
     android:contentDescription="@string/toolbar_action"
-    app:cornerRadius="12dp"
-    app:iconSize="24dp"
+    android:text="@string/toolbar_action"
+    android:textAppearance="@style/TextAppearance.QDue.LabelMedium"
+    app:cornerRadius="24dp"
+    app:iconGravity="textTop"
+    app:iconSize="32dp"
     app:iconTint="?attr/floatingMenuOnBackground"
-    app:rippleColor="?attr/floatingMenuSelected"
-    style="@style/Widget.Material3.Button.TextButton">
+    app:rippleColor="?attr/floatingMenuSelected">
 
     <!-- Action icon will be set programmatically -->
 
@@ -52,51 +48,49 @@
     -->
 
 
+    <!--<?xml version="1.0" encoding="utf-8"?>-->
+    <!--<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--    xmlns:tools="http://schemas.android.com/tools"-->
+    <!--    android:id="@+id/btn_toolbar_action"-->
+    <!--    style="@style/Widget.Material3.Button.IconButton"-->
+    <!--    android:layout_width="48dp"-->
+    <!--    android:layout_height="48dp"-->
+    <!--    android:layout_margin="2dp"-->
+    <!--    android:contentDescription="@string/action_add_event"-->
+    <!--    app:iconSize="20dp"-->
+    <!--    app:cornerRadius="12dp"-->
+    <!--    tools:icon="@drawable/ic_rounded_add_24" />-->
 
+    <!--    &lt;!&ndash;<?xml version="1.0" encoding="utf-8"?>&ndash;&gt;-->
+    <!--&lt;!&ndash;&lt;!&ndash; res/layout/item_toolbar_action.xml &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;&lt;!&ndash; Individual action button in the floating toolbar &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;<LinearLayout&ndash;&gt;-->
+    <!--&lt;!&ndash;    xmlns:android="http://schemas.android.com/apk/res/android"&ndash;&gt;-->
+    <!--&lt;!&ndash;    xmlns:app="http://schemas.android.com/apk/res-auto"&ndash;&gt;-->
+    <!--&lt;!&ndash;    android:layout_width="wrap_content"&ndash;&gt;-->
+    <!--&lt;!&ndash;    android:layout_height="wrap_content"&ndash;&gt;-->
+    <!--&lt;!&ndash;    android:orientation="vertical"&ndash;&gt;-->
+    <!--&lt;!&ndash;    android:layout_margin="4dp">&ndash;&gt;-->
 
-<!--<?xml version="1.0" encoding="utf-8"?>-->
-<!--<com.google.android.material.button.MaterialButton xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools"-->
-<!--    android:id="@+id/btn_toolbar_action"-->
-<!--    style="@style/Widget.Material3.Button.IconButton"-->
-<!--    android:layout_width="48dp"-->
-<!--    android:layout_height="48dp"-->
-<!--    android:layout_margin="2dp"-->
-<!--    android:contentDescription="@string/action_add_event"-->
-<!--    app:iconSize="20dp"-->
-<!--    app:cornerRadius="12dp"-->
-<!--    tools:icon="@drawable/ic_rounded_add_24" />-->
+    <!--&lt;!&ndash;    <com.google.android.material.button.MaterialButton&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:id="@+id/btn_toolbar_action"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:layout_width="56dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:layout_height="56dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:layout_gravity="center_horizontal"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:insetTop="0dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:insetBottom="0dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:insetLeft="0dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:insetRight="0dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:padding="8dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:text=""&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:textSize="10sp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        android:textColor="?attr/colorOnPrimary"&ndash;&gt;-->
+    <!--&lt;!&ndash;        app:backgroundTint="?attr/colorPrimary"&ndash;&gt;-->
+    <!--&lt;!&ndash;        app:cornerRadius="16dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        app:iconGravity="textTop"&ndash;&gt;-->
+    <!--&lt;!&ndash;        app:iconSize="24dp"&ndash;&gt;-->
+    <!--&lt;!&ndash;        app:iconTint="?attr/colorOnPrimary"&ndash;&gt;-->
+    <!--&lt;!&ndash;        style="@style/Widget.Material3.Button.UnelevatedButton" />&ndash;&gt;-->
 
-<!--    &lt;!&ndash;<?xml version="1.0" encoding="utf-8"?>&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash; res/layout/item_toolbar_action.xml &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash; Individual action button in the floating toolbar &ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;<LinearLayout&ndash;&gt;-->
-<!--&lt;!&ndash;    xmlns:android="http://schemas.android.com/apk/res/android"&ndash;&gt;-->
-<!--&lt;!&ndash;    xmlns:app="http://schemas.android.com/apk/res-auto"&ndash;&gt;-->
-<!--&lt;!&ndash;    android:layout_width="wrap_content"&ndash;&gt;-->
-<!--&lt;!&ndash;    android:layout_height="wrap_content"&ndash;&gt;-->
-<!--&lt;!&ndash;    android:orientation="vertical"&ndash;&gt;-->
-<!--&lt;!&ndash;    android:layout_margin="4dp">&ndash;&gt;-->
-
-<!--&lt;!&ndash;    <com.google.android.material.button.MaterialButton&ndash;&gt;-->
-<!--&lt;!&ndash;        android:id="@+id/btn_toolbar_action"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:layout_width="56dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:layout_height="56dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:layout_gravity="center_horizontal"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:insetTop="0dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:insetBottom="0dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:insetLeft="0dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:insetRight="0dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:padding="8dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:text=""&ndash;&gt;-->
-<!--&lt;!&ndash;        android:textSize="10sp"&ndash;&gt;-->
-<!--&lt;!&ndash;        android:textColor="?attr/colorOnPrimary"&ndash;&gt;-->
-<!--&lt;!&ndash;        app:backgroundTint="?attr/colorPrimary"&ndash;&gt;-->
-<!--&lt;!&ndash;        app:cornerRadius="16dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        app:iconGravity="textTop"&ndash;&gt;-->
-<!--&lt;!&ndash;        app:iconSize="24dp"&ndash;&gt;-->
-<!--&lt;!&ndash;        app:iconTint="?attr/colorOnPrimary"&ndash;&gt;-->
-<!--&lt;!&ndash;        style="@style/Widget.Material3.Button.UnelevatedButton" />&ndash;&gt;-->
-
-<!--&lt;!&ndash;</LinearLayout>&ndash;&gt;-->
+    <!--&lt;!&ndash;</LinearLayout>&ndash;&gt;-->
