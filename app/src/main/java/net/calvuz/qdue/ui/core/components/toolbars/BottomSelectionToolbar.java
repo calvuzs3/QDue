@@ -457,12 +457,13 @@ public class BottomSelectionToolbar {
             // ✅ Try to inflate enhanced layout XML
             View contentView;
             try {
-                contentView = inflater.inflate(R.layout.enhanced_bottom_selection_toolbar, null);
-                Log.d(TAG, "✅ Using enhanced_bottom_selection_toolbar.xml");
+//                contentView = inflater.inflate(R.layout.enhanced_bottom_selection_toolbar, null);
+                contentView = inflater.inflate(R.layout.bottom_selection_toolbar, null);
+                Log.d(TAG, "✅ Using bottom_selection_toolbar.xml");
             } catch (Exception e) {
                 // Fallback to events layout
-                Log.w(TAG, "Enhanced layout not found, using events layout");
-                contentView = inflater.inflate(R.layout.events_bottom_selection_toolbar, null);
+                Log.e(TAG, "Enhanced layout not found, using events layout");
+                return;
             }
 
             // Add content to card

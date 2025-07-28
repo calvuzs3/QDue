@@ -49,7 +49,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
     private static final String TAG = "BaseInteractiveAdapter";
 
     // Auto exit selection mode delay ( < animation)
-    public static final int AUTO_EXIT_SELECTION_MODE_DELAY = 800;
+    public static final int AUTO_EXIT_SELECTION_MODE_DELAY = 250;
 
     // NEW: Regular click support
     protected DayRegularClickListener mRegularClickListener;

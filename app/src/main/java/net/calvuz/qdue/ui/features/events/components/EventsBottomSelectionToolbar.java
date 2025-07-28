@@ -295,7 +295,7 @@ public class EventsBottomSelectionToolbar {
         applyCardStyling();
 
         // ✅ Inflate and add content to the card
-        View contentView = inflater.inflate(R.layout.events_bottom_selection_toolbar, mToolbarContainer, false);
+        View contentView = inflater.inflate(R.layout.bottom_selection_toolbar, mToolbarContainer, false);
         mToolbarContainer.addView(contentView);
 
         // ✅ Get view references from content

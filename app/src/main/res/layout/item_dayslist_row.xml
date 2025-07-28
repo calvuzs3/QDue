@@ -10,11 +10,10 @@
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="8dp"
+    app:cardCornerRadius="0dp"
     app:cardElevation="2dp"
     app:rippleColor="?attr/colorPrimaryContainer"
-    app:strokeColor="?attr/colorOutlineVariant"
-    app:strokeWidth="@dimen/spacing_xxs">
+    app:strokeWidth="0dp">
 
 
     <!-- UPDATED: Changed to LinearLayout vertical to support expansion -->
@@ -28,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingVertical="@dimen/item_padding_small">
+            android:paddingVertical="@dimen/item_padding_very_small">
 
             <TextView
                 android:id="@+id/tday"

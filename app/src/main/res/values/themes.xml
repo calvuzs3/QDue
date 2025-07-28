@@ -7,14 +7,20 @@
 
     <style name="Theme.QDue" parent="Theme.Material3.DayNight">
 
-        <item name="colorAccent">@color/qdue_success_green</item>
+        <!-- BACKGROUND COLORS -->
+        <item name="android:colorBackground">@color/white</item>
+        <item name="colorOnBackground">@color/qdue_text_primary</item>
+
+        <item name="android:textAppearance">@style/TextAppearance.QDue.BodyLarge</item>
+        <item name="android:textColor">@color/grey_900</item>
+        <item name="colorAccent">@color/light_green_500</item>
 
         <!-- ✅ Floating Menu Attributes (LIGHT THEME) -->
-        <item name="floatingMenuBackground">@color/grey_800</item>          <!-- Light background -->
-        <item name="floatingMenuOnBackground">@color/grey_100</item>        <!-- Dark text on light -->
-        <item name="floatingMenuPrimary">@color/blue_500</item>             <!-- Primary actions -->
-        <item name="floatingMenuSelected">@color/blue_100</item>            <!-- Selected/hover state -->
-        <item name="floatingMenuSurface">@color/grey_800</item>             <!-- Surface elements -->
+        <item name="floatingMenuBackground">@color/blue_grey_300</item>          <!-- Light background -->
+        <item name="floatingMenuOnBackground">@color/grey_800</item>        <!-- Dark text on light -->
+        <item name="floatingMenuPrimary">@color/blue_800</item>             <!-- Primary actions -->
+        <item name="floatingMenuSelected">@color/blue_300</item>            <!-- Selected/hover state -->
+        <item name="floatingMenuSurface">@color/blue_grey_700</item>             <!-- Surface elements -->
         <item name="floatingMenuOnSurface">@color/grey_100</item>           <!-- Text on surface -->
 
         <!-- ============================================ -->
@@ -22,16 +28,16 @@
         <!-- ============================================ -->
 
         <!-- PRIMARY PALETTE - QDue Royal Purple -->
-        <item name="colorPrimary">@color/blue_800</item>
-        <item name="colorOnPrimary">@color/qdue_text_on_dark</item>
-        <item name="colorPrimaryContainer">@color/qdue_royal_purple_container</item>
-        <item name="colorOnPrimaryContainer">@color/qdue_text_primary</item>
+        <item name="colorPrimary">@color/blue_900</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/blue_grey_300</item>
+        <item name="colorOnPrimaryContainer">@color/grey_800</item>
 
         <!-- SECONDARY PALETTE - QDue Ocean Blue -->
         <item name="colorSecondary">@color/qdue_ocean_blue</item>
         <item name="colorOnSecondary">@color/qdue_text_on_dark</item>
-        <item name="colorSecondaryContainer">@color/qdue_ocean_blue_container</item>
-        <item name="colorOnSecondaryContainer">@color/qdue_text_primary</item>
+        <item name="colorSecondaryContainer">@color/blue_grey_700</item>
+        <item name="colorOnSecondaryContainer">@color/white</item>
 
         <!-- TERTIARY PALETTE - Accent Colors -->
         <item name="colorTertiary">@color/qdue_info_blue</item>
@@ -51,9 +57,7 @@
         <item name="colorSurfaceVariant">@color/qdue_card_grey</item>
         <item name="colorOnSurfaceVariant">@color/qdue_text_secondary</item>
 
-        <!-- BACKGROUND COLORS -->
-        <item name="android:colorBackground">@color/qdue_bg_gradient_light</item>
-        <item name="colorOnBackground">@color/qdue_text_primary</item>
+
 
         <!-- OUTLINE COLORS - Borders & Dividers -->
         <item name="colorOutline">@color/qdue_border_medium</item>

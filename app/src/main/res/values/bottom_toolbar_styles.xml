@@ -219,7 +219,6 @@
        - Screen reader friendly
 
     USAGE:
-    - Sostituire il layout esistente con enhanced_bottom_selection_toolbar.xml
     - Aggiornare la classe Java per usare i nuovi attributi colore
     - Applicare gli stili personalizzati
     - Testare su diverse densità di schermo

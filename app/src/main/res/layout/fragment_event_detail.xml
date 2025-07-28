@@ -5,8 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="?android:attr/colorBackground">
+    android:orientation="vertical">
 
     <!-- ==================== CONTENT SCROLLVIEW ==================== -->
     <ScrollView
@@ -360,15 +359,14 @@
                             android:contentDescription="@string/text_time_until"
                             android:layout_marginEnd="12dp"
                             android:layout_gravity="center_vertical"
-                            app:tint="?attr/colorSecondary" />
+                            app:tint="?attr/colorAccent" />
 
                         <TextView
                             android:id="@+id/tv_time_until"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:textAppearance="?attr/textAppearanceBody2"
-                            android:textColor="?attr/colorSecondary"
+                            android:textColor="?attr/colorAccent"
                             tools:text="Fra 3 giorni 5 ore" />
                     </LinearLayout>
                 </LinearLayout>

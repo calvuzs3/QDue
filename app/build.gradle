@@ -199,15 +199,12 @@ dependencies {
     implementation libs.tracing
 
 
-    // ✅ CORRETTO: Hilt Dependency Injection per progetti JAVA
-    implementation "com.google.dagger:hilt-android:${rootProject.ext.hilt_version}"
+    // Hilt Dependency Injection - JAVA
+    implementation libs.hilt.android
     annotationProcessor "com.google.dagger:hilt-compiler:${rootProject.ext.hilt_version}"
 
-    // ✅ CORRETTO: Hilt Testing (optional, per i test)
-    testImplementation "com.google.dagger:hilt-android-testing:${rootProject.ext.hilt_version}"
+    // Hilt Testing (optional)
+    testImplementation libs.hilt.android.testing
     testAnnotationProcessor "com.google.dagger:hilt-compiler:${rootProject.ext.hilt_version}"
 
-    // Hilt Dependency Injection
-//    implementation libs.hilt.android
-//    annotationProcessor libs.dagger.hilt.android.compiler
 }

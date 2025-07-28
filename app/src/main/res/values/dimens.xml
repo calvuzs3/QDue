@@ -212,5 +212,6 @@
     <dimen name="card_elevation_high">@dimen/spacing_s</dimen>
     <dimen name="card_elevation_low">@dimen/spacing_xxs</dimen>
     <dimen name="card_elevation_medium">@dimen/spacing_xs</dimen>
+    <dimen name="item_padding_very_small">4dp</dimen>
 
 </resources>

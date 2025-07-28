@@ -7,21 +7,20 @@
     <!-- ============================================ -->
 
     <!-- LIGHT THEME MENU COLORS -->
-    <color name="white">#E0F7FA</color>            <!-- White -->"
+    <color name="white">#ECEFF1</color>            <!-- White -->"
     <color name="grey_50">#FAFAFA</color>          <!-- Light menu background -->
     <color name="grey_100">#F5F5F5</color>         <!-- Light menu surface -->
     <color name="grey_800">#424242</color>         <!-- Text on light menu -->
-    <color name="blue_500">#2196F3</color>         <!-- Primary action color -->
-    <color name="blue_100">#BBDEFB</color>         <!-- Selected/hover state -->
     <color name="red_500">#F44336</color>          <!-- Destructive actions -->
     <color name="purple_500">#673AB7</color>       <!-- Secondary action color -->
+
 
     <color name="purple_200">#7C4DFF</color>
     <color name="indigo_200">#536DFE</color>
     <color name="purple_600">#5e35b1</color>
     <color name="purple_700">#4527a0</color>"
 
-    <!-- Primarly for status messages -->
+    <!-- Primarily for status messages -->
     <color name="light_green_500">#4CAF50</color>   <!-- Light Green 500 ex 4CAF50 -->
     <color name="dark_yellow_500">#FF9800</color>   <!-- Dark Yellow 500 ex ff9800 -->
     <color name="light_red_500">#F44336</color>     <!-- Light Red 500 ex F44336 -->
@@ -31,10 +30,36 @@
     <color name="grey_900">#212121</color>         <!-- Dark menu background -->
     <color name="grey_800_dark">#303030</color>    <!-- Dark menu surface (lighter) -->
     <color name="grey_100_dark">#F5F5F5</color>    <!-- Text on dark menu -->
-    <color name="blue_300">#64B5F6</color>         <!-- Primary action color dark -->
-    <color name="blue_800">#1565C0</color>         <!-- Selected/hover state dark -->
     <color name="red_300">#E57373</color>          <!-- Destructive actions dark -->
     <color name="purple_300">#9575CD</color>       <!-- Secondary action color dark -->
+
+    <!-- BLUE -->
+    <color name="blue_50">#E3F2FD</color>
+    <color name="blue_100">#BBDEFB</color>          <!-- Selected/hover state -->
+    <color name="blue_200">#90CAF9</color>
+    <color name="blue_300">#64B5F6</color>          <!-- Primary action color dark -->
+    <color name="blue_400">#42A5F5</color>
+    <color name="blue_500">#2196F3</color>          <!-- Primary action color -->
+    <color name="blue_600">#1E88E5</color>
+    <color name="blue_700">#1976D2</color>
+    <color name="blue_800">#1565C0</color>          <!-- Selected/hover state dark -->
+    <color name="blue_900">#0D47A1</color>
+    <color name="blue_a100">#82B1FF</color>
+    <color name="blue_a200">#448AFF</color>
+    <color name="blue_a400">#2979FF</color>
+    <color name="blue_a700">#2962FF</color>
+
+    <!-- BLUE GREY (Complementary) -->
+    <color name="blue_grey_50">#ECEFF1</color>
+    <color name="blue_grey_100">#CFD8DC</color>
+    <color name="blue_grey_200">#B0BEC5</color>
+    <color name="blue_grey_300">#90A4AE</color>
+    <color name="blue_grey_400">#78909C</color>
+    <color name="blue_grey_500">#607D8B</color>
+    <color name="blue_grey_600">#546E7A</color>
+    <color name="blue_grey_700">#455A64</color>
+    <color name="blue_grey_800">#37474F</color>
+    <color name="blue_grey_900">#263238</color>
 
     <!-- ============================================ -->
     <!-- APPBAR GRADIENT COLORS -->
