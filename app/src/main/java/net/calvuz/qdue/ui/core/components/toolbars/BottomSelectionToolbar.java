@@ -132,23 +132,23 @@ public class BottomSelectionToolbar {
 
             // Validate each action type
             if (isValidForFerie(context)) {
-                validActions.add(ToolbarAction.FERIE);
+                validActions.add(ToolbarAction.VACATION);
             }
 
             if (isValidForMalattia(context)) {
-                validActions.add(ToolbarAction.MALATTIA);
+                validActions.add(ToolbarAction.SICK_LEAVE);
             }
 
             if (isValidForPermesso(context)) {
-                validActions.add(ToolbarAction.PERMESSO);
+                validActions.add(ToolbarAction.PERSONAL_LEAVE);
             }
 
             if (isValidForLegge104(context)) {
-                validActions.add(ToolbarAction.LEGGE_104);
+                validActions.add(ToolbarAction.SPECIAL_LEAVE);
             }
 
             if (isValidForStraordinario(context)) {
-                validActions.add(ToolbarAction.STRAORDINARIO);
+                validActions.add(ToolbarAction.OVERTIME);
             }
 
             // ADD_EVENT è sempre valido (fallback)
@@ -220,21 +220,21 @@ public class BottomSelectionToolbar {
         }
 
         /**
-         * 🏖️ FERIE - Valid for work days only
+         * 🏖️ VACATION - Valid for work days only
          */
         private static boolean isValidForFerie(ValidationContext context) {
             if (context.workDays == 0) {
-                Log.d(TAG, "FERIE invalid: No work days in selection");
+                Log.d(TAG, "VACATION invalid: No work days in selection");
                 return false;
             }
 
             if (context.pastDays > 0) {
-                Log.d(TAG, "FERIE invalid: Contains past days");
+                Log.d(TAG, "VACATION invalid: Contains past days");
                 return false;
             }
 
             if (context.workDays > MAX_CONSECUTIVE_VACATION_DAYS) {
-                Log.d(TAG, "FERIE invalid: Exceeds maximum consecutive days");
+                Log.d(TAG, "VACATION invalid: Exceeds maximum consecutive days");
                 return false;
             }
 
@@ -242,11 +242,11 @@ public class BottomSelectionToolbar {
         }
 
         /**
-         * 🏥 MALATTIA - Valid for work days, special rules for timing
+         * 🏥 SICK_LEAVE - Valid for work days, special rules for timing
          */
         private static boolean isValidForMalattia(ValidationContext context) {
             if (context.workDays < MIN_WORK_DAYS_FOR_SICK_LEAVE) {
-                Log.d(TAG, "MALATTIA invalid: Need at least " + MIN_WORK_DAYS_FOR_SICK_LEAVE + " work day(s)");
+                Log.d(TAG, "SICK_LEAVE invalid: Need at least " + MIN_WORK_DAYS_FOR_SICK_LEAVE + " work day(s)");
                 return false;
             }
 
@@ -254,16 +254,16 @@ public class BottomSelectionToolbar {
         }
 
         /**
-         * ⏰ PERMESSO - Valid for work days, more flexible than ferie
+         * ⏰ PERSONAL_LEAVE - Valid for work days, more flexible than ferie
          */
         private static boolean isValidForPermesso(ValidationContext context) {
             if (context.workDays == 0) {
-                Log.d(TAG, "PERMESSO invalid: No work days in selection");
+                Log.d(TAG, "PERSONAL_LEAVE invalid: No work days in selection");
                 return false;
             }
 
             if (context.pastDays > 0) {
-                Log.d(TAG, "PERMESSO invalid: Contains past days (limited retroactive allowed)");
+                Log.d(TAG, "PERSONAL_LEAVE invalid: Contains past days (limited retroactive allowed)");
                 return false;
             }
 
@@ -271,11 +271,11 @@ public class BottomSelectionToolbar {
         }
 
         /**
-         * ♿ LEGGE_104 - Special protected leave, very flexible
+         * ♿ SPECIAL_LEAVE - Special protected leave, very flexible
          */
         private static boolean isValidForLegge104(ValidationContext context) {
             if (context.workDays == 0) {
-                Log.d(TAG, "LEGGE_104 invalid: No work days in selection");
+                Log.d(TAG, "SPECIAL_LEAVE invalid: No work days in selection");
                 return false;
             }
 
@@ -283,21 +283,21 @@ public class BottomSelectionToolbar {
         }
 
         /**
-         * ⚡ STRAORDINARIO - Valid for off days or weekends
+         * ⚡ OVERTIME - Valid for off days or weekends
          */
         private static boolean isValidForStraordinario(ValidationContext context) {
             if (context.offDays == 0 && context.weekendDays == 0) {
-                Log.d(TAG, "STRAORDINARIO invalid: No off-days or weekends in selection");
+                Log.d(TAG, "OVERTIME invalid: No off-days or weekends in selection");
                 return false;
             }
 
             if (context.pastDays > 0) {
-                Log.d(TAG, "STRAORDINARIO invalid: Contains past days");
+                Log.d(TAG, "OVERTIME invalid: Contains past days");
                 return false;
             }
 
             if (context.totalDays > 3) {
-                Log.d(TAG, "STRAORDINARIO warning: Large selection, might not be appropriate");
+                Log.d(TAG, "OVERTIME warning: Large selection, might not be appropriate");
             }
 
             return true;
@@ -308,12 +308,12 @@ public class BottomSelectionToolbar {
          */
         private static List<ToolbarAction> prioritizeActions(List<ToolbarAction> actions, int selectionCount) {
             List<ToolbarAction> priorityOrder = Arrays.asList(
-                    ToolbarAction.FERIE,         // High priority - most common
-                    ToolbarAction.MALATTIA,      // High priority - quite common
-                    ToolbarAction.PERMESSO,      // Medium priority - common
-                    ToolbarAction.LEGGE_104,     // Medium priority - protected
+                    ToolbarAction.VACATION,         // High priority - most common
+                    ToolbarAction.SICK_LEAVE,      // High priority - quite common
+                    ToolbarAction.PERSONAL_LEAVE,      // Medium priority - common
+                    ToolbarAction.SPECIAL_LEAVE,     // Medium priority - protected
                     ToolbarAction.ADD_EVENT,     // Medium priority - fallback
-                    ToolbarAction.STRAORDINARIO  // Lower priority - occasional
+                    ToolbarAction.OVERTIME  // Lower priority - occasional
             );
 
             List<ToolbarAction> prioritized = new ArrayList<>();
@@ -405,7 +405,7 @@ public class BottomSelectionToolbar {
             String dayText = dayCount == 1 ? "giorno" : "giorni";
 
             switch (action) {
-                case FERIE:
+                case VACATION:
                     if (reason.contains("No work days")) {
                         return "❌ Le ferie possono essere richieste solo per giorni lavorativi";
                     } else if (reason.contains("past days")) {
@@ -413,13 +413,13 @@ public class BottomSelectionToolbar {
                     }
                     return "❌ Ferie non disponibili per " + dayCount + " " + dayText + " selezionati";
 
-                case MALATTIA:
+                case SICK_LEAVE:
                     if (reason.contains("work day")) {
                         return "❌ La malattia deve includere almeno un giorno lavorativo";
                     }
                     return "❌ Malattia non disponibile per la selezione corrente";
 
-                case PERMESSO:
+                case PERSONAL_LEAVE:
                     if (reason.contains("No work days")) {
                         return "❌ I permessi possono essere richiesti solo per giorni lavorativi";
                     } else if (reason.contains("past days")) {
@@ -427,7 +427,7 @@ public class BottomSelectionToolbar {
                     }
                     return "❌ Permesso non disponibile per " + dayCount + " " + dayText + " selezionati";
 
-                case STRAORDINARIO:
+                case OVERTIME:
                     if (reason.contains("off-days")) {
                         return "❌ Lo straordinario è disponibile solo per giorni non lavorativi";
                     } else if (reason.contains("past days")) {

@@ -157,14 +157,14 @@ public class EventsToolbarActionsAdapter extends RecyclerView.Adapter<EventsTool
                 RecyclerView.LayoutParams.WRAP_CONTENT,
                 RecyclerView.LayoutParams.WRAP_CONTENT
         );
-//
-//        // Margin between buttons
-//        int margin = (int) TypedValue.applyDimension(
-//                TypedValue.COMPLEX_UNIT_DIP, 8,
-//                parent.getContext().getResources().getDisplayMetrics()
-//        );
-//        layoutParams.setMargins(margin, 0, margin, 0);
-//        button.setLayoutParams(layoutParams);
+
+        // Margin between buttons
+        int margin = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 8,
+                parent.getContext().getResources().getDisplayMetrics()
+        );
+        layoutParams.setMargins(margin, 0, margin, 0);
+        button.setLayoutParams(layoutParams);
 
         // Base button styling
         button.setCornerRadius((int) TypedValue.applyDimension(

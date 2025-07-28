@@ -393,7 +393,7 @@ public class EventsBottomSelectionToolbar {
         mQuickActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Performance optimizations
-        mQuickActionsRecyclerView.setHasFixedSize(false);  //true
+        mQuickActionsRecyclerView.setHasFixedSize(true);  //true
         mQuickActionsRecyclerView.setItemViewCacheSize(MAX_ACTIONS);
         mQuickActionsRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         mQuickActionsRecyclerView.setNestedScrollingEnabled(false);

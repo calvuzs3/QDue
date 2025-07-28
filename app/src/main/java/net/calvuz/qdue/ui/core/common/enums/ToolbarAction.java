@@ -23,7 +23,7 @@ public enum ToolbarAction {
      * ✅ ENHANCED: Ferie - Maps to EventType.VACATION
      * User vacation days, typically requires approval
      */
-    FERIE(
+    VACATION(
             R.drawable.ic_rounded_beach_access_24,
             R.string.action_ferie,
             "ferie",
@@ -35,7 +35,7 @@ public enum ToolbarAction {
      * ✅ ENHANCED: Malattia - Maps to EventType.SICK_LEAVE
      * Sick leave, high priority, usually no approval required
      */
-    MALATTIA(
+    SICK_LEAVE(
             R.drawable.ic_rounded_local_hospital_24,
             R.string.action_malattia,
             "malattia",
@@ -47,7 +47,7 @@ public enum ToolbarAction {
      * ✅ ENHANCED: Legge 104 - Maps to EventType.SPECIAL_LEAVE
      * Special protected leave, no approval required
      */
-    LEGGE_104(
+    SPECIAL_LEAVE(
             R.drawable.ic_rounded_accessible_24,
             R.string.action_legge_104,
             "legge_104",
@@ -59,7 +59,7 @@ public enum ToolbarAction {
      * ✅ ENHANCED: Permesso - Maps to EventType.PERSONAL_LEAVE
      * Personal leave, typically requires approval
      */
-    PERMESSO(
+    PERSONAL_LEAVE(
             R.drawable.ic_rounded_schedule_24,
             R.string.action_permesso,
             "permesso",
@@ -71,7 +71,7 @@ public enum ToolbarAction {
      * ✅ ENHANCED: Permesso Sindacale - Maps to EventType.SYNDICATE_LEAVE
      * Union/syndicate leave, typically requires approval
      */
-    PERMESSO_SINDACALE(
+    SYNDICATE_LEAVE(
             R.drawable.ic_rounded_clock_loader_40_24,
             R.string.action_permesso_sindacale,
             "permesso_sindacale",
@@ -85,7 +85,7 @@ public enum ToolbarAction {
      * ✅ NEW: Straordinario - Maps to EventType.OVERTIME
      * Overtime work, scheduled extra shift
      */
-    STRAORDINARIO(
+    OVERTIME(
             R.drawable.ic_rounded_engineering_24,
             R.string.action_straordinario,
             "straordinario",
@@ -115,18 +115,18 @@ public enum ToolbarAction {
             R.drawable.ic_rounded_event_list_24,
             R.string.action_view_events,
             "view_events",
-            null, // No direct EventType mapping for navigation actions
+            EventType.OTHER, // Use OTHER for non-mapped events
             "Visualizza tutti gli eventi per la data selezionata"
     );
 
     // ==================== ENUM PROPERTIES ====================
 
-//    STRAORDINARIO(R.drawable.ic_rounded_engineering_24, R.string.action_straordinario, "straordinario"),
-//    FERIE(R.drawable.ic_rounded_beach_access_24, R.string.action_ferie, "ferie"),
-//    MALATTIA(R.drawable.ic_rounded_local_hospital_24, R.string.action_malattia, "malattia"),
-//    LEGGE_104(R.drawable.ic_rounded_accessible_24, R.string.action_legge_104, "legge_104"),
-//    PERMESSO(R.drawable.ic_rounded_schedule_24, R.string.action_permesso, "permesso"),
-//    PERMESSO_SINDACALE(R.drawable.ic_rounded_clock_loader_40_24, R.string.action_permesso_sindacale, "permesso_sindacale"),
+//    OVERTIME(R.drawable.ic_rounded_engineering_24, R.string.action_straordinario, "straordinario"),
+//    VACATION(R.drawable.ic_rounded_beach_access_24, R.string.action_ferie, "ferie"),
+//    SICK_LEAVE(R.drawable.ic_rounded_local_hospital_24, R.string.action_malattia, "malattia"),
+//    SPECIAL_LEAVE(R.drawable.ic_rounded_accessible_24, R.string.action_legge_104, "legge_104"),
+//    PERSONAL_LEAVE(R.drawable.ic_rounded_schedule_24, R.string.action_permesso, "permesso"),
+//    SYNDICATE_LEAVE(R.drawable.ic_rounded_clock_loader_40_24, R.string.action_permesso_sindacale, "permesso_sindacale"),
 //    FORMAZIONE(R.drawable.ic_rounded_self_improvement_24, R.string.action_formazione, "formazione"),
 //    EMERGENZA(R.drawable.ic_rounded_emergency_home_24, R.string.action_emergenza, "emergenza"),
 //    ADD_EVENT(R.drawable.ic_rounded_add_24, R.string.action_add_event, "add_event"),
@@ -282,12 +282,12 @@ public enum ToolbarAction {
      */
     public static ToolbarAction[] getQuickEventActions() {
         return new ToolbarAction[]{
-                FERIE,
-                MALATTIA,
-                LEGGE_104,
-                PERMESSO,
-                PERMESSO_SINDACALE,
-                STRAORDINARIO // ✅ NEW: Added STRAORDINARIO
+                VACATION,
+                SICK_LEAVE,
+                SPECIAL_LEAVE,
+                PERSONAL_LEAVE,
+                SYNDICATE_LEAVE,
+                OVERTIME 
         };
     }
 
@@ -297,11 +297,11 @@ public enum ToolbarAction {
      */
     public static ToolbarAction[] getWorkAbsenceActions() {
         return new ToolbarAction[]{
-                FERIE,
-                MALATTIA,
-                LEGGE_104,
-                PERMESSO,
-                PERMESSO_SINDACALE
+                VACATION,
+                SICK_LEAVE,
+                SPECIAL_LEAVE,
+                PERSONAL_LEAVE,
+                SYNDICATE_LEAVE
         };
     }
 
@@ -311,7 +311,7 @@ public enum ToolbarAction {
      */
     public static ToolbarAction[] getWorkEventActions() {
         return new ToolbarAction[]{
-                STRAORDINARIO
+                OVERTIME
         };
     }
 
@@ -349,12 +349,12 @@ public enum ToolbarAction {
      */
     public static String getEventTypeName(ToolbarAction action) {
         return switch (action) {
-            case STRAORDINARIO -> "Straordinario";
-            case FERIE -> "Ferie";
-            case MALATTIA -> "Malattia";
-            case LEGGE_104 -> "Legge 104";
-            case PERMESSO -> "Permesso";
-            case PERMESSO_SINDACALE -> "Permesso sindacale";
+            case OVERTIME -> EventType.OVERTIME.getDisplayName();
+            case VACATION -> "Ferie";
+            case SICK_LEAVE -> "Malattia";
+            case SPECIAL_LEAVE -> "Legge 104";
+            case PERSONAL_LEAVE -> "Permesso";
+            case SYNDICATE_LEAVE -> "Permesso sindacale";
             case ADD_EVENT -> "Aggiungi Evento";
             case VIEW_EVENTS -> "Visualizza Eventi";
             default -> action.name();
@@ -365,7 +365,7 @@ public enum ToolbarAction {
 //     * Get actions for quick event creation (ferie, malattia, etc.)
 //     */
 //    public static ToolbarAction[] getQuickEventActions() {
-//        return new ToolbarAction[]{FERIE, MALATTIA, LEGGE_104, PERMESSO};
+//        return new ToolbarAction[]{VACATION, SICK_LEAVE, SPECIAL_LEAVE, PERSONAL_LEAVE};
 //    }
 
     /**
@@ -380,10 +380,10 @@ public enum ToolbarAction {
      */
     public static List<ToolbarAction> getDefaultActions() {
         return java.util.Arrays.asList(
-                ToolbarAction.STRAORDINARIO,
-                ToolbarAction.FERIE,
-                ToolbarAction.MALATTIA,
-                ToolbarAction.LEGGE_104,
+                ToolbarAction.OVERTIME,
+                ToolbarAction.VACATION,
+                ToolbarAction.SICK_LEAVE,
+                ToolbarAction.SPECIAL_LEAVE,
                 ToolbarAction.ADD_EVENT
         );
     }
@@ -403,8 +403,8 @@ public enum ToolbarAction {
         } else {
             // Multiple dates - only bulk actions
             return java.util.Arrays.asList(
-                    ToolbarAction.FERIE,
-                    ToolbarAction.MALATTIA,
+                    ToolbarAction.VACATION,
+                    ToolbarAction.SICK_LEAVE,
                     ToolbarAction.ADD_EVENT
             );
         }

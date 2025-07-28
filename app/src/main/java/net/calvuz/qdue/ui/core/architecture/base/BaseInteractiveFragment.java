@@ -948,12 +948,12 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 showEventsDialog(date);
                 break;
 
-            case FERIE:
-            case MALATTIA:
-            case LEGGE_104:
-            case PERMESSO:
-            case PERMESSO_SINDACALE:
-            case STRAORDINARIO:
+            case VACATION:
+            case SICK_LEAVE:
+            case SPECIAL_LEAVE:
+            case PERSONAL_LEAVE:
+            case SYNDICATE_LEAVE:
+            case OVERTIME:
                 // These are no more handled by adapter, we handle them here
                 createQuickEvent(action, date);
                 break;

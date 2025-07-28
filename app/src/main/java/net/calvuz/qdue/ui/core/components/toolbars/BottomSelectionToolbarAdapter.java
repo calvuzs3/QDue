@@ -51,8 +51,8 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
      */
     public enum ActionType {
         PRIMARY,     // Main actions like ADD_EVENT
-        SECONDARY,   // Common actions like FERIE, PERMESSO
-        SPECIAL,     // Protected actions like LEGGE_104
+        SECONDARY,   // Common actions like VACATION, PERSONAL_LEAVE
+        SPECIAL,     // Protected actions like SPECIAL_LEAVE
         DESTRUCTIVE  // Not used in this context but kept for consistency
     }
 
@@ -64,13 +64,13 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
             case ADD_EVENT:
                 return ActionType.PRIMARY;
 
-            case LEGGE_104:
+            case SPECIAL_LEAVE:
                 return ActionType.SPECIAL;
 
-            case FERIE:
-            case MALATTIA:
-            case PERMESSO:
-            case STRAORDINARIO:
+            case VACATION:
+            case SICK_LEAVE:
+            case PERSONAL_LEAVE:
+            case OVERTIME:
             default:
                 return ActionType.SECONDARY;
         }
@@ -81,15 +81,15 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
      */
     private ActionDisplayInfo getActionDisplayInfo(ToolbarAction action) {
         switch (action) {
-            case FERIE:
+            case VACATION:
                 return new ActionDisplayInfo("Ferie", R.drawable.ic_rounded_beach_access_24);
-            case MALATTIA:
+            case SICK_LEAVE:
                 return new ActionDisplayInfo("Malattia", R.drawable.ic_rounded_local_hospital_24);
-            case PERMESSO:
+            case PERSONAL_LEAVE:
                 return new ActionDisplayInfo("Permesso", R.drawable.ic_rounded_schedule_24);
-            case LEGGE_104:
+            case SPECIAL_LEAVE:
                 return new ActionDisplayInfo("L.104", R.drawable.ic_rounded_accessible_24);
-            case STRAORDINARIO:
+            case OVERTIME:
                 return new ActionDisplayInfo("Straord.", R.drawable.ic_rounded_overtime_gears_24);
             case ADD_EVENT:
                 return new ActionDisplayInfo("Evento", R.drawable.ic_rounded_calendar_add_on_24);
@@ -172,7 +172,7 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
                     break;
 
                 case SPECIAL:
-                    // Special colors for protected actions (LEGGE_104)
+                    // Special colors for protected actions (SPECIAL_LEAVE)
                     backgroundTint = ColorStateList.valueOf(
                             ContextCompat.getColor(context, R.color.purple_500)
                     );
@@ -205,7 +205,7 @@ public class BottomSelectionToolbarAdapter extends RecyclerView.Adapter<BottomSe
 
                 case SECONDARY:
                 default:
-                    // Surface colors for secondary actions (FERIE, MALATTIA, etc.)
+                    // Surface colors for secondary actions (VACATION, SICK_LEAVE, etc.)
                     backgroundTint = ColorStateList.valueOf(
                             Library.getColorByThemeAttr(context, R.attr.floatingMenuSurface)
                     );

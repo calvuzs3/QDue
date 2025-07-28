@@ -193,17 +193,17 @@ public enum EventType {
      */
     public static EventType fromToolbarAction(String toolbarActionName) {
         switch (toolbarActionName.toUpperCase()) {
-            case "FERIE":
+            case "VACATION":
                 return VACATION;
-            case "MALATTIA":
+            case "SICK_LEAVE":
                 return SICK_LEAVE;
-            case "STRAORDINARIO":
+            case "OVERTIME":
                 return OVERTIME;
-            case "PERMESSO":
+            case "PERSONAL_LEAVE":
                 return PERSONAL_LEAVE;
-            case "LEGGE_104":
+            case "SPECIAL_LEAVE":
                 return SPECIAL_LEAVE;
-            case "PERMESSO_SINDACALE":
+            case "SYNDICATE_LEAVE":
                 return SYNDICATE_LEAVE;
             default:
                 return GENERAL;

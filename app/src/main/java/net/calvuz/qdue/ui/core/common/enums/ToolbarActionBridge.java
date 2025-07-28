@@ -22,17 +22,17 @@ public class ToolbarActionBridge {
      */
     public static EventAction mapToEventAction(ToolbarAction toolbarAction) {
         switch (toolbarAction) {
-            case FERIE:
+            case VACATION:
                 return EventAction.VACATION;
-            case MALATTIA:
+            case SICK_LEAVE:
                 return EventAction.SICK_LEAVE;
-            case LEGGE_104:
+            case SPECIAL_LEAVE:
                 return EventAction.SPECIAL_LEAVE;
-            case PERMESSO:
+            case PERSONAL_LEAVE:
                 return EventAction.PERSONAL_LEAVE;
-            case PERMESSO_SINDACALE:
+            case SYNDICATE_LEAVE:
                 return EventAction.SYNDICATE_LEAVE;
-            case STRAORDINARIO:
+            case OVERTIME:
                 return EventAction.OVERTIME;
             default:
                 return EventAction.GENERAL;

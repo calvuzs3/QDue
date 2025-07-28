@@ -1568,15 +1568,15 @@ public class EventsServiceImpl implements EventsService {
                 return true;
 
             // ✅ NEW: User absence events (from ToolbarAction quick events)
-            case VACATION:          // FERIE
-            case SICK_LEAVE:        // MALATTIA
-            case PERSONAL_LEAVE:    // PERMESSO
-            case SPECIAL_LEAVE:     // LEGGE_104
-            case SYNDICATE_LEAVE:   // PERMESSO_SINDACALE
+            case VACATION:          // VACATION
+            case SICK_LEAVE:        // SICK_LEAVE
+            case PERSONAL_LEAVE:    // PERSONAL_LEAVE
+            case SPECIAL_LEAVE:     // SPECIAL_LEAVE
+            case SYNDICATE_LEAVE:   // SYNDICATE_LEAVE
                 return true;
 
             // ✅ NEW: Work events
-            case OVERTIME:          // STRAORDINARIO
+            case OVERTIME:          // OVERTIME
             case COMPENSATION:      // RECUPERO
             case SHIFT_SWAP:        // CAMBIO_TURNO
                 return true;
@@ -1664,28 +1664,28 @@ public class EventsServiceImpl implements EventsService {
         // ✅ Business rules for conflicts per action type
         switch (action) {
             // User absence events - typically one per day of same type
-            case FERIE:
+            case VACATION:
                 return existingEvents.stream()
                         .anyMatch(event -> event.getEventType() == EventType.VACATION);
 
-            case MALATTIA:
+            case SICK_LEAVE:
                 return existingEvents.stream()
                         .anyMatch(event -> event.getEventType() == EventType.SICK_LEAVE);
 
-            case PERMESSO:
+            case PERSONAL_LEAVE:
                 return existingEvents.stream()
                         .anyMatch(event -> event.getEventType() == EventType.PERSONAL_LEAVE);
 
-            case LEGGE_104:
+            case SPECIAL_LEAVE:
                 return existingEvents.stream()
                         .anyMatch(event -> event.getEventType() == EventType.SPECIAL_LEAVE);
 
-            case PERMESSO_SINDACALE:
+            case SYNDICATE_LEAVE:
                 return existingEvents.stream()
                         .anyMatch(event -> event.getEventType() == EventType.SYNDICATE_LEAVE);
 
             // Work events - can have multiple per day
-            case STRAORDINARIO:
+            case OVERTIME:
                 // Check for overlapping overtime on same day
                 return existingEvents.stream()
                         .filter(event -> event.getEventType() == EventType.OVERTIME)
