@@ -32,7 +32,7 @@
     <!-- Item spacing -->
     <dimen name="item_margin">@dimen/spacing_s</dimen>
     <dimen name="item_padding">@dimen/spacing_m</dimen>
-    <dimen name="item_padding_small">@dimen/spacing_s</dimen>
+    <dimen name="item_padding_small">6dp</dimen>
 
     <!-- ============================================ -->
     <!-- COMPONENT DIMENSIONS -->

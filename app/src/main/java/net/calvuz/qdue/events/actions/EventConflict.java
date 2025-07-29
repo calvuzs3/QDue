@@ -1,7 +1,15 @@
 package net.calvuz.qdue.events.actions;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
+import androidx.annotation.StringRes;
+
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.models.EventPriority;
+
+import java.text.MessageFormat;
 
 public class EventConflict {
     private final LocalEvent conflictingEvent;
@@ -51,7 +59,9 @@ public class EventConflict {
         }
 
         // Business rule violations are critical
-        if (reason.contains("Non puoi") || reason.contains("escludono") || reason.contains("interrompe")) {
+        if (reason.contains(getString(QDue.getContext(), R.string.event_conflict_reason_contains_you_cant)) ||
+                reason.contains(getString(QDue.getContext(), R.string.event_conflict_reason_contains_exclude)) ||
+                reason.contains(getString(QDue.getContext(), R.string.event_conflict_reason_contains_interrupt))) {
             return true;
         }
 
@@ -79,19 +89,20 @@ public class EventConflict {
      * Get suggested resolution for this conflict.
      */
     public String getSuggestedResolution() {
-        if (conflictingAction == null) return "Verifica manualmente";
+        if (conflictingAction == null)
+            return getString(QDue.getContext(), R.string.event_conflict_tip_verify_manually);
 
         switch (conflictingAction.getCategory()) {
             case ABSENCE:
-                return "Scegli una data diversa o modifica l'assenza esistente";
+                return getString(QDue.getContext(), R.string.event_conflict_tip_choose_another_date_or_change_absence);
             case WORK_ADJUSTMENT:
-                return "Coordina gli aggiustamenti di turno o scegli un'altra data";
+                return getString(QDue.getContext(), R.string.event_conflict_tip_coordinate_work_adjustment_or_choose_another_date);
             case PRODUCTION:
-                return "Riprogramma una delle attività produttive";
+                return getString(QDue.getContext(), R.string.event_conflict_tip_reprogram_production);
             case DEVELOPMENT:
-                return "Sposta la formazione/riunione in un altro momento";
+                return getString(QDue.getContext(), R.string.event_conflict_tip_move_training_or_meeting);
             default:
-                return "Risolvi il conflitto manualmente";
+                return getString(QDue.getContext(), R.string.event_conflict_tip_resolve_manually);
         }
     }
 
@@ -110,10 +121,14 @@ public class EventConflict {
      */
     public String getDisplayIcon() {
         switch (getSeverity()) {
-            case CRITICAL: return "🔴";
-            case HIGH: return "🟠";
-            case MEDIUM: return "🟡";
-            default: return "ℹ️";
+            case CRITICAL:
+                return "🔴";
+            case HIGH:
+                return "🟠";
+            case MEDIUM:
+                return "🟡";
+            default:
+                return "ℹ️";
         }
     }
 
@@ -121,28 +136,30 @@ public class EventConflict {
      * Get formatted display string for UI.
      */
     public String getDisplayString() {
-        return getDisplayIcon() + " " +
-                conflictingEvent.getTitle() +
-                " (" + conflictingAction.getDisplayName() + ")\n" +
-                reason;
+        return MessageFormat.format("{0} {1} ({2})\n{3}",
+                getDisplayIcon(),
+                conflictingEvent.getTitle(),
+                conflictingAction.getDisplayName(),
+                reason);
     }
 
     // ==================== ENUM FOR SEVERITY ====================
 
     public enum ConflictSeverity {
-        CRITICAL("Critico"),
-        HIGH("Alto"),
-        MEDIUM("Medio"),
-        LOW("Basso");
+        CRITICAL(R.string.event_conflict_severity_critical),
+        HIGH(R.string.event_conflict_severity_high),
+        MEDIUM(R.string.event_conflict_severity_medium),
+        LOW(R.string.event_conflict_severity_low);
 
-        private final String displayName;
+        @StringRes
+        private final int displayName;
 
-        ConflictSeverity(String displayName) {
+        ConflictSeverity(@StringRes int displayName) {
             this.displayName = displayName;
         }
 
         public String getDisplayName() {
-            return displayName;
+            return getString(QDue.getContext(), displayName);
         }
     }
 }

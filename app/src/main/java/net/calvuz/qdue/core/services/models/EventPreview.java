@@ -9,6 +9,7 @@ import net.calvuz.qdue.events.models.EventPriority;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * STEP 1: EventPreview DTO
@@ -161,27 +162,14 @@ public class EventPreview {
      * Get event type display name
      */
     public String getEventTypeDisplayName() {
-        return eventType != null ? eventType.getDisplayName() : "Generale";
+        return Objects.requireNonNullElse(eventType, EventType.GENERAL).getDisplayName();
     }
 
     /**
      * Get priority display name
      */
     public String getPriorityDisplayName() {
-        if (priority == null) {
-            return "Normale";
-        }
-        switch (priority) {
-            case LOW:
-                return "Bassa";
-            case HIGH:
-                return "Alta";
-            case URGENT:
-                return "Urgente";
-            case NORMAL:
-            default:
-                return "Normale";
-        }
+        return Objects.requireNonNullElse(priority, EventPriority.NORMAL).getDisplayName();
     }
 
     /**

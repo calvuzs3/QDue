@@ -65,7 +65,7 @@ public class JsonSchemaValidator {
 
     // Valid Q-Due event types and priorities
     private static final Set<String> VALID_EVENT_TYPES = new HashSet<>(Arrays.asList(
-            "GENERAL", "STOP_PLANNED", "STOP_UNPLANNED", "STOP_SHORTAGE", "STOP_ORDERS", "STOP_CASSA",
+            "GENERAL", "STOP_PLANNED", "STOP_UNPLANNED", "STOP_SHORTAGE_ORDERS", "STOP_SHORTAGE_RAW_MATERIALS", "STOP_CASSA",
             "MAINTENANCE", "MEETING", "TRAINING", "HOLIDAY", "EMERGENCY", "SHIFT_CHANGE",
             "OVERTIME", "SAFETY_DRILL", "AUDIT", "IMPORTED"
     ));

@@ -1273,51 +1273,13 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
             showToolbarAfterDelay(0);
             return;
         }
+            // We do not have Bottom nav now
 
-        QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
-        View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
-
-        if (bottomNav == null || bottomNav.getVisibility() != View.VISIBLE) {
-            // Bottom nav not visible - show toolbar immediately
-            showToolbarAfterDelay(0);
-            return;
-        }
 
         if (enteringSelectionMode) {
-            Log.d(TAG, "Coordinating bottom nav hide with toolbar show");
-
-            // Start bottom nav hide animation
-            bottomNav.animate()
-                    .translationY(bottomNav.getHeight())
-                    .alpha(0f)
-                    .setDuration(200)
-                    .withStartAction(() -> {
-                        // 🔧 Show toolbar slightly after bottom nav starts hiding
-                        showToolbarAfterDelay(100);
-                    })
-                    .withEndAction(() -> {
-                        bottomNav.setVisibility(View.INVISIBLE);
-                        bottomNav.setAlpha(1.0f);  // ← CRITICAL: Reset to full opacity
-                        Log.d(TAG, "✅ Bottom navigation hidden");
-                    })
-                    .start();
+            showToolbarAfterDelay(0);
         } else {
-            // Exiting - hide toolbar first, then show bottom nav
             hideBottomToolbar();
-
-            // Show bottom nav after toolbar is hidden
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.postDelayed(() -> {
-                bottomNav.setVisibility(View.VISIBLE);
-                bottomNav.setTranslationY(bottomNav.getHeight());
-                bottomNav.setAlpha(0f);
-
-                bottomNav.animate()
-                        .translationY(0)
-                        .alpha(1.0f)
-                        .setDuration(200)
-                        .start();
-            }, 150);
         }
     }
 
@@ -1360,7 +1322,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
         // ✅ Show again
         showFabAfterSelection();
-        showBottomNavigation();
+//        showBottomNavigation();
 
         // ✅ Hide bottom toolbar
         hideBottomToolbar();
@@ -2790,52 +2752,52 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     /**
      * Hide bottom navigation during selection mode
      */
-    private void hideBottomNavigation() {
-        if (getActivity() instanceof QDueMainActivity) {
-            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
-            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
-
-            if (bottomNav != null && bottomNav.getVisibility() == View.VISIBLE) {
-                Log.d(TAG, "Hiding bottom navigation for selection mode");
-
-                // Animate hide
-                bottomNav.animate()
-                        .translationY(bottomNav.getHeight())
-                        .setDuration(250)
-                        .withEndAction(() -> {
-                            bottomNav.setVisibility(View.GONE);
-                            Log.d(TAG, "✅ Bottom navigation hidden");
-                        })
-                        .start();
-            }
-        }
-    }
+//    private void hideBottomNavigation() {
+//        if (getActivity() instanceof QDueMainActivity) {
+//            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+//            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+//
+//            if (bottomNav != null && bottomNav.getVisibility() == View.VISIBLE) {
+//                Log.d(TAG, "Hiding bottom navigation for selection mode");
+//
+//                // Animate hide
+//                bottomNav.animate()
+//                        .translationY(bottomNav.getHeight())
+//                        .setDuration(250)
+//                        .withEndAction(() -> {
+//                            bottomNav.setVisibility(View.GONE);
+//                            Log.d(TAG, "✅ Bottom navigation hidden");
+//                        })
+//                        .start();
+//            }
+//        }
+//    }
 
     /**
      * Show bottom navigation after selection mode
      */
-    private void showBottomNavigation() {
-        if (getActivity() instanceof QDueMainActivity) {
-            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
-            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
-
-            if (bottomNav != null && bottomNav.getVisibility() != View.VISIBLE) {
-                Log.d(TAG, "Showing bottom navigation after selection mode");
-
-                bottomNav.setVisibility(View.VISIBLE);
-                bottomNav.setTranslationY(bottomNav.getHeight());
-
-                // Animate show
-                bottomNav.animate()
-                        .translationY(0)
-                        .setDuration(250)
-                        .withEndAction(() -> {
-                            Log.d(TAG, "✅ Bottom navigation shown");
-                        })
-                        .start();
-            }
-        }
-    }
+//    private void showBottomNavigation() {
+//        if (getActivity() instanceof QDueMainActivity) {
+//            QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
+//            View bottomNav = mainActivity.findViewById(R.id.bottom_navigation);
+//
+//            if (bottomNav != null && bottomNav.getVisibility() != View.VISIBLE) {
+//                Log.d(TAG, "Showing bottom navigation after selection mode");
+//
+//                bottomNav.setVisibility(View.VISIBLE);
+//                bottomNav.setTranslationY(bottomNav.getHeight());
+//
+//                // Animate show
+//                bottomNav.animate()
+//                        .translationY(0)
+//                        .setDuration(250)
+//                        .withEndAction(() -> {
+//                            Log.d(TAG, "✅ Bottom navigation shown");
+//                        })
+//                        .start();
+//            }
+//        }
+//    }
     /// ////////////////////////////////
 
 

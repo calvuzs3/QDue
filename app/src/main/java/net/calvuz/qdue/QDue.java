@@ -19,9 +19,6 @@ import java.util.Locale;
 
 import dagger.hilt.android.HiltAndroidApp;
 
-import net.calvuz.qdue.smartshifts.data.database.SmartShiftsDatabase;
-import net.calvuz.qdue.smartshifts.data.database.DatabaseInitializer;
-
 /**
  * Main QDue Application class with Hilt support
  * Now supports both existing QDue functionality and new SmartShifts
@@ -74,8 +71,6 @@ public class QDue extends Application {
         BackHandlingModule.initialize(this);
         Log.d(TAG, "=== BackHandling services initialized");
 
-        // ✅ AGGIUNTO: Initialize SmartShifts database
-        initializeSmartShifts();
     }
 
     /* ===== GETTERS ===== */
@@ -96,51 +91,6 @@ public class QDue extends Application {
     }
 
     /// ////////////////////////// SMARTSHIFTS STARTS HERE //////////////////////////////////
-
-    /**
-     * Initialize SmartShifts components
-     * Runs in background to avoid blocking UI
-     */
-    private void initializeSmartShifts() {
-        SmartShiftsDatabase.databaseWriteExecutor.execute(() -> {
-            try {
-                SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
-                DatabaseInitializer.initializeWithLocalizedStrings(database, this);
-                android.util.Log.d(TAG, "=== SmartShifts database initialized successfully");
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing SmartShifts database", e);
-            }
-        });
-    }
-
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
-
-        // === EXISTING QDUE CLEANUP ===
-        // (Mantieni tutto il cleanup QDue esistente qui)
-
-        // === SMARTSHIFTS CLEANUP ===
-        try {
-            SmartShiftsDatabase.closeDatabase();
-            android.util.Log.d(TAG, "=== SmartShifts resources cleaned up");
-        } catch (Exception e) {
-            android.util.Log.e(TAG, "Error cleaning up SmartShifts resources", e);
-        }
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-
-        // Cleanup SmartShifts cache in low memory situations
-        try {
-            SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
-            // Could add cache clearing logic here if needed
-        } catch (Exception e) {
-            Log.w(TAG, "Could not clear SmartShifts cache", e);
-        }
-    }
 
     /// ////////////////////////// SMARTSHIFTS ENDS HERE //////////////////////////////////
 

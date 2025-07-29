@@ -548,6 +548,7 @@
     <string name="type_general">Generale</string>
 
     <!-- Event Priority -->
+    <string name="priority_urgent">Urgente</string>
     <string name="priority_high">Alta</string>
     <string name="priority_normal">Normale</string>
     <string name="priority_low">Bassa</string>
@@ -599,6 +600,7 @@
     <string name="loading_importing">Importando eventi…</string>
     <string name="loading_exporting">Esportando eventi…</string>
     <string name="loading_cancel">Annulla</string>
+    <string name="loading_error">Errore durante il caricamento</string>
 
     <!-- Accessibility -->
     <string name="cd_event_status_indicator">Indicatore stato evento</string>
@@ -614,7 +616,7 @@
     <string name="text_deleted">cancellato</string>
     <string name="text_capital_cancel">ANNULLA</string>
     <string name="text_delete">Elimina</string>
-    <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: %s\nData: \t%s\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
+    <string name="dialog_event_delete_confirmation">Sei sicuro di voler eliminare l\'evento?\n\nTitolo: {0}\nData: \t{1}\n\nPotrai annullare l\'operazione per alcuni secondi\n</string>
 
     <!-- Events Bottom Toolbar Strings -->
     <string name="close_selection">Chiudi selezione</string>
@@ -1110,9 +1112,9 @@
     <string name="text_in_progress">In corso</string>
     <string name="text_all_day_long">Tutto il giorno</string>
     <string name="format_text_begin_semicolon_0">Inizio: {0}</string>
-    <string name="text_select_hour_begin">Seleziona orario inizio</string>
+    <string name="text_select_hour_begin">Inizio</string>
     <string name="format_text_end_semicolon_0">Fine: {0}</string>
-    <string name="text_select_hour_end">Seleziona orario fine</string>
+    <string name="text_select_hour_end">Fine</string>
     <string name="long_text_finish_hour_must_be_post_begin_hour">L\'ora di fine deve essere successiva all\'ora di inizio</string>
     <string name="format_text_error_creating_event_semicolon_0">Error creating event: {0}</string>
     <string name="long_text_action_not_permitted_on_this_date">Azione non consentita per questa data</string>
@@ -1169,26 +1171,113 @@
     <string name="text_issues_found">Avvertimenti riscontrati</string>
     <string name="text_import_completed">Import completato</string>
     <string name="text_import_failed">Import fallito</string>
-    <string name="format_import_failed_semicolon_0">Import failed: {0}</string>
-    <string name="stringformat_importing_dots_d_d_s">Importing... (%d/%d) %s</string>
-    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi...</string>
-    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo...</string>
+    <string name="format_import_failed_colon_0">Import fallito: {0}</string>
+    <string name="format_importing_dots_0_1_2">Importando… ({0}/{1}) {2}</string>
+    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi…</string>
+    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo…</string>
     <string name="text_importing_events">Importazione Eventi</string>
-    <string name="text_reading_file">Lettura file...</string>
-    <string name="text_char_error_reading_file_semicolon">"❌ Error reading file: "</string>
-    <string name="text_char_unsupported_file_type">"❌ Tipo file non supportato "</string>
-    <string name="text_char_error_creating_event_space">❌ Error creating event</string>
+    <string name="text_reading_file">Lettura file…</string>
+    <string name="text_char_error_reading_file">❌ Errore lettura file</string>
+    <string name="text_char_unsupported_file_type">❌ Tipo file non supportato</string>
+    <string name="text_char_error_creating_event_space">❌ Errore creazione evento </string>
     <string name="text_create">Crea</string>
-    <string name="text_new_eventnuovo_evento">Nuovo Evento</string>
     <string name="text_create_event_for_0_semicolon">Crea evento per {0}:</string>
     <string name="text_event_not_found">Evento non trovato</string>
     <string name="text_error_loading_event">Errore nel caricamento dell\'evento</string>
     <string name="text_event_id_not_valid">ID evento non valido</string>
     <string name="nav_header_events">Eventi</string>
     <string name="menu_events">Eventi</string>
+    <string name="event_action_vacation">Ferie</string>
+    <string name="event_action_sick_leave">Malattia</string>
+    <string name="event_action_personal_leave">Permesso Personale</string>
+    <string name="event_action_special_leave">Permesso Legge 104</string>
+    <string name="event_action_syndicate_leave">Permesso Sindacale</string>
+    <string name="event_action_overtime">Straordinario</string>
+    <string name="event_action_shift_swap">Cambio Turno</string>
+    <string name="event_action_compensation">Recupero</string>
+    <string name="event_action_planned_stop">Fermata Pianificata</string>
+    <string name="event_action_unplanned_stop">Fermata Non Pianificata</string>
+    <string name="event_action_maintenance">Manutenzione</string>
+    <string name="event_action_emergency">Emergenza</string>
+    <string name="event_action_training">Formazione</string>
+    <string name="event_action_meeting">Riunione</string>
+    <string name="event_action_general">Generale</string>
+    <string name="event_action_category_absence">Assenze</string>
+    <string name="event_action_category_work_adjustment">Aggiustamenti Turno</string>
+    <string name="event_action_category_production">Produzione</string>
+    <string name="event_action_category_development">Sviluppo</string>
+    <string name="event_action_category_general">Generale</string>
+    <string name="event_conflict_reason_action_duplicate_same_day">Azione duplicata nella stessa giornata</string>
+    <string name="event_conflict_reason_absence_and_overtime_same_day">Non puoi essere assente e lavorare straordinario lo stesso giorno</string>
+    <string name="event_conflict_reason_overtime_and_absence">Non puoi lavorare straordinario quando sei assente</string>
+    <string name="event_conflict_reason_emergency_conflicts">Emergenza in conflitto con altre attività</string>
+    <string name="event_conflict_reason_format_generic_conflict_0_1">Conflitto tra {0} e {1}</string>
+    <string name="event_conflict_reason_vacation_and_sick_leave">Non puoi essere in ferie e malattia contemporaneamente</string>
+    <string name="event_conflict_reason_vacation_and_personal_leave">Ferie e permesso personale si sovrappongono</string>
+    <string name="event_conflict_reason_training_and_sick_leave">Non puoi seguire formazione durante malattia</string>
+    <string name="event_conflict_reason_special_leave">Permesso Legge 104 esclusivo per la giornata</string>
+    <string name="event_conflict_reason_generic_absence">Multiple assenze nella stessa giornata non consentite</string>
+    <string name="event_conflict_reason_overtime_and_shift_swap">Straordinario e cambio turno si escludono a vicenda</string>
+    <string name="event_conflict_reason_overtime_and_compensation">Straordinario e recupero non possono coesistere</string>
+    <string name="event_conflict_reason_shift_swap_and_compensation">Cambio turno e recupero si sovrappongono</string>
+    <string name="event_conflict_reason_generic_work_adjustment">Aggiustamenti turno multipli non consentiti</string>
+    <string name="event_conflict_reason_emergency_and_other">Emergenza interrompe altre attività produttive</string>
+    <string name="event_conflict_reason_planned_stop_and_unplanned_stop">Fermata pianificata e non pianificata in conflitto</string>
+    <string name="event_conflict_reason_general_production">Attività produttive multiple in conflitto</string>
+    <string name="event_conflict_reason_desc_require_approval">" (Richiede approvazione)"</string>
+    <string name="event_location_production_site">Area Produzione</string>
+    <string name="event_conflict_reason_desc_vacation">Periodo di ferie programmato</string>
+    <string name="event_conflict_reason_desc_sick_leave">Assenza per malattia</string>
+    <string name="event_conflict_reason_desc_overtime">Lavoro straordinario</string>
+    <string name="event_conflict_reason_desc_emergency">Situazione di emergenza</string>
+    <string name="event_conflict_reason_desc_training">Attività di formazione</string>
+    <string name="event_conflict_reason_desc_maintenance">Attività di manutenzione programmata</string>
+    <string name="event_format_event_colon_0">Evento: {0}</string>
+    <string name="event_type_holiday">Festività</string>
+    <string name="event_type_stop_shortage_raw_materials">Fermata Carenza Materie Prime</string>
+    <string name="event_type_stop_shortage_orders">Carenza Ordini</string>
+    <string name="event_type_saefty_drill">Prova Sicurezza</string>
+    <string name="event_type_audit">Audit</string>
+    <string name="event_type_shift_change">Cambio Turno</string>
+    <string name="event_type_imported">Importato</string>
+    <string name="event_type_other">Altro</string>
+    <string name="event_conflict_reason_contains_you_cant">Non puoi</string>
+    <string name="event_conflict_reason_contains_exclude">escludono</string>
+    <string name="event_conflict_reason_contains_interrupt">interrompe</string>
+    <string name="event_conflict_tip_choose_another_date_or_change_absence">Scegli una data diversa o modifica l\'assenza esistente</string>
+    <string name="event_conflict_tip_coordinate_work_adjustment_or_choose_another_date">Coordina gli aggiustamenti di turno o scegli un\'altra data</string>
+    <string name="event_conflict_tip_reprogram_production">Riprogramma una delle attività produttive</string>
+    <string name="event_conflict_tip_move_training_or_meeting">Sposta la formazione/riunione in un altro momento</string>
+    <string name="event_conflict_tip_resolve_manually">Risolvi il conflitto manualmente</string>
+    <string name="event_conflict_tip_verify_manually">Verifica manualmente</string>
+    <string name="event_conflict_severity_critical">Critico</string>
+    <string name="event_conflict_severity_high">Alto</string>
+    <string name="event_conflict_severity_medium">Medio</string>
+    <string name="event_conflict_severity_low">Basso</string>
+    <string name="text_common_title">Titolo</string>
+    <string name="text_import_options">Opzioni Import</string>
+    <string name="event_source_local">Locale</string>
+    <string name="event_source_google_calendar">Google Calendar</string>
+    <string name="event_source_external_url">URL Esterno</string>
+    <string name="event_source_company_feed">Feed Aziendale</string>
+    <string name="event_source_desc_local">Events created locally in the app</string>
+    <string name="event_source_desc_google_calendar">Events from Google Calendar API</string>
+    <string name="event_source_desc_external_url">Events from external URL packages</string>
+    <string name="event_source_desc_company_feed">Events from company RSS/API feeds</string>
+    <string name="event_conflict_analysis_no_conflicts">Nessun conflitto</string>
+    <string name="event_conflict_analysis_conflicts_found">Conflitti rilevati:\n\n</string>
+    <string name="format_unsupported_file_format_colon_0">Unsupported file format: {0}</string>
+    <string name="text_file_is_empty_or_could_not_be_read">File vuoto o non leggibile</string>
+    <string name="text_selected_file">File Selezionato</string>
+    <string name="team_name_format">Squadra {0}</string>
+    <string name="dialog_quick_action_confirm_title">Conferma Evento Rapido</string>
 
     <!-- ======================================================================= -->
 
 
+    <plurals name="dayCount">
+        <item quantity="one">giorno</item>
+        <item quantity="other">giorni</item>
+    </plurals>
 
 </resources>

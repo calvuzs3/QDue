@@ -37,7 +37,7 @@
             android:layout_centerInParent="true"
             android:src="@drawable/ic_error_outline"
             app:tint="?attr/colorError"
-            android:contentDescription="@string/error_loading_data" />
+            android:contentDescription="@string/loading_error" />
 
         <!-- Retry hint -->
         <TextView

@@ -210,7 +210,7 @@ public class EventIndicatorHelper {
         if (eventType == null) return false;
         return eventType == EventType.STOP_PLANNED ||
                 eventType == EventType.STOP_UNPLANNED ||
-                eventType == EventType.STOP_SHORTAGE ||
+                eventType == EventType.STOP_SHORTAGE_ORDERS ||
                 eventType == EventType.MAINTENANCE;
     }
 
@@ -346,7 +346,7 @@ public class EventIndicatorHelper {
 
         switch (eventType) {
             case STOP_UNPLANNED: return 10;  // Più critico
-            case STOP_SHORTAGE: return 9;
+            case STOP_SHORTAGE_ORDERS: return 9;
             case STOP_PLANNED: return 8;
             case MAINTENANCE: return 7;
             case EMERGENCY: return 6;
@@ -367,7 +367,7 @@ public class EventIndicatorHelper {
         switch (eventType) {
             case STOP_UNPLANNED:
                 return ContextCompat.getColor(mContext, R.color.event_type_stop_unplanned);
-            case STOP_SHORTAGE:
+            case STOP_SHORTAGE_ORDERS:
                 return ContextCompat.getColor(mContext, R.color.event_type_stop_shortage);
             case STOP_PLANNED:
                 return ContextCompat.getColor(mContext, R.color.event_type_stop_planned);

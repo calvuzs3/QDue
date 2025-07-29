@@ -79,8 +79,7 @@ public class GoogleCalendarEventWrapper implements CalendarEvent {
         if (combined.contains("formazione") || combined.contains("training")) return EventType.TRAINING;
         if (combined.contains("manutenzione")) return EventType.MAINTENANCE;
         if (combined.contains("fermata")) {
-            if (combined.contains("cassa")) return EventType.STOP_CASSA;
-            if (combined.contains("ordini")) return EventType.STOP_ORDERS;
+            if (combined.contains("ordini")) return EventType.STOP_SHORTAGE_RAW_MATERIALS;
             return EventType.STOP_PLANNED;
         }
 

@@ -443,9 +443,10 @@
     <color name="event_type_training">#FF5722</color>          <!-- Deep Orange -->
 
     <!-- Priority Colors (for chips) -->
-    <color name="priority_high">#F44336</color>        <!-- Red -->
-    <color name="priority_normal">#FFC107</color>      <!-- Amber -->
-    <color name="priority_low">#E0E0E0</color>         <!-- Light Grey -->
+    <color name="priority_urgent">#D50000</color>      <!-- Red A700 -->
+    <color name="priority_high">#DD2C00</color>        <!-- Orange A700 -->
+    <color name="priority_normal">#FFD600</color>      <!-- Amber A700 -->
+    <color name="priority_low">#AEEA00</color>         <!-- Green A700 -->
 
     <!-- Status Colors -->
     <color name="success_color">#4CAF50</color>        <!-- Green -->

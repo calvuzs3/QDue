@@ -19,22 +19,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
-
-        <!-- SmartShifts Activities -->
-        <activity
-            android:name="net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity"
-            android:exported="false"
-            android:label="@string/smartshifts_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.SmartShifts" />
-
-        <activity
-            android:name="net.calvuz.qdue.smartshifts.ui.setup.ShiftSetupWizardActivity"
-            android:exported="false"
-            android:label="@string/setup_wizard_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.SmartShifts" />
-
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.features.welcome.presentation.WelcomeActivity"

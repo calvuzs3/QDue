@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
@@ -25,7 +24,6 @@ import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
 import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
-import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -35,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static net.calvuz.qdue.ui.core.common.utils.Library.getColorByThemeAttr;
 
 import com.google.android.material.card.MaterialCardView;
 

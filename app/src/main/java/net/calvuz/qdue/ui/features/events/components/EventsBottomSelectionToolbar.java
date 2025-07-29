@@ -72,7 +72,7 @@ public class EventsBottomSelectionToolbar {
     private TextView mSelectionCountText;
 
     // Data and state
-    private EventsToolbarActionsAdapter mActionsAdapter;
+    private EventsBottomSelectionToolbarAdapter mActionsAdapter;
     private EventsSelectionListener mListener;
     private Set<String> mSelectedEventIds;
     private List<LocalEvent> mSelectedEvents;
@@ -389,7 +389,7 @@ public class EventsBottomSelectionToolbar {
         layoutManager.setInitialPrefetchItemCount(MAX_ACTIONS);
         mQuickActionsRecyclerView.setLayoutManager(layoutManager);
 
-        mActionsAdapter = new EventsToolbarActionsAdapter(mContext);
+        mActionsAdapter = new EventsBottomSelectionToolbarAdapter(mContext);
         mQuickActionsRecyclerView.setAdapter(mActionsAdapter);
 
         // Performance optimizations

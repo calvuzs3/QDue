@@ -1,14 +1,5 @@
 package net.calvuz.qdue.core.backup.models;
 
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.user.data.entities.Establishment;
-import net.calvuz.qdue.user.data.entities.MacroDepartment;
-import net.calvuz.qdue.user.data.entities.SubDepartment;
-import net.calvuz.qdue.user.data.entities.User;
-
-import java.util.List;
-import java.util.Map;
-
 /**
  * STEP 1: Core Backup System Models
  * <p>

@@ -27,7 +27,7 @@ import java.util.List;
  * RecyclerView Adapter for Event Action Buttons
  * Supports different action types with custom styling
  */
-public class EventsToolbarActionsAdapter extends RecyclerView.Adapter<EventsToolbarActionsAdapter.ActionViewHolder> {
+public class EventsBottomSelectionToolbarAdapter extends RecyclerView.Adapter<EventsBottomSelectionToolbarAdapter.ActionViewHolder> {
 
     private static final String TAG = "EventsActionsAdapter";
 
@@ -35,7 +35,7 @@ public class EventsToolbarActionsAdapter extends RecyclerView.Adapter<EventsTool
     private List<EventsBottomSelectionToolbar.EventAction> mActions = new ArrayList<>();
     private OnActionClickListener mClickListener;
 
-    public EventsToolbarActionsAdapter(@NonNull Context context) {
+    public EventsBottomSelectionToolbarAdapter(@NonNull Context context) {
         mContext = context;
     }
 
@@ -67,7 +67,7 @@ public class EventsToolbarActionsAdapter extends RecyclerView.Adapter<EventsTool
                     TypedValue.COMPLEX_UNIT_DIP, 48,
                     context.getResources().getDisplayMetrics()
             );
-//            actionButton.setMinWidth(minTouchTarget);
+            actionButton.setMinWidth(minTouchTarget);
             actionButton.setMinHeight(minTouchTarget);
 
             // Apply colors based on action type

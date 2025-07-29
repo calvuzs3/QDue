@@ -11,7 +11,7 @@
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="0dp"
-    app:cardElevation="2dp"
+    app:cardElevation="0dp"
     app:rippleColor="?attr/colorPrimaryContainer"
     app:strokeWidth="0dp">
 
@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingVertical="@dimen/item_padding_very_small">
+            android:paddingVertical="@dimen/item_padding_small">
 
             <TextView
                 android:id="@+id/tday"
@@ -38,7 +38,6 @@
                 android:gravity="center"
                 android:minWidth="18dp"
                 android:textSize="14sp"
-                android:lineHeight="@dimen/spacing_ml"
                 tools:text="15" />
 
             <TextView
@@ -59,8 +58,8 @@
                 android:layout_gravity="end"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:minWidth="35dp"
                 android:lineHeight="@dimen/spacing_ml"
+                android:minWidth="35dp"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 tools:text="AB" />
@@ -72,8 +71,8 @@
                 android:layout_gravity="end"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:minWidth="35dp"
                 android:lineHeight="@dimen/spacing_ml"
+                android:minWidth="35dp"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 tools:text="CD" />
@@ -85,8 +84,8 @@
                 android:layout_gravity="end"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:minWidth="35dp"
                 android:lineHeight="@dimen/spacing_ml"
+                android:minWidth="35dp"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 tools:text="EF" />
@@ -98,8 +97,8 @@
                 android:layout_gravity="end"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:minWidth="35dp"
                 android:lineHeight="@dimen/spacing_ml"
+                android:minWidth="35dp"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 tools:text="GH" />

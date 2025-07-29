@@ -379,7 +379,6 @@ public class EventsActivity extends AppCompatActivity implements
 
     /**
      * Handles incoming intents with support for direct navigation to specific fragments.
-     * <p>
      *
      * @param intent The intent to process
      */
@@ -588,14 +587,14 @@ public class EventsActivity extends AppCompatActivity implements
         }
 
         EditText editTitle = new EditText(this);
-        editTitle.setHint("Titolo evento");
+        editTitle.setHint(R.string.text_common_title);
         editTitle.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         editTitle.setSingleLine(true);
 
         String formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
         new AlertDialog.Builder(this)
-                .setTitle(R.string.text_new_eventnuovo_evento)
+                .setTitle(R.string.text_new_event)
                 .setMessage(MessageFormat.format(getString(R.string.text_create_event_for_0_semicolon), formattedDate))
                 .setView(editTitle)
                 .setPositiveButton(R.string.text_create, (dialog, which) -> {
@@ -668,7 +667,6 @@ public class EventsActivity extends AppCompatActivity implements
 
     /**
      * Imports events from selected file with validation and progress feedback.
-     * <p>
      *
      * @param fileUri URI of file to import
      */
@@ -685,18 +683,15 @@ public class EventsActivity extends AppCompatActivity implements
 
         } catch (Exception e) {
             Log.e(TAG, "Error starting import", e);
-            showError(getString(R.string.text_char_error_reading_file_semicolon) + e.getMessage());
+            showError(getString(R.string.text_char_error_reading_file) );
         }
     }
 
     private void showImportDialog(Uri fileUri) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_import, null);
 
-        CheckBox checkboxValidateBeforeImport = dialogView.findViewById(R.id.checkbox_validate_before_import);
-        RadioGroup radioGroupConflictResolution = dialogView.findViewById(R.id.radio_group_conflict_resolution);
-
         AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Import Options")
+                .setTitle(R.string.text_import_options)
                 .setView(dialogView)
                 .setPositiveButton(R.string.text_import, null)
                 .setNegativeButton(R.string.text_cancel, null)
@@ -735,7 +730,7 @@ public class EventsActivity extends AppCompatActivity implements
         checkboxShowWarnings.setChecked(true);
         radioSkipDuplicates.setChecked(true);
         checkboxShowProgress.setChecked(true);
-        checkboxPreserveExisting.setChecked(true);
+        checkboxPreserveExisting.setChecked(false);
         checkboxAllowPartialImport.setChecked(true);
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -831,8 +826,8 @@ public class EventsActivity extends AppCompatActivity implements
             @Override
             public void onProgress(int processed, int total, String currentEvent) {
                 runOnUiThread(() -> {
-                    progressDialog.setMessage(String.format(QDue.getLocale(),
-                            getString(R.string.stringformat_importing_dots_d_d_s), processed, total, currentEvent));
+                    progressDialog.setMessage(
+                            MessageFormat.format( getString(R.string.format_importing_dots_0_1_2), processed, total, currentEvent));
                 });
             }
 
@@ -848,7 +843,7 @@ public class EventsActivity extends AppCompatActivity implements
             public void onError(String error, Exception exception) {
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    showError(MessageFormat.format(getString(R.string.format_import_failed_semicolon_0), error));
+                    showError(MessageFormat.format(getString(R.string.format_import_failed_colon_0), error));
                 });
             }
         });
@@ -1226,14 +1221,11 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     private void showEventDeletionDialog(LocalEvent event, EventDeletionListener listener) {
-        String dialogMessage = String.format(
-                getString(R.string.dialog_event_delete_confirmation),
-                event.getTitle(),
-                formatEventDateForDialog(event)
-        );
+        String dialogMessage = MessageFormat.format( getString(R.string.dialog_event_delete_confirmation),
+                event.getTitle(), formatEventDateForDialog(event)        );
 
         new AlertDialog.Builder(this)
-                .setTitle("Elimina Evento")
+                .setTitle(getString(R.string.delete_event))
                 .setMessage(dialogMessage)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(R.string.text_delete, (dialog, which) -> {
@@ -1391,7 +1383,8 @@ public class EventsActivity extends AppCompatActivity implements
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Evento: " + event.getTitle());
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT,
+                MessageFormat.format(getString(R.string.event_format_event_colon_0), event.getTitle()));
 
         try {
             startActivity(Intent.createChooser(shareIntent, getString(R.string.text_share_event)));

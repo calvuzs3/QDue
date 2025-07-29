@@ -26,7 +26,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.preferences.QDuePreferences;
-import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
@@ -1340,15 +1339,6 @@ public class QDueMainActivity extends BaseActivity {
                     navController.navigate(R.id.nav_about);
                 }
                 return true;
-            }
-
-            if (id == R.id.action_smart_shifts) {
-                if (SmartShiftsLauncher.isSmartShiftsAvailable()) {
-                    SmartShiftsLauncher.launch(this);
-                } else {
-                    // Show error or setup dialog
-                    Toast.makeText(this, R.string.smartshifts_not_available, Toast.LENGTH_SHORT).show();
-                }
             }
 
         } catch (Exception e) {

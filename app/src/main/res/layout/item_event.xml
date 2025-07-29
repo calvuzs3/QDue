@@ -23,7 +23,7 @@
         <!-- Status Indicator -->
         <View
             android:id="@+id/view_status_indicator"
-            android:layout_width="4dp"
+            android:layout_width="6dp"
             android:layout_height="match_parent"
             android:layout_marginEnd="16dp"
             android:background="@color/status_upcoming"
@@ -54,14 +54,29 @@
                     android:textStyle="bold"
                     android:maxLines="2"
                     android:ellipsize="end"
-                    tools:text="Fermata Programmata Linea A" />
+                    tools:text="Fermata Programmata" />
 
                 <!-- Event Status -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <ImageView
+                        android:id="@+id/iv_event_status"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_rounded_timer_24"
+                        android:contentDescription="@string/text_info"
+                        android:alpha="0.5"
+                        app:tint="?attr/colorAccent" />
                 <TextView
                     android:id="@+id/tv_event_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
+                    android:layout_gravity="end|bottom"
                     android:background="@drawable/bg_status_pill"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
@@ -69,7 +84,7 @@
                     android:textColor="?attr/colorOnSecondaryContainer"
                     android:textStyle="bold"
                     tools:text="In programma" />
-
+                </LinearLayout>
             </LinearLayout>
 
             <!-- Event Description -->
@@ -123,11 +138,11 @@
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:layout_marginEnd="6dp"
                     android:layout_gravity="center_vertical"
-                    android:src="@android:drawable/ic_dialog_map"
-                    android:contentDescription="@string/text_location"
+                    android:layout_marginEnd="6dp"
                     android:alpha="0.7"
+                    android:contentDescription="@string/text_location"
+                    android:src="@drawable/ic_rounded_location_on_24"
                     app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView

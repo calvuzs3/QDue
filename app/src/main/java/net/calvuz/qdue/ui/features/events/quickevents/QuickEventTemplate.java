@@ -162,8 +162,10 @@ public class QuickEventTemplate {
                     .description(description)
                     .priority(defaultPriority)
                     .allDay(defaultAllDay)
-                    .startTime(defaultAllDay ? null : defaultStartTime)
-                    .endTime(defaultAllDay ? null : defaultEndTime)
+                    .startTime(defaultStartTime)
+                    .endTime(defaultEndTime)
+//                    .startTime(defaultAllDay ? null : defaultStartTime)
+//                    .endTime(defaultAllDay ? null : defaultEndTime)
                     .customProperty("template_id", templateId)
                     .customProperty("ui_created", "true")
                     .build();
@@ -191,8 +193,10 @@ public class QuickEventTemplate {
                     .priority(defaultPriority)
                     .date(date)
                     .allDay(defaultAllDay)
-                    .startTime(defaultAllDay ? null : defaultStartTime)
-                    .endTime(defaultAllDay ? null : defaultEndTime)
+                    .startTime( defaultStartTime)
+                    .endTime( defaultEndTime)
+//                    .startTime(defaultAllDay ? null : defaultStartTime)
+//                    .endTime(defaultAllDay ? null : defaultEndTime)
                     .templateId(templateId)
                     .iconResource(iconResource)
                     .colorResource(colorResource)
@@ -267,27 +271,6 @@ public class QuickEventTemplate {
     }
 
     // ==================== TEMPLATE PREVIEW/DISPLAY ====================
-
-//    /**
-//     * ✅ NEW: Get template preview for UI display
-//     * Shows what the event would look like without creating it
-//     */
-//    public EventPreview getPreview(LocalDate date) {
-//        if (eventType == null) return null;
-//
-//        return new EventPreview(
-//                displayName,
-//                description,
-//                eventType.getEmoji(),
-//                eventType.getColor(),
-//                eventType.isDefaultAllDay(),
-//                eventType.isDefaultAllDay() ? null : eventType.getDefaultStartTime(),
-//                eventType.isDefaultAllDay() ? null : eventType.getDefaultEndTime(),
-//                eventType.getDefaultPriority(),
-//                eventType.affectsWorkSchedule(),
-//                eventType.requiresApproval()
-//        );
-//    }
 
     /**
      * ✅ NEW: Check if template can be used on specific date
@@ -416,69 +399,6 @@ public class QuickEventTemplate {
         return defaultEndTime; // delegated to EventType
     }
 
-//    // ==================== UTILITY CLASSES ====================
-//
-//    /**
-//     * ✅ NEW: Event preview data class for UI display
-//     * Shows what the event would look like without creating it
-//     */
-//    public static class EventPreview {
-//        public final String title;
-//        public final String description;
-//        public final String emoji;
-//        public final int color;
-//        public final boolean allDay;
-//        public final LocalTime startTime; // null if allDay
-//        public final LocalTime endTime;   // null if allDay
-//        public final EventPriority priority;
-//        public final boolean affectsWork;
-//        public final boolean needsApproval;
-//
-//        public EventPreview(String title, String description, String emoji, int color,
-//                            boolean allDay, LocalTime startTime, LocalTime endTime,
-//                            EventPriority priority, boolean affectsWork, boolean needsApproval) {
-//            this.title = title;
-//            this.description = description;
-//            this.emoji = emoji;
-//            this.color = color;
-//            this.allDay = allDay;
-//            this.startTime = startTime;
-//            this.endTime = endTime;
-//            this.priority = priority;
-//            this.affectsWork = affectsWork;
-//            this.needsApproval = needsApproval;
-//        }
-//
-//        /**
-//         * Get formatted time string for display
-//         */
-//        public String getTimeString() {
-//            if (allDay) return "Tutto il giorno";
-//            if (startTime == null) return "";
-//            if (endTime == null) return startTime.toString();
-//            return startTime + " - " + endTime;
-//        }
-//
-//        /**
-//         * Get summary for UI tooltips
-//         */
-//        public String getSummary() {
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(title);
-//            if (allDay) {
-//                sb.append(" (tutto il giorno)");
-//            } else {
-//                sb.append(" (").append(getTimeString()).append(")");
-//            }
-//            if (needsApproval) {
-//                sb.append(" - Richiede approvazione");
-//            }
-//            if (affectsWork) {
-//                sb.append(" - Assenza dal lavoro");
-//            }
-//            return sb.toString();
-//        }
-//    }
 
 
     // ==================== UI HELPER METHODS ====================

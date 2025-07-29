@@ -1,7 +1,7 @@
 /**
  * 🎨 Enhanced Actions Adapter for Bottom Toolbar
  * Material 3 implementation with custom styling support
- * Based on EventsToolbarActionsAdapter architecture but adapted for ToolbarAction enum
+ * Based on EventsBottomSelectionToolbarAdapter architecture but adapted for ToolbarAction enum
  */
 package net.calvuz.qdue.ui.core.components.toolbars;
 

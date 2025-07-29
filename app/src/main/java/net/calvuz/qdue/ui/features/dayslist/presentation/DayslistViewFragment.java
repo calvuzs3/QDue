@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
@@ -20,7 +19,6 @@ import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveFragment;
 import net.calvuz.qdue.ui.features.dayslist.adapters.DaysListAdapter;
 import net.calvuz.qdue.ui.features.dayslist.components.DaysListEventsPreview;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
-import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Log;

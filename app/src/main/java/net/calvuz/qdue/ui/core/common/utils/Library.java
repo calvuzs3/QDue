@@ -1,6 +1,5 @@
 package net.calvuz.qdue.ui.core.common.utils;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 
 import java.util.List;
@@ -260,6 +260,33 @@ public final class Library {
      */
     public static boolean isVersionCached() {
         return sVersionCode != null;
+    }
+
+    /**
+     * HELPER: Get string from resource
+     * @param resId
+     * @return
+     */
+    public static String getString(@StringRes int resId) {
+        return QDue.getContext().getString(resId);
+    }
+
+    /**
+     * HELPER: Get string from resource with args
+     * @param resId
+     * @param formatArgs
+     * @return
+     */
+    public static String getString(@StringRes int resId, Object... formatArgs) {
+        return QDue.getContext().getString(resId, formatArgs);
+    }
+
+    public static String getString(Context context, @StringRes int resId) {
+        return getString(resId);
+    }
+
+    public static String getString(Context context, @StringRes int resId, Object... formatArgs) {
+        return getString(resId, formatArgs);
     }
 
     /**

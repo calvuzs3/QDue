@@ -397,34 +397,15 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
 
     @Override
     public void refreshData() {
-        Log.d(TAG, "refreshData: ✅ Force refreshing adapter data");
-
         try {
-            // ✅ Clear any internal selection state if needed
+            // Clear any internal selection state if needed
             if (mIsSelectionMode && mSelectedDates.isEmpty()) {
                 Log.d(TAG, "refreshData: Cleaning up empty selection mode");
                 setSelectionMode(false);
             }
 
-            // ✅ Notify adapter of data changes
+            // Notify adapter of data changes
             notifyDataSetChanged();
-
-            // ✅ If this adapter has a fragment reference, trigger its refresh
-            if (mLongClickListener instanceof BaseInteractiveFragment) {
-                BaseInteractiveFragment fragment = (BaseInteractiveFragment) mLongClickListener;
-
-                // Use main thread to safely trigger fragment refresh
-                if (fragment.getActivity() != null) {
-                    fragment.getActivity().runOnUiThread(() -> {
-                        try {
-                            // Trigger fragment-specific refresh methods
-//                            fragment.triggerFragmentDataReload();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error triggering fragment reload: " + e.getMessage(), e);
-                        }
-                    });
-                }
-            }
 
             Log.d(TAG, "refreshData: ✅ Adapter refresh completed");
 
@@ -434,28 +415,10 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
     }
 
     /**
-     * ✅ NEW: Force update specific date (useful for external state changes)
-     */
-    public void refreshDateSelection(LocalDate date) {
-        if (date != null) {
-            updateSingleItem(date, "refreshDateSelection");
-        }
-    }
-
-    /**
-     * ✅ NEW: Force update multiple dates
-     */
-    public void refreshDatesSelection(Set<LocalDate> dates) {
-        if (dates != null && !dates.isEmpty()) {
-            updateMultipleItems(dates, "refreshDatesSelection");
-        }
-    }
-
-    /**
      * ✅ NEW: Get compact selection state for debugging
      * ✅ ENHANCED: Get selection summary with mode info
      */
-    public String getSelectionStateSummary() {
+    public String debugGetSelectionStateSummary() {
         return String.format(QDue.getLocale(),
                 "SelectionState{mode=%s, count=%d, type=%s, single=%s}",
                 mIsSelectionMode ? "ON" : "OFF",
@@ -464,73 +427,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
                 mSingleSelectedDate != null ? mSingleSelectedDate.toString() : "null");
     }
 
-    /**
-     * ✅ NEW: Check if date can be selected (considering mode and current state)
-     */
-    public boolean canSelectDate(LocalDate date) {
-        if (date == null) return false;
-
-        if (mMultipleSelectionEnabled) {
-            // Multiple mode: can always select if not already selected
-            return !mSelectedDates.contains(date);
-        } else {
-            // Single mode: can select if different from current
-            return !date.equals(mSingleSelectedDate);
-        }
-    }
-
-    /**
-     * ✅ NEW: Get max selection count based on mode
-     */
-    public int getMaxSelectionCount() {
-        return mMultipleSelectionEnabled ? Integer.MAX_VALUE : 1;
-    }
-
-    /**
-     * ✅ NEW: Check if selection is at maximum capacity
-     */
-    public boolean isSelectionAtMaxCapacity() {
-        return !mMultipleSelectionEnabled && mSelectedDates.size() >= 1;
-    }
-
-    /**
-     * ✅ NEW: Enable/disable multiple selection
-     * @param enabled true for multiple selection, false for single selection
-     */
-    public void setMultipleSelectionEnabled(boolean enabled) {
-        if (mMultipleSelectionEnabled == enabled) {
-            Log.v(TAG, "setMultipleSelectionEnabled: Already " + enabled);
-            return;
-        }
-
-        Log.d(TAG, "setMultipleSelectionEnabled: " + mMultipleSelectionEnabled + " → " + enabled);
-
-        boolean wasMultiple = mMultipleSelectionEnabled;
-        mMultipleSelectionEnabled = enabled;
-
-        // Handle transition from multiple to single
-        if (wasMultiple && !enabled) {
-            transitionToSingleSelection();
-        }
-        // Transition from single to multiple doesn't need special handling
-
-        Log.d(TAG, "setMultipleSelectionEnabled: Selection mode changed to " +
-                (enabled ? "MULTIPLE" : "SINGLE"));
-    }
-
-    /**
-     * ✅ NEW: Check if multiple selection is enabled
-     */
-    public boolean isMultipleSelectionEnabled() {
-        return mMultipleSelectionEnabled;
-    }
-
-    /**
-     * ✅ NEW: Get currently selected item in single selection mode
-     */
-    public LocalDate getSingleSelectedDate() {
-        return mSingleSelectedDate;
-    }
 
     // ==================== ✅ SELECTION MODE MANAGEMENT REFACTORED ====================
 
@@ -570,23 +466,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         if (isSelectionMode) {
             cancelAutoExit();
         }
-    }
-    // ==================== ✅ INDIVIDUAL ITEM UPDATE METHODS ====================
-
-    /**
-     * ✅ NEW: Update individual ViewHolder selection state (called from ViewHolder)
-     * Used when ViewHolder needs to update its own state without going through central method
-     */
-    public void updateViewHolderSelectionState(LocalDate date, boolean isSelected, String reason) {
-        Log.v(TAG, "updateViewHolderSelectionState: " + date + " → " + isSelected + " (" + reason + ")");
-        updateSingleItem(date, "ViewHolder: " + reason);
-    }
-
-    /**
-     * ✅ ENHANCED: Existing method now uses selective update
-     */
-    protected void updateViewHolderSelection(LocalDate date, boolean isSelected) {
-        updateSingleItem(date, "updateViewHolderSelection");
     }
 
     // ==================== ✅ HELPER METHODS PER SELECTIVE UPDATE ====================
@@ -689,7 +568,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         cancelAutoExit();
 
         if (mIsSelectionMode && mSelectedDates.isEmpty()) {
-            Log.d(TAG, "scheduleAutoExit: Scheduling auto-exit in 800ms");
+            Log.d(TAG, "scheduleAutoExit: Scheduling auto-exit");
 
             mAutoExitRunnable = () -> {
                 if (mIsSelectionMode && mSelectedDates.isEmpty()) {
@@ -783,21 +662,7 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         return mIsSelectionMode;
     }
 
-    /**
-     * ✅ Check if date is selected
-     */
-    public boolean isDateSelected(LocalDate date) {
-        return mSelectedDates.contains(date);
-    }
-
     // ==================== ✅ PUBLIC API METHODS ====================
-
-    /**
-     * ✅ Public method to exit selection mode
-     */
-    public void exitSelectionMode() {
-        setSelectionMode(false);
-    }
 
     /**
      * ✅ Handle back press
@@ -876,18 +741,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
     // ===========================================
 
 
-
-    /**
-     * Update UI for a specific item's selection state
-     */
-    private void updateItemSelection(LocalDate date, boolean isSelected) {
-        // Find the position of this date in the adapter
-        int position = findPositionForDate(date);
-        if (position >= 0) {
-            notifyItemChanged(position);
-        }
-    }
-
     /**
      * Find position in adapter for a specific date
      */
@@ -904,23 +757,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
             }
         }
         return -1;
-    }
-
-    /**
-     * Find Day object for a specific date
-     */
-    private Day findDayForDate(LocalDate date) {
-        if (mItems == null) return null;
-
-        for (SharedViewModels.ViewItem item : mItems) {
-            if (item instanceof SharedViewModels.DayItem) {
-                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
-                if (dayItem.day != null && dayItem.day.getLocalDate().equals(date)) {
-                    return dayItem.day;
-                }
-            }
-        }
-        return null;
     }
 
     // ===========================================

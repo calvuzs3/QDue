@@ -1,6 +1,13 @@
 package net.calvuz.qdue.events.models;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
 import android.graphics.Color;
+
+import androidx.annotation.StringRes;
+
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 
 /**
  * Enhanced event types including production stops
@@ -8,68 +15,56 @@ import android.graphics.Color;
  */
 public enum EventType {
     // General events
-    GENERAL("Generale", Color.GRAY, "📅"),
-    MEETING("Riunione", Color.BLUE, "🤝"),
-    TRAINING("Formazione", Color.GREEN, "📚"),
-    HOLIDAY("Festività", Color.MAGENTA, "🎉"),
+    GENERAL(R.string.event_action_general, Color.GRAY, "📅"),
+    MEETING(R.string.event_action_meeting, Color.BLUE, "🤝"),
+    TRAINING( R.string.event_action_training, Color.GREEN, "📚"),
 
     // Production events
-    MAINTENANCE("Manutenzione", Color.LTGRAY, "🔧"),
-    EMERGENCY("Emergenza", Color.RED, "🚨"),
+    MAINTENANCE(R.string.event_action_maintenance, Color.LTGRAY, "🔧"),
+    EMERGENCY(R.string.event_action_emergency, Color.RED, "🚨"),
 
     // Production stops (revised names for consistency)
-    STOP_PLANNED("Fermata Programmata", Color.parseColor("#FF6B35"), "⏸️"),
-    STOP_ORDERS("Fermata Carenza Ordini", Color.parseColor("#FF8C42"), "📦"),
-    STOP_CASSA("Fermata Cassa Integrazione", Color.parseColor("#FFA62B"), "💼"),
-    STOP_UNPLANNED("Non programmata", Color.parseColor("#D32F2F"), "\uD83D\uDEA8"),
-    STOP_SHORTAGE("Carenza Ordini", Color.parseColor("#FF6B35"), "📦❌"),
+    STOP_PLANNED(R.string.event_action_planned_stop, Color.parseColor("#FF6B35"), "⏸️"),
+    STOP_UNPLANNED(R.string.event_action_unplanned_stop, Color.parseColor("#D32F2F"), "\uD83D\uDEA8"),
+    STOP_SHORTAGE_ORDERS(R.string.event_type_stop_shortage_orders, Color.parseColor("#FF6B35"), "📦❌"),
+    STOP_SHORTAGE_RAW_MATERIALS(R.string.event_type_stop_shortage_raw_materials, Color.parseColor("#FF8C42"), "📦"),
 
     // Safety and compliance
-    SAFETY_DRILL("Prova Sicurezza", Color.parseColor("#96CEB4"), "🛡️"),
-    AUDIT("Audit", Color.parseColor("#FFEAA7"), "📋"),
+    SAFETY_DRILL(R.string.event_type_saefty_drill, Color.parseColor("#96CEB4"), "🛡️"),
+    AUDIT(R.string.event_type_audit, Color.parseColor("#FFEAA7"), "📋"),
 
     // ==================== WORK EVENTS (Shift-Related) ====================
 
-    // ✅ DOPO (corretto - include parametri business logic):
-    OVERTIME("Straordinario", Color.parseColor("#7B1FA2"), "⏰", false, true),
+    OVERTIME(R.string.event_action_overtime, Color.parseColor("#7B1FA2"), "⏰", false, true),
+    SHIFT_CHANGE(R.string.event_type_shift_change, Color.parseColor("#4ECDC4"), "🔄"),
+    SHIFT_SWAP(R.string.event_action_shift_swap, Color.parseColor("#607D8B"), "🔄", false, true),
+    COMPENSATION(R.string.event_action_compensation, Color.parseColor("#795548"), "⚖️", false, true),
 
-    // Shift-related events (Turn Exceptions)
-    SHIFT_CHANGE("Cambio Turno", Color.parseColor("#4ECDC4"), "🔄"),
-    SHIFT_SWAP("Scambio Turno", Color.parseColor("#607D8B"), "🔄", false, true),
-    COMPENSATION("Recupero", Color.parseColor("#795548"), "⚖️", false, true),
+    // ==================== USER ABSENCE EVENTS (from TurnException) ====================
 
-    // ==================== NEW: USER ABSENCE EVENTS (from TurnException) ====================
-
-    // ✅ NEW: TurnException.VACATION → EventType.VACATION
-    VACATION("Ferie", Color.parseColor("#4CAF50"), "🏖️", true, true),
-
-    // ✅ NEW: TurnException.SICK_LEAVE → EventType.SICK_LEAVE
-    SICK_LEAVE("Malattia", Color.parseColor("#F44336"), "🏥", true, false),
-
-    // ✅ NEW: TurnException.PERMIT → EventType.PERSONAL_LEAVE
-    PERSONAL_LEAVE("Permesso", Color.parseColor("#2196F3"), "📄", true, true),
-
-    // ✅ NEW: TurnException.PERMIT_104 → EventType.SPECIAL_LEAVE
-    SPECIAL_LEAVE("Legge 104", Color.parseColor("#9C27B0"), "♿", true, false),
-
-    // ✅ NEW: TurnException.PERMIT_SYNDICATE → EventType.SYNDICATE_LEAVE
-    SYNDICATE_LEAVE("Permesso Sindacale", Color.parseColor("#FF9800"), "🏛️", true, true),
+    VACATION(R.string.event_action_vacation, Color.parseColor("#4CAF50"), "🏖️", true, true),
+    SICK_LEAVE(R.string.event_action_sick_leave, Color.parseColor("#F44336"), "🏥", true, false),
+    PERSONAL_LEAVE(R.string.event_action_personal_leave, Color.parseColor("#2196F3"), "📄", true, true),
+    SPECIAL_LEAVE(R.string.event_action_special_leave, Color.parseColor("#9C27B0"), "♿", true, false),
+    SYNDICATE_LEAVE(R.string.event_action_syndicate_leave, Color.parseColor("#FF9800"), "🏛️", true, true),
 
     // Custom/imported events
-    IMPORTED("Importato", Color.parseColor("#DDA0DD"), "📥"),
-    OTHER("Altro", Color.parseColor("#DDA0DD"), "📥");
+    IMPORTED(R.string.event_type_imported, Color.parseColor("#DDA0DD"), "📥"),
+    OTHER(R.string.event_type_other, Color.parseColor("#DDA0DD"), "📥");
 
-    private final String displayName;
+    @StringRes
+    private final int displayName;
+    
     private final int color;
     private final String emoji;
 
-    private final boolean affectsWorkSchedule;  // ✅ NEW: from TurnException.affectsWorkSchedule()
-    private final boolean requiresApproval;     // ✅ NEW: business logic integration
+    private final boolean affectsWorkSchedule;
+    private final boolean requiresApproval;     // business logic integration
 
     /**
      * Enhanced constructor with TurnException business logic
      */
-    EventType(String displayName, int color, String emoji, boolean affectsWorkSchedule, boolean requiresApproval) {
+    EventType(@StringRes int displayName, int color, String emoji, boolean affectsWorkSchedule, boolean requiresApproval) {
         this.displayName = displayName;
         this.color = color;
         this.emoji = emoji;
@@ -77,7 +72,7 @@ public enum EventType {
         this.requiresApproval = requiresApproval;
     }
 
-    EventType(String displayName, int color, String emoji) {
+    EventType(@StringRes int displayName, int color, String emoji) {
         this.displayName = displayName;
         this.color = color;
         this.emoji = emoji;
@@ -86,7 +81,7 @@ public enum EventType {
     }
 
     public String getDisplayName() {
-        return displayName;
+        return getString(QDue.getContext(), displayName);
     }
 
     public int getColor() {
@@ -155,7 +150,7 @@ public enum EventType {
      * Work absences are typically all-day, work events are timed
      */
     public boolean isDefaultAllDay() {
-        return isWorkAbsence() || this == HOLIDAY;
+        return isWorkAbsence();
     }
 
     /**
@@ -223,11 +218,11 @@ public enum EventType {
             case OVERTIME:
                 return "OVERTIME";
             case PERSONAL_LEAVE:
-                return "PERMIT";
+                return "PERSONAL_LEAVE";
             case SPECIAL_LEAVE:
-                return "PERMIT_104";
+                return "SPECIAL_LEAVE";
             case SYNDICATE_LEAVE:
-                return "PERMIT_SYNDICATE";
+                return "SYNDICATE_LEAVE";
             case TRAINING:
                 return "TRAINING";
             case COMPENSATION:
@@ -377,7 +372,7 @@ public enum EventType {
             case SHIFT_SWAP:
                 return "Cambio di turno con collega";
             default:
-                return displayName;
+                return getDisplayName();
         }
     }
 
@@ -387,7 +382,7 @@ public enum EventType {
      * Check if this is a production stop event
      */
     public boolean isProductionStop() {
-        return this == STOP_PLANNED || this == STOP_ORDERS || this == STOP_CASSA || this == STOP_UNPLANNED || this == STOP_SHORTAGE;
+        return this == STOP_PLANNED || this == STOP_SHORTAGE_RAW_MATERIALS || this == STOP_UNPLANNED || this == STOP_SHORTAGE_ORDERS;
     }
 
     public boolean isProductionEvent() {

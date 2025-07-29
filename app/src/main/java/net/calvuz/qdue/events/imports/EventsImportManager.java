@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -364,9 +365,7 @@ public class EventsImportManager {
 
             String actualPackageId = packageJson.package_info.id;
             if (actualPackageId == null || !actualPackageId.equals(expectedPackageId)) {
-                throw new Exception(String.format(
-                        "Package ID mismatch: expected '%s', got '%s'",
-                        expectedPackageId, actualPackageId));
+                throw new Exception(MessageFormat.format("Package ID mismatch: expected ''{0}'', got ''{1}''", expectedPackageId, actualPackageId));
             }
 
             Log.d(TAG, "Package ID validation passed: " + actualPackageId);

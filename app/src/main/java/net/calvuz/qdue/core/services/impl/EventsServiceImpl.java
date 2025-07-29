@@ -1554,20 +1554,20 @@ public class EventsServiceImpl implements EventsService {
     private boolean isEventTypeValidForQuickCreation(EventType eventType) {
         // ✅ Business rule: only certain event types support quick creation
         switch (eventType) {
-            // ✅ EXISTING: General events
+            // General events
             case GENERAL:
             case MEETING:
             case TRAINING:
                 return true;
 
-            // ✅ EXISTING: Production events
+            // Production events
             case STOP_PLANNED:
             case STOP_UNPLANNED:
             case MAINTENANCE:
             case EMERGENCY:
                 return true;
 
-            // ✅ NEW: User absence events (from ToolbarAction quick events)
+            // User absence
             case VACATION:          // VACATION
             case SICK_LEAVE:        // SICK_LEAVE
             case PERSONAL_LEAVE:    // PERSONAL_LEAVE
@@ -1575,20 +1575,18 @@ public class EventsServiceImpl implements EventsService {
             case SYNDICATE_LEAVE:   // SYNDICATE_LEAVE
                 return true;
 
-            // ✅ NEW: Work events
+            // Work events
             case OVERTIME:          // OVERTIME
             case COMPENSATION:      // RECUPERO
             case SHIFT_SWAP:        // CAMBIO_TURNO
                 return true;
 
-            // ✅ BLOCKED: These types require special handling
-            case HOLIDAY:           // System holidays
+            // These types require special handling
             case IMPORTED:          // Imported events
             case OTHER:             // Undefined events
                 return false;
 
             default:
-                // ✅ Log unknown types for debugging
                 Log.w(TAG, "Unknown event type for quick creation check: " + eventType);
                 return false;
         }

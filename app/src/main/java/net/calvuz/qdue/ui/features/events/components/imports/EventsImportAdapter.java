@@ -1,10 +1,14 @@
 package net.calvuz.qdue.ui.features.events.components.imports;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
 import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.imports.EventsImportManager;
 import net.calvuz.qdue.events.EventPackageManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -13,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 /**
  * Events Import Adapter - Updated to use EventPackageManager instead of Extension
@@ -74,14 +79,17 @@ public class EventsImportAdapter {
             // Step 2: Detect and validate file format
             EventsImportManager.FileFormatInfo formatInfo = detectSAFFileFormat(fileUri);
             if (!formatInfo.supported) {
-                callback.onError("Unsupported file format: " + formatInfo.description, null);
+                callback.onError(MessageFormat.format(
+                        mContext.getString(R.string.format_unsupported_file_format_colon_0), 
+                        formatInfo.description), 
+                        null);
                 return;
             }
 
             // Step 3: Read file content using SAF
             String jsonContent = readSAFFileContent(fileUri);
             if (jsonContent == null || jsonContent.trim().isEmpty()) {
-                callback.onError("File is empty or could not be read", null);
+                callback.onError(mContext.getString(R.string.text_file_is_empty_or_could_not_be_read), null);
                 return;
             }
 
@@ -122,7 +130,7 @@ public class EventsImportAdapter {
 
         } catch (Exception e) {
             Log.e(TAG, "Error in SAF import process", e);
-            callback.onError("Import failed: " + e.getMessage(), e);
+            callback.onError(mContext.getString(R.string.text_import_failed), e);
         }
     }
 
@@ -215,7 +223,7 @@ public class EventsImportAdapter {
             }
         }
 
-        Log.d(TAG, String.format("Read %d characters from SAF file", content.length()));
+        Log.d(TAG, String.format(QDue.getLocale(), "Read %d characters from SAF file", content.length()));
         return content.toString();
     }
 
@@ -238,7 +246,7 @@ public class EventsImportAdapter {
             Log.w(TAG, "Error reading filename from URI", e);
         }
 
-        return filename != null ? filename : "Selected File";
+        return filename != null ? filename : getString(QDue.getContext(), R.string.text_selected_file);
     }
 
     /**

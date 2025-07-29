@@ -1,7 +1,5 @@
 package net.calvuz.qdue.ui.features.events.adapters;
 
-import static net.calvuz.qdue.ui.features.events.presentation.EventsListFragment.DEFAULT_SELECTION_MODE;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

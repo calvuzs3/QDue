@@ -5,14 +5,9 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Transaction;
 import androidx.room.Update;
 
 import net.calvuz.qdue.user.data.entities.Establishment;
-import net.calvuz.qdue.user.data.entities.MacroDepartment;
-import net.calvuz.qdue.user.data.entities.SubDepartment;
-import net.calvuz.qdue.user.data.entities.User;
-import net.calvuz.qdue.user.data.models.UserWithOrganization;
 
 import java.util.List;
 

@@ -1,13 +1,17 @@
 package net.calvuz.qdue.events.actions;
 
 import static net.calvuz.qdue.events.metadata.EventMetadataManager.deriveEventActionFromEvent;
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
 
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.metadata.EventMetadataManager;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -162,7 +166,9 @@ public class EventActionManager {
      */
     public static boolean hasConflictingEvents(EventAction action, LocalDate date, Long userId, EventDao eventDao) {
         try {
-            List<LocalEvent> existingEvents = eventDao.getEventsForDate(date.atStartOfDay(), date.atTime(23, 59, 59)); // .getEventsByDateAndUser(date, userId);
+            List<LocalEvent> existingEvents = eventDao.getEventsForDate(
+                    date.atStartOfDay(), date.atTime(23, 59, 59)
+            ); // .getEventsByDateAndUser(date, userId);
             return hasActionConflicts(action, existingEvents);
         } catch (Exception e) {
             Log.e(TAG, "Error checking conflicting events: " + e.getMessage());
@@ -237,7 +243,7 @@ public class EventActionManager {
     private static String getConflictReason(EventAction newAction, EventAction existingAction) {
         // Same action conflict
         if (newAction == existingAction) {
-            return "Azione duplicata nella stessa giornata";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_action_duplicate_same_day);
         }
 
         // Category-based conflicts
@@ -251,11 +257,11 @@ public class EventActionManager {
 
         // Absence vs Work conflicts
         if (newCategory == EventActionCategory.ABSENCE && existingCategory == EventActionCategory.WORK_ADJUSTMENT) {
-            return "Non puoi essere assente e lavorare straordinario lo stesso giorno";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_absence_and_overtime_same_day);
         }
 
         if (newCategory == EventActionCategory.WORK_ADJUSTMENT && existingCategory == EventActionCategory.ABSENCE) {
-            return "Non puoi lavorare straordinario quando sei assente";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_overtime_and_absence);
         }
 
         // Work adjustment conflicts
@@ -270,11 +276,12 @@ public class EventActionManager {
 
         // Emergency conflicts
         if (newAction == EventAction.EMERGENCY || existingAction == EventAction.EMERGENCY) {
-            return "Emergenza in conflitto con altre attività";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_emergency_conflicts);
         }
 
         // Generic conflict
-        return "Conflitto tra " + newAction.getDisplayName() + " e " + existingAction.getDisplayName();
+        return MessageFormat.format(getString(QDue.getContext(), R.string.event_conflict_reason_format_generic_conflict_0_1),
+                newAction.getDisplayName(), existingAction.getDisplayName());
     }
 
     /**
@@ -284,25 +291,25 @@ public class EventActionManager {
         // Specific absence combinations
         if ((newAction == EventAction.VACATION && existingAction == EventAction.SICK_LEAVE) ||
                 (newAction == EventAction.SICK_LEAVE && existingAction == EventAction.VACATION)) {
-            return "Non puoi essere in ferie e malattia contemporaneamente";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_vacation_and_sick_leave);
         }
 
         if ((newAction == EventAction.VACATION && existingAction == EventAction.PERSONAL_LEAVE) ||
                 (newAction == EventAction.PERSONAL_LEAVE && existingAction == EventAction.VACATION)) {
-            return "Ferie e permesso personale si sovrappongono";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_vacation_and_personal_leave);
         }
 
         if ((newAction == EventAction.SICK_LEAVE && existingAction == EventAction.TRAINING) ||
                 (newAction == EventAction.TRAINING && existingAction == EventAction.SICK_LEAVE)) {
-            return "Non puoi seguire formazione durante malattia";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_training_and_sick_leave);
         }
 
         if (newAction == EventAction.SPECIAL_LEAVE || existingAction == EventAction.SPECIAL_LEAVE) {
-            return "Permesso Legge 104 esclusivo per la giornata";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_special_leave);
         }
 
         // Generic absence conflict
-        return "Multiple assenze nella stessa giornata non consentite";
+        return getString(QDue.getContext(), R.string.event_conflict_reason_generic_absence);
     }
 
     /**
@@ -311,20 +318,20 @@ public class EventActionManager {
     private static String getWorkAdjustmentConflictReason(EventAction newAction, EventAction existingAction) {
         if ((newAction == EventAction.OVERTIME && existingAction == EventAction.SHIFT_SWAP) ||
                 (newAction == EventAction.SHIFT_SWAP && existingAction == EventAction.OVERTIME)) {
-            return "Straordinario e cambio turno si escludono a vicenda";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_overtime_and_shift_swap);
         }
 
         if ((newAction == EventAction.OVERTIME && existingAction == EventAction.COMPENSATION) ||
                 (newAction == EventAction.COMPENSATION && existingAction == EventAction.OVERTIME)) {
-            return "Straordinario e recupero non possono coesistere";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_overtime_and_compensation);
         }
 
         if ((newAction == EventAction.SHIFT_SWAP && existingAction == EventAction.COMPENSATION) ||
                 (newAction == EventAction.COMPENSATION && existingAction == EventAction.SHIFT_SWAP)) {
-            return "Cambio turno e recupero si sovrappongono";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_shift_swap_and_compensation);
         }
 
-        return "Aggiustamenti turno multipli non consentiti";
+        return getString(QDue.getContext(), R.string.event_conflict_reason_generic_work_adjustment);
     }
 
     /**
@@ -333,24 +340,25 @@ public class EventActionManager {
     private static String getProductionConflictReason(EventAction newAction, EventAction existingAction) {
         // Emergency always conflicts with planned activities
         if (newAction == EventAction.EMERGENCY || existingAction == EventAction.EMERGENCY) {
-            return "Emergenza interrompe altre attività produttive";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_emergency_and_other);
         }
 
         // Multiple stops conflict
         if ((newAction == EventAction.PLANNED_STOP && existingAction == EventAction.UNPLANNED_STOP) ||
                 (newAction == EventAction.UNPLANNED_STOP && existingAction == EventAction.PLANNED_STOP)) {
-            return "Fermata pianificata e non pianificata in conflitto";
+            return getString(QDue.getContext(), R.string.event_conflict_reason_planned_stop_and_unplanned_stop);
         }
 
         // Maintenance during stops
-        if ((newAction == EventAction.MAINTENANCE &&
-                (existingAction == EventAction.PLANNED_STOP || existingAction == EventAction.UNPLANNED_STOP)) ||
-                (existingAction == EventAction.MAINTENANCE &&
-                        (newAction == EventAction.PLANNED_STOP || newAction == EventAction.UNPLANNED_STOP))) {
-            return "Manutenzione e fermata impianto si sovrappongono";
-        }
+        // It's a common pattern that during a planned stop, maintenance is also planned
+//        if ((newAction == EventAction.MAINTENANCE &&
+//                (existingAction == EventAction.PLANNED_STOP || existingAction == EventAction.UNPLANNED_STOP)) ||
+//                (existingAction == EventAction.MAINTENANCE &&
+//                        (newAction == EventAction.PLANNED_STOP || newAction == EventAction.UNPLANNED_STOP))) {
+//            return "Manutenzione e fermata impianto si sovrappongono";
+//        }
 
-        return "Attività produttive multiple in conflitto";
+        return getString(QDue.getContext(), R.string.event_conflict_reason_general_production);
     }
     /// ///////
     /**
@@ -369,13 +377,13 @@ public class EventActionManager {
         // Set description based on action type
         String description = generateDescriptionForAction(action);
         if (action.requiresApproval()) {
-            description += " (Richiede approvazione)";
+            description += getString(QDue.getContext(), R.string.event_conflict_reason_desc_require_approval);
         }
         event.setDescription(description);
 
         // Apply location if relevant
         if (action.affectsProduction()) {
-            event.setLocation("Area Produzione");
+            event.setLocation(getString(QDue.getContext(), R.string.event_location_production_site));
         }
     }
 
@@ -425,17 +433,17 @@ public class EventActionManager {
     private static String generateDescriptionForAction(EventAction action) {
         switch (action) {
             case VACATION:
-                return "Periodo di ferie programmato";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_vacation);
             case SICK_LEAVE:
-                return "Assenza per malattia";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_sick_leave);
             case OVERTIME:
-                return "Lavoro straordinario";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_overtime);
             case EMERGENCY:
-                return "Situazione di emergenza";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_emergency);
             case TRAINING:
-                return "Attività di formazione";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_training);
             case MAINTENANCE:
-                return "Attività di manutenzione programmata";
+                return getString(QDue.getContext(), R.string.event_conflict_reason_desc_maintenance);
             default:
                 return action.getDisplayName();
         }

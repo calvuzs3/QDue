@@ -2,6 +2,12 @@
 
 package net.calvuz.qdue.events.actions;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
+import androidx.annotation.StringRes;
+
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
 
@@ -25,37 +31,39 @@ public enum EventAction {
 
     // ==================== ABSENCE ACTIONS ====================
 
-    VACATION("Ferie", EventType.VACATION, EventPriority.NORMAL, true, true, true, false),
-    SICK_LEAVE("Malattia", EventType.SICK_LEAVE, EventPriority.HIGH, true, false, true, true),
-    PERSONAL_LEAVE("Permesso Personale", EventType.PERSONAL_LEAVE, EventPriority.NORMAL, true, true, true, false),
-    SPECIAL_LEAVE("Permesso Legge 104", EventType.SPECIAL_LEAVE, EventPriority.NORMAL, true, true, true, false),
-    SYNDICATE_LEAVE("Permesso Sindacale", EventType.SYNDICATE_LEAVE, EventPriority.NORMAL, true, true, true, false),
+    VACATION(R.string.event_action_vacation, EventType.VACATION, EventPriority.NORMAL, true, true, true, false),
+    SICK_LEAVE(R.string.event_action_sick_leave, EventType.SICK_LEAVE, EventPriority.HIGH, true, false, true, true),
+    PERSONAL_LEAVE(R.string.event_action_personal_leave, EventType.PERSONAL_LEAVE, EventPriority.NORMAL, true, true, true, false),
+    SPECIAL_LEAVE(R.string.event_action_special_leave, EventType.SPECIAL_LEAVE, EventPriority.NORMAL, true, true, true, false),
+    SYNDICATE_LEAVE(R.string.event_action_syndicate_leave, EventType.SYNDICATE_LEAVE, EventPriority.NORMAL, true, true, true, false),
 
     // ==================== WORK ADJUSTMENT ACTIONS ====================
 
-    OVERTIME("Straordinario", EventType.OVERTIME, EventPriority.NORMAL, false, true, false, false),
-    SHIFT_SWAP("Cambio Turno", EventType.SHIFT_SWAP, EventPriority.NORMAL, false, true, false, false),
-    COMPENSATION("Recupero", EventType.COMPENSATION, EventPriority.NORMAL, false, true, false, false),
+    OVERTIME(R.string.event_action_overtime, EventType.OVERTIME, EventPriority.NORMAL, false, true, false, false),
+    SHIFT_SWAP(R.string.event_action_shift_swap, EventType.SHIFT_SWAP, EventPriority.NORMAL, false, true, false, false),
+    COMPENSATION(R.string.event_action_compensation, EventType.COMPENSATION, EventPriority.NORMAL, false, true, false, false),
 
     // ==================== PRODUCTION ACTIONS ====================
 
-    PLANNED_STOP("Fermata Pianificata", EventType.STOP_PLANNED, EventPriority.HIGH, false, false, false, false),
-    UNPLANNED_STOP("Fermata Non Pianificata", EventType.STOP_UNPLANNED, EventPriority.URGENT, false, false, false, true),
-    MAINTENANCE("Manutenzione", EventType.MAINTENANCE, EventPriority.HIGH, false, false, false, false),
-    EMERGENCY("Emergenza", EventType.EMERGENCY, EventPriority.URGENT, false, false, true, true),
+    PLANNED_STOP(R.string.event_action_planned_stop, EventType.STOP_PLANNED, EventPriority.HIGH, false, false, false, false),
+    UNPLANNED_STOP(R.string.event_action_unplanned_stop, EventType.STOP_UNPLANNED, EventPriority.URGENT, false, false, false, true),
+    MAINTENANCE(R.string.event_action_maintenance, EventType.MAINTENANCE, EventPriority.HIGH, false, false, false, false),
+    EMERGENCY(R.string.event_action_emergency, EventType.EMERGENCY, EventPriority.URGENT, false, false, true, true),
 
     // ==================== DEVELOPMENT ACTIONS ====================
 
-    TRAINING("Formazione", EventType.TRAINING, EventPriority.NORMAL, false, true, false, false),
-    MEETING("Riunione", EventType.MEETING, EventPriority.NORMAL, false, false, false, false),
+    TRAINING(R.string.event_action_training, EventType.TRAINING, EventPriority.NORMAL, false, true, false, false),
+    MEETING(R.string.event_action_meeting, EventType.MEETING, EventPriority.NORMAL, false, false, false, false),
 
     // ==================== GENERAL ACTIONS ====================
 
-    GENERAL("Evento Generale", EventType.GENERAL, EventPriority.NORMAL, false, false, false, false);
+    GENERAL(R.string.event_action_general, EventType.GENERAL, EventPriority.NORMAL, false, false, false, false);
 
     // ==================== BUSINESS PROPERTIES ====================
 
-    private final String displayName;
+    @StringRes
+    private final int displayName;
+    
     private final EventType mappedEventType;
     private final EventPriority defaultPriority;
     private final boolean defaultAllDay;
@@ -65,7 +73,7 @@ public enum EventAction {
 
     // ==================== CONSTRUCTOR ====================
 
-    EventAction(String displayName, EventType mappedEventType, EventPriority defaultPriority,
+    EventAction(@StringRes int displayName, EventType mappedEventType, EventPriority defaultPriority,
                 boolean defaultAllDay, boolean requiresApproval, boolean affectsWorkSchedule,
                 boolean isUrgentByNature) {
         this.displayName = displayName;
@@ -97,7 +105,7 @@ public enum EventAction {
      * Get the display name for this action.
      */
     public String getDisplayName() {
-        return displayName;
+        return getString(QDue.getContext(), displayName);
     }
 
     /**
@@ -213,9 +221,9 @@ public enum EventAction {
             case VACATION: return "VACATION";
             case SICK_LEAVE: return "SICK_LEAVE";
             case OVERTIME: return "OVERTIME";
-            case PERSONAL_LEAVE: return "PERMIT";
-            case SPECIAL_LEAVE: return "PERMIT_104";
-            case SYNDICATE_LEAVE: return "PERMIT_SYNDICATE";
+            case PERSONAL_LEAVE: return "PERSONAL_LEAVE";
+            case SPECIAL_LEAVE: return "SPECIAL_LEAVE";
+            case SYNDICATE_LEAVE: return "SYNDICATE_LEAVE";
             case TRAINING: return "TRAINING";
             case COMPENSATION: return "COMPENSATION";
             case SHIFT_SWAP: return "SHIFT_SWAP";
@@ -247,10 +255,9 @@ public enum EventAction {
         switch (this) {
             case MEETING:
                 return LocalTime.of(10, 0);
-            case TRAINING:
-                return LocalTime.of(17, 0);
             case OVERTIME:
                 return LocalTime.of(20, 0);
+            case TRAINING:
             default:
                 return LocalTime.of(17, 0);
         }
@@ -346,7 +353,7 @@ public enum EventAction {
             case SPECIAL_LEAVE:
                 return true;
             case VACATION:
-                return getMaximumDurationDays() > 5; // Long vacations need documentation
+                return getMaximumDurationDays() > 14; // Long vacations need documentation
             default:
                 return false;
         }
@@ -403,6 +410,3 @@ public enum EventAction {
         }
     }
 }
-
-// ==================== PHASE 2: ACTION CATEGORY ENUM ====================
-

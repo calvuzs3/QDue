@@ -1,5 +1,10 @@
 package net.calvuz.qdue.events.actions;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
+import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,12 +24,12 @@ public class ConflictAnalysis {
     }
 
     public String getConflictSummary() {
-        if (conflicts.isEmpty()) return "Nessun conflitto";
+        if (conflicts.isEmpty()) return getString(QDue.getContext(), R.string.event_conflict_analysis_no_conflicts);
 
         StringBuilder summary = new StringBuilder();
-        summary.append("Conflitti rilevati:\n\n");
+        summary.append(getString(QDue.getContext(), R.string.event_conflict_analysis_conflicts_found));
         for (EventConflict conflict : conflicts) {
-            summary.append("⚠\uFE0F ").append(conflict.getConflictingEvent().getTitle())
+            summary.append("⚠️ ").append(conflict.getConflictingEvent().getTitle())
                     .append("\n ➤ ")
                     .append(conflict.getReason()).append("\n\n");
         }
@@ -47,21 +52,6 @@ public class ConflictAnalysis {
         return conflicts.stream()
                 .filter(EventConflict::isCritical)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Get short summary for UI display.
-     */
-    public String getShortSummary() {
-        if (conflicts.isEmpty()) return "✅ Nessun conflitto";
-
-        int criticalCount = getCriticalConflicts().size();
-        if (criticalCount > 0) {
-            return "🔴 " + criticalCount + " conflitti critici, " +
-                    (conflicts.size() - criticalCount) + " altri";
-        } else {
-            return "🟡 " + conflicts.size() + " conflitti rilevati";
-        }
     }
 
     /**

@@ -5,6 +5,8 @@
  */
 package net.calvuz.qdue.ui.core.components.toolbars;
 
+import static net.calvuz.qdue.ui.core.common.utils.Library.getString;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -33,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
@@ -402,7 +405,7 @@ public class BottomSelectionToolbar {
         private static String generateFeedbackMessage(ToolbarAction action,
                                                       Set<LocalDate> selectedDates, String reason) {
             int dayCount = selectedDates.size();
-            String dayText = dayCount == 1 ? "giorno" : "giorni";
+            String dayText = QDue.getContext().getResources().getQuantityString(R.plurals.dayCount, dayCount);
 
             switch (action) {
                 case VACATION:

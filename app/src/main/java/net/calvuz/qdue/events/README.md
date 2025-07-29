@@ -1,7 +1,9 @@
 # Qdue Events Structure Analysis Report
 
 ## Overview
-Il sistema events di qdue implementa un'architettura flessibile per la gestione di eventi simili a Google Calendar, con supporto per eventi locali, importazione da fonti esterne, e integrazione futura con Google Calendar.
+Il sistema events di qdue implementa un'architettura flessibile per la gestione di eventi simili a 
+Google Calendar, con supporto per eventi locali, importazione da fonti esterne, e integrazione futura
+con Google Calendar.
 
 ## Core Architecture
 
@@ -52,29 +54,37 @@ Map<String, String> getCustomProperties();
 - `GENERAL` - Eventi generici
 - `MEETING` - Riunioni
 - `TRAINING` - Formazione
-- `HOLIDAY` - Festività
 
 #### Production Events
 - `MAINTENANCE` - Manutenzione
 - `EMERGENCY` - Emergenza
 
-#### Production Stops (Industrial Focus)
-- `STOP_PLANNED` - Fermata Programmata
-- `STOP_ORDERS` - Fermata Carenza Ordini
-- `STOP_CASSA` - Fermata Cassa Integrazione
-- `STOP_UNPLANNED` - Fermata Non Programmata
-- `STOP_SHORTAGE` - Carenza Ordini
-
-#### Shift Management
-- `SHIFT_CHANGE` - Cambio Turno
-- `OVERTIME` - Straordinario
-
 #### Safety & Compliance
 - `SAFETY_DRILL` - Prova Sicurezza
 - `AUDIT` - Audit
 
+#### Production Stops (Industrial Focus)
+- `STOP_PLANNED` - Fermata Programmata
+- `STOP_UNPLANNED` - Fermata Non Programmata
+- `STOP_SHORTAGE` - Fermata Carenza Ordini
+- `STOP_SHORTAGE_RAW_MATERIALS` - Fermata Carenza Materie Prime
+
+#### Shift Management
+- `SHIFT_CHANGE` - Cambio Turno
+- `SHIFT_SWAP` - Scambio Turno con collega
+- `COMPENSATION` - Compensazione
+- `OVERTIME` - Straordinario
+
+#### User Absence Events
+- `VACATION` - Ferie
+- `SICK_LEAVE` - Malattia
+- `PERSONAL_LEAVE` - Permesso personale
+- `SPECIAL_LEAVE` - Permesso da legge (es. 104)
+- `SYNDICATE_LEAVE` - Permesso per sindacalista
+
 #### Import/External
 - `IMPORTED` - Eventi importati
+- `OTHER` - Altri eventi
 
 **Caratteristiche:**
 - Ogni tipo ha `displayName`, `color`, `emoji`
@@ -175,18 +185,6 @@ Map<String, String> getCustomProperties();
 - `triggerEventShare()` - Condivisione tramite system intent
 - `triggerAddToCalendar()` - Aggiunta a calendario di sistema
 
-## Generator Utilities
-
-### 11. Event Generation Tools
-**File:** `qd-stop-events-generator.sh`
-**Scopo:** Script Bash per generazione automatica eventi di fermata
-
-**Caratteristiche:**
-- Generazione eventi shift-aware
-- Validazione JSON con JsonSchemaValidator
-- Pattern ID conformi a standard industriali
-- Gestione automatica periodi di validità
-
 ## Key Design Patterns
 
 ### 1. **Interface Segregation**
@@ -204,31 +202,4 @@ Map<String, String> getCustomProperties();
 
 ### 4. **Observer Pattern**
 - Callback interfaces per operazioni asincrone (`ImportCallback`, `EventDeletionListener`)
-
-## Extensibility Points
-
-### Per Implementare Eventi Rapidi (Quick Events):
-
-1. **Opzione 1: EventType Extension**
-    - Aggiungere nuovi tipi: `USER_OVERTIME`, `USER_VACATION`, `USER_SICK_LEAVE`
-    - Estendere `isProductionStop()` → `isUserManaged()`
-
-2. **Opzione 2: Custom Properties**
-    - Usare `customProperties` Map per flag `"quick_entry": "true"`
-    - Aggiungere `"approval_required": "false"` per bypass workflow
-
-3. **Opzione 3: Event Templates**
-    - Creare sistema di template predefiniti
-    - Template-based quick creation con minimal user input
-
-## Recommendations
-
-**Per gli eventi rapidi utente, consiglio:**
-
-1. **Estendere EventType** con nuove categorie user-managed
-2. **Utilizzare customProperties** per metadati aggiuntivi (approval status, creator, etc.)
-3. **Implementare template system** per UX veloce
-4. **Mantenere compatibilità** con sistema esistente
-
-La struttura attuale è già ben progettata per estensioni di questo tipo mantenendo retrocompatibilità e separazione delle responsabilità.
 
