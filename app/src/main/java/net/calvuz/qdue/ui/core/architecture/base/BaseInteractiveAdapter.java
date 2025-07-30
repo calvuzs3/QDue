@@ -42,8 +42,7 @@ import java.util.Set;
 //public abstract class BaseInteractiveAdapter<T, VH extends RecyclerView.ViewHolder>
 //        extends BaseAdapter<T, VH> implements DayLongClickListener {
 public abstract class BaseInteractiveAdapter extends BaseAdapter implements
-        DayLongClickListener,
-        BaseInteractiveFragment.Refreshable {
+        DayLongClickListener {
 
     // TAG
     private static final String TAG = "BaseInteractiveAdapter";
@@ -392,25 +391,6 @@ public abstract class BaseInteractiveAdapter extends BaseAdapter implements
         } else {
             // Select
             updateSelectionSet(SelectionOperation.ADD_SINGLE, date);
-        }
-    }
-
-    @Override
-    public void refreshData() {
-        try {
-            // Clear any internal selection state if needed
-            if (mIsSelectionMode && mSelectedDates.isEmpty()) {
-                Log.d(TAG, "refreshData: Cleaning up empty selection mode");
-                setSelectionMode(false);
-            }
-
-            // Notify adapter of data changes
-            notifyDataSetChanged();
-
-            Log.d(TAG, "refreshData: ✅ Adapter refresh completed");
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error refreshing adapter data: " + e.getMessage(), e);
         }
     }
 

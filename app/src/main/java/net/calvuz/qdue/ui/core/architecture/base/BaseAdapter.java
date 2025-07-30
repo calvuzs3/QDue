@@ -5,6 +5,7 @@ import static net.calvuz.qdue.ui.core.common.utils.Library.getColorByThemeAttr;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
@@ -24,7 +26,6 @@ import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
-import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -77,8 +78,10 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param userHalfTeam Current user's team for highlighting
      * @param numShifts    Number of shifts to display per day
      */
-    public BaseAdapter(Context context, List<SharedViewModels.ViewItem> items,
-                       HalfTeam userHalfTeam, int numShifts) {
+    public BaseAdapter(Context context,
+                       List<SharedViewModels.ViewItem> items,
+                       HalfTeam userHalfTeam,
+                       int numShifts) {
         this.mContext = context;
         this.mItems = items;
         this.mUserHalfTeam = userHalfTeam;
@@ -94,7 +97,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected void initializeColorCache() {
         if (mCachedNormalTextColor == 0) {
-            mCachedNormalTextColor = getColorByThemeAttr(mContext, com.google.android.material.R.attr.colorOnSurface);
+            mCachedNormalTextColor = getColorByThemeAttr( mContext, com.google.android.material.R.attr.colorOnSurface );
         }
     }
 
@@ -105,7 +108,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      *
      * @param newItems New list of view items to display
      */
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint ("NotifyDataSetChanged")
     public void setItems(List<SharedViewModels.ViewItem> newItems) {
         this.mItems = newItems;
         notifyDataSetChanged();
@@ -131,18 +134,13 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     public int getItemViewType(int position) {
         if (position >= mItems.size()) return VIEW_TYPE_DAY;
 
-        SharedViewModels.ViewItem item = mItems.get(position);
-        switch (item.getType()) {
-            case HEADER:
-                return VIEW_TYPE_MONTH_HEADER;
-            case LOADING:
-                return VIEW_TYPE_LOADING;
-            case EMPTY:
-                return VIEW_TYPE_EMPTY;
-            case DAY:
-            default:
-                return VIEW_TYPE_DAY;
-        }
+        SharedViewModels.ViewItem item = mItems.get( position );
+        return switch (item.getType()) {
+            case HEADER -> VIEW_TYPE_MONTH_HEADER;
+            case LOADING -> VIEW_TYPE_LOADING;
+            case EMPTY -> VIEW_TYPE_EMPTY;
+            default -> VIEW_TYPE_DAY;
+        };
     }
 
     /**
@@ -155,23 +153,14 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        LayoutInflater inflater = LayoutInflater.from( parent.getContext() );
 
-        switch (viewType) {
-            case VIEW_TYPE_MONTH_HEADER:
-                return createMonthHeaderViewHolder(inflater, parent);
-
-            case VIEW_TYPE_LOADING:
-                return createLoadingViewHolder(inflater, parent);
-
-            case VIEW_TYPE_EMPTY:
-                return createEmptyViewHolder(inflater, parent);
-
-            case VIEW_TYPE_DAY:
-            default:
-                return createDayViewHolder(inflater, parent);
-
-        }
+        return switch (viewType) {
+            case VIEW_TYPE_MONTH_HEADER -> createMonthHeaderViewHolder( inflater, parent );
+            case VIEW_TYPE_LOADING -> createLoadingViewHolder( inflater, parent );
+            case VIEW_TYPE_EMPTY -> createEmptyViewHolder( parent );
+            default -> createDayViewHolder( inflater, parent );
+        };
     }
 
     /**
@@ -185,32 +174,28 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (position >= mItems.size()) return;
 
         if (DEBUG_BASEADAPTER) {
-            Log.d(TAG, "onBindViewHolder: ViewHolder = " + holder.getClass().getSimpleName());
+            Log.d( TAG, "onBindViewHolder: ViewHolder = " + holder.getClass().getSimpleName() );
         }
 
-        SharedViewModels.ViewItem item = mItems.get(position);
+        SharedViewModels.ViewItem item = mItems.get( position );
 
         if (holder instanceof MonthHeaderViewHolder) {
             SharedViewModels.MonthHeader header = (SharedViewModels.MonthHeader) item;
-            bindMonthHeader((MonthHeaderViewHolder) holder, header);
-
+            bindMonthHeader( (MonthHeaderViewHolder) holder, header );
         } else if (holder instanceof LoadingViewHolder) {
             SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) item;
-            bindLoading((LoadingViewHolder) holder, loading);
-
+            bindLoading( (LoadingViewHolder) holder, loading );
         } else if (holder instanceof EmptyViewHolder) {
-            bindEmpty((EmptyViewHolder) holder);
-
+            bindEmpty( (EmptyViewHolder) holder );
         } else if (holder instanceof DayViewHolder) {
             SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
-            bindDay((DayViewHolder) holder, dayItem, position);
-
+            bindDay( (DayViewHolder) holder, dayItem, position );
         }
 
         if (DEBUG_BASEADAPTER) {
-            Log.d(TAG, "onBindViewHolder: mItems.size() = " + mItems.size());
-            Log.d(TAG, "onBindViewHolder: position = " + position);
-            Log.d(TAG, "onBindViewHolder: item type = " + item.getClass().getSimpleName());
+            Log.d( TAG, "onBindViewHolder: mItems.size() = " + mItems.size() );
+            Log.d( TAG, "onBindViewHolder: position = " + position );
+            Log.d( TAG, "onBindViewHolder: item type = " + item.getClass().getSimpleName() );
         }
     }
 
@@ -225,8 +210,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @return MonthHeaderViewHolder instance
      */
     protected RecyclerView.ViewHolder createMonthHeaderViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        View view = inflater.inflate(R.layout.item_month_header, parent, false);
-        return new EnhancedMonthHeaderViewHolder(view);
+        View view = inflater.inflate( R.layout.item_month_header, parent, false );
+        return new EnhancedMonthHeaderViewHolder( view );
     }
 
     /**
@@ -238,25 +223,24 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @return LoadingViewHolder instance
      */
     protected RecyclerView.ViewHolder createLoadingViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        View view = inflater.inflate(R.layout.item_loading_calendar, parent, false);
-        return new LoadingViewHolder(view);
+        View view = inflater.inflate( R.layout.item_loading_calendar, parent, false );
+        return new LoadingViewHolder( view );
     }
 
     /**
      * Creates a ViewHolder for empty placeholder items.
      * Uses a simple invisible view for empty calendar cells.
      *
-     * @param inflater Layout inflater
-     * @param parent   Parent ViewGroup
+     * @param parent Parent ViewGroup
      * @return EmptyViewHolder instance
      */
-    protected RecyclerView.ViewHolder createEmptyViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    protected RecyclerView.ViewHolder createEmptyViewHolder(ViewGroup parent) {
         // For empty cells, use a simple or invisible layout
-        View view = new View(parent.getContext());
-        view.setLayoutParams(new ViewGroup.LayoutParams(
+        View view = new View( parent.getContext() );
+        view.setLayoutParams( new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
-        return new EmptyViewHolder(view);
+                ViewGroup.LayoutParams.WRAP_CONTENT ) );
+        return new EmptyViewHolder( view );
     }
 
     /**
@@ -268,8 +252,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @return DayViewHolder instance
      */
     protected RecyclerView.ViewHolder createDayViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        View view = inflater.inflate(R.layout.item_dayslist_row, parent, false);
-        return new DayViewHolder((MaterialCardView) view);
+        View view = inflater.inflate( R.layout.item_dayslist_row, parent, false );
+        return new DayViewHolder( (MaterialCardView) view );
     }
 
     // ==================== BINDING METHODS ====================
@@ -284,7 +268,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
     protected void bindMonthHeader(MonthHeaderViewHolder holder, SharedViewModels.MonthHeader header) {
         if (!(holder instanceof EnhancedMonthHeaderViewHolder enhancedHolder)) {
             // Fallback to basic binding
-            holder.tvMonthTitle.setText(header.title);
+            holder.tvMonthTitle.setText( header.title );
             return;
         }
 
@@ -295,28 +279,28 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             // Format month name (only month for current year, month + year for others)
             String monthName;
             if (monthDate.getYear() == today.getYear()) {
-                monthName = monthDate.format(DateTimeFormatter.ofPattern("MMMM", QDue.getLocale()));
+                monthName = monthDate.format( DateTimeFormatter.ofPattern( "MMMM", QDue.getLocale() ) );
             } else {
-                monthName = monthDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", QDue.getLocale()));
+                monthName = monthDate.format( DateTimeFormatter.ofPattern( "MMMM yyyy", QDue.getLocale() ) );
             }
 
-            enhancedHolder.tvMonthTitle.setText(monthName);
+            enhancedHolder.tvMonthTitle.setText( monthName );
 
             // Show year only if different from current year
             if (monthDate.getYear() != today.getYear()) {
-                enhancedHolder.tvYear.setText(String.valueOf(monthDate.getYear()));
-                enhancedHolder.tvYear.setVisibility(View.VISIBLE);
+                enhancedHolder.tvYear.setText( String.valueOf( monthDate.getYear() ) );
+                enhancedHolder.tvYear.setVisibility( View.VISIBLE );
             } else {
-                enhancedHolder.tvYear.setVisibility(View.GONE);
+                enhancedHolder.tvYear.setVisibility( View.GONE );
             }
 
             // Show days count for the month
             int daysInMonth = monthDate.lengthOfMonth();
-            enhancedHolder.tvDaysCount.setText(String.valueOf(daysInMonth));
+            enhancedHolder.tvDaysCount.setText( String.valueOf( daysInMonth ) );
 
             // Set appropriate icon based on month or season
-            int iconResource = getSeasonalIcon(monthDate.getMonthValue());
-            enhancedHolder.ivMonthIcon.setImageResource(iconResource);
+            Drawable iconResource = getSeasonalIcon( monthDate.getMonthValue() );
+            enhancedHolder.ivMonthIcon.setImageDrawable( iconResource ); // .setImageResource(iconResource);
 
             // Add subtle animation for current month
             if (monthDate.getYear() == today.getYear() &&
@@ -325,13 +309,12 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             } else {
                 enhancedHolder.stopAnimation();
             }
-
         } catch (Exception e) {
-            Log.e(TAG, "Error binding enhanced month header: " + e.getMessage());
+            Log.e( TAG, "Error binding enhanced month header: " + e.getMessage() );
             // Fallback to basic title
-            enhancedHolder.tvMonthTitle.setText(header.title);
-            enhancedHolder.tvYear.setVisibility(View.GONE);
-            enhancedHolder.tvDaysCount.setText("");
+            enhancedHolder.tvMonthTitle.setText( header.title );
+            enhancedHolder.tvYear.setVisibility( View.GONE );
+            enhancedHolder.tvDaysCount.setText( "" );
             enhancedHolder.stopAnimation();
         }
     }
@@ -343,8 +326,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param loading Loading item data to bind
      */
     protected void bindLoading(LoadingViewHolder holder, SharedViewModels.LoadingItem loading) {
-        holder.loadingText.setText(loading.message);
-        holder.progressBar.setVisibility(View.VISIBLE);
+        holder.loadingText.setText( loading.message );
+        holder.progressBar.setVisibility( View.VISIBLE );
     }
 
     /**
@@ -355,7 +338,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected void bindEmpty(EmptyViewHolder holder) {
         // Empty cells have no content
-        holder.itemView.setVisibility(View.INVISIBLE);
+        holder.itemView.setVisibility( View.INVISIBLE );
     }
 
     /**
@@ -373,28 +356,21 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         android.content.res.Resources r = mContext.getResources();
 
         // Set day number
-        holder.tday.setText(r.getString(R.string.str_scheme_num, day.getDayOfMonth()));
+        holder.tday.setText( r.getString( R.string.str_scheme_num, day.getDayOfMonth() ) );
 
         // Set weekday name
-        holder.twday.setText(r.getString(R.string.str_scheme, day.getDayOfWeekAsString()));
+        holder.twday.setText( r.getString( R.string.str_scheme, day.getDayOfWeekAsString() ) );
 
         // Set shift texts
-        bindShiftsToDay(holder, day);
+        bindShiftsToDay( holder, day );
 
         // Set rest teams text
         String restTeams = day.getOffWorkHalfTeamsAsString();
-        holder.ttR.setText(restTeams != null && !restTeams.isEmpty() ?
-                r.getString(R.string.str_scheme, restTeams) : "");
+        holder.ttR.setText( restTeams != null && !restTeams.isEmpty() ?
+                r.getString( R.string.str_scheme, restTeams ) : "" );
 
-        // ✅ NOTE: All highlighting (today, Sunday, user shift, events) is now handled
+        // NOTE: All highlighting (today, Sunday, user shift, events) is now handled
         // by subclasses using HighlightingHelper.applyUnifiedHighlighting()
-
-        if (DEBUG_BASEADAPTER) {
-            Log.d("DEBUG", "Day date: " + dayItem.day.getDate());
-            Log.d("DEBUG", "Day number: " + dayItem.day.getDayOfMonth());
-            Log.d("DEBUG", "ItemView type: " + holder.itemView.getClass().getSimpleName());
-            Log.d("DEBUG", "ItemView child count: " + ((ViewGroup) holder.itemView).getChildCount());
-        }
     }
 
     // ==================== HELPER METHODS FOR BINDING ====================
@@ -408,16 +384,16 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      */
     protected void bindShiftsToDay(DayViewHolder holder, Day day) {
         List<Shift> shifts = day.getShifts();
-        int numShifts = Math.min(shifts.size(), mNumShifts);
+        int numShifts = Math.min( shifts.size(), mNumShifts );
 
         for (int i = 0; i < numShifts; i++) {
             if (holder.shiftTexts[i] != null) {
                 try {
-                    String teamText = shifts.get(i).getTeamsAsString();
-                    holder.shiftTexts[i].setText(teamText != null && !teamText.isEmpty() ?
-                            mContext.getString(R.string.str_scheme, teamText) : "");
+                    String teamText = shifts.get( i ).getTeamsAsString();
+                    holder.shiftTexts[i].setText( teamText != null && !teamText.isEmpty() ?
+                            mContext.getString( R.string.str_scheme, teamText ) : "" );
                 } catch (Exception e) {
-                    holder.shiftTexts[i].setText("");
+                    holder.shiftTexts[i].setText( "" );
                 }
             }
         }
@@ -429,50 +405,22 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * Get seasonal or month-appropriate icon with fallback.
      * Falls back to standard calendar icon if seasonal icons don't exist.
      */
-    private int getSeasonalIcon(int month) {
+    private Drawable getSeasonalIcon(int month) {
         try {
-            switch (month) {
-                case 12:
-                case 1:
-                case 2: // Winter
-                    return getDrawableResourceSafely("ic_calendar_winter", R.drawable.ic_calendar);
-                case 3:
-                case 4:
-                case 5: // Spring
-                    return getDrawableResourceSafely("ic_calendar_spring", R.drawable.ic_calendar);
-                case 6:
-                case 7:
-                case 8: // Summer
-                    return getDrawableResourceSafely("ic_calendar_summer", R.drawable.ic_calendar);
-                case 9:
-                case 10:
-                case 11: // Autumn
-                    return getDrawableResourceSafely("ic_calendar_autumn", R.drawable.ic_calendar);
-                default:
-                    return R.drawable.ic_calendar; // Default calendar icon
-            }
+            return switch (month) {
+                case 12, 1, 2 -> // Winter
+                        AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar_winter );
+                case 3, 4, 5 -> // Spring
+                        AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar_spring );
+                case 6, 7, 8 -> // Summer
+                        AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar_summer );
+                case 9, 10, 11 -> // Autumn
+                        AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar_autumn );
+                default -> AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar );
+            };
         } catch (Exception e) {
-            Log.e(TAG, "Error getting seasonal icon, using default: " + e.getMessage());
-            return R.drawable.ic_calendar;
-        }
-    }
-
-    /**
-     * Safely get drawable resource with fallback.
-     * Returns fallback resource if the requested resource doesn't exist.
-     */
-    private int getDrawableResourceSafely(String resourceName, int fallbackResource) {
-        try {
-            // Try to get the resource ID
-            int resourceId = mContext.getResources().getIdentifier(
-                    resourceName, "drawable", mContext.getPackageName());
-
-            // If resource exists, return it; otherwise return fallback
-            return resourceId != 0 ? resourceId : fallbackResource;
-
-        } catch (Exception e) {
-            Log.w(TAG, "Resource " + resourceName + " not found, using fallback");
-            return fallbackResource;
+            Log.e( TAG, "Error getting seasonal icon: ", e );
+            return AppCompatResources.getDrawable( mContext, R.drawable.ic_calendar );
         }
     }
 
@@ -487,32 +435,14 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (mItems == null || targetDate == null) return -1;
 
         for (int i = 0; i < mItems.size(); i++) {
-            SharedViewModels.ViewItem item = mItems.get(i);
-            if (item instanceof SharedViewModels.DayItem) {
-                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
-                if (dayItem.day.getDate().equals(targetDate)) {
+            SharedViewModels.ViewItem item = mItems.get( i );
+            if (item instanceof SharedViewModels.DayItem dayItem) {
+                if (dayItem.day.getDate().equals( targetDate )) {
                     return i;
                 }
             }
         }
         return -1;
-    }
-
-    /**
-     * Helper method to setup event indicators in any ViewHolder.
-     * Can be called from both adapters with their respective ViewHolders.
-     *
-     * @param context       Context for EventIndicatorHelper
-     * @param typeIndicator The type indicator View
-     * @param priorityBadge The priority badge View
-     * @param events        List of events for this day
-     */
-    public static void setupEventIndicatorsForDay(Context context,
-                                                  View typeIndicator,
-                                                  View priorityBadge,
-                                                  List<LocalEvent> events) {
-        EventIndicatorHelper helper = new EventIndicatorHelper(context);
-        helper.setupEventIndicators(typeIndicator, priorityBadge, events);
     }
 
     /**
@@ -529,7 +459,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
             return new ArrayList<>();
         }
 
-        List<LocalEvent> events = eventsMap.get(date);
+        List<LocalEvent> events = eventsMap.get( date );
         return events != null ? events : new ArrayList<>();
     }
 
@@ -551,8 +481,8 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
          * @param itemView The view associated with this ViewHolder
          */
         public MonthHeaderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvMonthTitle = itemView.findViewById(R.id.tv_month_title);
+            super( itemView );
+            tvMonthTitle = itemView.findViewById( R.id.tv_month_title );
         }
     }
 
@@ -577,9 +507,9 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
          * @param itemView The view associated with this ViewHolder
          */
         public LoadingViewHolder(@NonNull View itemView) {
-            super(itemView);
-            progressBar = itemView.findViewById(R.id.progress_bar);
-            loadingText = itemView.findViewById(R.id.tv_loading);
+            super( itemView );
+            progressBar = itemView.findViewById( R.id.progress_bar );
+            loadingText = itemView.findViewById( R.id.tv_loading );
         }
     }
 
@@ -594,7 +524,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
          * @param itemView The view associated with this ViewHolder
          */
         public EmptyViewHolder(@NonNull View itemView) {
-            super(itemView);
+            super( itemView );
         }
     }
 
@@ -612,10 +542,10 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         private boolean isAnimating = false;
 
         public EnhancedMonthHeaderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvYear = itemView.findViewById(R.id.tv_year);
-            tvDaysCount = itemView.findViewById(R.id.tv_days_count);
-            ivMonthIcon = itemView.findViewById(R.id.iv_month_icon);
+            super( itemView );
+            tvYear = itemView.findViewById( R.id.tv_year );
+            tvDaysCount = itemView.findViewById( R.id.tv_days_count );
+            ivMonthIcon = itemView.findViewById( R.id.iv_month_icon );
         }
 
         /**
@@ -629,14 +559,14 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             try {
                 currentAnimator = android.animation.ObjectAnimator.ofFloat(
-                        ivMonthIcon, "alpha", 1.0f, 0.7f);
-                currentAnimator.setDuration(1500); // Slower, more subtle
-                currentAnimator.setRepeatMode(android.animation.ObjectAnimator.REVERSE);
-                currentAnimator.setRepeatCount(android.animation.ObjectAnimator.INFINITE);
-                currentAnimator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+                        ivMonthIcon, "alpha", 1.0f, 0.7f );
+                currentAnimator.setDuration( 1500 ); // Slower, more subtle
+                currentAnimator.setRepeatMode( android.animation.ObjectAnimator.REVERSE );
+                currentAnimator.setRepeatCount( android.animation.ObjectAnimator.INFINITE );
+                currentAnimator.setInterpolator( new android.view.animation.AccelerateDecelerateInterpolator() );
 
                 // Add listener to track animation state
-                currentAnimator.addListener(new android.animation.AnimatorListenerAdapter() {
+                currentAnimator.addListener( new android.animation.AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(android.animation.Animator animation) {
                         isAnimating = true;
@@ -651,13 +581,12 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                     public void onAnimationCancel(android.animation.Animator animation) {
                         isAnimating = false;
                     }
-                });
+                } );
 
                 currentAnimator.start();
-
             } catch (Exception e) {
                 // Log error but don't crash
-                Log.e("EnhancedMonthHeader", "Error starting animation: " + e.getMessage());
+                Log.e( "EnhancedMonthHeader", "Error starting animation: " + e.getMessage() );
                 isAnimating = false;
             }
         }
@@ -677,22 +606,13 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
                 ivMonthIcon.clearAnimation();
 
                 // Reset to normal state
-                ivMonthIcon.setAlpha(1.0f);
+                ivMonthIcon.setAlpha( 1.0f );
                 isAnimating = false;
-
             } catch (Exception e) {
                 // Log error but don't crash
-                Log.e("EnhancedMonthHeader", "Error stopping animation: " + e.getMessage());
+                Log.e( "EnhancedMonthHeader", "Error stopping animation: " + e.getMessage() );
                 isAnimating = false;
             }
-        }
-
-        /**
-         * Check if currently animating.
-         * Useful for preventing multiple animations.
-         */
-        public boolean isAnimating() {
-            return isAnimating;
         }
 
         /**
@@ -743,20 +663,20 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
          * @param rootView The root view associated with this ViewHolder (MaterialCardView)
          */
         public DayViewHolder(@NonNull MaterialCardView rootView) {
-            super(rootView);
+            super( rootView );
             mView = rootView;
-            tday = rootView.findViewById(R.id.tday);
-            twday = rootView.findViewById(R.id.twday);
-            ttR = rootView.findViewById(R.id.ttR);
+            tday = rootView.findViewById( R.id.tday );
+            twday = rootView.findViewById( R.id.twday );
+            ttR = rootView.findViewById( R.id.ttR );
 
             // Initialize shift text views dynamically based on number of shifts
             shiftTexts = new TextView[mNumShifts];
             for (int i = 0; i < mNumShifts && i < 5; i++) {
-                @SuppressLint("DiscouragedApi")
-                int resId = rootView.getResources().getIdentifier("tt" + (i + 1), "id",
-                        rootView.getContext().getPackageName());
+                @SuppressLint ("DiscouragedApi")
+                int resId = rootView.getResources().getIdentifier( "tt" + (i + 1), "id",
+                        rootView.getContext().getPackageName() );
                 if (resId != 0) {
-                    shiftTexts[i] = rootView.findViewById(resId);
+                    shiftTexts[i] = rootView.findViewById( resId );
                 }
             }
         }

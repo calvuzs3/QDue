@@ -31,12 +31,14 @@ import net.calvuz.qdue.ui.core.common.interfaces.NotifyUpdatesInterface;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,10 +73,9 @@ public abstract class BaseFragment extends Fragment implements
     // NEW: Registration flag to avoid double registration
     private boolean mIsRegisteredForEventsRefresh = false;
 
-    // MOCK waiting for a stable integration
     // NEW: Events data support
     protected Map<LocalDate, List<LocalEvent>> mEventsCache = new ConcurrentHashMap<>();
-    protected final AtomicBoolean mIsLoadingEvents = new AtomicBoolean(false);
+    protected final AtomicBoolean mIsLoadingEvents = new AtomicBoolean( false );
     protected QDueDatabase mDatabase;
 
     // DEBUG it is for initial scrolling bug. now resolved
@@ -100,13 +101,13 @@ public abstract class BaseFragment extends Fragment implements
     // ==================== CONCURRENCY CONTROL ===================
 
     // Atomic flag to prevent concurrent cache updates
-    protected final AtomicBoolean mIsUpdatingCache = new AtomicBoolean(false);
+    protected final AtomicBoolean mIsUpdatingCache = new AtomicBoolean( false );
 
     // Atomic flag for pending top load operations
-    protected final AtomicBoolean mIsPendingTopLoad = new AtomicBoolean(false);
+    protected final AtomicBoolean mIsPendingTopLoad = new AtomicBoolean( false );
 
     // Atomic flag for pending bottom load operations
-    protected final AtomicBoolean mIsPendingBottomLoad = new AtomicBoolean(false);
+    protected final AtomicBoolean mIsPendingBottomLoad = new AtomicBoolean( false );
 
     // ==================== ASYNC OPERATION HANDLERS ==============
 
@@ -204,20 +205,17 @@ public abstract class BaseFragment extends Fragment implements
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        final String mTAG = "onCreate: ";
-        Log.v(TAG, mTAG + getClass().getSimpleName());
+        super.onCreate( savedInstanceState );
 
         // Initialize handlers for async operations
-        mMainHandler = new Handler(Looper.getMainLooper());
-        mBackgroundHandler = new Handler(Looper.getMainLooper());
+        mMainHandler = new Handler( Looper.getMainLooper() );
+        mBackgroundHandler = new Handler( Looper.getMainLooper() );
 
         // Initialize centralized data manager
         mDataManager = CalendarDataManager.getInstance();
 
         // Initialize events database
-        mDatabase = QDueDatabase.getInstance(requireContext());
+        mDatabase = QDueDatabase.getInstance( requireContext() );
 
         // Start initial events load
         loadEventsForCurrentPeriod();
@@ -229,13 +227,10 @@ public abstract class BaseFragment extends Fragment implements
      */
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        final String mTAG = "onViewCreated: ";
-        Log.v(TAG, mTAG + "called.");
+        super.onViewCreated( view, savedInstanceState );
 
         // Subclasses must implement findViews() to initialize their specific views
-        findViews(view);
+        findViews( view );
 
         // Configure the RecyclerView
         setupRecyclerView();
@@ -244,7 +239,7 @@ public abstract class BaseFragment extends Fragment implements
         if (getActivity() != null) {
             setupInfiniteScrolling();
         } else {
-            Log.e(TAG, mTAG + "❌ Activity is null, cannot initialize infinite scrolling");
+            Log.e( TAG, "Activity is null, cannot initialize infinite scrolling" );
         }
 
         // Configure the TODAY fab button
@@ -258,18 +253,16 @@ public abstract class BaseFragment extends Fragment implements
      */
     @Override
     public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        final String mTAG = "onAttach: ";
+        super.onAttach( context );
 
         try {
             // Get reference to activity's communication interface
             communicationInterface = (FragmentCommunicationInterface) context;
-            Log.v(TAG, mTAG + "Communication interface attached");
+            Log.v( TAG, "Communication interface attached" );
         } catch (ClassCastException e) {
-            Log.e(TAG, mTAG + "❌ Error in attaching Communication Interface");
-            throw new ClassCastException(context.toString()
-                    + " must implement FragmentCommunicationInterface");
+            Log.e( TAG, "Error in attaching Communication Interface" );
+            throw new ClassCastException( context
+                    + " must implement FragmentCommunicationInterface" );
         }
     }
 
@@ -280,40 +273,20 @@ public abstract class BaseFragment extends Fragment implements
     public void onDetach() {
         super.onDetach();
         communicationInterface = null;
-        Log.v(TAG, "onDetach: Communication interface detached");
-    }
-
-    // ==================== COMMUNICATION HELPER METHODS ==========
-
-    /**
-     * Request navigation to another destination.
-     */
-    protected void navigateTo(int destinationId) {
-        navigateTo(destinationId, null);
-    }
-
-    /**
-     * Request navigation with data bundle.
-     */
-    protected void navigateTo(int destinationId, Bundle data) {
-        if (communicationInterface != null) {
-            communicationInterface.onFragmentNavigationRequested(destinationId, data);
-        }
+        Log.v( TAG, "Communication interface detached" );
     }
 
     // ==================== RECYCLER ===========================
 
     /**
      * Setup RecyclerView with unified GridLayoutManager approach.
-     * Both DayslistViewFragment (1 column) and CalendarViewFragment (7 columns) will use GridLayoutManager.
+     * Both DayslistViewFragment (1) and CalendarViewFragment (7) will use GridLayoutManager.
      * This unifies scroll handling, infinite loading, and sticky header logic.
      */
     protected void setupRecyclerView() {
-        final String mTAG = "setupRecyclerView: ";
-        Log.v(TAG, mTAG + "called.");
 
         if (mRecyclerView == null) {
-            Log.e(TAG, mTAG + "❌ RecyclerView is null - subclass must implement findViews()");
+            Log.e( TAG, "RecyclerView is null - subclass must implement findViews()" );
             return;
         }
 
@@ -321,16 +294,32 @@ public abstract class BaseFragment extends Fragment implements
         int columnCount = getGridColumnCount();
 
         // Create unified GridLayoutManager
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), columnCount);
+        GridLayoutManager gridLayoutManager = getGridLayoutManager( columnCount );
+
+        mRecyclerView.setLayoutManager( gridLayoutManager );
+
+        // Store reference for position calculations
+        mGridLayoutManager = gridLayoutManager;
+
+        // Apply common optimizations
+        mRecyclerView.setHasFixedSize( true );
+        mRecyclerView.setItemAnimator( null );
+
+        Log.d( TAG, MessageFormat.format(
+                "Configured GridLayoutManager with {0} columns", columnCount ) );
+    }
+
+    @NonNull
+    private GridLayoutManager getGridLayoutManager(int columnCount) {
+        GridLayoutManager gridLayoutManager = new GridLayoutManager( getContext(), columnCount );
 
         // Configure span size for headers and loading items
-        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+        gridLayoutManager.setSpanSizeLookup( new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
                 if (position < mItemsCache.size()) {
 
-                    SharedViewModels.ViewItem item = mItemsCache.get(position);
-                    Log.v(TAG, mTAG + "called mItemsCache.get( " + position + " )");
+                    SharedViewModels.ViewItem item = mItemsCache.get( position );
 
                     // Headers and loading items always span full width
                     if (item instanceof SharedViewModels.MonthHeader ||
@@ -340,18 +329,8 @@ public abstract class BaseFragment extends Fragment implements
                 }
                 return 1; // Regular items take 1 column
             }
-        });
-
-        mRecyclerView.setLayoutManager(gridLayoutManager);
-
-        // Store reference for position calculations
-        mGridLayoutManager = gridLayoutManager;
-
-        // Apply common optimizations
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setItemAnimator(null);
-
-        Log.d(TAG, mTAG + "✅ Configured GridLayoutManager with " + columnCount + " columns");
+        } );
+        return gridLayoutManager;
     }
 
     // ============================================================
@@ -363,7 +342,7 @@ public abstract class BaseFragment extends Fragment implements
     private class UnifiedGridScrollListener extends RecyclerView.OnScrollListener {
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
+            super.onScrolled( recyclerView, dx, dy );
 
             long currentTime = System.currentTimeMillis();
 
@@ -371,7 +350,7 @@ public abstract class BaseFragment extends Fragment implements
             if (mLastScrollTime > 0) {
                 long timeDiff = currentTime - mLastScrollTime;
                 if (timeDiff > 0) {
-                    mScrollVelocity = (int) (Math.abs(dy) / timeDiff * 16); // Normalized to 60fps
+                    mScrollVelocity = (int) (Math.abs( dy ) / timeDiff * 16); // Normalized to 60fps
                 }
             }
 
@@ -389,29 +368,29 @@ public abstract class BaseFragment extends Fragment implements
             if (firstVisible == RecyclerView.NO_POSITION) return;
 
             // Handle infinite scrolling
-            mMainHandler.post(() -> handleUnifiedScrollBasedLoading(firstVisible, lastVisible, dy));
+            mMainHandler.post( () -> handleUnifiedScrollBasedLoading( firstVisible, lastVisible, dy ) );
 
             // Update FAB visibility
-            updateFabVisibility(firstVisible, lastVisible);
+            updateFabVisibility( firstVisible, lastVisible );
 
             // Update sticky header in toolbar
-            updateStickyHeader(firstVisible, lastVisible);
+            updateStickyHeader( firstVisible, lastVisible );
         }
 
         @Override
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
+            super.onScrollStateChanged( recyclerView, newState );
 
             if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                 mScrollVelocity = 0;
 
                 // Process pending operations after scroll stops
-                mMainHandler.postDelayed(() -> {
+                mMainHandler.postDelayed( () -> {
                     if (mScrollVelocity == 0) {
                         processPendingOperations();
                         scheduleCleanupIfNeeded();
                     }
-                }, SCROLL_SETTLE_DELAY);
+                }, SCROLL_SETTLE_DELAY );
             }
         }
     }
@@ -419,35 +398,34 @@ public abstract class BaseFragment extends Fragment implements
     /**
      * Unified scroll-based loading logic that works for both 1-column and 7-column grids.
      */
-    private void handleUnifiedScrollBasedLoading(int firstVisible, int lastVisible, int scrollDirection) {
-        final String mTAG = "handleUnifiedScrollBasedLoading: ";
-        Log.v(TAG, mTAG + "called.");
-
+    private void handleUnifiedScrollBasedLoading(int firstVisible,
+                                                 int lastVisible,
+                                                 int scrollDirection) {
         // Conservative trigger zones
         int loadTriggerZone = getLoadTriggerZone();
 
         // Load upward (previous months) when near top
         if (firstVisible <= loadTriggerZone && scrollDirection <= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingTopLoad.get() && !mShowingTopLoader) {
-            Log.v(TAG, mTAG + "Triggering top load at position: " + firstVisible);
+            Log.d( TAG, "Triggering top load at position: " + firstVisible );
 
-            mMainHandler.postDelayed(() -> {
+            mMainHandler.postDelayed( () -> {
                 if (!mIsUpdatingCache.get() && !mIsPendingTopLoad.get()) {
                     triggerTopLoad();
                 }
-            }, 100);
+            }, 100 );
         }
 
         // Load downward (next months) when near bottom
         if (lastVisible >= mItemsCache.size() - loadTriggerZone && scrollDirection >= 0 &&
                 !mIsUpdatingCache.get() && !mIsPendingBottomLoad.get() && !mShowingBottomLoader) {
-            Log.v(TAG, mTAG + "Triggering bottom load at position: " + lastVisible);
+            Log.d( TAG, "Triggering bottom load at position: " + lastVisible );
 
-            mMainHandler.postDelayed(() -> {
+            mMainHandler.postDelayed( () -> {
                 if (!mIsUpdatingCache.get() && !mIsPendingBottomLoad.get()) {
                     triggerBottomLoad();
                 }
-            }, 100);
+            }, 100 );
         }
     }
 
@@ -463,23 +441,25 @@ public abstract class BaseFragment extends Fragment implements
     /**
      * Update sticky header in toolbar based on currently visible month.
      */
-    private void updateStickyHeader(int firstVisible, int lastVisible) {
+    private void updateStickyHeader(int firstVisible,
+                                    int lastVisible) {
 
         // Find the month header that's currently most visible
-        LocalDate currentMonth = findCurrentVisibleMonth(firstVisible, lastVisible);
+        LocalDate currentMonth = findCurrentVisibleMonth( firstVisible, lastVisible );
 
         if (currentMonth != null) {
-            updateToolbarTitle(currentMonth);
+            updateToolbarTitle( currentMonth );
         }
     }
 
     /**
      * Find which month is currently most visible in the viewport.
      */
-    private LocalDate findCurrentVisibleMonth(int firstVisible, int lastVisible) {
+    private LocalDate findCurrentVisibleMonth(int firstVisible,
+                                              int lastVisible) {
         // Find the first month header in the visible range
         for (int i = firstVisible; i <= lastVisible && i < mItemsCache.size(); i++) {
-            SharedViewModels.ViewItem item = mItemsCache.get(i);
+            SharedViewModels.ViewItem item = mItemsCache.get( i );
 
             if (item instanceof SharedViewModels.MonthHeader) {
                 return ((SharedViewModels.MonthHeader) item).monthDate;
@@ -492,7 +472,7 @@ public abstract class BaseFragment extends Fragment implements
 
         // Fallback: search backwards from first visible
         for (int i = firstVisible - 1; i >= 0; i--) {
-            SharedViewModels.ViewItem item = mItemsCache.get(i);
+            SharedViewModels.ViewItem item = mItemsCache.get( i );
 
             if (item instanceof SharedViewModels.MonthHeader) {
                 return ((SharedViewModels.MonthHeader) item).monthDate;
@@ -507,9 +487,6 @@ public abstract class BaseFragment extends Fragment implements
      * Shows only month name for current year, "Month Year" for other years.
      */
     private void updateToolbarTitle(LocalDate monthDate) {
-        final String mTAG = "updateToolbarTitle: ";
-        Log.v(TAG, mTAG + "called.");
-
         if (getActivity() == null) return;
 
         try {
@@ -518,21 +495,20 @@ public abstract class BaseFragment extends Fragment implements
 
             if (monthDate.getYear() == today.getYear()) {
                 // Current year: show only month name
-                formattedTitle = monthDate.format(DateTimeFormatter.ofPattern("MMMM", QDue.getLocale()));
+                formattedTitle = monthDate.format( DateTimeFormatter.ofPattern( "MMMM", Locale.getDefault() ) );
             } else {
                 // Different year: show month and year
-                formattedTitle = monthDate.format(DateTimeFormatter.ofPattern("MMMM yyyy", QDue.getLocale()));
+                formattedTitle = monthDate.format( DateTimeFormatter.ofPattern( "MMMM yyyy", QDue.getLocale() ) );
             }
 
             // Update toolbar title - this will be implemented in the activity
             if (communicationInterface != null) {
                 Bundle data = new Bundle();
-                data.putString("title", formattedTitle);
-                communicationInterface.onFragmentCustomAction("update_toolbar_title", data);
+                data.putString( "title", formattedTitle );
+                communicationInterface.onFragmentCustomAction( "update_toolbar_title", data );
             }
-
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "updateToolbarTitle: ❌ Error updating toolbar title: " + e.getMessage());
+            Log.e( TAG, "Error updating toolbar title", e );
         }
     }
 
@@ -541,9 +517,6 @@ public abstract class BaseFragment extends Fragment implements
      * FIXED: Setup infinite scrolling with proper initial positioning
      */
     protected void setupInfiniteScrolling() {
-        final String mTAG = "setupInfiniteScrolling: ";
-        Log.v(TAG, mTAG + "called.");
-
         try {
             // Reset all control flags
             resetControlFlags();
@@ -553,39 +526,38 @@ public abstract class BaseFragment extends Fragment implements
             mItemsCache = new ArrayList<>();
 
             // Pre-load months in cache around current date
-            mDataManager.preloadMonthsAround(mCurrentDate, QD_MONTHS_CACHE_RADIUS);
+            mDataManager.preloadMonthsAround( mCurrentDate, QD_MONTHS_CACHE_RADIUS );
 
             // Generate initial months for display
             // Here the items are added to mItemsCache
             for (int i = -QD_MONTHS_CACHE_RADIUS; i <= QD_MONTHS_CACHE_RADIUS; i++) {
-                LocalDate monthDate = mCurrentDate.plusMonths(i);
-                addMonthToCache(monthDate);
+                LocalDate monthDate = mCurrentDate.plusMonths( i );
+                addMonthToCache( monthDate );
             }
 
             setupAdapter();
-
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "❌ Error during infinite scrolling setup: " + e.getMessage());
+            Log.e( TAG, "Error during infinite scrolling setup", e );
             return;
         }
 
         try {
-            // NUOVO: Verifica prerequisites
+            // Check
             if (!areComponentsReady()) {
-                Log.e(TAG, mTAG + "❌ Components not ready, deferring infinite scroll setup");
+                Log.e( TAG, "Components not ready, deferring infinite scroll setup" );
                 scheduleInfiniteScrollingSetup();
                 return;
             } else {
-                Log.d(TAG, mTAG + "✅ Components ready, starting infinite scroll setup");
+                Log.d( TAG, "Components ready, starting infinite scroll setup" );
             }
 
             // 1. Calcola la posizione di today
-            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
+            mTodayPosition = SharedViewModels.DataConverter.findTodayPosition( mItemsCache );
 
             if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Today position calculated: " + mTodayPosition);
-                Log.d(TAG, mTAG + "Cache size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
-                Log.d(TAG, mTAG + "Adapter items: " + (getFragmentAdapter() != null ? getFragmentAdapter().getItemCount() : "null"));
+                Log.d( TAG, "Today position calculated: " + mTodayPosition );
+                Log.d( TAG, "Cache size: " + (mItemsCache != null ? mItemsCache.size() : "null") );
+                Log.d( TAG, "Adapter items: " + (getFragmentAdapter() != null ? getFragmentAdapter().getItemCount() : "null") );
             }
 
             // 2. Forza sincronizzazione cache-adapter
@@ -598,37 +570,36 @@ public abstract class BaseFragment extends Fragment implements
             setupScrollListeners();
 
             if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Infinite scroll setup completed: " + mItemsCache.size() +
-                        " elements, today at position: " + mTodayPosition);
+                Log.d( TAG, "Infinite scroll setup completed: " + mItemsCache.size() +
+                        " elements, today at position: " + mTodayPosition );
             }
-
         } catch (Exception e) {
-            Log.e("TAG", mTAG + "❌ Error in setupInfiniteScrolling: " + e.getMessage());
+            Log.e( "TAG", "Error in setupInfiniteScrolling", e );
         }
     }
 
-    // ===== Verify Prerequisites =====
+    // ===== Check Prerequisites =====
+
     private boolean areComponentsReady() {
-        String mTAG = "areComponentsReady: ";
 
         // Here every fragment implements its own adapter, so we ask for it
         if (getFragmentAdapter() == null) {
-            Log.e(TAG, mTAG + "❌ getFragmentAdapter() is null");
+            Log.e( TAG, "getFragmentAdapter() returns null" );
             return false;
         }
 
         if (mItemsCache == null) {
-            Log.e(TAG, mTAG + "❌ mmItemsCache is null");
+            Log.e( TAG, "mmItemsCache is null" );
             return false;
         }
 
         if (mRecyclerView == null) {
-            Log.e(TAG, mTAG + "❌ mRecyclerView is null");
+            Log.e( TAG, "mRecyclerView is null" );
             return false;
         }
 
         if (mGridLayoutManager == null) {
-            Log.e(TAG, mTAG + "❌ mGridLayoutManager is null");
+            Log.e( TAG, "mGridLayoutManager is null" );
             return false;
         }
 
@@ -641,54 +612,31 @@ public abstract class BaseFragment extends Fragment implements
      * Ensure cache and adapter are in sync.
      */
     protected void ensureAdapterSyncWithCache() {
-        final String mTAG = "ensureAdapterSyncWithCache: ";
+
+        if (getFragmentAdapter() == null) {
+            return;
+        }
+
+        if (mItemsCache == null) {
+            return;
+        }
 
         try {
-            // NULL CHECKS aggiunti
-            if (getFragmentAdapter() == null) {
-                Log.e(TAG, mTAG + "getFragmentAdapter() is null, cannot sync");
-                return;
-            }
-
-            if (mItemsCache == null) {
-                Log.e(TAG, mTAG + "mCachedItems is null, cannot sync");
-                return;
-            }
-
-            // Verifica se adapter è vuoto ma cache ha dati
+            // Check
             if (getFragmentAdapter().getItemCount() == 0 && !mItemsCache.isEmpty()) {
 
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, mTAG + "Adapter empty but cache has " + mItemsCache.size() +
-                            " items. Forcing sync...");
-                }
-
-                // Popola immediatamente the adapter con tutti i dati della cache
-                getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
-                getFragmentAdapter().notifyDataSetChanged();
-
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, mTAG + "Adapter populated: " + getFragmentAdapter().getItemCount() + " items");
-                }
-
+                // Populate the adapter with cached data
+                getFragmentAdapter().setItems( new ArrayList<>( mItemsCache ) );
             } else if (getFragmentAdapter().getItemCount() != mItemsCache.size()) {
 
-                // Cache e adapter non sincronizzati - forza riallineamento
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.w(TAG, mTAG + "Cache-Adapter mismatch. Cache: " + mItemsCache.size() +
-                            ", Adapter: " + getFragmentAdapter().getItemCount() + ". Re-syncing...");
-                }
-
-                getFragmentAdapter().setItems(new ArrayList<>(mItemsCache));
-                getFragmentAdapter().notifyDataSetChanged();
+                getFragmentAdapter().setItems( new ArrayList<>( mItemsCache ) );
             } else {
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, mTAG + "Cache and adapter already in sync: " + mItemsCache.size() + " items");
-                }
-            }
 
+                Log.d( TAG, MessageFormat.format(
+                        "Cache and adapter already in sync: {0} items", mItemsCache.size() ) );
+            }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in cache synchronization: " + e.getMessage());
+            Log.e( TAG, "Error in cache synchronization", e );
         }
     }
 
@@ -696,143 +644,50 @@ public abstract class BaseFragment extends Fragment implements
      * Schedule infinite scrolling setup after a delay.
      */
     private void scheduleInfiniteScrollingSetup() {
-        final String mTAG = "scheduleInfiniteScrollingSetup: ";
-
-        // Retry ogni 100ms fino a quando i componenti sono pronti
-        mRecyclerView.postDelayed(new Runnable() {
+        // Retry every 100ms
+        mRecyclerView.postDelayed( new Runnable() {
             private int attempts = 0;
-            private final int MAX_ATTEMPTS = 50; // 5 secondi max
 
             @Override
             public void run() {
                 attempts++;
 
+                // 5 secondi max
+                int MAX_ATTEMPTS = 50;
                 if (areComponentsReady()) {
-                    if (DEBUG_BASEFRAGMENT) {
-                        Log.d(TAG, mTAG + "Components ready after " + attempts + " attempts");
-                    }
                     setupInfiniteScrolling();
                 } else if (attempts < MAX_ATTEMPTS) {
-                    if (DEBUG_BASEFRAGMENT) {
-                        Log.d(TAG, mTAG + "Retry " + attempts + "/" + MAX_ATTEMPTS);
-                    }
-                    mRecyclerView.postDelayed(this, 100);
+                    mRecyclerView.postDelayed( this, 100 );
                 } else {
-                    Log.e(TAG, mTAG + "Failed to setup infinite scrolling after " + MAX_ATTEMPTS + " attempts");
+                    Log.e( TAG, MessageFormat.format(
+                            "Failed to setup infinite scrolling after {0} attempts", MAX_ATTEMPTS ) );
                 }
             }
-        }, 100);
+        }, 100 );
     }
 
     /**
      * Scroll with check
      */
     private void scheduleVerifiedScrollToToday() {
-        final String mTAG = "scheduleVerifiedScrollToToday: -";
-
         if (mTodayPosition < 0) {
-            if (DEBUG_BASEFRAGMENT) {
-                Log.w(TAG, mTAG + "Today position not found (" + mTodayPosition + ")");
-                // DEBUG: Prova a forzare il caricamento del mese corrente
-                tryLoadCurrentMonth();
-            }
             return;
         }
 
-        // NULL CHECK added
         if (mRecyclerView == null) {
-            Log.e(TAG, mTAG + "mRecyclerView is null, cannot schedule scroll");
+            Log.e( TAG, "mRecyclerView is null, cannot schedule scroll" );
             return;
         }
 
         // Check if the adapter has enough elements
         if (getFragmentAdapter().getItemCount() > mTodayPosition) {
             // Data ready - immediate scroll (little delay for the layout)
-            mRecyclerView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    performVerifiedScrollToToday();
-                }
-            }, 100);
-
+            mRecyclerView.postDelayed( this::performVerifiedScrollToToday, 100 );
         } else {
             // Adapter non ancora pronto - usa retry con timeout
-            scheduleRetryScrollToToday(0);
+            scheduleRetryScrollToToday( 0 );
         }
     }
-
-    /**
-     * Try to load the current Month
-     */
-    private void tryLoadCurrentMonth() {
-        final String mTAG = "tryLoadCurrentMonth: ";
-
-        try {
-            if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Attempting to load current month to find today");
-            }
-
-            // Forza il caricamento del mese corrente se non è in cache
-            LocalDate today = LocalDate.now();
-            LocalDate currentMonth = today.withDayOfMonth(1);
-
-            // Chiama il metodo che carica un mese specifico
-            // NOTA: Questo metodo potrebbe variare nel tuo DataManager
-            if (mDataManager != null) {
-
-                // Sostituisci questo con il metodo corretto del tuo DataManager
-                // mDataManager.ensureMonthLoaded(currentMonth);
-                mDataManager.getMonthDays(currentMonth);
-
-                // Dopo il caricamento, riprova a trovare today
-                mRecyclerView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        recheckTodayPosition();
-                    }
-                }, 200);
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error trying to load current month: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Recheck today position
-     */
-    private void recheckTodayPosition() {
-        final String mTAG = "recheckTodayPosition: ";
-
-        try {
-            // Update cache
-            // but it's a pain in the ass..
-            //mItemsCache = mDataManager.getCachedItems();
-
-            if (mItemsCache != null && !mItemsCache.isEmpty()) {
-                // Calculate today position
-                mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, mTAG + "Rechecked today position: " + mTodayPosition +
-                            " (cache size: " + mItemsCache.size() + ")");
-                }
-
-                if (mTodayPosition >= 0) {
-                    // Today trovato - riprova il setup
-                    ensureAdapterSyncWithCache();
-                    scheduleVerifiedScrollToToday();
-                }
-            } else {
-                Log.e(TAG, mTAG + "Error in mItemsCache");
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error rechecking today position: " + e.getMessage());
-        }
-    }
-
-    // ===== NUOVO METODO: Retry con Timeout =====
 
     /**
      * Retry scroll to today
@@ -840,103 +695,84 @@ public abstract class BaseFragment extends Fragment implements
      * @param attemptCount mu number of attempts
      */
     private void scheduleRetryScrollToToday(int attemptCount) {
-        final String mTAG = "scheduleRetryScrollToToday: ";
         final int MAX_ATTEMPTS = 5; // old - 20 * 50ms = 1 secondo max
 
         if (attemptCount >= MAX_ATTEMPTS) {
-            Log.e(TAG, mTAG + "Failed to scroll to today after " + MAX_ATTEMPTS + " attempts");
+            Log.e( TAG, "Failed to scroll to today after " + MAX_ATTEMPTS + " attempts" );
             return;
         }
 
-        mRecyclerView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (getFragmentAdapter().getItemCount() > mTodayPosition) {
-                    if (DEBUG_BASEFRAGMENT) {
-                        Log.d(TAG, mTAG + "Adapter ready after " + (attemptCount + 1) + " attempts");
-                    }
-                    performVerifiedScrollToToday();
-                } else {
-                    if (DEBUG_BASEFRAGMENT) {
-                        Log.d(TAG, mTAG + "Retry " + (attemptCount + 1) + "/" + MAX_ATTEMPTS +
-                                " - Adapter: " + getFragmentAdapter().getItemCount() + ", Need: " + (mTodayPosition + 1));
-                    }
-                    scheduleRetryScrollToToday(attemptCount + 1);
-                }
+        mRecyclerView.postDelayed( () -> {
+            if (getFragmentAdapter().getItemCount() > mTodayPosition) {
+                Log.d( TAG, MessageFormat.format(
+                        "Adapter ready after {0} attempts", attemptCount + 1 ) );
+                performVerifiedScrollToToday();
+            } else {
+                Log.d( TAG, MessageFormat.format(
+                        "Retry {0}/{1} - Adapter: {2}, Need: {3}",
+                        attemptCount + 1,
+                        MAX_ATTEMPTS,
+                        getFragmentAdapter().getItemCount(),
+                        mTodayPosition + 1 ) );
+                scheduleRetryScrollToToday( attemptCount + 1 );
             }
-        }, 50); // Retry ogni 50ms
+        }, 50 ); // Retry ogni 50ms
     }
 
     /**
      * Perform verified scroll to today
      */
     private void performVerifiedScrollToToday() {
-        final String mTAG = "performVerifiedScrollToToday: ";
-
         try {
-            // Verifica finale prima dello scroll
+            // Final check before scrolling
             if (mTodayPosition < 0 || mTodayPosition >= getFragmentAdapter().getItemCount()) {
-                Log.e(TAG, mTAG + "Invalid today position: " + mTodayPosition +
-                        " (adapter size: " + getFragmentAdapter().getItemCount() + ")");
+                Log.e( TAG, MessageFormat.format( "Invalid today position: {0} (adapter size: {1})",
+                        mTodayPosition,
+                        getFragmentAdapter().getItemCount() ) );
                 return;
             }
 
-            if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Performing verified scroll to position: " + mTodayPosition);
-            }
-
-            // AGGIUNTO: Flag per disabilitare temporaneamente infinite loading
+            // temporarily disable infinite loading
             mIsInitialScrolling = true;
 
-            if (mGridLayoutManager instanceof GridLayoutManager) {
-                GridLayoutManager gridManager = (GridLayoutManager) mGridLayoutManager;
+            if (mGridLayoutManager != null) {
+                GridLayoutManager gridManager = mGridLayoutManager;
 
-                // Calcola posizione ottimale per centrare today
-                int optimalPosition = Math.max(0, mTodayPosition - (4 * getGridColumnCount())); // 4 righe sopra
-                gridManager.scrollToPositionWithOffset(optimalPosition, 20);
+                // Calculate offset
+                int offset = getGridColumnCount() == 1 ? 11 : 21;
 
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition +
-                            " (scroll to: " + optimalPosition + ")");
-                }
-
+                // Calculate optimal position
+                int optimalPosition = Math.max( 0, mTodayPosition - offset );
+                gridManager.scrollToPositionWithOffset( optimalPosition, 20 );
             } else {
-                // Fallback per LinearLayoutManager
-                mRecyclerView.scrollToPosition(Math.max(0, mTodayPosition - 3));
-
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.e(TAG, mTAG + "Using fallback mRecyclerView positioning for today: " + mTodayPosition);
-                }
+                // Fallback with LinearLayoutManager?
+                mRecyclerView.scrollToPosition( Math.max( 0, mTodayPosition - 3 ) );
+                Log.e( TAG, MessageFormat.format(
+                        "Using fallback mRecyclerView positioning for today: {0}", mTodayPosition ) );
             }
 
-            // Riabilita infinite loading dopo un delay
-            mRecyclerView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mIsInitialScrolling = false;
-                    if (DEBUG_BASEFRAGMENT) {
-                        Log.d(TAG, mTAG + "Initial scroll completed, infinite loading re-enabled");
-                    }
-                }
-            }, 500); // 500ms di "grazia"
-
+            // Enable infinite loading after a delay
+            mRecyclerView.postDelayed( () -> {
+                mIsInitialScrolling = false;
+                Log.d( TAG, "Initial scroll completed, infinite loading re-enabled" );
+            }, 500 );
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error performing verified scroll: " + e.getMessage());
-            mIsInitialScrolling = false; // Assicurati di riabilitare anche in caso di errore
+            Log.e( TAG, "Error performing verified scroll", e );
+            mIsInitialScrolling = false;
         }
     }
 
     // ============================================================
 
     /**
-     * NEW: Setup scroll listeners separately for better organization
-     * DEBUG: set to protected instead of private
+     * Setup scroll listeners separately for better organization
+     * set to protected instead of private
      */
     protected void setupScrollListeners() {
         if (mRecyclerView != null) {
-            mRecyclerView.addOnScrollListener(new debugScrollListener());
+            //mRecyclerView.addOnScrollListener( new debugScrollListener() );
             mRecyclerView.clearOnScrollListeners();
-            mRecyclerView.addOnScrollListener(new UnifiedGridScrollListener());
+            mRecyclerView.addOnScrollListener( new UnifiedGridScrollListener() );
         }
     }
 
@@ -958,17 +794,15 @@ public abstract class BaseFragment extends Fragment implements
     }
 
     public void scrollToToday() {
-        final String mTAG = "scrollToToday: ";
-
         if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
-            Log.v(TAG, mTAG + "Scrolling to today, position: " + mTodayPosition);
             if (mGridLayoutManager != null) {
-                mRecyclerView.smoothScrollToPosition(mTodayPosition);
+                //mRecyclerView.smoothScrollToPosition( mTodayPosition );
+                performVerifiedScrollToToday();
+                Log.d( TAG, MessageFormat.format( "Scrolling to today (position: {0})", mTodayPosition ) );
             }
         } else {
             // Rebuild cache centered on today
-            Log.v(TAG, mTAG + "Today not in cache, rebuilding");
-            mCurrentDate = LocalDate.now().withDayOfMonth(1);
+            mCurrentDate = LocalDate.now().withDayOfMonth( 1 );
             setupInfiniteScrolling();
         }
     }
@@ -982,19 +816,12 @@ public abstract class BaseFragment extends Fragment implements
     private void maintainScrollPosition(int itemsAdded) {
         if (mGridLayoutManager != null) {
             try {
-                mGridLayoutManager.scrollToPositionWithOffset(itemsAdded, 0);
-                if (DEBUG_BASEFRAGMENT) {
-                    Log.d(TAG, "Maintained GridLayoutManager position");
-                }
+                mGridLayoutManager.scrollToPositionWithOffset( itemsAdded, 0 );
             } catch (Exception e) {
-                Log.e(TAG, "Error maintaining scroll position: " + e.getMessage());
+                Log.e( TAG, "Error maintaining scroll position", e );
             }
         }
     }
-
-    // ======================================================================
-
-    // ================================= UI =================================
 
     /**
      * Setup scrolling to TODAY position separately for better organization
@@ -1012,10 +839,10 @@ public abstract class BaseFragment extends Fragment implements
             mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
 
             if (mFabGoToToday != null) {
-                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+                mFabGoToToday.setOnClickListener( v -> scrollToToday() );
             } else {
                 // Riprova dopo che l'Activity ha finito l'inizializzazione
-                mRecyclerView.post(() -> retrySetupFAB());
+                mRecyclerView.post( this::retrySetupFAB );
             }
         }
     }
@@ -1024,20 +851,16 @@ public abstract class BaseFragment extends Fragment implements
         if (mFabGoToToday == null && getActivity() instanceof QDueMainActivity) {
             mFabGoToToday = ((QDueMainActivity) getActivity()).getFabGoToToday();
             if (mFabGoToToday != null) {
-                mFabGoToToday.setOnClickListener(v -> scrollToToday());
+                mFabGoToToday.setOnClickListener( v -> scrollToToday() );
             }
         }
     }
 
     /**
      * Enhanced FAB visibility update that respects integrated mode.
-     * Update this method in BaseFragment.java
      */
     protected void updateFabVisibility(int firstVisible, int lastVisible) {
-        if (mFabGoToToday == null) {
-            Log.v(TAG, "updateFabVisibility: FAB is null, skipping");
-            return;
-        }
+        if (mFabGoToToday == null) return;
 
         // Logica di visibilità standard
         boolean showFab = true;
@@ -1046,7 +869,10 @@ public abstract class BaseFragment extends Fragment implements
         }
 
         // Applica visibilità
-        toggleFabVisibility(mFabGoToToday);
+        if ((showFab && mFabGoToToday.getVisibility() != View.VISIBLE)
+                || (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE)) {
+            toggleFabVisibility( mFabGoToToday );
+        }
     }
 
     /**
@@ -1054,21 +880,21 @@ public abstract class BaseFragment extends Fragment implements
      */
     protected static void toggleFabVisibility(@NonNull FloatingActionButton fab) {
         if (fab.getVisibility() != View.VISIBLE) {
-            fab.setVisibility(View.VISIBLE);
+            fab.setVisibility( View.VISIBLE );
             fab.animate()
-                    .alpha(1f)
-                    .scaleX(1f)
-                    .scaleY(1f)
-                    .setDuration(200)
+                    .alpha( 1f )
+                    .scaleX( 1f )
+                    .scaleY( 1f )
+                    .setDuration( 200 )
                     .start();
             fab.show();
         } else {
             fab.animate()
-                    .alpha(0f)
-                    .scaleX(0f)
-                    .scaleY(0f)
-                    .setDuration(200)
-                    .withEndAction(() -> fab.setVisibility(View.GONE))
+                    .alpha( 0f )
+                    .scaleX( 0f )
+                    .scaleY( 0f )
+                    .setDuration( 200 )
+                    .withEndAction( () -> fab.setVisibility( View.GONE ) )
                     .start();
             fab.hide();
         }
@@ -1084,27 +910,25 @@ public abstract class BaseFragment extends Fragment implements
      * ENHANCED: Better today position updates during cache operations
      */
     protected void executeTopLoad() {
-        final String mTAG = "executeTopLoad: ";
-
-        if (!mIsPendingTopLoad.compareAndSet(true, false)) {
-            Log.w(TAG, mTAG + "No pending top load - aborting");
+        if (!mIsPendingTopLoad.compareAndSet( true, false )) {
+            Log.w( TAG, "No pending top load - aborting" );
             hideTopLoader();
             return;
         }
 
-        if (!mIsUpdatingCache.compareAndSet(false, true)) {
-            Log.w(TAG, mTAG + "Cache update in progress - aborting");
-            mIsPendingTopLoad.set(true);
+        if (!mIsUpdatingCache.compareAndSet( false, true )) {
+            Log.w( TAG, "Cache update in progress - aborting" );
+            mIsPendingTopLoad.set( true );
             return;
         }
 
-        Log.d(TAG, "Starting multi-month top load execution");
+        Log.d( TAG, "Starting multi-month top load execution" );
 
         try {
             LocalDate firstMonth = findFirstMonthInCache();
             if (firstMonth == null) {
-                Log.e(TAG, mTAG + "Cannot find first month in cache");
-                mIsUpdatingCache.set(false);
+                Log.e( TAG, "Cannot find first month in cache" );
+                mIsUpdatingCache.set( false );
                 hideTopLoader();
                 return;
             }
@@ -1112,75 +936,67 @@ public abstract class BaseFragment extends Fragment implements
             List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
 
             for (int i = 1; i <= MONTHS_PER_LOAD; i++) {
-                LocalDate monthToLoad = firstMonth.minusMonths(i);
-                Log.d(TAG, mTAG + "Loading previous month " + i + ": " + monthToLoad);
+                LocalDate monthToLoad = firstMonth.minusMonths( i );
 
-                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems( monthToLoad );
                 if (!monthItems.isEmpty()) {
-                    allNewItems.addAll(0, monthItems);
+                    allNewItems.addAll( 0, monthItems );
                 }
             }
 
             if (allNewItems.isEmpty()) {
-                Log.w(TAG, mTAG + "No items generated for any previous months");
-                mIsUpdatingCache.set(false);
+                Log.w( TAG, "No items generated for any previous months" );
+                mIsUpdatingCache.set( false );
                 hideTopLoader();
                 return;
             }
 
-            Log.d(TAG, mTAG + "Generated " + allNewItems.size() + " items for " + MONTHS_PER_LOAD + " previous months");
-
-            mMainHandler.post(() -> {
+            mMainHandler.post( () -> {
                 try {
                     if (mItemsCache == null) {
-                        Log.e(TAG, mTAG + "Items cache is null during UI update");
+                        Log.e( TAG, "Items cache is null during UI update" );
                         return;
                     }
 
-                    mItemsCache.addAll(0, allNewItems);
-                    Log.d(TAG, mTAG + "Added items to cache. New size: " + mItemsCache.size());
+                    mItemsCache.addAll( 0, allNewItems );
 
                     // ENHANCED: Better today position tracking
                     if (mTodayPosition >= 0) {
                         mTodayPosition += allNewItems.size();
                     } else {
                         // Today position was lost - try to find it again
-                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-                        Log.d(TAG, mTAG + "Recomputed today position: " + mTodayPosition);
+                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition( mItemsCache );
                     }
 
                     mCurrentCenterPosition += allNewItems.size();
 
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         try {
                             if (getFragmentAdapter() != null) {
-                                getFragmentAdapter().notifyItemRangeInserted(0, allNewItems.size());
-                                Log.d(TAG, mTAG + "Notified adapter of " + allNewItems.size() + " inserted items");
+                                getFragmentAdapter().notifyItemRangeInserted( 0, allNewItems.size() );
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, mTAG + "Error notifying adapter: " + e.getMessage());
+                            Log.e( TAG, "Error notifying adapter", e );
                         }
-                    });
+                    } );
 
-                    maintainScrollPosition(allNewItems.size());
+                    maintainScrollPosition( allNewItems.size() );
 
-                    mMainHandler.postDelayed(() -> {
+                    mMainHandler.postDelayed( () -> {
                         hideTopLoader();
-                        Log.d(TAG, mTAG + "Multi-month top load completed successfully");
+                        Log.d( TAG, "Multi-month top load completed successfully" );
                         schedulePreloadingCheck();
-                    }, 100);
-
+                    }, 100 );
                 } catch (Exception e) {
-                    Log.e(TAG, mTAG + "Error during UI update: " + e.getMessage());
+                    Log.e( TAG, "Error during UI update: " + e.getMessage() );
                     hideTopLoader();
                 } finally {
-                    mIsUpdatingCache.set(false);
+                    mIsUpdatingCache.set( false );
                 }
-            });
-
+            } );
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error loading previous months: " + e.getMessage());
-            mIsUpdatingCache.set(false);
+            Log.e( TAG, "Error loading previous months: " + e.getMessage() );
+            mIsUpdatingCache.set( false );
             hideTopLoader();
         }
     }
@@ -1195,27 +1011,26 @@ public abstract class BaseFragment extends Fragment implements
      * ENHANCED: Better today position updates during bottom loading
      */
     protected void executeBottomLoad() {
-        final String mTAG = "executeBottomLoad: ";
 
-        if (!mIsPendingBottomLoad.compareAndSet(true, false)) {
-            Log.w(TAG, "No pending bottom load - aborting");
+        if (!mIsPendingBottomLoad.compareAndSet( true, false )) {
+            Log.w( TAG, "No pending bottom load - aborting" );
             hideBottomLoader();
             return;
         }
 
-        if (!mIsUpdatingCache.compareAndSet(false, true)) {
-            Log.w(TAG, "Cache update in progress - aborting");
-            mIsPendingBottomLoad.set(true);
+        if (!mIsUpdatingCache.compareAndSet( false, true )) {
+            Log.w( TAG, "Cache update in progress - aborting" );
+            mIsPendingBottomLoad.set( true );
             return;
         }
 
-        Log.d(TAG, "Starting multi-month bottom load execution");
+        Log.d( TAG, "Starting multi-month bottom load execution" );
 
         try {
             LocalDate lastMonth = findLastMonthInCache();
             if (lastMonth == null) {
-                Log.e(TAG, "Cannot find last month in cache");
-                mIsUpdatingCache.set(false);
+                Log.e( TAG, "Cannot find last month in cache" );
+                mIsUpdatingCache.set( false );
                 hideBottomLoader();
                 return;
             }
@@ -1223,70 +1038,62 @@ public abstract class BaseFragment extends Fragment implements
             List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
 
             for (int i = 1; i <= MONTHS_PER_LOAD; i++) {
-                LocalDate monthToLoad = lastMonth.plusMonths(i);
-                Log.d(TAG, "Loading next month " + i + ": " + monthToLoad);
+                LocalDate monthToLoad = lastMonth.plusMonths( i );
+                Log.d( TAG, "Loading next month " + i + ": " + monthToLoad );
 
-                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems( monthToLoad );
                 if (!monthItems.isEmpty()) {
-                    allNewItems.addAll(monthItems);
+                    allNewItems.addAll( monthItems );
                 }
             }
 
             if (allNewItems.isEmpty()) {
-                Log.w(TAG, "No items generated for any next months");
-                mIsUpdatingCache.set(false);
+                Log.w( TAG, "No items generated for any next months" );
+                mIsUpdatingCache.set( false );
                 hideBottomLoader();
                 return;
             }
 
-            Log.d(TAG, "Generated " + allNewItems.size() + " items for " + MONTHS_PER_LOAD + " next months");
-
-            mMainHandler.post(() -> {
+            mMainHandler.post( () -> {
                 try {
                     if (mItemsCache == null) {
-                        Log.e(TAG, "Items cache is null during UI update");
+                        Log.e( TAG, "Items cache is null during UI update" );
                         return;
                     }
 
                     int insertPos = mItemsCache.size();
-                    mItemsCache.addAll(allNewItems);
-                    Log.d(TAG, "Added items to cache. New size: " + mItemsCache.size());
+                    mItemsCache.addAll( allNewItems );
 
                     // ENHANCED: Better today position tracking
                     if (mTodayPosition < 0) {
                         // Today position not set - try to find it in the expanded cache
-                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition(mItemsCache);
-                        Log.d(TAG, "Found today position in expanded cache: " + mTodayPosition);
+                        mTodayPosition = SharedViewModels.DataConverter.findTodayPosition( mItemsCache );
                     }
 
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         try {
                             if (getFragmentAdapter() != null) {
-                                getFragmentAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
-                                Log.d(TAG, "Notified adapter of " + allNewItems.size() + " inserted items at position " + insertPos);
+                                getFragmentAdapter().notifyItemRangeInserted( insertPos, allNewItems.size() );
                             }
                         } catch (Exception e) {
-                            Log.e(TAG, "Error notifying adapter: " + e.getMessage());
+                            Log.e( TAG, "Error notifying adapter", e );
                         }
-                    });
+                    } );
 
-                    mMainHandler.postDelayed(() -> {
+                    mMainHandler.postDelayed( () -> {
                         hideBottomLoader();
-                        Log.d(TAG, "Multi-month bottom load completed successfully");
                         schedulePreloadingCheck();
-                    }, 100);
-
+                    }, 100 );
                 } catch (Exception e) {
-                    Log.e(TAG, "Error during UI update: " + e.getMessage());
+                    Log.e( TAG, "Error during UI update", e );
                     hideBottomLoader();
                 } finally {
-                    mIsUpdatingCache.set(false);
+                    mIsUpdatingCache.set( false );
                 }
-            });
-
+            } );
         } catch (Exception e) {
-            Log.e(TAG, "Error loading next months: " + e.getMessage());
-            mIsUpdatingCache.set(false);
+            Log.e( TAG, "Error loading next months", e );
+            mIsUpdatingCache.set( false );
             hideBottomLoader();
         }
     }
@@ -1295,28 +1102,19 @@ public abstract class BaseFragment extends Fragment implements
      * NEW: Schedule preloading check to maintain buffer zones
      */
     private void schedulePreloadingCheck() {
-        final String mTAG = "schedulePreloadingCheck: ";
-        Log.v(TAG, mTAG + "called.");
-
         // Schedule preloading check after a short delay
-        mMainHandler.postDelayed(() -> {
+        mMainHandler.postDelayed( () -> {
             if (!mIsUpdatingCache.get() && mScrollVelocity == 0) {
                 performPreloadingCheck();
             }
-        }, 500); // Check after scrolling settles
+        }, 500 ); // Check after scrolling settles
     }
 
     /**
      * NEW: Perform silent preloading to maintain buffer zones
      */
     private void performPreloadingCheck() {
-        final String mTAG = "performPreloadingCheck: ";
-        Log.v(TAG, mTAG + "called");
-
-        if (mIsUpdatingCache.get()) {
-            Log.d(TAG, mTAG + "Cache update in progress - skipping preload check");
-            return;
-        }
+        if (mIsUpdatingCache.get()) return;
 
         // Get current scroll position
         int currentPosition = getCurrentVisiblePosition();
@@ -1329,19 +1127,16 @@ public abstract class BaseFragment extends Fragment implements
 
         // Check if we need to preload at the top
         if (currentPosition < bufferZone && !mIsPendingTopLoad.get()) {
-            Log.d(TAG, mTAG + "Triggering silent top preload at position: " + currentPosition);
             triggerSilentTopLoad();
         }
 
         // Check if we need to preload at the bottom
         if (currentPosition > cacheSize - bufferZone && !mIsPendingBottomLoad.get()) {
-            Log.d(TAG, mTAG + "Triggering silent bottom preload at position: " + currentPosition);
             triggerSilentBottomLoad();
         }
 
         // Check if cache is too large and needs cleanup
         if (cacheSize > MAX_CACHED_MONTHS * 35) { // ~35 items per month
-            Log.d(TAG, mTAG + "Cache too large (" + cacheSize + "), scheduling cleanup");
             scheduleCleanupIfNeeded();
         }
     }
@@ -1350,97 +1145,85 @@ public abstract class BaseFragment extends Fragment implements
      * NEW: Silent top load without visible loader
      */
     private void triggerSilentTopLoad() {
-        final String mTAG = "triggerSilentTopLoad: ";
-
         if (mIsUpdatingCache.get() || mIsPendingTopLoad.get()) {
             return;
         }
 
-        Log.d(TAG, mTAG + "Starting silent top load");
-        mIsPendingTopLoad.set(true);
+        mIsPendingTopLoad.set( true );
 
         // Execute without showing loader
-        mBackgroundHandler.postDelayed(() -> {
-            executeSilentTopLoad();
-        }, 100);
+        mBackgroundHandler.postDelayed( this::executeSilentTopLoad, 100 );
     }
 
     /**
      * NEW: Silent bottom load without visible loader
      */
     private void triggerSilentBottomLoad() {
-        final String mTAG = "triggerSilentBottomLoad: ";
-
         if (mIsUpdatingCache.get() || mIsPendingBottomLoad.get()) {
             return;
         }
 
-        Log.d(TAG, mTAG + "Starting silent bottom load");
-        mIsPendingBottomLoad.set(true);
+        Log.d( TAG, "Starting silent bottom load" );
+        mIsPendingBottomLoad.set( true );
 
         // Execute without showing loader
-        mBackgroundHandler.postDelayed(() -> {
-            executeSilentBottomLoad();
-        }, 100);
+        mBackgroundHandler.postDelayed( this::executeSilentBottomLoad, 100 );
     }
 
     /**
      * NEW: Execute silent top load (similar to executeTopLoad but without loader UI)
      */
     private void executeSilentTopLoad() {
-        final String mTAG = "executeSilentTopLoad: ";
-
-        if (!mIsPendingTopLoad.compareAndSet(true, false)) {
+        if (!mIsPendingTopLoad.compareAndSet( true, false )) {
             return;
         }
 
-        if (!mIsUpdatingCache.compareAndSet(false, true)) {
-            mIsPendingTopLoad.set(true);
+        if (!mIsUpdatingCache.compareAndSet( false, true )) {
+            mIsPendingTopLoad.set( true );
             return;
         }
 
         try {
             LocalDate firstMonth = findFirstMonthInCache();
             if (firstMonth == null) {
-                mIsUpdatingCache.set(false);
+                mIsUpdatingCache.set( false );
                 return;
             }
 
             // Load 2 months silently
             List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
             for (int i = 1; i <= 2; i++) {
-                LocalDate monthToLoad = firstMonth.minusMonths(i);
-                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                LocalDate monthToLoad = firstMonth.minusMonths( i );
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems( monthToLoad );
                 if (!monthItems.isEmpty()) {
-                    allNewItems.addAll(0, monthItems);
+                    allNewItems.addAll( 0, monthItems );
                 }
             }
 
             if (!allNewItems.isEmpty()) {
-                mMainHandler.post(() -> {
+                mMainHandler.post( () -> {
                     try {
-                        mItemsCache.addAll(0, allNewItems);
+                        mItemsCache.addAll( 0, allNewItems );
                         if (mTodayPosition >= 0) mTodayPosition += allNewItems.size();
                         mCurrentCenterPosition += allNewItems.size();
 
-                        mMainHandler.post(() -> {
+                        mMainHandler.post( () -> {
                             if (getFragmentAdapter() != null) {
-                                getFragmentAdapter().notifyItemRangeInserted(0, allNewItems.size());
+                                getFragmentAdapter().notifyItemRangeInserted( 0, allNewItems.size() );
                             }
-                        });
+                        } );
 
-                        maintainScrollPosition(allNewItems.size());
-                        Log.d(TAG, mTAG + "Silent top load completed: " + allNewItems.size() + " items");
+                        maintainScrollPosition( allNewItems.size() );
                     } finally {
-                        mIsUpdatingCache.set(false);
+                        mIsUpdatingCache.set( false );
                     }
-                });
+                } );
             } else {
-                mIsUpdatingCache.set(false);
+                mIsUpdatingCache.set( false );
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in silent top load: " + e.getMessage());
-            mIsUpdatingCache.set(false);
+            Log.e( TAG, "Error in silent top load", e );
+            mIsUpdatingCache.set( false );
         }
     }
 
@@ -1448,64 +1231,60 @@ public abstract class BaseFragment extends Fragment implements
      * NEW: Execute silent bottom load (similar to executeBottomLoad but without loader UI)
      */
     private void executeSilentBottomLoad() {
-        final String mTAG = "executeSilentBottomLoad: ";
-
-        if (!mIsPendingBottomLoad.compareAndSet(true, false)) {
+        if (!mIsPendingBottomLoad.compareAndSet( true, false )) {
             return;
         }
 
-        if (!mIsUpdatingCache.compareAndSet(false, true)) {
-            mIsPendingBottomLoad.set(true);
+        if (!mIsUpdatingCache.compareAndSet( false, true )) {
+            mIsPendingBottomLoad.set( true );
             return;
         }
 
         try {
             LocalDate lastMonth = findLastMonthInCache();
             if (lastMonth == null) {
-                mIsUpdatingCache.set(false);
+                mIsUpdatingCache.set( false );
                 return;
             }
 
             // Load 2 months silently
             List<SharedViewModels.ViewItem> allNewItems = new ArrayList<>();
             for (int i = 1; i <= 2; i++) {
-                LocalDate monthToLoad = lastMonth.plusMonths(i);
-                List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthToLoad);
+                LocalDate monthToLoad = lastMonth.plusMonths( i );
+                List<SharedViewModels.ViewItem> monthItems = generateMonthItems( monthToLoad );
                 if (!monthItems.isEmpty()) {
-                    allNewItems.addAll(monthItems);
+                    allNewItems.addAll( monthItems );
                 }
             }
 
             if (!allNewItems.isEmpty()) {
-                mMainHandler.post(() -> {
+                mMainHandler.post( () -> {
                     try {
                         int insertPos = mItemsCache.size();
-                        mItemsCache.addAll(allNewItems);
+                        mItemsCache.addAll( allNewItems );
 
                         if (mTodayPosition < 0) {
-                            int todayInNew = SharedViewModels.DataConverter.findTodayPosition(allNewItems);
+                            int todayInNew = SharedViewModels.DataConverter.findTodayPosition( allNewItems );
                             if (todayInNew >= 0) {
                                 mTodayPosition = insertPos + todayInNew;
                             }
                         }
 
-                        mMainHandler.post(() -> {
+                        mMainHandler.post( () -> {
                             if (getFragmentAdapter() != null) {
-                                getFragmentAdapter().notifyItemRangeInserted(insertPos, allNewItems.size());
+                                getFragmentAdapter().notifyItemRangeInserted( insertPos, allNewItems.size() );
                             }
-                        });
-
-                        Log.d(TAG, mTAG + "Silent bottom load completed: " + allNewItems.size() + " items");
+                        } );
                     } finally {
-                        mIsUpdatingCache.set(false);
+                        mIsUpdatingCache.set( false );
                     }
-                });
+                } );
             } else {
-                mIsUpdatingCache.set(false);
+                mIsUpdatingCache.set( false );
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error in silent bottom load: " + e.getMessage());
-            mIsUpdatingCache.set(false);
+            Log.e( TAG, "Error in silent bottom load", e );
+            mIsUpdatingCache.set( false );
         }
     }
 
@@ -1515,46 +1294,35 @@ public abstract class BaseFragment extends Fragment implements
      * FIXED: Trigger top load with better state management
      */
     protected void triggerTopLoad() {
-        final String mTAG = ":triggerTopLoad: ";
+        if (mIsInitialScrolling) return;
 
-        if (mIsInitialScrolling) {
-            if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Skipping top load during initial scroll");
-            }
-            return; // SKIP durante scroll iniziale
-        }
         // NULL CHECK aggiunto
         if (mDataManager == null) {
-            Log.e(TAG, mTAG + "mDataManager is null");
+            Log.e( TAG, "mDataManager is null" );
             return;
         }
 
         // Check if already loading or pending
         if (mIsUpdatingCache.get()) {
-            Log.w(TAG, mTAG + "Cache update in progress - ignoring trigger");
+            Log.w( TAG, "Cache update in progress - ignoring trigger" );
             return;
         }
 
         if (mIsPendingTopLoad.get()) {
-            Log.w(TAG, mTAG + "Top load already pending - ignoring trigger");
+            Log.w( TAG, "Top load already pending - ignoring trigger" );
             return;
         }
 
         if (mShowingTopLoader) {
-            Log.w(TAG, mTAG + "Top loader already showing - ignoring trigger");
+            Log.w( TAG, "Top loader already showing - ignoring trigger" );
             return;
         }
 
-        Log.d(TAG, mTAG + "Triggering top load");
-
-        mIsPendingTopLoad.set(true);
+        mIsPendingTopLoad.set( true );
         showTopLoader();
 
         // Execute with a small delay to ensure loader is visible
-        mBackgroundHandler.postDelayed(() -> {
-            Log.d(TAG, mTAG + "Executing delayed top load");
-            executeTopLoad();
-        }, 200); // Increased delay to ensure loader visibility
+        mBackgroundHandler.postDelayed( this::executeTopLoad, 200 ); // Increased delay to ensure loader visibility
     }
 
     /**
@@ -1563,58 +1331,36 @@ public abstract class BaseFragment extends Fragment implements
      * FIXED: Trigger bottom load with better state management
      */
     protected void triggerBottomLoad() {
-        final String mTAG = "triggerBottomLoad: ";
+        if (mIsInitialScrolling) return; // SKIP durante scroll iniziale
 
-        if (mIsInitialScrolling) {
-            if (DEBUG_BASEFRAGMENT) {
-                Log.d(TAG, mTAG + "Skipping bottom load during initial scroll");
-            }
-            return; // SKIP durante scroll iniziale
-        }
         // NULL CHECK aggiunto
         if (mDataManager == null) {
-            Log.e(TAG, mTAG + "mDataManager is null");
+            Log.e( TAG, "mDataManager is null" );
             return;
         }
 
         // Check if already loading or pending
         if (mIsUpdatingCache.get()) {
-            Log.w(TAG, mTAG + "Cache update in progress - ignoring trigger");
+            Log.w( TAG, "Cache update in progress - ignoring trigger" );
             return;
         }
 
         if (mIsPendingBottomLoad.get()) {
-            Log.w(TAG, mTAG + "Bottom load already pending - ignoring trigger");
+            Log.w( TAG, "Bottom load already pending - ignoring trigger" );
             return;
         }
 
         if (mShowingBottomLoader) {
-            Log.w(TAG, mTAG + "Bottom loader already showing - ignoring trigger");
+            Log.w( TAG, "Bottom loader already showing - ignoring trigger" );
             return;
         }
 
-        Log.d(TAG, mTAG + "Triggering bottom load");
-
-        mIsPendingBottomLoad.set(true);
+        mIsPendingBottomLoad.set( true );
         showBottomLoader();
 
         // Execute with a small delay to ensure loader is visible
-        mBackgroundHandler.postDelayed(() -> {
-            Log.d(TAG, mTAG + "Executing delayed bottom load");
-            executeBottomLoad();
-        }, 200); // Increased delay to ensure loader visibility
+        mBackgroundHandler.postDelayed( this::executeBottomLoad, 200 ); // Increased delay to ensure loader visibility
     }
-
-//    /**
-//     * Add a month to the cache by generating its view items.
-//     * DEBUG: made protected insteadof private
-//     *
-//     * @param monthDate the month to add
-//     */
-//    protected void addMonthToCache(LocalDate monthDate) {
-//        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
-//        mItemsCache.addAll(monthItems);
-//    }
 
     /**
      * Generate view items for a specific month using the fragment-specific converter.
@@ -1623,8 +1369,8 @@ public abstract class BaseFragment extends Fragment implements
      * @return list of view items for the month
      */
     private List<SharedViewModels.ViewItem> generateMonthItems(LocalDate monthDate) {
-        List<Day> monthDays = mDataManager.getMonthDays(monthDate);
-        return convertMonthData(monthDays, monthDate);
+        List<Day> monthDays = mDataManager.getMonthDays( monthDate );
+        return convertMonthData( monthDays, monthDate );
     }
 
     /**
@@ -1632,14 +1378,10 @@ public abstract class BaseFragment extends Fragment implements
      * Executes any pending load operations that were deferred during scrolling.
      */
     protected void processPendingOperations() {
-        final String mTAG = "processPendingOperations: ";
-
         if (mIsPendingTopLoad.get() && !mIsUpdatingCache.get()) {
-            if (DEBUG_BASEFRAGMENT) Log.d(TAG, mTAG + "Processing pending top load");
             executeTopLoad();
         }
         if (mIsPendingBottomLoad.get() && !mIsUpdatingCache.get()) {
-            if (DEBUG_BASEFRAGMENT) Log.d(TAG, mTAG + "Processing pending bottom load");
             executeBottomLoad();
         }
     }
@@ -1649,18 +1391,13 @@ public abstract class BaseFragment extends Fragment implements
      * Prevents memory issues by cleaning old cache entries when cache grows too large.
      */
     protected void scheduleCleanupIfNeeded() {
-        final String mTAG = "scheduleCleanupIfNeeded: ";
-
         int maxElements = QD_MAX_CACHE_SIZE * 35; // ~35 elements per month
         if (mItemsCache.size() > maxElements) {
-            if (DEBUG_BASEFRAGMENT)
-                Log.d(TAG, mTAG + "Scheduling cache cleanup, current size: " + mItemsCache.size());
-
-            mBackgroundHandler.postDelayed(() -> {
+            mBackgroundHandler.postDelayed( () -> {
                 if (!mIsUpdatingCache.get() && mScrollVelocity == 0) {
                     cleanupCache();
                 }
-            }, 1000);
+            }, 1000 );
         }
     }
 
@@ -1669,11 +1406,9 @@ public abstract class BaseFragment extends Fragment implements
      * Works with both LinearLayoutManager and GridLayoutManager.
      */
     private void cleanupCache() {
-        final String mTAG = "cleanupCache: ";
+        if (!mIsUpdatingCache.compareAndSet( false, true )) return;
 
-        if (!mIsUpdatingCache.compareAndSet(false, true)) return;
-
-        mMainHandler.post(() -> {
+        mMainHandler.post( () -> {
             try {
                 // Get current position safely for any LayoutManager type
                 int currentPos = getCurrentVisiblePosition();
@@ -1683,45 +1418,42 @@ public abstract class BaseFragment extends Fragment implements
                 if (currentPos == RecyclerView.NO_POSITION) {
                     currentPos = mItemsCache.size() / 2; // Use middle as fallback
                     if (DEBUG_BASEFRAGMENT)
-                        Log.w(TAG, mTAG + "Using fallback position for cleanup");
+                        Log.w( TAG, "Using fallback position for cleanup" );
                 }
 
                 // Remove from start if necessary
                 while (mItemsCache.size() > targetSize && currentPos > targetSize / 2) {
-                    mItemsCache.remove(0);
+                    mItemsCache.remove( 0 );
                     currentPos--;
                     if (mTodayPosition > 0) mTodayPosition--;
                     if (mCurrentCenterPosition > 0) mCurrentCenterPosition--;
 
                     // POST adapter notification to next frame
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         if (getFragmentAdapter() != null) {
-                            getFragmentAdapter().notifyItemRemoved(0);
+                            getFragmentAdapter().notifyItemRemoved( 0 );
                         }
-                    });
+                    } );
                 }
 
                 // Remove from end if necessary
-                while (mItemsCache.size() > targetSize &&
-                        currentPos < mItemsCache.size() - targetSize / 2) {
+                while (mItemsCache.size() > targetSize) {
+                    mItemsCache.size();
                     int lastIndex = mItemsCache.size() - 1;
-                    mItemsCache.remove(lastIndex);
+                    mItemsCache.remove( lastIndex );
 
                     // POST adapter notification to next frame
                     final int finalLastIndex = lastIndex;
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         if (getFragmentAdapter() != null) {
-                            getFragmentAdapter().notifyItemRemoved(finalLastIndex);
+                            getFragmentAdapter().notifyItemRemoved( finalLastIndex );
                         }
-                    });
+                    } );
                 }
-
-                if (DEBUG_BASEFRAGMENT)
-                    Log.d(TAG, mTAG + "Cache cleaned, new size: " + mItemsCache.size());
             } finally {
-                mIsUpdatingCache.set(false);
+                mIsUpdatingCache.set( false );
             }
-        });
+        } );
     }
 
     /**
@@ -1731,8 +1463,6 @@ public abstract class BaseFragment extends Fragment implements
      * @return current visible position or NO_POSITION if not determinable
      */
     private int getCurrentVisiblePosition() {
-        final String mTAG = "getCurrentVisiblePosition: ";
-
         if (mRecyclerView == null) return RecyclerView.NO_POSITION;
 
         RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
@@ -1740,8 +1470,7 @@ public abstract class BaseFragment extends Fragment implements
 
         try {
             // Handle LinearLayoutManager (DaysListFragment)
-            if (layoutManager instanceof LinearLayoutManager) {
-                LinearLayoutManager linearManager = (LinearLayoutManager) layoutManager;
+            if (layoutManager instanceof LinearLayoutManager linearManager) {
                 int firstVisible = linearManager.findFirstCompletelyVisibleItemPosition();
                 if (firstVisible != RecyclerView.NO_POSITION) {
                     return firstVisible;
@@ -1751,26 +1480,14 @@ public abstract class BaseFragment extends Fragment implements
             }
 
             // Handle GridLayoutManager (CalendarFragment)
-            else if (layoutManager instanceof GridLayoutManager) {
-                GridLayoutManager gridManager = (GridLayoutManager) layoutManager;
-                int firstVisible = gridManager.findFirstCompletelyVisibleItemPosition();
-                if (firstVisible != RecyclerView.NO_POSITION) {
-                    return firstVisible;
-                }
-                // Fallback to partially visible
-                return gridManager.findFirstVisibleItemPosition();
-            }
-
-            // For other LayoutManager types, use generic approach
-            else {
-                // Try to get first visible child
-                View firstChild = layoutManager.getChildAt(0);
+            else {// Try to get first visible child
+                View firstChild = layoutManager.getChildAt( 0 );
                 if (firstChild != null) {
-                    return mRecyclerView.getChildAdapterPosition(firstChild);
+                    return mRecyclerView.getChildAdapterPosition( firstChild );
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error getting current position: " + e.getMessage());
+            Log.e( TAG, "Error getting current position: " + e.getMessage() );
         }
 
         return RecyclerView.NO_POSITION;
@@ -1784,31 +1501,29 @@ public abstract class BaseFragment extends Fragment implements
      * Override showTopLoader with more debugging
      */
     private void showTopLoader() {
-        final String mTAG = "showTopLoader: ";
-
         if (mShowingTopLoader) {
-            Log.w(TAG, mTAG + "Top loader already showing - ignoring request");
+            Log.w( TAG, "Top loader already showing - ignoring request" );
             return;
         }
 
         mShowingTopLoader = true;
 
         SharedViewModels.LoadingItem loader = new SharedViewModels.LoadingItem(
-                SharedViewModels.LoadingItem.LoadingType.TOP);
-        mItemsCache.add(0, loader);
+                SharedViewModels.LoadingItem.LoadingType.TOP );
+        mItemsCache.add( 0, loader );
 
         if (mTodayPosition >= 0) mTodayPosition++;
         mCurrentCenterPosition++;
 
-        Log.w(TAG, mTAG + "Added top loader - cache size now: " + mItemsCache.size());
+        Log.w( TAG, "Added top loader - cache size now: " + mItemsCache.size() );
 
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
-        mMainHandler.post(() -> {
+        mMainHandler.post( () -> {
             if (getFragmentAdapter() != null) {
-                getFragmentAdapter().notifyItemInserted(0);
-                Log.w(TAG, mTAG + "Notified adapter of top loader insertion");
+                getFragmentAdapter().notifyItemInserted( 0 );
+                Log.w( TAG, "Notified adapter of top loader insertion" );
             }
-        });
+        } );
     }
 
     /**
@@ -1817,71 +1532,60 @@ public abstract class BaseFragment extends Fragment implements
      * Override showBottomLoader with more debugging
      */
     private void showBottomLoader() {
-        final String mTAG = "showBottomLoader: ";
-
         if (mShowingBottomLoader) {
-            Log.w(TAG, mTAG + "Bottom loader already showing - ignoring request");
+            Log.w( TAG, "Bottom loader already showing - ignoring request" );
             return;
         }
 
         mShowingBottomLoader = true;
 
         SharedViewModels.LoadingItem loader = new SharedViewModels.LoadingItem(
-                SharedViewModels.LoadingItem.LoadingType.BOTTOM);
-        mItemsCache.add(loader);
-
-        Log.w(TAG, mTAG + "Added bottom loader - cache size now: " + mItemsCache.size());
+                SharedViewModels.LoadingItem.LoadingType.BOTTOM );
+        mItemsCache.add( loader );
 
         // POST ADAPTER NOTIFICATION TO NEXT FRAME
-        mMainHandler.post(() -> {
+        mMainHandler.post( () -> {
             if (getFragmentAdapter() != null) {
-                getFragmentAdapter().notifyItemInserted(mItemsCache.size() - 1);
-                Log.w(TAG, mTAG + "Notified adapter of bottom loader insertion");
+                getFragmentAdapter().notifyItemInserted( mItemsCache.size() - 1 );
+                Log.w( TAG, "Notified adapter of bottom loader insertion" );
             }
-        });
+        } );
     }
 
     /**
      * FIXED: Hide top loader with better error handling
      */
     private void hideTopLoader() {
-        final String mTAG = "hideTopLoader: ";
-        Log.v(TAG, mTAG + "called.");
-
         if (!mShowingTopLoader) {
-            Log.d(TAG, mTAG + "Top loader not showing - nothing to hide");
+            Log.d( TAG, "Top loader not showing - nothing to hide" );
             return;
         }
 
         try {
             for (int i = 0; i < mItemsCache.size(); i++) {
-                if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
-                    SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
+                if (mItemsCache.get( i ) instanceof SharedViewModels.LoadingItem loading) {
                     if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.TOP) {
-                        mItemsCache.remove(i);
+                        mItemsCache.remove( i );
                         if (mTodayPosition > i) mTodayPosition--;
                         if (mCurrentCenterPosition > i) mCurrentCenterPosition--;
 
-                        Log.d(TAG, mTAG + "Removed top loader from position " + i);
-
                         // POST ADAPTER NOTIFICATION TO NEXT FRAME
                         final int finalI = i;
-                        mMainHandler.post(() -> {
+                        mMainHandler.post( () -> {
                             try {
                                 if (getFragmentAdapter() != null) {
-                                    getFragmentAdapter().notifyItemRemoved(finalI);
-                                    Log.d(TAG, mTAG + "Notified adapter of top loader removal");
+                                    getFragmentAdapter().notifyItemRemoved( finalI );
                                 }
                             } catch (Exception e) {
-                                Log.e(TAG, mTAG + "Error notifying adapter of loader removal: " + e.getMessage());
+                                Log.e( TAG, "Error notifying adapter of loader removal: " + e.getMessage() );
                             }
-                        });
+                        } );
                         break;
                     }
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error hiding top loader: " + e.getMessage());
+            Log.e( TAG, "Error hiding top loader", e );
         } finally {
             mShowingTopLoader = false;
         }
@@ -1892,48 +1596,37 @@ public abstract class BaseFragment extends Fragment implements
      * Removes loading item from cache and notifies adapter on next frame.
      */
     private void hideBottomLoader() {
-        final String mTAG = "hideBottomLoader: ";
-
-        if (!mShowingBottomLoader) {
-            Log.d(TAG, mTAG + "Bottom loader not showing - nothing to hide");
-            return;
-        }
-
-        Log.d(TAG, mTAG + "Hiding bottom loader");
+        if (!mShowingBottomLoader) return;
 
         try {
             for (int i = mItemsCache.size() - 1; i >= 0; i--) {
-                if (mItemsCache.get(i) instanceof SharedViewModels.LoadingItem) {
-                    SharedViewModels.LoadingItem loading = (SharedViewModels.LoadingItem) mItemsCache.get(i);
+                if (mItemsCache.get( i ) instanceof SharedViewModels.LoadingItem loading) {
                     if (loading.loadingType == SharedViewModels.LoadingItem.LoadingType.BOTTOM) {
-                        mItemsCache.remove(i);
-
-                        Log.d(TAG, mTAG + "Removed bottom loader from position " + i);
+                        mItemsCache.remove( i );
 
                         // POST ADAPTER NOTIFICATION TO NEXT FRAME
                         final int finalI = i;
-                        mMainHandler.post(() -> {
+                        mMainHandler.post( () -> {
                             try {
                                 if (getFragmentAdapter() != null) {
-                                    getFragmentAdapter().notifyItemRemoved(finalI);
-                                    Log.d(TAG, mTAG + "Notified adapter of bottom loader removal");
+                                    getFragmentAdapter().notifyItemRemoved( finalI );
                                 }
                             } catch (Exception e) {
-                                Log.e(TAG, mTAG + "Error notifying adapter of loader removal: " + e.getMessage());
+                                Log.e( TAG, "Error notifying adapter of loader removal", e );
                             }
-                        });
+                        } );
                         break;
                     }
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, mTAG + "Error hiding bottom loader: " + e.getMessage());
+            Log.e( TAG, "Error hiding bottom loader", e );
         } finally {
             mShowingBottomLoader = false;
         }
     }
 
-    // === UTILITY METHODS ===
+    // ======================== HELPER METHODS ==========================
 
     /**
      * Reset all control flags to initial state.
@@ -1941,9 +1634,9 @@ public abstract class BaseFragment extends Fragment implements
      * DEBUG: made protected insteadof private
      */
     protected void resetControlFlags() {
-        mIsUpdatingCache.set(false);
-        mIsPendingTopLoad.set(false);
-        mIsPendingBottomLoad.set(false);
+        mIsUpdatingCache.set( false );
+        mIsPendingTopLoad.set( false );
+        mIsPendingBottomLoad.set( false );
         mShowingTopLoader = false;
         mShowingBottomLoader = false;
     }
@@ -1974,7 +1667,7 @@ public abstract class BaseFragment extends Fragment implements
      */
     private LocalDate findLastMonthInCache() {
         for (int i = mItemsCache.size() - 1; i >= 0; i--) {
-            SharedViewModels.ViewItem item = mItemsCache.get(i);
+            SharedViewModels.ViewItem item = mItemsCache.get( i );
             if (item instanceof SharedViewModels.MonthHeader) {
                 return ((SharedViewModels.MonthHeader) item).monthDate;
             }
@@ -1996,9 +1689,9 @@ public abstract class BaseFragment extends Fragment implements
         super.onStart();
 
         if (QDue.getQuattrodue() != null) {
-            QDue.getQuattrodue().updatePreferences(getActivity());
+            QDue.getQuattrodue().updatePreferences( requireActivity() );
             if (QDue.getQuattrodue().isRefresh()) {
-                QDue.getQuattrodue().setRefresh(false);
+                QDue.getQuattrodue().setRefresh( false );
                 refreshData();
             }
         }
@@ -2010,7 +1703,7 @@ public abstract class BaseFragment extends Fragment implements
 
         // Check for lazy refresh in base implementation
         if (shouldPerformBaseLazyRefresh()) {
-            Log.d(TAG, String.format("Performing lazy refresh for %s", getClass().getSimpleName()));
+            Log.d( TAG, String.format( "Performing lazy refresh for %s", getClass().getSimpleName() ) );
             onForceEventsRefresh();
         }
 
@@ -2033,10 +1726,10 @@ public abstract class BaseFragment extends Fragment implements
         if (!mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity mainActivity) {
 
             // Register
-            mainActivity.registerEventsRefreshFragment(this);
+            mainActivity.registerEventsRefreshFragment( this );
 
             mIsRegisteredForEventsRefresh = true;
-            Log.d(TAG, String.format("Registered %s for events refresh", mFragmentId));
+            Log.d( TAG, String.format( "Registered %s for events refresh", mFragmentId ) );
         }
     }
 
@@ -2044,14 +1737,13 @@ public abstract class BaseFragment extends Fragment implements
      * Unregister this fragment from events refresh notifications
      */
     private void unregisterForEventsRefresh() {
-        Log.v(TAG, "unregisterForEventsRefresh: called.");
         if (mIsRegisteredForEventsRefresh && getActivity() instanceof QDueMainActivity mainActivity) {
 
             // Unregister
-            mainActivity.unregisterEventsRefreshFragment(this);
+            mainActivity.unregisterEventsRefreshFragment( this );
 
             mIsRegisteredForEventsRefresh = false;
-            Log.d(TAG, String.format("Unregistered %s from events refresh", mFragmentId));
+            Log.d( TAG, String.format( "Unregistered %s from events refresh", mFragmentId ) );
         }
     }
 
@@ -2065,10 +1757,10 @@ public abstract class BaseFragment extends Fragment implements
 
         // Cancel all pending operations
         if (mMainHandler != null) {
-            mMainHandler.removeCallbacksAndMessages(null);
+            mMainHandler.removeCallbacksAndMessages( null );
         }
         if (mBackgroundHandler != null) {
-            mBackgroundHandler.removeCallbacksAndMessages(null);
+            mBackgroundHandler.removeCallbacksAndMessages( null );
         }
 
         // Clean up resources
@@ -2086,8 +1778,6 @@ public abstract class BaseFragment extends Fragment implements
      * - regenerates data.
      */
     public void refreshData() {
-        Log.v(TAG, "refreshData: called.");
-
         // Clear data manager cache
         mDataManager.clearCache();
 
@@ -2099,10 +1789,8 @@ public abstract class BaseFragment extends Fragment implements
      * API: Notify updates from external sources.
      * Updates user team and refreshes adapter.
      */
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint ("NotifyDataSetChanged")
     public void notifyUpdates() {
-        Log.v(TAG, "notifyUpdates: called.");
-
         // Update user team if necessary
         onUserTeamChanged();
 
@@ -2116,7 +1804,6 @@ public abstract class BaseFragment extends Fragment implements
      * Subclasses can override for specific logic.
      */
     protected void onUserTeamChanged() {
-        Log.v(TAG, "onUserTeamChanged: called.");
     }
 
     // ==================== CACHE LOADING ====================
@@ -2129,12 +1816,11 @@ public abstract class BaseFragment extends Fragment implements
      */
     //@Override
     protected void addMonthToCache(LocalDate monthDate) {
-        List<SharedViewModels.ViewItem> monthItems = generateMonthItems(monthDate);
-        mItemsCache.addAll(monthItems);
-        //addMonthToCache(monthDate);
+        List<SharedViewModels.ViewItem> monthItems = generateMonthItems( monthDate );
+        mItemsCache.addAll( monthItems );
 
         // Load events for the new month
-        loadEventsForMonth(monthDate);
+        loadEventsForMonth( monthDate );
     }
 
     /**
@@ -2148,32 +1834,26 @@ public abstract class BaseFragment extends Fragment implements
                 LocalDate date = entry.getKey();
                 List<LocalEvent> newEvents = entry.getValue();
 
-                if (mEventsCache.containsKey(date)) {
+                if (mEventsCache.containsKey( date )) {
                     // Merge con eventi esistenti per questa data
-                    List<LocalEvent> existingEvents = mEventsCache.get(date);
+                    List<LocalEvent> existingEvents = mEventsCache.get( date );
                     if (existingEvents != null) {
                         // Creare lista combinata evitando duplicati
-                        List<LocalEvent> mergedEvents = new ArrayList<>(existingEvents);
+                        List<LocalEvent> mergedEvents = new ArrayList<>( existingEvents );
                         for (LocalEvent newEvent : newEvents) {
-                            if (!mergedEvents.contains(newEvent)) {
-                                mergedEvents.add(newEvent);
+                            if (!mergedEvents.contains( newEvent )) {
+                                mergedEvents.add( newEvent );
                             }
                         }
-                        mEventsCache.put(date, mergedEvents);
+                        mEventsCache.put( date, mergedEvents );
                     } else {
-                        mEventsCache.put(date, new ArrayList<>(newEvents));
+                        mEventsCache.put( date, new ArrayList<>( newEvents ) );
                     }
                 } else {
-                    // Nuova data, aggiungi direttamente
-                    mEventsCache.put(date, new ArrayList<>(newEvents));
+                    // New date, add directly
+                    mEventsCache.put( date, new ArrayList<>( newEvents ) );
                 }
             }
-
-            Log.d(TAG, "updateEventsCache: ✅ Updated events cache: " + newEventsMap.size() + " new dates; total cache: " + mEventsCache.size() + " dates.");
-        } else {
-
-            // FIX: Do not empty cache  if a map is empty
-            Log.v(TAG, "updateEventsCache: ✅ events cache not updated - empty map or null");
         }
     }
 
@@ -2183,8 +1863,6 @@ public abstract class BaseFragment extends Fragment implements
      * Notify adapter
      */
     public void refreshEventsData() {
-        Log.v(TAG, String.format("refreshEventsData: Refreshing events data for %s", getClass().getSimpleName()));
-
         // Clear existing cache
         mEventsCache.clear();
 
@@ -2205,27 +1883,27 @@ public abstract class BaseFragment extends Fragment implements
      * @param monthDate The month to load events for
      */
     private void loadEventsForMonth(LocalDate monthDate) {
-        CompletableFuture.supplyAsync(() -> {
+        CompletableFuture.supplyAsync( () -> {
             try {
-                LocalDate startOfMonth = monthDate.withDayOfMonth(1);
-                LocalDate endOfMonth = monthDate.withDayOfMonth(monthDate.lengthOfMonth());
+                LocalDate startOfMonth = monthDate.withDayOfMonth( 1 );
+                LocalDate endOfMonth = monthDate.withDayOfMonth( monthDate.lengthOfMonth() );
 
                 // Convert to LocalDateTime for DAO method
                 LocalDateTime startDateTime = startOfMonth.atStartOfDay();
-                LocalDateTime endDateTime = endOfMonth.atTime(23, 59, 59);
+                LocalDateTime endDateTime = endOfMonth.atTime( 23, 59, 59 );
 
-                return mDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
+                return mDatabase.eventDao().getEventsForDateRange( startDateTime, endDateTime );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error loading events for month " + monthDate, e);
+                Log.e( TAG, "Error loading events for month " + monthDate, e );
                 return new ArrayList<LocalEvent>();
             }
-        }).thenAccept(events -> {
-            Map<LocalDate, List<LocalEvent>> monthEvents = groupEventsByDate(events);
-            mMainHandler.post(() -> {
-                updateEventsCache(monthEvents);
+        } ).thenAccept( events -> {
+            Map<LocalDate, List<LocalEvent>> monthEvents = groupEventsByDate( events );
+            mMainHandler.post( () -> {
+                updateEventsCache( monthEvents );
                 notifyEventsDataChanged();
-            });
-        });
+            } );
+        } );
     }
 
     /**
@@ -2234,37 +1912,34 @@ public abstract class BaseFragment extends Fragment implements
      * - updates UI when complete.
      */
     private void loadEventsForCurrentPeriod() {
-        if (mIsLoadingEvents.get()) {
-            Log.d(TAG, "Events already loading, skipping");
-            return;
-        }
+        if (mIsLoadingEvents.get()) return;
 
-        mIsLoadingEvents.set(true);
+        mIsLoadingEvents.set( true );
 
         // Calculate date range for current cache
         LocalDate startDate = getCurrentPeriodStart();
         LocalDate endDate = getCurrentPeriodEnd();
 
-        Log.d(TAG, "Loading events for period: " + startDate + " to " + endDate);
-
         // Load events asynchronously
-        CompletableFuture.supplyAsync(() -> {
+        CompletableFuture.supplyAsync( () -> {
             try {
                 // Convert LocalDate to LocalDateTime for DAO method
                 LocalDateTime startDateTime = startDate.atStartOfDay();
-                LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-                return mDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
+                LocalDateTime endDateTime = endDate.atTime( 23, 59, 59 );
+                return mDatabase.eventDao().getEventsForDateRange( startDateTime, endDateTime );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error loading events from database", e);
+                Log.e( TAG, "Error loading events from database", e );
                 return new ArrayList<LocalEvent>();
             }
-        }).thenAccept(events -> {
-            Log.d(TAG, "✅ Loaded " + events.size() + " events from database");
+        } ).thenAccept( events -> {
+            if (events.isEmpty()) return;
+
+            Log.d( TAG, MessageFormat.format( "✅ Loaded {0} events from database", events.size() ) );
 
             // Process events into date-grouped map
-            Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(events);
+            Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate( events );
 
-            Log.d(TAG, "✅ Grouped into " + eventsMap.size() + " dates with events");
+            Log.d( TAG, MessageFormat.format( "✅ Grouped into {0} dates with events", eventsMap.size() ) );
 
             // Debug: Log alcuni esempi
             int debugCount = 0;
@@ -2272,24 +1947,22 @@ public abstract class BaseFragment extends Fragment implements
                 if (debugCount < 3) { // Solo primi 3 per debug
                     LocalDate date = entry.getKey();
                     List<LocalEvent> dateEvents = entry.getValue();
-                    Log.d(TAG, "DEBUG: Date " + date + " has " + dateEvents.size() + " events");
+                    Log.d( TAG, MessageFormat.format( "DEBUG: Date {0} has {1} events", date, dateEvents.size() ) );
                     debugCount++;
                 }
             }
 
             // Update cache on main thread
-            mMainHandler.post(() -> {
-                updateEventsCache(eventsMap);
+            mMainHandler.post( () -> {
+                updateEventsCache( eventsMap );
                 notifyEventsDataChanged();
-                mIsLoadingEvents.set(false);
-            });
-        }).exceptionally(throwable -> {
-            Log.e(TAG, "Failed to load events", throwable);
-            mMainHandler.post(() -> {
-                mIsLoadingEvents.set(false);
-            });
+                mIsLoadingEvents.set( false );
+            } );
+        } ).exceptionally( throwable -> {
+            Log.e( TAG, "Failed to load events", throwable );
+            mMainHandler.post( () -> mIsLoadingEvents.set( false ) );
             return null;
-        });
+        } );
     }
 
     /**
@@ -2304,24 +1977,24 @@ public abstract class BaseFragment extends Fragment implements
             LocalDate endDate = event.getEndDate();
 
             // SINGLE DAY EVENT: Add only to start date
-            if (endDate == null || startDate.equals(endDate)) {
-                grouped.computeIfAbsent(startDate, k -> new ArrayList<>()).add(event);
-                Log.v(TAG, "Single day event: " + event.getTitle() + " on " + startDate);
+            if (endDate == null || startDate.equals( endDate )) {
+                grouped.computeIfAbsent( startDate, k -> new ArrayList<>() ).add( event );
             }
             // MULTI-DAY EVENT: Add to all dates in range
             else {
                 LocalDate currentDate = startDate;
                 int dayCount = 0;
 
-                while (!currentDate.isAfter(endDate) && dayCount < 365) { // Safety limit
-                    grouped.computeIfAbsent(currentDate, k -> new ArrayList<>()).add(event);
-                    Log.v(TAG, "Multi-day event: " + event.getTitle() + " added to " + currentDate);
+                while (!currentDate.isAfter( endDate ) && dayCount < 365) { // Safety limit
+                    grouped.computeIfAbsent( currentDate, k -> new ArrayList<>() ).add( event );
 
-                    currentDate = currentDate.plusDays(1);
+                    currentDate = currentDate.plusDays( 1 );
                     dayCount++;
                 }
 
-                Log.d(TAG, "Multi-day event '" + event.getTitle() + "' spans " + dayCount + " days (" + startDate + " to " + endDate + ")");
+                Log.d( TAG, MessageFormat.format(
+                        "Multi-day event ''{0}'' spans {1} days ({2} to {3})",
+                        event.getTitle(), dayCount, startDate, endDate ) );
             }
         }
 
@@ -2333,9 +2006,9 @@ public abstract class BaseFragment extends Fragment implements
      */
     private LocalDate getCurrentPeriodStart() {
         if (mCurrentDate != null) {
-            return mCurrentDate.minusMonths(QD_MONTHS_CACHE_RADIUS);
+            return mCurrentDate.minusMonths( QD_MONTHS_CACHE_RADIUS );
         }
-        return LocalDate.now().minusMonths(QD_MONTHS_CACHE_RADIUS);
+        return LocalDate.now().minusMonths( QD_MONTHS_CACHE_RADIUS );
     }
 
     /**
@@ -2343,9 +2016,9 @@ public abstract class BaseFragment extends Fragment implements
      */
     private LocalDate getCurrentPeriodEnd() {
         if (mCurrentDate != null) {
-            return mCurrentDate.plusMonths(QD_MONTHS_CACHE_RADIUS);
+            return mCurrentDate.plusMonths( QD_MONTHS_CACHE_RADIUS );
         }
-        return LocalDate.now().plusMonths(QD_MONTHS_CACHE_RADIUS);
+        return LocalDate.now().plusMonths( QD_MONTHS_CACHE_RADIUS );
     }
 
     /**
@@ -2355,18 +2028,8 @@ public abstract class BaseFragment extends Fragment implements
      * @return List of events for the date, or empty list if none
      */
     protected List<LocalEvent> getEventsForDate(LocalDate date) {
-        List<LocalEvent> events = mEventsCache.get(date);
+        List<LocalEvent> events = mEventsCache.get( date );
         return events != null ? events : new ArrayList<>();
-    }
-
-    /**
-     * Check if a date has any events.
-     *
-     * @param date The date to check
-     * @return true if the date has events
-     */
-    protected boolean hasEventsForDate(LocalDate date) {
-        return mEventsCache.containsKey(date) && !mEventsCache.get(date).isEmpty();
     }
 
     // ==================== COMPLETE INTERFACE IMPLEMENTATION ====================
@@ -2381,17 +2044,16 @@ public abstract class BaseFragment extends Fragment implements
      */
     @Override
     public void onEventsChanged(String changeType, int eventCount) {
-        Log.d(TAG, String.format(QDue.getLocale(),
+        Log.d( TAG, String.format( QDue.getLocale(),
                 "BaseFragment (%s): Events changed %s (%d events)",
-                getClass().getSimpleName(), changeType, eventCount));
+                getClass().getSimpleName(), changeType, eventCount ) );
 
         // Only refresh if fragment is active
         if (isFragmentActive()) {
             refreshEventsData();
-
         } else {
-            Log.d(TAG, String.format("Fragment %s is inactive, skipping immediate refresh",
-                    getClass().getSimpleName()));
+            Log.d( TAG, String.format( "Fragment %s is inactive, skipping immediate refresh",
+                    getClass().getSimpleName() ) );
         }
     }
 
@@ -2400,12 +2062,11 @@ public abstract class BaseFragment extends Fragment implements
      */
     @Override
     public void onForceEventsRefresh() {
-        Log.d(TAG, String.format("BaseFragment (%s): Force refresh requested",
-                getClass().getSimpleName()));
+        Log.d( TAG, String.format( "BaseFragment (%s): Force refresh requested",
+                getClass().getSimpleName() ) );
 
         // Always refresh on force request, regardless of fragment state
         refreshEventsData();
-        //notifyEventsDataChanged(); // done in refresh
     }
 
     @Override
@@ -2428,28 +2089,27 @@ public abstract class BaseFragment extends Fragment implements
     @Override
     public String getFragmentDescription() {
         // Child classe should implement this
-        return String.format("%s (ID: %s)", getClass().getSimpleName(), "unknown");
+        return String.format( "%s (ID: %s)", getClass().getSimpleName(), "unknown" );
     }
 
     /**
      * Notify subclasses that events data has changed.
      * Subclasses should override this to update their adapters.
      */
-    @SuppressLint("NotifyDataSetChanged")
+    @SuppressLint ("NotifyDataSetChanged")
     protected void notifyEventsDataChanged() {
         try {
             // Update adapter with new events data
             if (getFragmentAdapter() != null) {
                 getFragmentAdapter().notifyDataSetChanged();
-                Log.d(TAG, String.format(QDue.getLocale(), "✅ Notified adapter of events changes (%d dates with events)",
-                        mEventsCache.size()));
+                Log.d( TAG, String.format( QDue.getLocale(), "✅ Notified adapter of events changes (%d dates with events)",
+                        mEventsCache.size() ) );
             }
 
             // Additional subclass-specific notifications
             onEventsDataRefreshed();
-
         } catch (Exception e) {
-            Log.e(TAG, "notifyEventsDataChanged: ❌", e);
+            Log.e( TAG, "notifyEventsDataChanged", e );
         }
     }
 
@@ -2458,7 +2118,7 @@ public abstract class BaseFragment extends Fragment implements
      */
     protected void onEventsDataRefreshed() {
         // Default implementation - subclasses can override
-        Log.d(TAG, String.format("onEventsDataRefreshed: ✅ Events data refreshed for %s", getClass().getSimpleName()));
+        Log.d( TAG, String.format( "onEventsDataRefreshed: ✅ Events data refreshed for %s", getClass().getSimpleName() ) );
     }
 
     /**
@@ -2480,52 +2140,6 @@ public abstract class BaseFragment extends Fragment implements
      * @return Current events cache
      */
     protected Map<LocalDate, List<LocalEvent>> getEventsCache() {
-        return new HashMap<>(mEventsCache); // Return copy for thread safety
-    }
-
-    // ==================== DEBUG METHODS ====================
-
-    /**
-     * DEBUG: Verify events integration
-     */
-    public void debugEventsIntegration() {
-        try {
-            Log.d(TAG, "=== EVENTS INTEGRATION DEBUG ===");
-            Log.d(TAG, "Fragment: " + getFragmentDescription());
-            Log.d(TAG, "Is Active: " + isFragmentActive());
-            Log.d(TAG, "Is Registered: " + mIsRegisteredForEventsRefresh);
-            Log.d(TAG, "Database: " + (mDatabase != null ? "initialized" : "null"));
-            Log.d(TAG, "Today position calculated: " + mTodayPosition);
-            Log.d(TAG, "Events Cache Size: " + mEventsCache.size());
-            Log.d(TAG, "Adapter: " + (getFragmentAdapter() != null ? "initialized" : "null"));
-            Log.d(TAG, "=== END DEBUG ===");
-        } catch (Exception e) {
-            Log.e(TAG, "debugEventsIntegration: ❌", e);
-        }
-    }
-
-    /**
-     * DEBUG: Add logging to identify what's causing the scroll reset
-     */
-    public class debugScrollListener extends RecyclerView.OnScrollListener {
-
-        private int mLastPosition = -1;
-
-        @Override
-        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-
-            int currentPosition = getCurrentVisiblePosition();
-
-            if (currentPosition != mLastPosition && currentPosition != RecyclerView.NO_POSITION) {
-                Log.w("SCROLL_DEBUG", "Position changed from " + mLastPosition + " to " + currentPosition +
-                        " dx=" + dx + " dy=" + dy + " thread=" + Thread.currentThread().getName());
-
-                // Print stack trace to see who triggered the scroll
-                Log.w("SCROLL_DEBUG", "Stack trace:" + new Exception("Scroll trigger"));
-
-                mLastPosition = currentPosition;
-            }
-        }
+        return new HashMap<>( mEventsCache ); // Return copy for thread safety
     }
 }

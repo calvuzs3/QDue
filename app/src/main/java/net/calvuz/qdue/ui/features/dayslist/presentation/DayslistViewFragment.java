@@ -69,7 +69,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_dayslist_view, container, false);
+        return inflater.inflate( R.layout.fragment_dayslist_view, container, false );
     }
 
     @Override
@@ -78,33 +78,9 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
         // Exit selection mode when fragment is paused to avoid confusion
         if (isSelectionMode()) {
-            Log.i(TAG, "✅ Exiting selection mode due to fragment pause");
+            Log.i( TAG, "✅ Exiting selection mode due to fragment pause" );
             exitSelectionMode();
         }
-    }
-
-
-    /**
-     * Load days list data
-     */
-    private void loadDaysListData() {
-        // TODO: Implement data loading
-        // This should load the actual days data and update the adapter
-    }
-
-    // ===========================================
-    // BaseInteractiveFragment Implementation
-    // ===========================================
-
-    protected String getOriginalTitle() {
-        return getString(R.string.view_dayslist_title);
-    }
-
-    @Override
-    protected ViewGroup getToolbarContainer() {
-        // Return the CoordinatorLayout as the container for the bottom toolbar
-        // This allows the toolbar to be positioned at the bottom of the screen
-        return mCoordinatorLayout;
     }
 
     // ===========================================
@@ -113,13 +89,13 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     protected void findViews(View rootView) {
-        mCoordinatorLayout = rootView.findViewById(R.id.coordinator_layout_dayslist);
+        mCoordinatorLayout = rootView.findViewById( R.id.coordinator_layout_dayslist );
 
         if (mCoordinatorLayout == null) {
-            Log.e(TAG, "CoordinatorLayout not found - bottom toolbar may not position correctly");
+            Log.e( TAG, "CoordinatorLayout not found - bottom toolbar may not position correctly" );
         }
-        mRecyclerView = rootView.findViewById(R.id.rv_dayslist);
-        mFabGoToToday = rootView.findViewById(R.id.fab_go_to_today);
+        mRecyclerView = rootView.findViewById( R.id.rv_dayslist );
+        mFabGoToToday = rootView.findViewById( R.id.fab_go_to_today );
     }
 
     @Override
@@ -129,7 +105,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
-        return SharedViewModels.DataConverter.convertForDaysList(days, monthDate);
+        return SharedViewModels.DataConverter.convertForDaysList( days, monthDate );
     }
 
     // ==================== ADAPTER SETUP ====================
@@ -137,7 +113,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     @Override
     protected void setupAdapter() {
         setupLegacyAdapter();
-        Log.i(TAG, "✅ Adapter setup completed");
+        Log.i( TAG, "✅ Adapter setup completed" );
     }
 
     @Override
@@ -162,12 +138,12 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
                 QDue.getQuattrodue().getUserHalfTeam(),
                 3
         );
-        mRecyclerView.setAdapter(mLegacyAdapter);
+        mRecyclerView.setAdapter( mLegacyAdapter );
 
         // Update with events if available with better error handling
         updateAdapterWithEvents();
 
-        Log.i(TAG, "✅ Legacy adapter setup completed");
+        Log.i( TAG, "✅ Legacy adapter setup completed" );
     }
 
     // ==================== EVENTS INTEGRATION ====================
@@ -177,20 +153,20 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     private void updateAdapterWithEvents() {
         if (mLegacyAdapter == null) {
-            Log.w(TAG, "Adapter is null, cannot update with events");
+            Log.w( TAG, "Adapter is null, cannot update with events" );
             return;
         }
 
         try {
             Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
-                mLegacyAdapter.updateEventsData(eventsCache);
-                Log.i(TAG,  "✅ Adapter updated with events data");
+                mLegacyAdapter.updateEventsData( eventsCache );
+                Log.i( TAG, "✅ Adapter updated with events data" );
             } else {
-                Log.i(TAG, "No events cache available yet");
+                Log.i( TAG, "No events cache available yet" );
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error updating adapter with events: " + e.getMessage());
+            Log.e( TAG, "Error updating adapter with events: " + e.getMessage() );
         }
     }
 
@@ -210,11 +186,9 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
         // Animate FAB visibility changes
         if (showFab && mFabGoToToday.getVisibility() != View.VISIBLE) {
-            mFabGoToToday.setVisibility(View.VISIBLE);
-            mFabGoToToday.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(200).start();
+            toggleFabVisibility( mFabGoToToday );
         } else if (!showFab && mFabGoToToday.getVisibility() == View.VISIBLE) {
-            mFabGoToToday.animate().alpha(0f).scaleX(0f).scaleY(0f).setDuration(150)
-                    .withEndAction(() -> mFabGoToToday.setVisibility(View.GONE)).start();
+            toggleFabVisibility( mFabGoToToday );
         }
     }
 
@@ -236,11 +210,11 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onOpenEventEditor(LocalDate date) {
-        Log.d(TAG, "✅ Opening event editor for date: " + date);
+        Log.d( TAG, "✅ Opening event editor for date: " + date );
 
         // TODO: Implement specific navigation for DaysList
         // For now, delegate to base implementation
-        super.onOpenEventEditor(date);
+        super.onOpenEventEditor( date );
 
         // DaysList-specific event editor handling
         // Example: Pass additional context like selected shift, etc.
@@ -254,13 +228,13 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
-        Log.d(TAG, "✅ Showing events dialog for date: " + date);
+        Log.d( TAG, "✅ Showing events dialog for date: " + date );
 
         // DaysList-specific events dialog
         if (events != null && !events.isEmpty()) {
-            showDaysListEventsDialog(date, events);
+            showDaysListEventsDialog( date, events );
         } else {
-            super.onShowEventsDialog(date, events);
+            super.onShowEventsDialog( date, events );
         }
     }
 
@@ -272,25 +246,12 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected void onQuickEventCreated(ToolbarAction action, LocalDate date) {
-        Log.d(TAG, "✅ Quick event created: " + action + " for date: " + date);
+        Log.d( TAG, "✅ Quick event created: " + action + " for date: " + date );
 
         // Refresh data to show the new event
 //        loadDaysListData();
         // DaysList-specific post-creation handling
 //        updateAdapterWithEventsDelayed();
-    }
-
-    /**
-     * Update UI based on selection state
-     *
-     * @param hasSelection Whether selection mode is active
-     */
-    protected void updateSelectionDependentUI(boolean hasSelection) {
-        // DaysList-specific UI updates based on selection
-        Log.d(TAG, "✅ Updating selection-dependent UI, hasSelection: " + hasSelection);
-
-        // Could add DaysList-specific UI updates here
-        // For example: show/hide certain buttons, update status bar, etc.
     }
 
     // ===========================================
@@ -301,11 +262,11 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      * Show DaysList-specific events dialog
      */
     private void showDaysListEventsDialog(LocalDate date, List<LocalEvent> events) {
-        Log.v(TAG, "✅ Showing DaysList events dialog with " + events.size() + " events for " + date);
+        Log.v( TAG, "✅ Showing DaysList events dialog with " + events.size() + " events for " + date );
 
         // TODO: Implement DaysListEventsDialogFragment
         // For now, use base implementation
-        showEventsListDialog(date, events);
+        showEventsListDialog( date, events );
     }
 
     /**
@@ -313,10 +274,10 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     private void updateAdapterWithEventsDelayed() {
         if (mMainHandler != null) {
-            mMainHandler.postDelayed(() -> {
+            mMainHandler.postDelayed( () -> {
                 updateAdapterWithEvents();
-                Log.i(TAG, "✅ Delayed adapter events update completed");
-            }, 300);
+                Log.i( TAG, "✅ Delayed adapter events update completed" );
+            }, 300 );
         }
     }
 
@@ -326,11 +287,11 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     public void onEventsChanged(String changeType, int eventCount) {
-        Log.d(TAG, String.format(QDue.getLocale(),
-                "✅ Events changed %s (%d events)", changeType, eventCount));
+        Log.d( TAG, String.format( QDue.getLocale(),
+                "✅ Events changed %s (%d events)", changeType, eventCount ) );
 
         // Call parent implementation for base functionality
-        super.onEventsChanged(changeType, eventCount);
+        super.onEventsChanged( changeType, eventCount );
 
         // Additional DaysList-specific logic
         updateAdapterWithEventsDelayed();
@@ -338,7 +299,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
     @Override
     public void onForceEventsRefresh() {
-        Log.d(TAG, "✅ Force refresh requested");
+        Log.d( TAG, "✅ Force refresh requested" );
 
         // Call parent implementation for base functionality
         super.onForceEventsRefresh();
@@ -354,16 +315,16 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
         boolean isActive = baseActive && isInDaysListView;
 
-        Log.d(TAG, String.format(QDue.getLocale(),
+        Log.d( TAG, String.format( QDue.getLocale(),
                 "✅ Fragment activity check - base: %s, inDaysListView: %s, result: %s",
-                baseActive, isInDaysListView, isActive));
+                baseActive, isInDaysListView, isActive ) );
 
         return isActive;
     }
 
     @Override
     protected void onEventsDataRefreshed() {
-        Log.d(TAG, "✅ Events data refreshed");
+        Log.d( TAG, "✅ Events data refreshed" );
 
         // Additional DaysList-specific refresh logic
         updateAdapterWithEventsDelayed();
@@ -379,47 +340,14 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     private boolean isCurrentlyInDaysListView() {
         try {
             if (getActivity() instanceof QDueMainActivity) {
-                QDueMainActivity mainActivity = (QDueMainActivity) getActivity();
                 // You might need to add a method to check current navigation destination
                 // For now, assume we're in the right view if fragment is attached
                 return true;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error checking current view: " + e.getMessage());
+            Log.e( TAG, "Error checking current view: " + e.getMessage() );
         }
         return false;
-    }
-
-    // ===========================================
-    // Menu Integration
-    // ===========================================
-
-    /**
-     * Handle options menu creation for selection mode
-     */
-    public void onCreateOptionsMenu(@NonNull android.view.Menu menu, @NonNull android.view.MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
-        // Add selection mode menu items if needed
-        if (isSelectionMode()) {
-            // TODO: Inflate selection mode menu
-            // inflater.inflate(R.menu.menu_dayslist_selection, menu);
-            // mSelectAllMenuItem = menu.findItem(R.id.action_select_all);
-            // mClearSelectionMenuItem = menu.findItem(R.id.action_clear_selection);
-        }
-    }
-
-    /**
-     * Handle options menu item selection
-     */
-    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
-        // First try parent handling
-        boolean handled = super.onOptionsItemSelected(item);
-
-        // Handle DaysList-specific menu items
-        // TODO: Add DaysList-specific menu handling
-
-        return handled;
     }
 
     // ===========================================
@@ -431,7 +359,6 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      */
     @Override
     protected EventsPreviewManager.ViewType getEventsPreviewViewType() {
-
         return EventsPreviewManager.ViewType.DAYS_LIST;
     }
 
@@ -451,189 +378,4 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 //        return super.onBackPressed();
         return false;
     }
-
-
-    // ===========================================
-    // Integration Test Methods
-    // ===========================================
-
-    /**
-     * Test long-click functionality
-     */
-    public void testLongClickFunctionality() {
-        Log.d(TAG, "=== TESTING LONG-CLICK FUNCTIONALITY ===");
-
-        if (mLegacyAdapter == null) {
-            Log.e(TAG, "Cannot test: adapter is null");
-            return;
-        }
-
-        // Test selection mode toggle
-        boolean wasInSelectionMode = isSelectionMode();
-
-        if (!wasInSelectionMode) {
-            enterSelectionMode();
-            Log.d(TAG, "Test: Entered selection mode");
-        }
-
-        // Test selection state
-        debugSelectionState();
-
-        if (!wasInSelectionMode) {
-            exitSelectionMode();
-            Log.d(TAG, "Test: Exited selection mode");
-        }
-
-        Log.d(TAG, "=== END LONG-CLICK FUNCTIONALITY TEST ===");
-    }
-
-    /**
-     * Test toolbar integration
-     */
-    public void testToolbarIntegration() {
-        Log.d(TAG, "=== TESTING TOOLBAR INTEGRATION ===");
-
-        // Test each toolbar action
-        LocalDate testDate = LocalDate.now();
-
-        for (ToolbarAction action : ToolbarAction.values()) {
-            Log.d(TAG, "Testing action: " + action);
-            onToolbarActionSelected(action, null, testDate);
-        }
-
-        Log.d(TAG, "=== END TOOLBAR INTEGRATION TEST ===");
-    }
-
-    // Nel fragment, temporaneamente:
-    public void testEventsPreview() {
-        debugClickHandling();
-
-        // Test click normale su un giorno con eventi
-        LocalDate testDate = LocalDate.now();
-        List<LocalEvent> testEvents = getEventsForDate(testDate);
-        // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
-    }
-
-    // Add method to test expansion functionality
-    public void testExpansionFunctionality() {
-        Log.d(TAG, "=== TESTING EXPANSION FUNCTIONALITY ===");
-
-        // Test expansion on today
-        LocalDate today = LocalDate.now();
-        List<LocalEvent> todayEvents = getEventsForDate(today);
-
-        Log.d(TAG, "Testing expansion for today: " + today);
-        Log.d(TAG, "Today has " + todayEvents.size() + " events");
-
-        if (mEventsPreviewManager != null) {
-            // Find a view for today (simplified)
-            View anchorView = mRecyclerView != null ? mRecyclerView : getView();
-            mEventsPreviewManager.showEventsPreview(today, todayEvents, anchorView);
-
-            Log.d(TAG, "Expansion test triggered");
-
-            // Auto-collapse after 5 seconds
-            if (mMainHandler != null) {
-                mMainHandler.postDelayed(() -> {
-                    mEventsPreviewManager.hideEventsPreview();
-                    Log.d(TAG, "Expansion test auto-collapsed");
-                }, 5000);
-            }
-        }
-
-        Log.d(TAG, "=== END EXPANSION TEST ===");
-    }
-
-    // ===========================================
-    // Debug Methods Enhanced
-    // ===========================================
-
-    /**
-     * Debug method specific to DaysList fragment with BaseInteractiveFragment integration
-     */
-    public void debugDaysListEventsIntegration() {
-        Log.d(TAG, "=== DAYSLIST EVENTS INTEGRATION DEBUG (BaseInteractiveFragment) ===");
-
-        // Call parent debug
-        debugEventsIntegration();
-
-        // Call BaseInteractiveFragment debug
-        debugLongClickIntegration();
-
-        // DaysList-specific debug
-        Log.d(TAG, "Legacy Adapter: " + (mLegacyAdapter != null ? "initialized" : "null"));
-        Log.d(TAG, "RecyclerView: " + (mRecyclerView != null ? "initialized" : "null"));
-        Log.d(TAG, "Items Cache Size: " + (mItemsCache != null ? mItemsCache.size() : "null"));
-        Log.d(TAG, "In DaysList View: " + isCurrentlyInDaysListView());
-        Log.d(TAG, "Fragment Selection Mode: " + isSelectionMode());
-
-        if (mLegacyAdapter != null) {
-            Log.d(TAG, "Adapter Selection Mode: " + mLegacyAdapter.isSelectionMode());
-            Log.d(TAG, "Adapter Selected Count: " + mLegacyAdapter.getSelectedCount());
-            Log.d(TAG, "Adapter Events Integration: active");
-        }
-
-        Log.d(TAG, "=== END DAYSLIST DEBUG (BaseInteractiveFragment) ===");
-    }
-
-    /**
-     * Debug method to force events reload specifically for DaysList with selection awareness
-     */
-    public void debugForceEventsReload() {
-        Log.d(TAG, "=== DEBUG FORCE EVENTS RELOAD (DAYSLIST + BaseInteractiveFragment) ===");
-
-        // Exit selection mode to avoid conflicts
-        if (isSelectionMode()) {
-            Log.d(TAG, "Exiting selection mode before reload");
-            exitSelectionMode();
-        }
-
-        // Clear cache
-        if (mEventsCache != null) {
-            mEventsCache.clear();
-            Log.d(TAG, "Cleared events cache");
-        }
-
-        // Schedule adapter update
-        if (mMainHandler != null) {
-            mMainHandler.postDelayed(() -> {
-                updateAdapterWithEvents();
-                Log.d(TAG, "Force reload completed - adapter updated");
-            }, 1000);
-        }
-
-        Log.d(TAG, "=== END DEBUG FORCE RELOAD (DAYSLIST + BaseInteractiveFragment) ===");
-    }
-
-    /**
-     * Debug selection state specifically for DaysList
-     */
-    public void debugDaysListSelectionState() {
-        Log.d(TAG, "=== DAYSLIST SELECTION STATE DEBUG ===");
-
-        // Call parent debug
-        debugSelectionState();
-
-        // DaysList-specific selection debug
-        Log.d(TAG, "Current View Type: DaysList");
-        Log.d(TAG, "Events Cache Size: " + (mEventsCache != null ? mEventsCache.size() : "null"));
-        Log.d(TAG, "Today Position: " + mTodayPosition);
-
-        if (mRecyclerView != null && mRecyclerView.getLayoutManager() != null) {
-            androidx.recyclerview.widget.LinearLayoutManager layoutManager =
-                    (androidx.recyclerview.widget.LinearLayoutManager) mRecyclerView.getLayoutManager();
-            Log.d(TAG, "First Visible Position: " + layoutManager.findFirstVisibleItemPosition());
-            Log.d(TAG, "Last Visible Position: " + layoutManager.findLastVisibleItemPosition());
-        }
-
-        Log.d(TAG, "=== END DAYSLIST SELECTION DEBUG ===");
-    }
-
-    public void debugClickHandling() {
-
-        Log.d(TAG, "=== DEBUG CLICK HANDLING ===");
-    }
-
-
-
 }

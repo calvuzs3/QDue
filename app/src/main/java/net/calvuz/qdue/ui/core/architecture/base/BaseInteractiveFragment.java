@@ -22,7 +22,6 @@ import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.ServiceProviderImpl;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
-import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
 import net.calvuz.qdue.events.actions.EventAction;
@@ -44,13 +43,14 @@ import net.calvuz.qdue.ui.features.events.quickevents.QuickEventTemplate;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -120,62 +120,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
     protected abstract EventsPreviewManager.ViewType getEventsPreviewViewType();
 
-    protected ViewGroup getToolbarContainer() {
-        return (ViewGroup) mCoordinatorLayout;
-    }
-
     // ==================== LIFECYCLE (ENHANCED WITH DI) ====================
-
-    /**
-     * Find and setup views.
-     */
-    @Override
-    protected void findViews(View rootView) {
-
-    }
-
-    /**
-     * Convert data in fragment specific format.
-     */
-    @Override
-    protected List<SharedViewModels.ViewItem> convertMonthData(List<Day> days, LocalDate monthDate) {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Fragment specific adapter setup.
-     * Subclass create a specific Adapter instance
-     * which is given to the RecyclerView with mRecyclerView,setAdapter( adapter )
-     */
-    @Override
-    protected void setupAdapter() {
-
-    }
-
-    /**
-     * Get the current adapter.
-     */
-    @Override
-    protected BaseAdapter getFragmentAdapter() {
-        return null;
-    }
-
-    /**
-     * Set adapter, an extension of BaseAdapter
-     */
-    @Override
-    protected void setFragmentAdapter(BaseAdapter adapter) {
-
-    }
-
-    /**
-     * Abstract method for subclasses to specify column count.
-     * DayslistViewFragment returns 1, CalendarViewFragment returns 7.
-     */
-    @Override
-    protected int getGridColumnCount() {
-        return 0;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -427,7 +372,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                                        LocalDate date, QuickEventTemplate template) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                if (result.isSuccess() && result.getData()) {
+                if (result.isSuccess() && Boolean.TRUE.equals(result.getData())) {
                     showQuickEventDialog(action, date, template);
                 } else {
                     String error = result.isSuccess() ?
@@ -475,9 +420,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     private Void handleCanCreateException(Throwable throwable, ToolbarAction action, LocalDate date) {
         Log.e(TAG, "Error checking event availability", throwable);
         if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> {
-                showQuickEventError("Error checking availability: " + throwable.getMessage(), action, date);
-            });
+            getActivity().runOnUiThread(() -> showQuickEventError("Error checking availability: " + throwable.getMessage(), action, date));
         }
         return null;
     }
@@ -488,9 +431,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     private Void handleBulkAvailabilityException(Throwable throwable, ToolbarAction action) {
         Log.e(TAG, "Error checking bulk availability", throwable);
         if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> {
-                showQuickEventError("Error checking availability: " + throwable.getMessage(), action, null);
-            });
+            getActivity().runOnUiThread(() -> showQuickEventError("Error checking availability: " + throwable.getMessage(), action, null));
         }
         return null;
     }
@@ -537,18 +478,15 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         int validCount = validDates.size();
 
         // Build confirmation message
-        StringBuilder messageBuilder = new StringBuilder();
-        messageBuilder.append(String.format("Create '%s' event for:", eventName));
-        messageBuilder.append("\n\n");
-        messageBuilder.append("✅ ").append(validCount).append(" valid dates");
-        messageBuilder.append("\n\nEvents will be created for all valid dates.");
+        String messageBuilder = MessageFormat.format(
+                "{0}\n\n✅ {1} valid dates\n\nEvents will be created for all valid dates.",
+                "Create '" + eventName + "' event for:", validCount);
 
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("Confirm Bulk Event Creation")
-                .setMessage(messageBuilder.toString())
-                .setPositiveButton("Create", (dialog, which) -> {
-                    createBulkQuickEvents(action, validDates, template);
-                })
+                .setMessage(messageBuilder)
+                .setPositiveButton("Create", (dialog, which) ->
+                        createBulkQuickEvents(action, validDates, template))
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -600,7 +538,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
             getActivity().runOnUiThread(() -> {
                 if (result.isSuccess()) {
                     List<LocalEvent> events = result.getData();
-                    String message = "Created " + events.size() + " events successfully!";
+                    String message = "Created " + Objects.requireNonNull(events).size() + " events successfully!";
                     Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
 
                     // Trigger refresh
@@ -621,9 +559,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     private Void handleBulkCreationException(Throwable throwable, ToolbarAction action) {
         Log.e(TAG, "Bulk event creation failed", throwable);
         if (getActivity() != null) {
-            getActivity().runOnUiThread(() -> {
-                showQuickEventError("Failed to create events: " + throwable.getMessage(), action, null);
-            });
+            getActivity().runOnUiThread(() -> showQuickEventError("Failed to create events: " + throwable.getMessage(), action, null));
         }
         return null;
     }
@@ -631,17 +567,18 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
     // ==================== UTILITY METHODS ====================
 
     /**
+     * Get toolbar container
+     * @return the ViewGroup containing the toolbar
+     */
+    protected ViewGroup getToolbarContainer() {
+        return (ViewGroup) mCoordinatorLayout;
+    }
+
+    /**
      * Get quick event template for action
      */
     protected QuickEventTemplate getQuickEventTemplate(ToolbarAction action) {
         return mQuickEventsInitialized ? mQuickEventTemplates.get(action) : null;
-    }
-
-    /**
-     * Check if quick events system is available
-     */
-    public boolean isQuickEventsAvailable() {
-        return mQuickEventsInitialized && areDependenciesReady();
     }
 
     /**
@@ -713,53 +650,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         }
     }
 
-    // ==================== HELPER INTERFACES ====================
-
-    /**
-     * Interface for refreshable adapters
-     */
-    public interface Refreshable {
-        void refreshData();
-    }
-
-    /**
-     * Interface for activities that can be notified of events changes
-     */
-    public interface EventsRefreshNotifiable {
-        void onEventsDataChanged();
-    }
-
     // ==================== NEW: Quick Events System Initialization ====================
-
-//    /**
-//     * ✅ NEW: Initialize Quick Events system
-//     * Sets up templates and validates configuration
-//     */
-//    private void initializeQuickEventsSystem() {
-//        try {
-//            Log.d(TAG, "Initializing Quick Events system...");
-//
-//            // Load all quick event templates
-//            mQuickEventTemplates = QuickEventTemplate.getAllTemplates();
-//
-//            // Validate templates
-//            if (QuickEventTemplate.validateAllTemplates()) {
-//                mQuickEventsInitialized = true;
-//                Log.d(TAG, "✅ Quick Events system initialized successfully with " +
-//                        mQuickEventTemplates.size() + " templates");
-//            } else {
-//                Log.e(TAG, "❌ Quick Events template validation failed");
-//                mQuickEventsInitialized = false;
-//            }
-//
-//            // Initialize user context (can be overridden by subclasses)
-//            initializeUserContext();
-//
-//        } catch (Exception e) {
-//            Log.e(TAG, "❌ Failed to initialize Quick Events system: " + e.getMessage());
-//            mQuickEventsInitialized = false;
-//        }
-//    }
 
     /**
      * ✅ NEW: Initialize user context for event creation
@@ -831,8 +722,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
         // Extract Day objects from adapter's ViewItems
         for (SharedViewModels.ViewItem item : adapter.mItems) {
-            if (item instanceof SharedViewModels.DayItem) {
-                SharedViewModels.DayItem dayItem = (SharedViewModels.DayItem) item;
+            if (item instanceof SharedViewModels.DayItem dayItem) {
                 if (dayItem.day != null) {
                     dayMap.put(dayItem.day.getLocalDate(), dayItem.day);
                 }
@@ -1532,14 +1422,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
 
         // 🆕 NEW: Update selection with enhanced validation
         mBottomToolbar.updateSelection(selectedDates);
-
-//        if (mBottomToolbar == null || !mBottomToolbar.isVisible()) return;
-//
-//        BaseInteractiveAdapter adapter = getClickAdapter();
-//        if (adapter != null) {
-//            Set<LocalDate> selectedDates = adapter.getSelectedDates();
-//            mBottomToolbar.updateSelection(selectedDates);
-//        }
     }
 
     // ===========================================
@@ -1778,44 +1660,6 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
                 exitSelectionMode(); // ✅ Fallback
             }
         }
-    }
-//    /**
-//     * 🔧 NEW: Force exit selection mode (public method for external calls)
-//     */
-//    public void forceExitSelectionMode() {
-//        Log.d(TAG, getFragmentName() + ": Force exit selection mode requested");
-//
-//        if (isSelectionMode()) {
-//            BaseInteractiveAdapter adapter = getClickAdapter();
-//            if (adapter != null) {
-//                adapter.deselectAll(); // This will trigger auto-exit
-//            } else {
-//                // Fallback: exit directly
-//                exitSelectionMode();
-//            }
-//        }
-//    }
-
-//    /**
-//     * ✅ NEW: Get quick event template for action
-//     */
-//    public QuickEventTemplate getQuickEventTemplate(ToolbarAction action) {
-//        return mQuickEventTemplates != null ? mQuickEventTemplates.get(action) : null;
-//    }
-
-//    /**
-//     * ✅ NEW: Check if quick events system is available
-//     */
-//    public boolean isQuickEventsAvailable() {
-//        return mQuickEventsInitialized && mQuickEventTemplates != null;
-//    }
-
-    /**
-     * ✅ NEW: Get preview for quick event creation
-     */
-    public EventPreview getQuickEventPreview(ToolbarAction action, LocalDate date) {
-        QuickEventTemplate template = getQuickEventTemplate(action);
-        return template != null ? template.getPreview(date) : null;
     }
 
     /// ////////////////////////////////////////////////////////////////////////////////////

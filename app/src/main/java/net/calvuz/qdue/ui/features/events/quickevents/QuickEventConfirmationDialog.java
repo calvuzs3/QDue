@@ -64,7 +64,7 @@ public class QuickEventConfirmationDialog implements Injectable {
 
     private static final String TAG = "QuickEventDialog";
 
-    private static final String QUICK_EVENT_CONFIRMATION_DIALOG_VERSION = "2.1";
+    private static final String QUICK_EVENT_CONFIRMATION_DIALOG_VERSION = "2.2";
 
     // ==================== DEPENDENCIES (DI) ====================
 
