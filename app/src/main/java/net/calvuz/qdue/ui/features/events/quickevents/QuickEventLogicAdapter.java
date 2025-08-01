@@ -1,12 +1,12 @@
 package net.calvuz.qdue.ui.features.events.quickevents;
 
-import net.calvuz.qdue.events.actions.ConflictAnalysis;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.actions.EventActionManager;
+import net.calvuz.qdue.core.domain.events.actions.ConflictAnalysis;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
+import net.calvuz.qdue.core.domain.events.models.EventPriority;
+import net.calvuz.qdue.core.domain.events.models.EventType;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.actions.EventAction;
+import net.calvuz.qdue.core.domain.events.actions.EventActionManager;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;

@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.core.common.interfaces;
 
 import android.net.Uri;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 
 import java.util.List;
 import java.util.Set;

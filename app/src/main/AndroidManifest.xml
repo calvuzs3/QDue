@@ -155,7 +155,7 @@
 
         <!-- UserProfileActivity -->
         <activity
-            android:name=".user.ui.UserProfileActivity"
+            android:name=".core.domain.user.ui.UserProfileActivity"
             android:exported="false"
             android:label="@string/user_profile"
             android:parentActivityName=".QDueMainActivity"

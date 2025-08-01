@@ -10,9 +10,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import net.calvuz.qdue.QDue;
-import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.EventPackageJson;
+import net.calvuz.qdue.core.infrastructure.backup.CoreBackupManager;
+import net.calvuz.qdue.core.infrastructure.services.EventsService;
+import net.calvuz.qdue.core.domain.events.EventPackageJson;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**

@@ -66,7 +66,7 @@
     <dimen name="calendar_day_padding">@dimen/spacing_xs</dimen>
     <dimen name="calendar_day_corner_radius">8dp</dimen>
 
-    <!-- Shift indicators -->
+    <!-- LegacyShift indicators -->
     <dimen name="shift_indicator_height">3dp</dimen>
     <dimen name="shift_indicator_corner_radius">2dp</dimen>
 

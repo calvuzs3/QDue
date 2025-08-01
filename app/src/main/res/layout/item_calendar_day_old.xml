@@ -67,7 +67,7 @@
             tools:text="15" />
 <!--        android:textStyle="bold"-->
 
-        <!-- Shift indicator (below day number) -->
+        <!-- LegacyShift indicator (below day number) -->
         <TextView
             android:id="@+id/shift_indicator"
             android:layout_width="wrap_content"

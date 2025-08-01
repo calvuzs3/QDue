@@ -2,11 +2,11 @@ package net.calvuz.qdue.ui.features.events.di;
 
 import android.content.Context;
 
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.UserService;
-import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.services.EventsService;
+import net.calvuz.qdue.core.infrastructure.services.UserService;
+import net.calvuz.qdue.core.infrastructure.backup.CoreBackupManager;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.events.adapters.EventsAdapter;

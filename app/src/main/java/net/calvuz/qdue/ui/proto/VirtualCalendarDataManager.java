@@ -3,7 +3,7 @@ package net.calvuz.qdue.ui.proto;
 import android.os.Handler;
 import android.os.Looper;
 
-import net.calvuz.qdue.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;

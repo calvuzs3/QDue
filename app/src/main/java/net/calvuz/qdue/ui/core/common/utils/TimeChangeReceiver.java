@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 
-import net.calvuz.qdue.quattrodue.QuattroDue;
+import net.calvuz.qdue.core.domain.quattrodue.QuattroDue;
 
 /**
  * BroadcastReceiver for detecting system time changes and automatically updating the application.

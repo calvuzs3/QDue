@@ -1,8 +1,8 @@
 package net.calvuz.qdue.ui.core.architecture.base;
 
 import static net.calvuz.qdue.QDue.Debug.DEBUG_BASEFRAGMENT;
-import static net.calvuz.qdue.quattrodue.Costants.QD_MAX_CACHE_SIZE;
-import static net.calvuz.qdue.quattrodue.Costants.QD_MONTHS_CACHE_RADIUS;
+import static net.calvuz.qdue.core.domain.quattrodue.Costants.QD_MAX_CACHE_SIZE;
+import static net.calvuz.qdue.core.domain.quattrodue.Costants.QD_MONTHS_CACHE_RADIUS;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -21,10 +21,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.FragmentCommunicationInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.NotifyUpdatesInterface;

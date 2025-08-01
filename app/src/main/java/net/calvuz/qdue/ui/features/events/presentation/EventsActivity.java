@@ -32,8 +32,9 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.backup.ExportManager;
-import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.backup.ExportManager;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.DataOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
 import net.calvuz.qdue.ui.core.architecture.services.BackHandlingServiceImpl;
 import net.calvuz.qdue.ui.features.events.components.imports.FileAccessAdapter;
 import net.calvuz.qdue.ui.features.events.components.imports.EventsImportAdapter;
@@ -43,14 +44,13 @@ import net.calvuz.qdue.ui.core.architecture.di.BackHandlingModule;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.ui.core.common.interfaces.BackPressHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.backup.BackupIntegration;
-import net.calvuz.qdue.events.imports.EventsImportManager;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.validation.JsonSchemaValidator;
-import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
-import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
+import net.calvuz.qdue.core.infrastructure.backup.BackupIntegration;
+import net.calvuz.qdue.core.domain.events.imports.EventsImportManager;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.validation.JsonSchemaValidator;
+import net.calvuz.qdue.core.infrastructure.common.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsUIStateInterface;
 import net.calvuz.qdue.ui.core.common.utils.Library;
@@ -80,7 +80,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class EventsActivity extends AppCompatActivity implements
         EventsFileOperationsInterface,
-        EventsDatabaseOperationsInterface,
+        DataOperationsInterface,
         EventsOperationsInterface,
         EventsUIStateInterface {
 
@@ -1160,7 +1160,7 @@ public class EventsActivity extends AppCompatActivity implements
 
     // ==================== DATABASE OPERATIONS ====================
 
-    void handleDeleteAllEvents() {
+    void handleClearAllEvents() {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.text_clear_all_events)
                 .setMessage(R.string.long_text_are_you_sure_you_want_to_delete_all_local_events_this_action_cannot_be_undone)
@@ -1401,7 +1401,7 @@ public class EventsActivity extends AppCompatActivity implements
      * @param event Event to add to calendar
      */
     @Override
-    public void triggerAddToCalendar(LocalEvent event) {
+    public void triggerEventAddToCalendar(LocalEvent event) {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
         intent.putExtra(CalendarContract.Events.TITLE, event.getTitle());
@@ -1547,8 +1547,8 @@ public class EventsActivity extends AppCompatActivity implements
     // ==================== INTERFACE IMPLEMENTATIONS ====================
 
     @Override
-    public void triggerDeleteAllEvents() {
-        handleDeleteAllEvents();
+    public void triggerClearAllEvents() {
+        handleClearAllEvents();
     }
 
     @Override

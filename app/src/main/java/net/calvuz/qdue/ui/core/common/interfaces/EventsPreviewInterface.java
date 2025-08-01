@@ -1,6 +1,6 @@
 package net.calvuz.qdue.ui.core.common.interfaces;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import java.time.LocalDate;
 import java.util.List;
 

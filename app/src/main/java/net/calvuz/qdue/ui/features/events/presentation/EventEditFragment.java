@@ -27,15 +27,15 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.metadata.EventMetadataManager;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.DataOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.domain.events.actions.EventAction;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
+import net.calvuz.qdue.core.domain.events.metadata.EventMetadataManager;
+import net.calvuz.qdue.core.domain.events.models.EventPriority;
+import net.calvuz.qdue.core.domain.events.models.EventType;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
@@ -83,7 +83,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
 
     // ==================== INTERFACES ====================
 
-    private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
+    private DataOperationsInterface mDataOperationsInterface;
     private EventsOperationsInterface mEventsOperationsInterface;
 
     // ==================== UI COMPONENTS ====================
@@ -333,8 +333,8 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
 
     private void initializeInterfaces() {
         try {
-            if (getActivity() instanceof EventsDatabaseOperationsInterface) {
-                mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+            if (getActivity() instanceof DataOperationsInterface) {
+                mDataOperationsInterface = (DataOperationsInterface) getActivity();
             }
 
             if (getActivity() instanceof EventsOperationsInterface) {
@@ -1369,7 +1369,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
                 Log.i(TAG, "Action Category: " + mCurrentEventAction.getCategory());
                 Log.i(TAG, "Affects Work Schedule: " + mCurrentEventAction.affectsWorkSchedule());
                 Log.i(TAG, "Requires Approval: " + mCurrentEventAction.requiresApproval());
-                Log.i(TAG, "Requires Shift Coverage: " + mCurrentEventAction.requiresShiftCoverage());
+                Log.i(TAG, "Requires LegacyShift Coverage: " + mCurrentEventAction.requiresShiftCoverage());
                 Log.i(TAG, "Cost Impact Factor: " + mCurrentEventAction.getCostImpactFactor());
                 Log.i(TAG, "Min Advance Notice: " + mCurrentEventAction.getMinimumAdvanceNoticeDays() + " days");
                 Log.i(TAG, "Max Duration: " + mCurrentEventAction.getMaximumDurationDays() + " days");
@@ -2005,7 +2005,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
                 }
             }
 
-            // Shift coverage change
+            // LegacyShift coverage change
             if (originalAction.requiresShiftCoverage() != newAction.requiresShiftCoverage()) {
                 if (newAction.requiresShiftCoverage()) {
                     message.append("• 👥 Richiede copertura del turno\n");

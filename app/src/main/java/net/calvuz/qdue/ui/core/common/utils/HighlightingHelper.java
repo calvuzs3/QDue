@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 
 import java.time.LocalDate;
 import java.util.List;

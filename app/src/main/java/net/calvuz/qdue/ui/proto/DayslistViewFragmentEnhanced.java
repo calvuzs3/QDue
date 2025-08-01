@@ -10,9 +10,9 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.features.dayslist.adapters.DaysListAdapter;
 import net.calvuz.qdue.ui.core.architecture.base.BaseAdapter;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;

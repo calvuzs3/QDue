@@ -3,7 +3,7 @@ package net.calvuz.qdue.ui.features.calendar.components;
 import android.content.Context;
 import android.view.View;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 

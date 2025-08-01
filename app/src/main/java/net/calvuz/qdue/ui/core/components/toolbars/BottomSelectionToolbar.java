@@ -37,9 +37,9 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShift;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.interfaces.DayLongClickListener;
 import net.calvuz.qdue.ui.core.common.utils.Library;
@@ -338,8 +338,8 @@ public class BottomSelectionToolbar {
                 return false;
             }
 
-            for (Shift shift : day.getShifts()) {
-                for (HalfTeam team : shift.getHalfTeams()) {
+            for (LegacyShift legacyShift : day.getShifts()) {
+                for (HalfTeam team : legacyShift.getHalfTeams()) {
                     if (team.isSameTeamAs(userTeam)) {
                         return true;
                     }

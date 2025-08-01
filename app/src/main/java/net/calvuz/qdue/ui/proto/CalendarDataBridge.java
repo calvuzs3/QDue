@@ -9,8 +9,8 @@ package net.calvuz.qdue.ui.proto;
 
 // ==================== 1. DATA BRIDGE FOR EXISTING CALENDAR MANAGER ====================
 
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;

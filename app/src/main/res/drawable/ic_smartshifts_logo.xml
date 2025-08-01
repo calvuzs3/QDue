@@ -90,7 +90,7 @@
         android:pathData="M60,60 m-3,0 a3,3 0,1 1,6 0 a3,3 0,1 1,-6 0"
         android:fillColor="?attr/colorPrimary" />
 
-    <!-- Shift Indicators -->
+    <!-- LegacyShift Indicators -->
     <group android:name="shift_indicators">
         <!-- Morning (green) - top left -->
         <path

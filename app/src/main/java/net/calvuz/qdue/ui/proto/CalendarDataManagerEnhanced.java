@@ -21,14 +21,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import net.calvuz.qdue.QDue;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.dao.TurnExceptionDao;
-import net.calvuz.qdue.events.models.TurnException;
-import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
-import net.calvuz.qdue.user.data.entities.User;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.domain.events.dao.TurnExceptionDao;
+import net.calvuz.qdue.core.domain.events.models.TurnException;
+import net.calvuz.qdue.core.domain.quattrodue.QuattroDue;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.quattrodue.utils.CalendarDataManager;
+import net.calvuz.qdue.core.domain.user.data.entities.User;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**

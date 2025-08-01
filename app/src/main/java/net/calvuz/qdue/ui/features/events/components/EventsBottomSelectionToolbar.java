@@ -35,7 +35,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 

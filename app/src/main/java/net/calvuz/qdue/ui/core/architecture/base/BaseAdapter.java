@@ -21,10 +21,10 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShift;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -383,13 +383,13 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param day    Day containing shift information
      */
     protected void bindShiftsToDay(DayViewHolder holder, Day day) {
-        List<Shift> shifts = day.getShifts();
-        int numShifts = Math.min( shifts.size(), mNumShifts );
+        List<LegacyShift> legacyShifts = day.getShifts();
+        int numShifts = Math.min( legacyShifts.size(), mNumShifts );
 
         for (int i = 0; i < numShifts; i++) {
             if (holder.shiftTexts[i] != null) {
                 try {
-                    String teamText = shifts.get( i ).getTeamsAsString();
+                    String teamText = legacyShifts.get( i ).getTeamsAsString();
                     holder.shiftTexts[i].setText( teamText != null && !teamText.isEmpty() ?
                             mContext.getString( R.string.str_scheme, teamText ) : "" );
                 } catch (Exception e) {

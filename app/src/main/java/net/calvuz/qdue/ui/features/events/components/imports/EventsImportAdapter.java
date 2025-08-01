@@ -9,8 +9,10 @@ import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.imports.EventsImportManager;
-import net.calvuz.qdue.events.EventPackageManager;
+import net.calvuz.qdue.core.domain.events.EventPackageJson;
+import net.calvuz.qdue.core.domain.events.validation.JsonSchemaValidator;
+import net.calvuz.qdue.core.domain.events.imports.EventsImportManager;
+import net.calvuz.qdue.core.domain.events.EventPackageManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.BufferedReader;
@@ -308,8 +310,8 @@ public class EventsImportAdapter {
 
                     if (result.isValid) {
                         // Create compatible validation result
-                        net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult validationResult =
-                                new net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult(
+                        JsonSchemaValidator.ValidationResult validationResult =
+                                new JsonSchemaValidator.ValidationResult(
                                         true, "", new java.util.ArrayList<>(), new java.util.ArrayList<>());
 
                         callback.onValidationComplete(validationResult, result.packageJson);
@@ -333,8 +335,8 @@ public class EventsImportAdapter {
      * Validation callback interface
      */
     public interface ValidationCallback {
-        void onValidationComplete(net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult result,
-                                  net.calvuz.qdue.events.EventPackageJson packageJson);
+        void onValidationComplete(JsonSchemaValidator.ValidationResult result,
+                                  EventPackageJson packageJson);
         void onValidationError(String error, Exception exception);
     }
 

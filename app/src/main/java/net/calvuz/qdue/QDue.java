@@ -7,11 +7,11 @@ import android.os.Build;
 
 import com.google.android.material.color.DynamicColors;
 
-import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlerFactory;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlingModule;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
-import net.calvuz.qdue.quattrodue.QuattroDue;
+import net.calvuz.qdue.core.domain.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.text.MessageFormat;

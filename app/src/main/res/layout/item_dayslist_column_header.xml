@@ -40,7 +40,7 @@
             android:paddingStart="@dimen/spacing_s"
             android:paddingEnd="@dimen/spacing_s" />
 
-        <!-- Shift headers -->
+        <!-- LegacyShift headers -->
         <TextView
             android:layout_width="@dimen/dayslist_shift_column_width"
             android:layout_height="wrap_content"

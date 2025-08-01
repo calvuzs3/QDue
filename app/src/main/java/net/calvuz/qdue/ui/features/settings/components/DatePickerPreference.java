@@ -11,9 +11,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.quattrodue.Costants;
-import net.calvuz.qdue.quattrodue.Preferences;
-import net.calvuz.qdue.quattrodue.QuattroDue;
+import net.calvuz.qdue.core.domain.quattrodue.Costants;
+import net.calvuz.qdue.core.domain.quattrodue.Preferences;
+import net.calvuz.qdue.core.domain.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;

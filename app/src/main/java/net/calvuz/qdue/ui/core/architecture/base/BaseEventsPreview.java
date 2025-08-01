@@ -4,7 +4,7 @@ import android.content.Context;
 import android.view.View;
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import java.time.LocalDate;

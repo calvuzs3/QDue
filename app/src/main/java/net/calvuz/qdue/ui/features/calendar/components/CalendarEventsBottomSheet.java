@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.features.events.adapters.EventsAdapter;
 import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.ui.core.common.utils.Log;

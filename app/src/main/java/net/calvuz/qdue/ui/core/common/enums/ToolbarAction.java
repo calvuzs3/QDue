@@ -5,7 +5,7 @@ package net.calvuz.qdue.ui.core.common.enums;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.EventType;
+import net.calvuz.qdue.core.domain.events.models.EventType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -79,7 +79,7 @@ public enum ToolbarAction {
             "Crea permesso sindacale per la data selezionata"
     ),
 
-    // ==================== WORK EVENTS (Shift-Related) ====================
+    // ==================== WORK EVENTS (LegacyShift-Related) ====================
 
     /**
      * ✅ NEW: Straordinario - Maps to EventType.OVERTIME

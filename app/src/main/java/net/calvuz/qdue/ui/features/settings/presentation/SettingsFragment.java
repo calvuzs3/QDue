@@ -15,9 +15,9 @@ import androidx.preference.PreferenceFragmentCompat;
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.preferences.QDuePreferences;
-import net.calvuz.qdue.quattrodue.Preferences;
-import net.calvuz.qdue.quattrodue.QuattroDue;
+import net.calvuz.qdue.core.domain.preferences.QDuePreferences;
+import net.calvuz.qdue.core.domain.quattrodue.Preferences;
+import net.calvuz.qdue.core.domain.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 

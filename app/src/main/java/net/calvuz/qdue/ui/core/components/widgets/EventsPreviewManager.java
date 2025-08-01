@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.core.components.widgets;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.ui.features.calendar.components.CalendarEventsPreview;
 import net.calvuz.qdue.ui.features.dayslist.components.DaysListEventsPreview;

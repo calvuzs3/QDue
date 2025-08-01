@@ -27,15 +27,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.backup.BackupIntegration;
+import net.calvuz.qdue.core.infrastructure.common.listeners.EventDeletionListener;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.backup.BackupIntegration;
 import net.calvuz.qdue.ui.core.common.enums.SelectionMode;
 import net.calvuz.qdue.ui.core.common.interfaces.SelectionModeHandler;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
-import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.DataOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.features.events.adapters.EventsAdapter;
@@ -85,7 +85,7 @@ public class EventsListFragment extends Fragment implements
 
     // Interfaces
     private EventsFileOperationsInterface mFileOperationsInterface;
-    private EventsDatabaseOperationsInterface mDataOperationsInterface;
+    private DataOperationsInterface mDataOperationsInterface;
     private EventsOperationsInterface mEventsOperationsInterface;
     private EventsUIStateInterface mUIStateInterface;
 
@@ -108,7 +108,7 @@ public class EventsListFragment extends Fragment implements
         // Initialize data
         mEventsList = new ArrayList<>();
         mFileOperationsInterface = (EventsFileOperationsInterface) getActivity();
-        mDataOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
+        mDataOperationsInterface = (DataOperationsInterface) getActivity();
         mEventsOperationsInterface = (EventsOperationsInterface) getActivity();
         mUIStateInterface = (EventsUIStateInterface) getActivity();
     }
@@ -918,7 +918,7 @@ public class EventsListFragment extends Fragment implements
         if (selectedEvents.size() == 1) {
             LocalEvent event = selectedEvents.get(0);
             try {
-                mEventsOperationsInterface.triggerAddToCalendar(event);
+                mEventsOperationsInterface.triggerEventAddToCalendar(event);
             } catch (Exception e) {
                 Log.e(TAG, "Add to calendar error: " + e.getMessage());
                 Library.showError(getContext(), R.string.text_error_in_adding_to_calendar, Toast.LENGTH_SHORT);
@@ -1138,7 +1138,7 @@ public class EventsListFragment extends Fragment implements
     private void handleClearAllEvents() {
         if (mIsInSelectionMode) exitSelectionMode();
         if (mDataOperationsInterface != null) {
-            mDataOperationsInterface.triggerDeleteAllEvents();
+            mDataOperationsInterface.triggerClearAllEvents();
         }
     }
 

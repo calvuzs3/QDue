@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.infrastructure.backup.CoreBackupManager;
+import net.calvuz.qdue.core.infrastructure.services.EventsService;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.SelectionMode;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.events.presentation.EventsListFragment;

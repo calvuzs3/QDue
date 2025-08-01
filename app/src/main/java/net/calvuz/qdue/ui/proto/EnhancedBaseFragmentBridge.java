@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.architecture.base.BaseFragment;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.Log;

@@ -17,7 +17,7 @@
         android:background="@drawable/circle_background"
         tools:backgroundTint="#4CAF50" />
 
-    <!-- Shift Type Name -->
+    <!-- LegacyShift Type Name -->
     <TextView
         android:id="@+id/shift_name"
         android:layout_width="0dp"
@@ -27,7 +27,7 @@
         android:textColor="?attr/colorOnSurface"
         tools:text="Mattina" />
 
-    <!-- Shift Time -->
+    <!-- LegacyShift Time -->
     <TextView
         android:id="@+id/shift_time"
         android:layout_width="wrap_content"

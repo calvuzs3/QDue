@@ -2,8 +2,8 @@
 
 package net.calvuz.qdue.ui.core.common.enums;
 
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.models.EventType;
+import net.calvuz.qdue.core.domain.events.actions.EventAction;
+import net.calvuz.qdue.core.domain.events.models.EventType;
 
 /**
  * ToolbarActionBridge - Backward Compatibility Bridge

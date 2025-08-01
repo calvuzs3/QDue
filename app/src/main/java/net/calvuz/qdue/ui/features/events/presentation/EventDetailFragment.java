@@ -25,12 +25,12 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
-import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.DataOperationsInterface;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.common.interfaces.EventsOperationsInterface;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.dao.EventDao;
+import net.calvuz.qdue.core.infrastructure.common.listeners.EventDeletionListener;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -62,7 +62,7 @@ public class EventDetailFragment extends Fragment {
     private static final String ARG_EVENT_ID = "event_id";
 
     // Non static
-    private EventsDatabaseOperationsInterface mEventsDatabaseOperationsInterface;
+    private DataOperationsInterface mDataOperationsInterface;
     private EventsOperationsInterface mEventsOperationsInterface;
     private EventsFileOperationsInterface mFileOperationsInterface;
 
@@ -163,11 +163,11 @@ public class EventDetailFragment extends Fragment {
         final String mTAG = "initializeInterfaces: ";
 
         try {
-            if (getActivity() instanceof EventsDatabaseOperationsInterface) {
-                mEventsDatabaseOperationsInterface = (EventsDatabaseOperationsInterface) getActivity();
-                Log.d(TAG, mTAG + "EventsDatabaseOperationsInterface initialized");
+            if (getActivity() instanceof DataOperationsInterface) {
+                mDataOperationsInterface = (DataOperationsInterface) getActivity();
+                Log.d(TAG, mTAG + "DataOperationsInterface initialized");
             } else {
-                Log.e(TAG, mTAG + "Activity does not implement EventsDatabaseOperationsInterface");
+                Log.e(TAG, mTAG + "Activity does not implement DataOperationsInterface");
             }
 
             if (getActivity() instanceof EventsOperationsInterface) {
@@ -863,7 +863,7 @@ public class EventDetailFragment extends Fragment {
 
         // Use interface if available, otherwise fall back to direct calendar
         if (mEventsOperationsInterface != null) {
-            mEventsOperationsInterface.triggerAddToCalendar(mEvent);
+            mEventsOperationsInterface.triggerEventAddToCalendar(mEvent);
         } else {
             // Fallback to direct calendar integration
             performDirectAddToCalendar();
@@ -1147,7 +1147,7 @@ public class EventDetailFragment extends Fragment {
         Log.d(TAG, "=== EVENT DETAIL FRAGMENT DEBUG ===");
         Log.d(TAG, "Event ID: " + mEventId);
         Log.d(TAG, "Event Loaded: " + (mEvent != null ? mEvent.getTitle() : "null"));
-        Log.d(TAG, "Database Operations Interface: " + (mEventsDatabaseOperationsInterface != null ? "available" : "null"));
+        Log.d(TAG, "Database Operations Interface: " + (mDataOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "Event Operations Interface: " + (mEventsOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "File Operations Interface: " + (mFileOperationsInterface != null ? "available" : "null"));
         Log.d(TAG, "=== END DEBUG ===");

@@ -1,9 +1,9 @@
 package net.calvuz.qdue.ui.proto;
 
-import net.calvuz.qdue.events.models.TurnException;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
+import net.calvuz.qdue.core.domain.events.models.TurnException;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShift;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -135,8 +135,8 @@ public class PatternMergeEngine {
      * Remove user from all shifts on this day
      */
     private static void removeUserFromAllShifts(Day day, HalfTeam userHalfTeam) {
-        for (Shift shift : day.getShifts()) {
-            shift.getHalfTeams().removeIf(team -> team.isSameTeamAs(userHalfTeam));
+        for (LegacyShift legacyShift : day.getShifts()) {
+            legacyShift.getHalfTeams().removeIf( team -> team.isSameTeamAs(userHalfTeam));
         }
 
         // Add user to off-work teams if not already there
@@ -162,20 +162,20 @@ public class PatternMergeEngine {
         }
 
         // First remove user from current shifts
-        for (Shift shift : day.getShifts()) {
-            shift.getHalfTeams().removeIf(team -> team.isSameTeamAs(userHalfTeam));
+        for (LegacyShift legacyShift : day.getShifts()) {
+            legacyShift.getHalfTeams().removeIf( team -> team.isSameTeamAs(userHalfTeam));
         }
 
         // Then add to the specified shift type
-        for (Shift shift : day.getShifts()) {
-            if (shift.getShiftType().getName().equals(replacementShiftType)) {
-                shift.getHalfTeams().add(userHalfTeam);
+        for (LegacyShift legacyShift : day.getShifts()) {
+            if (legacyShift.getShiftType().getName().equals(replacementShiftType)) {
+                legacyShift.getHalfTeams().add(userHalfTeam);
                 // Remove from off-work teams
                 day.getOffWorkHalfTeams().removeIf(team -> team.isSameTeamAs(userHalfTeam));
 
                 if (LOG_ENABLED) {
                     Log.v(TAG, "Moved team " + userHalfTeam.getName() +
-                            " to " + replacementShiftType + " shift on " + day.getLocalDate());
+                            " to " + replacementShiftType + " legacyShift on " + day.getLocalDate());
                 }
                 return;
             }
@@ -250,10 +250,10 @@ public class PatternMergeEngine {
         }
 
         // Find which shift the user is assigned to
-        for (Shift shift : baseDay.getShifts()) {
-            for (HalfTeam team : shift.getHalfTeams()) {
+        for (LegacyShift legacyShift : baseDay.getShifts()) {
+            for (HalfTeam team : legacyShift.getHalfTeams()) {
                 if (team.isSameTeamAs(userHalfTeam)) {
-                    return shift.getShiftType().getName();
+                    return legacyShift.getShiftType().getName();
                 }
             }
         }

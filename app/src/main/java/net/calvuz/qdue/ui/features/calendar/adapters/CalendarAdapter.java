@@ -17,17 +17,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShift;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.services.EventsService;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.architecture.base.BaseAdapter;
 import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
 import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.R;
 
@@ -309,12 +309,12 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         // Check if user has a shift on this day
         if (day.getInWichTeamIsHalfTeam(mUserHalfTeam) >= 0) {
             // Get user's shift for this day
-            Shift userShift = day.getShifts().get(day.getInWichTeamIsHalfTeam(mUserHalfTeam));
+            LegacyShift userLegacyShift = day.getShifts().get(day.getInWichTeamIsHalfTeam(mUserHalfTeam));
 
-            if (userShift != null) {
+            if (userLegacyShift != null) {
                 // Show shift name (first letter)
                 if (holder.tvShiftName != null) {
-                    String shiftName = userShift.getShiftType().getShortName();
+                    String shiftName = userLegacyShift.getShiftType().getShortName();
                     String firstLetter = shiftName.length() > 0 ?
                             shiftName.substring(0, 1).toUpperCase() : "S";
                     holder.tvShiftName.setText(firstLetter);
@@ -324,7 +324,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
                 // Show shift indicator bar
                 if (holder.vShiftIndicator != null) {
                     holder.vShiftIndicator.setVisibility(View.VISIBLE);
-                    int shiftColor = getShiftColor(userShift);
+                    int shiftColor = getShiftColor( userLegacyShift );
                     holder.vShiftIndicator.setBackgroundColor(shiftColor);
                 }
             }
@@ -562,23 +562,23 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
     // ==================== UTILITY METHODS ====================
 
     /**
-     * Get color for shift indicator based on shift type
-     * If no shift type is set, use theme color
-     * If no color is set, use shift name
+     * Get color for legacyShift indicator based on legacyShift type
+     * If no legacyShift type is set, use theme color
+     * If no color is set, use legacyShift name
      *
-     * @param shift Shift to get color for
+     * @param legacyShift LegacyShift to get color for
      */
-    private int getShiftColor(Shift shift) {
-        if (shift == null || shift.getShiftType() == null) {
+    private int getShiftColor(LegacyShift legacyShift) {
+        if (legacyShift == null || legacyShift.getShiftType() == null) {
             return getColorByThemeAttr(mContext, androidx.appcompat.R.attr.colorPrimary);
         }
 
-        // Use the color from ShiftType
-        int shiftColor = shift.getShiftType().getColor();
+        // Use the color from LegacyShiftType
+        int shiftColor = legacyShift.getShiftType().getColor();
 
-        // If no color set, use theme-based colors by shift name
+        // If no color set, use theme-based colors by legacyShift name
         if (shiftColor == 0) {
-            String shiftName = shift.getShiftType().getName().toLowerCase();
+            String shiftName = legacyShift.getShiftType().getName().toLowerCase();
 
             if (shiftName.contains("mattino") || shiftName.contains("morning") || shiftName.contains("m")) {
                 return getColorByThemeAttr(mContext, R.attr.colorShiftMorning);
@@ -610,7 +610,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         public final View vEventsDot;
         public final TextView tvEventsCount;
 
-        // Shift display (bottom-right area)
+        // LegacyShift display (bottom-right area)
         public final TextView tvShiftName;
         public final View vShiftIndicator;
 

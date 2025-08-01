@@ -86,7 +86,7 @@
         <item name="colorTodaySundayBackground">@color/qdue_today_sunday</item>
         <item name="colorUserSundayBackground">@color/qdue_user_sunday</item>
 
-        <!-- Shift Type Colors (All 8 Required) -->
+        <!-- LegacyShift Type Colors (All 8 Required) -->
         <item name="colorShiftMorning">@color/qdue_morning_shift</item>
         <item name="colorShiftAfternoon">@color/qdue_afternoon_shift</item>
         <item name="colorShiftNight">@color/qdue_night_shift</item>

@@ -14,12 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShift;
+import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import net.calvuz.qdue.core.infrastructure.services.EventsService;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.quattrodue.models.Day;
+import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
 import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
@@ -309,18 +309,18 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         Day day = dayItem.day;
 
         // Set shift information
-        List<Shift> shifts = day.getShifts();
+        List<LegacyShift> legacyShifts = day.getShifts();
         for (int i = 0; i < holder.shiftTexts.length; i++) {
             TextView shiftText = holder.shiftTexts[i];
 
             if (shiftText != null) {
-                if (i < shifts.size()) {
-                    Shift shift = shifts.get(i);
-                    shiftText.setText(shift.getTeamsAsString());
+                if (i < legacyShifts.size()) {
+                    LegacyShift legacyShift = legacyShifts.get(i);
+                    shiftText.setText( legacyShift.getTeamsAsString());
 
-                    // Apply shift colors if needed
-                    if (mUserHalfTeam != null && shift.containsHalfTeam(mUserHalfTeam)) {
-                        shiftText.setBackgroundColor(shift.getShiftType().getColor());
+                    // Apply legacyShift colors if needed
+                    if (mUserHalfTeam != null && legacyShift.containsHalfTeam(mUserHalfTeam)) {
+                        shiftText.setBackgroundColor( legacyShift.getShiftType().getColor());
                     } else {
                         shiftText.setBackgroundColor(Color.TRANSPARENT);
                     }

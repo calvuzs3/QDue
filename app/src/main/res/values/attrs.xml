@@ -46,7 +46,7 @@
         <attr name="colorTodaySundayBackground" format="color|reference" />
         <attr name="colorUserSundayBackground" format="color|reference" />
 
-        <!-- Shift Colors (All 8 Required) -->
+        <!-- LegacyShift Colors (All 8 Required) -->
         <attr name="colorShiftMorning" format="color|reference" />
         <attr name="colorShiftAfternoon" format="color|reference" />
         <attr name="colorShiftNight" format="color|reference" />
@@ -81,7 +81,7 @@
         <attr name="highlightState" format="enum">
             <enum name="none" value="0" />
             <enum name="today" value="1" />
-            <enum name="userShift" value="2" />
+            <enum name="userLegacyShift" value="2" />
             <enum name="sunday" value="3" />
             <enum name="todayUserShift" value="4" />
         </attr>
@@ -89,7 +89,7 @@
     </declare-styleable>
 
     <declare-styleable name="QDueShiftIndicator">
-        <attr name="shiftType" format="enum">
+        <attr name="legacyShiftType" format="enum">
             <enum name="morning" value="0" />
             <enum name="afternoon" value="1" />
             <enum name="night" value="2" />

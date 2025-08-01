@@ -2,13 +2,13 @@ package net.calvuz.qdue.ui.features.events.quickevents;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.metadata.EventMetadataManager;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.core.services.models.QuickEventRequest;
-import net.calvuz.qdue.core.services.models.EventPreview;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.core.domain.events.actions.EventAction;
+import net.calvuz.qdue.core.domain.events.metadata.EventMetadataManager;
+import net.calvuz.qdue.core.domain.events.models.EventType;
+import net.calvuz.qdue.core.domain.events.models.EventPriority;
+import net.calvuz.qdue.core.infrastructure.services.models.QuickEventRequest;
+import net.calvuz.qdue.core.infrastructure.services.models.EventPreview;
+import net.calvuz.qdue.core.domain.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;

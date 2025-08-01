@@ -32,7 +32,7 @@
             android:textStyle="bold"
             tools:text="15" />
 
-        <!-- Shift Indicator -->
+        <!-- LegacyShift Indicator -->
         <View
             android:id="@+id/shift_indicator"
             android:layout_width="match_parent"
@@ -43,7 +43,7 @@
             tools:background="#4CAF50"
             tools:visibility="visible" />
 
-        <!-- Shift Label -->
+        <!-- LegacyShift Label -->
         <TextView
             android:id="@+id/shift_label"
             android:layout_width="match_parent"

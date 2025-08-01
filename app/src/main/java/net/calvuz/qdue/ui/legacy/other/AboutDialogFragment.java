@@ -20,9 +20,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.domain.quattrodue.models.LegacyShiftType;
 import net.calvuz.qdue.databinding.FragmentDialogAboutBinding;
-import net.calvuz.qdue.quattrodue.models.ShiftType;
-import net.calvuz.qdue.quattrodue.utils.ShiftTypeFactory;
+import net.calvuz.qdue.core.domain.quattrodue.utils.ShiftTypeFactory;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -102,24 +102,24 @@ public class AboutDialogFragment extends DialogFragment {
         LinearLayout legendContainer = binding.llLegendContainer;
 
         try {
-            // Shift Types
-            List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
+            // LegacyShift Types
+            List<LegacyShiftType> legacyShiftTypes = ShiftTypeFactory.getAllShiftTypes();
 
             // Add an indicator item for each shift type
-            for (int i = 0; i < shiftTypes.size(); i++) {
-                ShiftType shiftType = shiftTypes.get(i);
-                addShiftLegendItem(legendContainer, shiftType);
+            for (int i = 0; i < legacyShiftTypes.size(); i++) {
+                LegacyShiftType legacyShiftType = legacyShiftTypes.get(i);
+                addShiftLegendItem(legendContainer, legacyShiftType );
             }
 
         } catch (Exception e) {
-            Log.e("AboutDialogFragment", "ShiftType list not acquired");
+            Log.e("AboutDialogFragment", "LegacyShiftType list not acquired");
         }
     }
 
     /**
      * Add a legend item for a shift type.
      */
-    private void addShiftLegendItem(LinearLayout container, ShiftType shiftType) {
+    private void addShiftLegendItem(LinearLayout container, LegacyShiftType legacyShiftType) {
         if (getContext() == null) return;
 
         // Create the horizontal layout for the item
@@ -137,9 +137,9 @@ public class AboutDialogFragment extends DialogFragment {
         // Create the TextView for the shift name
         TextView textView = new TextView(getContext());
         textView.setText(MessageFormat.format(" ({0}-{1}) {2}  ",
-                shiftType.getFormattedStartTime(),
-                shiftType.getFormattedEndTime(),
-                shiftType.getName()));
+                legacyShiftType.getFormattedStartTime(),
+                legacyShiftType.getFormattedEndTime(),
+                legacyShiftType.getName()));
         textView.setTextColor(getColorByThemeAttr(getContext(),
                 com.google.android.material.R.attr.colorOnSurface));
         textView.setTextAppearance(android.R.style.TextAppearance_Material_Body2);
@@ -155,7 +155,7 @@ public class AboutDialogFragment extends DialogFragment {
         // Create the drawable for the color indicator
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.RECTANGLE);
-        drawable.setColor(shiftType.getColor());
+        drawable.setColor( legacyShiftType.getColor());
         drawable.setCornerRadius(Library.dpToPx(getContext(), 2));
         colorIndicator.setBackground(drawable);
 

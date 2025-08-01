@@ -26,7 +26,7 @@ import java.util.List;
  * Introduction Fragment - First step of welcome flow
  * <p></p>
  * Provides overview of QDue app functionality:
- * - Shift management system explanation
+ * - LegacyShift management system explanation
  * - Key features preview
  * - Benefits for team coordination
  * - Animated feature showcase

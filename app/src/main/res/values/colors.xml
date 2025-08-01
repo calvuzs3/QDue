@@ -102,7 +102,7 @@
     <!-- 2. FUNCTIONAL COLORS - SHIFT MANAGEMENT -->
     <!-- ============================================ -->
 
-    <!-- Shift Type Colors (8 Required Types) -->
+    <!-- LegacyShift Type Colors (8 Required Types) -->
     <color name="qdue_morning_shift">#4CAF50</color>       <!-- Green - Fresh start -->
     <color name="qdue_afternoon_shift">#FF9800</color>     <!-- Orange - Midday energy -->
     <color name="qdue_night_shift">#3F51B5</color>         <!-- Indigo - Night calm -->
@@ -118,7 +118,7 @@
 
     <!-- Calendar Day States -->
     <color name="qdue_today_highlight">#FF6B35</color>     <!-- Bright Orange - Today emphasis -->
-    <color name="qdue_user_day">#6750A4</color>           <!-- Brand Purple - User's shift -->
+    <color name="qdue_user_day">#6750A4</color>           <!-- Brand Purple - User's legacyShift -->
     <color name="qdue_sunday_special">#FF5722</color>      <!-- Deep Orange - Weekend -->
     <color name="qdue_holiday">#F44336</color>            <!-- Red - Public holiday -->
 
@@ -277,12 +277,12 @@
     - qdue_ocean_blue: Secondary actions, links, accent elements
 
     SHIFT COLORS:
-    - Use specific shift colors for calendar cells, badges, indicators
-    - Maintain consistency across all shift-related UI elements
+    - Use specific legacyShift colors for calendar cells, badges, indicators
+    - Maintain consistency across all legacyShift-related UI elements
 
     STATUS COLORS:
     - qdue_today_highlight: Always for current day indication
-    - qdue_user_day: User's assigned shifts
+    - qdue_user_day: User's assigned legacyShifts
     - qdue_sunday_special: Weekend/Sunday highlighting
 
     UI SEMANTICS:
@@ -309,17 +309,17 @@
     <!-- ============================================ -->
 
     <!-- PRIMARY SHIFTS (Most Important) -->
-    <!-- Morning Shift - Warm Orange/Amber -->
+    <!-- Morning LegacyShift - Warm Orange/Amber -->
 <!--    <color name="shift_afternoon">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
     <color name="shift_afternoon_light">#FFCC02</color>     <!-- Amber 600 -->
     <color name="shift_afternoon_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
-    <!-- Afternoon Shift - Forest Green -->
+    <!-- Afternoon LegacyShift - Forest Green -->
 <!--    <color name="shift_morning">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
     <color name="shift_morning_light">#66BB6A</color>   <!-- Green 400 -->
     <color name="shift_morning_dark">#1B5E20</color>    <!-- Green 900 -->
 
-    <!-- Night Shift - Deep Blue -->
+    <!-- Night LegacyShift - Deep Blue -->
 <!--    <color name="shift_night">#1976D2</color>             &lt;!&ndash; Blue 600 &ndash;&gt;-->
     <color name="shift_night_light">#42A5F5</color>       <!-- Blue 400 -->
     <color name="shift_night_dark">#0D47A1</color>        <!-- Blue 900 -->
@@ -338,7 +338,7 @@
 
     <!-- ============================================ -->
     <!-- SPECIAL HIGHLIGHTING - HIERARCHICAL -->
-    <!-- Priority: Today > User Shift > Sunday -->
+    <!-- Priority: Today > User LegacyShift > Sunday -->
     <!-- ============================================ -->
 
     <!-- TODAY - Highest Priority (Golden Yellow) -->
@@ -364,10 +364,10 @@
 
     <!-- ============================================ -->
     <!-- COMBINED HIGHLIGHTING COLORS -->
-    <!-- For overlapping states (Today + User Shift, etc.) -->
+    <!-- For overlapping states (Today + User LegacyShift, etc.) -->
     <!-- ============================================ -->
 
-    <!-- Today + User Shift (Most Important Combination) -->
+    <!-- Today + User LegacyShift (Most Important Combination) -->
     <color name="today_user_background_light">#FFF3C4</color>   <!-- Mix of amber and green -->
     <color name="today_user_background_dark">#FF8F00</color>    <!-- Amber dominant -->
     <color name="today_user_border">#FF9800</color>             <!-- Orange 500 -->
@@ -376,7 +376,7 @@
     <color name="today_sunday_background_light">#FFF0E1</color> <!-- Mix of amber and red -->
     <color name="today_sunday_background_dark">#F57C00</color>  <!-- Orange 600 -->
 
-    <!-- User Shift + Sunday -->
+    <!-- User LegacyShift + Sunday -->
     <color name="user_sunday_background_light">#F1F8E9</color>  <!-- Light green-red mix -->
     <color name="user_sunday_background_dark">#689F38</color>   <!-- Light green 700 -->
 
