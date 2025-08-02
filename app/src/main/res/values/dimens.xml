@@ -213,5 +213,9 @@
     <dimen name="card_elevation_low">@dimen/spacing_xxs</dimen>
     <dimen name="card_elevation_medium">@dimen/spacing_xs</dimen>
     <dimen name="item_padding_very_small">4dp</dimen>
+    <dimen name="radius_xxsm">2dp</dimen>
+    <dimen name="radius_xxs">2dp</dimen>
+    <dimen name="radius_s">8dp</dimen>
+    <dimen name="radius_xs">4dp</dimen>
 
 </resources>

@@ -2,349 +2,324 @@ package net.calvuz.qdue.ui.features.calendar.di;
 
 import android.content.Context;
 
-import net.calvuz.qdue.core.infrastructure.db.QDueDatabase;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.calvuz.qdue.core.infrastructure.services.EventsService;
 import net.calvuz.qdue.core.infrastructure.services.UserService;
-import net.calvuz.qdue.core.domain.quattrodue.utils.CalendarDataManager;
-import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
+import net.calvuz.qdue.core.infrastructure.services.WorkScheduleService;
+import net.calvuz.qdue.ui.features.calendar.adapters.CalendarPagerAdapter;
+import net.calvuz.qdue.ui.features.calendar.adapters.MonthViewAdapter;
+import net.calvuz.qdue.ui.features.calendar.interfaces.CalendarDataProvider;
+import net.calvuz.qdue.ui.features.calendar.interfaces.CalendarEventListener;
+import net.calvuz.qdue.ui.features.calendar.interfaces.CalendarNavigationListener;
+import net.calvuz.qdue.ui.features.calendar.providers.CalendarDataProviderImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
-import net.calvuz.qdue.ui.features.calendar.adapters.CalendarAdapter;
-import net.calvuz.qdue.ui.features.calendar.components.CalendarEventsBottomSheet;
-import net.calvuz.qdue.core.domain.quattrodue.models.HalfTeam;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Dependency Injection Module for Calendar Feature
- * <p>
- * Provides centralized dependency management for Calendar components:
- * - CalendarViewFragment
- * - CalendarAdapter
- * - CalendarEventsBottomSheet
- * - Calendar-specific services and configurations
- * <p>
- * Features:
- * - Activity-scoped adapter instances
- * - 7-column grid layout configuration
- * - Calendar-specific events preview
- * - Optimized for calendar grid display
- * <p>
- * Usage:
- * CalendarModule module = new CalendarModule(context, eventsService, userService);
- * CalendarAdapter adapter = module.provideCalendarAdapter(items, userTeam);
- * CalendarEventsBottomSheet bottomSheet = module.provideEventsBottomSheet();
+ * CalendarModule - Dependency injection module for calendar feature.
+ *
+ * <p>Provides centralized dependency management for all calendar-related components
+ * following the established DI patterns in the application. Handles creation and
+ * lifecycle management of calendar adapters, data providers, and services.</p>
+ *
+ * <p>Module Features:</p>
+ * <ul>
+ *   <li>Lazy initialization of expensive components</li>
+ *   <li>Proper lifecycle management with cleanup</li>
+ *   <li>Thread-safe component creation</li>
+ *   <li>Integration with existing service layer</li>
+ * </ul>
+ *
+ * @author Calendar App Team
+ * @version 1.0
+ * @since Database Version 6
  */
 public class CalendarModule {
 
     private static final String TAG = "CalendarModule";
 
-    // ==================== CORE DEPENDENCIES ====================
+    // ==================== DEPENDENCIES ====================
 
     private final Context mContext;
     private final EventsService mEventsService;
     private final UserService mUserService;
-    private final QDueDatabase mDatabase;
-    private final CalendarDataManager mDataManager;
+    private final WorkScheduleService mWorkScheduleService;
 
     // ==================== CACHED INSTANCES ====================
 
-    // Adapter (activity-scoped)
-    private CalendarAdapter mCalendarAdapter;
+    private CalendarDataProvider mCalendarDataProvider;
+    private CalendarPagerAdapter mCalendarPagerAdapter;
+    private ExecutorService mExecutorService;
 
-    // Events preview components (fragment-scoped)
-    private CalendarEventsBottomSheet mEventsBottomSheet;
+    // Listeners (weak references handled by components)
+    private CalendarEventListener mCalendarEventListener;
+    private CalendarNavigationListener mCalendarNavigationListener;
+
+    // Configuration
+    private Long mCurrentUserId;
+    private boolean mIsDestroyed = false;
 
     // ==================== CONSTRUCTOR ====================
 
     /**
-     * Constructor - Initialize with core dependencies
+     * Creates CalendarModule with required dependencies.
      *
      * @param context Application context
-     * @param eventsService Events service instance
-     * @param userService User service instance
+     * @param eventsService Events service for event data
+     * @param userService User service for user context
+     * @param workScheduleService Work schedule service for shift data
      */
-    public CalendarModule(Context context,
-                          EventsService eventsService,
-                          UserService userService) {
-        mContext = context.getApplicationContext();
-        mEventsService = eventsService;
-        mUserService = userService;
-        mDatabase = QDueDatabase.getInstance(mContext);
-        mDataManager = CalendarDataManager.getInstance();
+    public CalendarModule(@NonNull Context context,
+                          @NonNull EventsService eventsService,
+                          @NonNull UserService userService,
+                          @NonNull WorkScheduleService workScheduleService) {
+        this.mContext = context.getApplicationContext();
+        this.mEventsService = eventsService;
+        this.mUserService = userService;
+        this.mWorkScheduleService = workScheduleService;
 
-        Log.d(TAG, "CalendarModule initialized");
+        Log.d(TAG, "CalendarModule created");
     }
 
-    // ==================== ADAPTER PROVIDERS ====================
+    // ==================== PROVIDER METHODS ====================
 
     /**
-     * Provide CalendarAdapter instance (activity-scoped)
-     * Creates new instance per activity to avoid memory leaks
+     * Provides CalendarDataProvider instance with lazy initialization.
      *
-     * @param context Fragment context
-     * @param items List of view items for calendar grid
-     * @param userHalfTeam User's half team
-     * @return CalendarAdapter configured with dependencies
+     * @return Configured CalendarDataProvider
      */
-    public CalendarAdapter provideCalendarAdapter(Context context,
-                                                  EventsService eventsService,
-                                                  List<SharedViewModels.ViewItem> items,
-                                                  HalfTeam userHalfTeam) {
-        // Always create new adapter for each activity/fragment
-        mCalendarAdapter = new CalendarAdapter(
-                context,
-                eventsService,
-                items,
-                userHalfTeam
+    @NonNull
+    public synchronized CalendarDataProvider provideCalendarDataProvider() {
+        if (mCalendarDataProvider == null && !mIsDestroyed) {
+            mCalendarDataProvider = new CalendarDataProviderImpl(
+                    mContext,
+                    mEventsService,
+                    mUserService,
+                    mWorkScheduleService,
+                    getExecutorService()
+            );
+
+            if (mCurrentUserId != null) {
+                mCalendarDataProvider.setCurrentUser(mCurrentUserId);
+            }
+
+            Log.d(TAG, "CalendarDataProvider created");
+        }
+        return mCalendarDataProvider;
+    }
+
+    /**
+     * Provides CalendarPagerAdapter for ViewPager2 with month navigation.
+     *
+     * @param eventListener Listener for calendar events
+     * @param navigationListener Listener for navigation events
+     * @return Configured CalendarPagerAdapter
+     */
+    @NonNull
+    public synchronized CalendarPagerAdapter provideCalendarPagerAdapter(
+            @Nullable CalendarEventListener eventListener,
+            @Nullable CalendarNavigationListener navigationListener) {
+
+        if (mCalendarPagerAdapter == null && !mIsDestroyed) {
+            mCalendarEventListener = eventListener;
+            mCalendarNavigationListener = navigationListener;
+
+            mCalendarPagerAdapter = new CalendarPagerAdapter(
+                    provideCalendarDataProvider(),
+                    mCalendarEventListener,
+                    mCalendarNavigationListener
+            );
+
+            Log.d(TAG, "CalendarPagerAdapter created");
+        }
+        return mCalendarPagerAdapter;
+    }
+
+    /**
+     * Provides MonthViewAdapter for individual month display.
+     *
+     * @param yearMonth Month to display
+     * @param eventListener Listener for day click events
+     * @return Configured MonthViewAdapter
+     */
+    @NonNull
+    public MonthViewAdapter provideMonthViewAdapter(@NonNull YearMonth yearMonth,
+                                                    @Nullable CalendarEventListener eventListener) {
+        return new MonthViewAdapter(
+                mContext,
+                yearMonth,
+                provideCalendarDataProvider(),
+                eventListener
         );
-
-        Log.d(TAG, "Created new CalendarAdapter instance");
-        return mCalendarAdapter;
     }
 
     /**
-     * Get current adapter instance (if exists)
+     * Provides ExecutorService for background operations.
      *
-     * @return Current adapter or null if not created
+     * @return Shared ExecutorService instance
      */
-    public CalendarAdapter getCurrentCalendarAdapter() {
-        return mCalendarAdapter;
-    }
+    @NonNull
+    private synchronized ExecutorService getExecutorService() {
+        if (mExecutorService == null && !mIsDestroyed) {
+            mExecutorService = Executors.newFixedThreadPool(3, r -> {
+                Thread thread = new Thread(r, "CalendarModule-Worker");
+                thread.setDaemon(true);
+                return thread;
+            });
 
-    // ==================== COMPONENT PROVIDERS ====================
-
-    /**
-     * Provide CalendarEventsBottomSheet instance (fragment-scoped)
-     *
-     * @param context Fragment context
-     * @return CalendarEventsBottomSheet configured with dependencies
-     */
-    public CalendarEventsBottomSheet provideEventsBottomSheet(Context context) {
-        if (mEventsBottomSheet == null) {
-            mEventsBottomSheet = new CalendarEventsBottomSheet(context);
-            Log.d(TAG, "Created CalendarEventsBottomSheet instance");
+            Log.d(TAG, "ExecutorService created");
         }
-        return mEventsBottomSheet;
+        return mExecutorService;
     }
 
-    // ==================== SERVICE PROVIDERS ====================
+    // ==================== CONFIGURATION METHODS ====================
 
     /**
-     * Provide EventsService instance
+     * Set current user for data filtering.
      *
-     * @return EventsService configured instance
+     * @param userId User ID to filter data by (null for current user)
      */
-    public EventsService provideEventsService() {
-        return mEventsService;
+    public void setCurrentUser(@Nullable Long userId) {
+        mCurrentUserId = userId;
+
+        if (mCalendarDataProvider != null) {
+            mCalendarDataProvider.setCurrentUser(userId);
+        }
+
+        Log.d(TAG, "Current user set to: " + userId);
     }
 
     /**
-     * Provide UserService instance
+     * Update event listener for existing adapter.
      *
-     * @return UserService configured instance
+     * @param eventListener New event listener
      */
-    public UserService provideUserService() {
-        return mUserService;
-    }
+    public void updateEventListener(@Nullable CalendarEventListener eventListener) {
+        mCalendarEventListener = eventListener;
 
-    /**
-     * Provide CalendarDataManager instance
-     *
-     * @return CalendarDataManager singleton instance
-     */
-    public CalendarDataManager provideCalendarDataManager() {
-        return mDataManager;
-    }
-
-    /**
-     * Provide QDueDatabase instance
-     *
-     * @return QDueDatabase singleton instance
-     */
-    public QDueDatabase provideDatabase() {
-        return mDatabase;
-    }
-
-    // ==================== CALENDAR-SPECIFIC CONFIGURATION ====================
-
-    /**
-     * Get column count for Calendar layout
-     * Always returns 7 for calendar grid (Sunday-Saturday)
-     *
-     * @return Column count (always 7 for Calendar)
-     */
-    public int getColumnCount() {
-        return 7; // Calendar always uses 7 columns (week days)
-    }
-
-    /**
-     * Check if calendar should show week numbers
-     * Can be configured based on user preferences
-     *
-     * @return true if week numbers should be shown
-     */
-    public boolean shouldShowWeekNumbers() {
-        // TODO: Get from user preferences or configuration
-        return false; // Default: don't show week numbers
-    }
-
-    /**
-     * Get first day of week for calendar
-     * Can be configured based on user locale/preferences
-     *
-     * @return First day of week (1 = Monday, 7 = Sunday)
-     */
-    public int getFirstDayOfWeek() {
-        // TODO: Get from user preferences or locale
-        return 1; // Default: Monday as first day of week
-    }
-
-    /**
-     * Configure adapter with calendar-specific settings
-     * Call this after adapter creation to enable calendar features
-     */
-    public void configureCalendarFeatures() {
-        if (mCalendarAdapter != null && mEventsService != null) {
-            // Configure adapter with events service
-            mCalendarAdapter.setEventsService(mEventsService);
-
-            // Set calendar-specific configurations
-            // e.g., cell height, event indicators, etc.
-
-            Log.d(TAG, "Calendar features configured for CalendarAdapter");
-        } else {
-            Log.w(TAG, "Cannot configure calendar features - missing dependencies");
+        if (mCalendarPagerAdapter != null) {
+            mCalendarPagerAdapter.updateEventListener(eventListener);
         }
     }
 
-    // ==================== TESTING SUPPORT ====================
-
     /**
-     * Clear cached instances for testing
-     * Should only be used in test environments
-     */
-    public void clearCacheForTesting() {
-        mCalendarAdapter = null;
-        mEventsBottomSheet = null;
-
-        Log.w(TAG, "Cleared all cached instances for testing");
-    }
-
-    /**
-     * Check if all dependencies are properly initialized
+     * Update navigation listener for existing adapter.
      *
-     * @return true if all core dependencies are available
+     * @param navigationListener New navigation listener
      */
-    public boolean areDependenciesReady() {
-        return mContext != null &&
-                mEventsService != null &&
-                mUserService != null &&
-                mDatabase != null &&
-                mDataManager != null;
-    }
+    public void updateNavigationListener(@Nullable CalendarNavigationListener navigationListener) {
+        mCalendarNavigationListener = navigationListener;
 
-    // ==================== LIFECYCLE MANAGEMENT ====================
-
-    /**
-     * Clean up resources when fragment is destroyed
-     * Call this from Fragment.onDestroy()
-     */
-    public void onDestroy() {
-        // Clean up adapter
-        if (mCalendarAdapter != null) {
-            mCalendarAdapter.onDestroy();
-            mCalendarAdapter = null;
+        if (mCalendarPagerAdapter != null) {
+            mCalendarPagerAdapter.updateNavigationListener(navigationListener);
         }
-
-        // Clean up events bottom sheet
-        if (mEventsBottomSheet != null) {
-            mEventsBottomSheet.onDestroy();
-            mEventsBottomSheet = null;
-        }
-
-        Log.d(TAG, "CalendarModule cleaned up");
     }
 
     // ==================== UTILITY METHODS ====================
 
     /**
-     * Create module instance with default configuration
-     * Convenience method for common use cases
+     * Refresh calendar data for specific date range.
      *
-     * @param context Application context
-     * @param eventsService Events service instance
-     * @param userService User service instance
-     * @return Configured CalendarModule
+     * @param startDate Start date (inclusive)
+     * @param endDate End date (inclusive)
      */
-    public static CalendarModule createDefault(Context context,
-                                               EventsService eventsService,
-                                               UserService userService) {
-        CalendarModule module = new CalendarModule(context, eventsService, userService);
+    public void refreshCalendarData(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        if (mCalendarDataProvider != null && !mIsDestroyed) {
+            mCalendarDataProvider.refreshData(startDate, endDate);
+            Log.d(TAG, "Calendar data refresh requested for " + startDate + " to " + endDate);
+        }
+    }
 
-        // Verify dependencies
-        if (!module.areDependenciesReady()) {
-            throw new IllegalStateException("CalendarModule dependencies not ready");
+    /**
+     * Refresh calendar data for specific month.
+     *
+     * @param yearMonth Month to refresh
+     */
+    public void refreshCalendarData(@NonNull YearMonth yearMonth) {
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+        refreshCalendarData(startDate, endDate);
+    }
+
+    /**
+     * Clear cached data and force reload.
+     */
+    public void clearCache() {
+        if (mCalendarDataProvider != null && !mIsDestroyed) {
+            mCalendarDataProvider.clearCache();
+            Log.d(TAG, "Calendar cache cleared");
+        }
+    }
+
+    // ==================== LIFECYCLE METHODS ====================
+
+    /**
+     * Check if all dependencies are ready.
+     *
+     * @return true if module is properly initialized
+     */
+    public boolean areDependenciesReady() {
+        return mContext != null &&
+                mEventsService != null &&
+                mUserService != null &&
+                mWorkScheduleService != null &&
+                !mIsDestroyed;
+    }
+
+    /**
+     * Cleanup all resources and stop background operations.
+     * Should be called when the module is no longer needed.
+     */
+    public void onDestroy() {
+        Log.d(TAG, "Destroying CalendarModule");
+
+        mIsDestroyed = true;
+
+        // Cleanup data provider
+        if (mCalendarDataProvider != null) {
+            mCalendarDataProvider.destroy();
+            mCalendarDataProvider = null;
         }
 
-        return module;
+        // Cleanup adapter
+        if (mCalendarPagerAdapter != null) {
+            mCalendarPagerAdapter.onDestroy();
+            mCalendarPagerAdapter = null;
+        }
+
+        // Shutdown executor service
+        if (mExecutorService != null && !mExecutorService.isShutdown()) {
+            mExecutorService.shutdown();
+            mExecutorService = null;
+        }
+
+        // Clear listeners
+        mCalendarEventListener = null;
+        mCalendarNavigationListener = null;
+
+        Log.d(TAG, "CalendarModule destroyed");
     }
 
-    /**
-     * Get debug information about module state
-     *
-     * @return String with module state information
-     */
-    public String getDebugInfo() {
-        StringBuilder info = new StringBuilder();
-        info.append("CalendarModule Debug Info:\n");
-        info.append("- Dependencies ready: ").append(areDependenciesReady()).append("\n");
-        info.append("- CalendarAdapter: ").append(mCalendarAdapter != null ? "created" : "null").append("\n");
-        info.append("- EventsBottomSheet: ").append(mEventsBottomSheet != null ? "created" : "null").append("\n");
-        info.append("- Column count: ").append(getColumnCount()).append("\n");
-        info.append("- First day of week: ").append(getFirstDayOfWeek()).append("\n");
-        info.append("- Show week numbers: ").append(shouldShowWeekNumbers()).append("\n");
-
-        return info.toString();
-    }
-
-    // ==================== CALENDAR LAYOUT HELPERS ====================
+    // ==================== DEBUGGING METHODS ====================
 
     /**
-     * Calculate optimal cell height for calendar grid
-     * Based on screen size and available space
+     * Get module status for debugging.
      *
-     * @param availableHeight Available height for calendar grid
-     * @param numberOfWeeks Number of weeks to display
-     * @return Optimal cell height in pixels
+     * @return Status string with component states
      */
-    public int calculateOptimalCellHeight(int availableHeight, int numberOfWeeks) {
-        if (numberOfWeeks <= 0) numberOfWeeks = 6; // Default to 6 weeks
-
-        // Reserve space for month header and padding
-        int reservedSpace = 120; // dp converted to pixels would be better
-        int availableForCells = Math.max(availableHeight - reservedSpace, 200);
-
-        int cellHeight = availableForCells / numberOfWeeks;
-
-        // Ensure minimum and maximum cell heights
-        int minCellHeight = 48; // Minimum touch target
-        int maxCellHeight = 80; // Maximum for good visual appearance
-
-        cellHeight = Math.max(minCellHeight, Math.min(maxCellHeight, cellHeight));
-
-        Log.d(TAG, "Calculated optimal cell height: " + cellHeight + "px for " + numberOfWeeks + " weeks");
-        return cellHeight;
-    }
-
-    /**
-     * Check if current layout is suitable for calendar view
-     * Based on screen orientation and size
-     *
-     * @return true if layout is suitable for calendar grid
-     */
-    public boolean isLayoutSuitableForCalendar() {
-        // TODO: Check screen size, orientation, density
-        // For now, assume calendar is always suitable
-        return true;
+    public String getModuleStatus() {
+        return "CalendarModule{" +
+                "destroyed=" + mIsDestroyed +
+                ", dataProvider=" + (mCalendarDataProvider != null) +
+                ", pagerAdapter=" + (mCalendarPagerAdapter != null) +
+                ", executorService=" + (mExecutorService != null && !mExecutorService.isShutdown()) +
+                ", currentUserId=" + mCurrentUserId +
+                '}';
     }
 }

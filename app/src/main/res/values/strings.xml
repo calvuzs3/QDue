@@ -106,7 +106,6 @@
     <string name="nav_header_desc">Menu QDue</string>
     <string name="navigation_drawer_open">Apri il cassetto menu</string>
     <string name="navigation_drawer_close">Chiudi il cassetto menu</string>
-    <string name="go_to_today">Vai a oggi</string>
     <string name="button_left">Precedente</string>
     <string name="button_right">Successivo</string>
 
@@ -469,7 +468,8 @@
     <string name="action_disable">Disabilita</string>
     <string name="action_preview">Anteprima</string>
     <string name="action_restore">Ripristina</string>
-    <string name="today">Oggi</string>
+    <string name="yesterday">Ieri</string>
+    <string name="tomorrow">Domani</string>
     <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
     <string name="text_import_events">Importa Eventi</string>
@@ -595,7 +595,6 @@
     <string name="empty_help_text">💡 Suggerimento: Gli eventi importati verranno sincronizzati automaticamente</string>
 
     <!-- Loading State -->
-    <string name="loading_events">Caricamento eventi…</string>
     <string name="loading_database">Sto recuperando gli eventi dal database…</string>
     <string name="loading_importing">Importando eventi…</string>
     <string name="loading_exporting">Esportando eventi…</string>
@@ -1234,13 +1233,6 @@
     <string name="event_conflict_reason_desc_maintenance">Attività di manutenzione programmata</string>
     <string name="event_format_event_colon_0">Evento: {0}</string>
     <string name="event_type_holiday">Festività</string>
-    <string name="event_type_stop_shortage_raw_materials">Fermata Carenza Materie Prime</string>
-    <string name="event_type_stop_shortage_orders">Carenza Ordini</string>
-    <string name="event_type_saefty_drill">Prova Sicurezza</string>
-    <string name="event_type_audit">Audit</string>
-    <string name="event_type_shift_change">Cambio Turno</string>
-    <string name="event_type_imported">Importato</string>
-    <string name="event_type_other">Altro</string>
     <string name="event_conflict_reason_contains_you_cant">Non puoi</string>
     <string name="event_conflict_reason_contains_exclude">escludono</string>
     <string name="event_conflict_reason_contains_interrupt">interrompe</string>
@@ -1271,6 +1263,8 @@
     <string name="text_selected_file">File Selezionato</string>
     <string name="team_name_format">Squadra {0}</string>
     <string name="dialog_quick_action_confirm_title">Conferma Evento Rapido</string>
+    <string name="work_day">feriale</string>
+    <string name="rest_day">riposo</string>
 
     <!-- ======================================================================= -->
 
@@ -1280,4 +1274,243 @@
         <item quantity="other">giorni</item>
     </plurals>
 
+
+    <!-- =====================================================================
+         EventTypeCategory Internationalization Strings
+         ===================================================================== -->
+
+    <!-- Category Display Names -->
+    <string name="event_category_general">Generale</string>
+    <string name="event_category_absence">Assenze</string>
+    <string name="event_category_work_adjustment">Aggiustamenti Turno</string>
+    <string name="event_category_production">Produzione</string>
+    <string name="event_category_organizational">Organizzativo</string>
+    <string name="event_category_compliance">Conformità</string>
+
+    <!-- Category Descriptions -->
+    <string name="event_category_general_description">Eventi generali inclusi riunioni, formazione e attività varie</string>
+    <string name="event_category_absence_description">Eventi di assenza che influenzano la presenza e la pianificazione del lavoro</string>
+    <string name="event_category_work_adjustment_description">Modifiche alla pianificazione del lavoro inclusi straordinari e cambi turno</string>
+    <string name="event_category_production_description">Eventi correlati alla produzione inclusi fermate, manutenzione ed emergenze</string>
+    <string name="event_category_organizational_description">Eventi organizzativi inclusi riunioni, formazione e attività aziendali</string>
+    <string name="event_category_compliance_description">Eventi di conformità e sicurezza inclusi esercitazioni, audit e attività normative</string>
+
+    <!-- Category-Related UI Strings -->
+    <string name="event_categories_filter_title">Filtra per Categoria</string>
+    <string name="event_categories_all">Tutte le Categorie</string>
+    <string name="event_categories_none_selected">Nessuna categoria selezionata</string>
+    <string name="event_categories_multiple_selected">%d categorie selezionate</string>
+
+    <!-- Category Statistics -->
+    <string name="event_category_statistics_title">Distribuzione per Categoria</string>
+    <string name="event_category_count_format">%1$s: %2$d tipi</string>
+    <string name="event_category_total_format">Totale: %d tipi di evento</string>
+
+    <!-- Category Business Logic Messages -->
+    <string name="event_category_affects_schedule_warning">Gli eventi di questa categoria potrebbero influenzare la pianificazione del lavoro</string>
+    <string name="event_category_requires_approval_info">Gli eventi di questa categoria solitamente richiedono approvazione</string>
+    <string name="event_category_all_day_hint">Gli eventi di questa categoria sono solitamente eventi di giornata intera</string>
+
+    <!-- Error Messages -->
+    <string name="event_category_invalid">Categoria evento non valida</string>
+    <string name="event_category_not_found">Categoria non trovata: %s</string>
+    <string name="event_category_load_error">Errore nel caricamento delle categorie evento</string>
+
+    <!-- Accessibility Descriptions -->
+    <string name="event_category_icon_description">Icona categoria %s</string>
+    <string name="event_category_filter_description">Filtra eventi per categoria %s</string>
+    <string name="event_category_selection_description">Seleziona categoria %s</string>
+
+    <!-- =====================================================================
+         Additional Missing Drawable Resources (if needed)
+         ===================================================================== -->
+
+    <!-- These might be needed for the missing drawable resources -->
+    <!-- Update these based on actual drawable availability -->
+
+    <!-- EventType string resources that might be missing -->
+    <string name="event_type_shift_change">Cambio Turno</string>
+    <string name="event_type_imported">Importato</string>
+    <string name="event_type_other">Altro</string>
+    <string name="event_type_stop_shortage_orders">Fermata Mancanza Ordini</string>
+    <string name="event_type_stop_shortage_raw_materials">Fermata Mancanza Materie Prime</string>
+    <string name="event_type_saefty_drill">Esercitazione Sicurezza</string>
+    <string name="event_type_audit">Audit</string>
+
+    <!-- Category-based Quick Actions -->
+    <string name="quick_action_add_absence">Aggiungi Assenza</string>
+    <string name="quick_action_add_production_event">Aggiungi Evento Produzione</string>
+    <string name="quick_action_add_work_adjustment">Aggiungi Aggiustamento Turno</string>
+    <string name="quick_action_add_organizational">Aggiungi Evento Organizzativo</string>
+    <string name="quick_action_add_compliance">Aggiungi Evento Conformità</string>
+
+    <!-- Category Priority Descriptions -->
+    <string name="event_category_priority_high">Priorità Alta</string>
+    <string name="event_category_priority_medium">Priorità Media</string>
+    <string name="event_category_priority_low">Priorità Bassa</string>
+    <string name="event_category_priority_description">Le assenze hanno la priorità più alta, seguite da produzione e aggiustamenti turno</string>
+
+
+
+    <!-- =====================================================================
+         Calendar Feature Internationalization Strings
+         ===================================================================== -->
+
+    <!-- Calendar Activity and Navigation -->
+    <string name="calendar_title">Calendario</string>
+    <string name="calendar_description">Vista calendario con turni e eventi</string>
+    <string name="navigate_up">Torna indietro</string>
+
+    <!-- Calendar Navigation -->
+    <string name="previous_month">Mese precedente</string>
+    <string name="next_month">Mese successivo</string>
+    <string name="today">Oggi</string>
+    <string name="go_to_today">Vai a oggi</string>
+    <string name="select_date">Seleziona data</string>
+
+    <!-- Calendar View Modes -->
+    <string name="view_mode_month">Vista mese</string>
+    <string name="view_mode_week">Vista settimana</string>
+    <string name="view_mode_day">Vista giorno</string>
+    <string name="switch_view_mode">Cambia vista</string>
+
+    <!-- Calendar States -->
+    <string name="loading_calendar_data">Caricamento dati calendario…</string>
+    <string name="calendar_load_error">Errore nel caricamento del calendario</string>
+    <string name="calendar_month_load_error">Impossibile caricare i dati del mese</string>
+    <string name="calendar_data_unavailable">Dati del calendario non disponibili</string>
+    <string name="retry">Riprova</string>
+    <string name="refresh">Aggiorna</string>
+
+    <!-- Day Interactions -->
+    <string name="day_click_description">Tocca per visualizzare dettagli del giorno</string>
+    <string name="day_long_click_description">Tieni premuto per azioni rapide</string>
+    <string name="day_selected">Giorno selezionato: %s</string>
+    <string name="no_events_today">Nessun evento oggi</string>
+    <string name="events_count">%d eventi</string>
+
+    <!-- Event Indicators -->
+    <string name="high_priority_event">Evento alta priorità</string>
+    <string name="event_indicator">Indicatore evento</string>
+    <string name="shift_indicator">Indicatore turno</string>
+    <string name="event_count_indicator">Numero eventi: %d</string>
+
+    <!-- Shift Information -->
+    <string name="shift_morning">Turno mattino</string>
+    <string name="shift_afternoon">Turno pomeriggio</string>
+    <string name="shift_night">Turno notte</string>
+    <string name="shift_rest">Riposo</string>
+    <string name="shift_modified">Turno modificato</string>
+    <string name="effective_shift">Turno effettivo: %s</string>
+
+    <!-- Quick Actions -->
+    <string name="quick_actions">Azioni rapide</string>
+    <string name="quick_add">Aggiungi</string>
+    <string name="add_event">Aggiungi evento</string>
+    <string name="create_event">Crea evento</string>
+    <string name="create_event_for_date">Crea evento per %s</string>
+    <string name="view_shift_details">Dettagli turno</string>
+    <string name="view_day_details">Dettagli giorno</string>
+
+    <!-- Event Actions -->
+    <string name="event_details_title">Dettagli evento</string>
+    <string name="create_event_title">Nuovo evento</string>
+    <string name="edit_event_title">Modifica evento</string>
+    <string name="day_details_title">Dettagli giorno</string>
+
+    <!-- Error States -->
+    <string name="error_icon">Icona errore</string>
+    <string name="error_loading_day">Errore caricamento giorno</string>
+    <string name="error_loading_events">Errore caricamento eventi</string>
+    <string name="error_loading_shifts">Errore caricamento turni</string>
+    <string name="calendar_service_unavailable">Servizio calendario non disponibile</string>
+
+    <!-- Loading States -->
+    <string name="loading_day_data">Caricamento dati giorno…</string>
+    <string name="loading_events">Caricamento eventi…</string>
+    <string name="loading_shifts">Caricamento turni…</string>
+    <string name="updating_calendar">Aggiornamento calendario…</string>
+
+    <!-- Weekend and Special Days -->
+    <string name="weekend_day">Giorno festivo</string>
+    <string name="holiday">Festività</string>
+    <string name="today_indicator">Indicatore oggi</string>
+    <string name="current_day">Giorno corrente</string>
+
+    <!-- Accessibility -->
+    <string name="calendar_grid_description">Griglia calendario mensile</string>
+    <string name="calendar_day_description">Giorno %1$d, %2$s</string>
+    <string name="calendar_day_with_events">Giorno %1$d con %2$d eventi</string>
+    <string name="calendar_day_with_shift">Giorno %1$d, turno %2$s</string>
+    <string name="today_highlight">Oggi evidenziato</string>
+
+    <!-- Month Names (in case needed for custom formatting) -->
+    <string name="month_january">Gennaio</string>
+    <string name="month_february">Febbraio</string>
+    <string name="month_march">Marzo</string>
+    <string name="month_april">Aprile</string>
+    <string name="month_may">Maggio</string>
+    <string name="month_june">Giugno</string>
+    <string name="month_july">Luglio</string>
+    <string name="month_august">Agosto</string>
+    <string name="month_september">Settembre</string>
+    <string name="month_october">Ottobre</string>
+    <string name="month_november">Novembre</string>
+    <string name="month_december">Dicembre</string>
+
+    <!-- Week Day Names Short -->
+    <string name="weekday_monday_short">Lun</string>
+    <string name="weekday_tuesday_short">Mar</string>
+    <string name="weekday_wednesday_short">Mer</string>
+    <string name="weekday_thursday_short">Gio</string>
+    <string name="weekday_friday_short">Ven</string>
+    <string name="weekday_saturday_short">Sab</string>
+    <string name="weekday_sunday_short">Dom</string>
+
+    <!-- Calendar Filters and Options -->
+    <string name="filter_by_user">Filtra per utente</string>
+    <string name="filter_by_shift">Filtra per turno</string>
+    <string name="filter_by_event_type">Filtra per tipo evento</string>
+    <string name="show_all">Mostra tutto</string>
+    <string name="show_only_events">Solo eventi</string>
+    <string name="show_only_shifts">Solo turni</string>
+
+    <!-- Calendar Settings -->
+    <string name="calendar_settings">Impostazioni calendario</string>
+    <string name="start_week_on">Inizia settimana di</string>
+    <string name="start_week_monday">Lunedì</string>
+    <string name="start_week_sunday">Domenica</string>
+    <string name="show_week_numbers">Mostra numeri settimana</string>
+    <string name="highlight_weekends">Evidenzia weekend</string>
+
+    <!-- Calendar Export/Import -->
+    <string name="export_calendar">Esporta calendario</string>
+    <string name="import_calendar">Importa calendario</string>
+    <string name="export_month">Esporta mese</string>
+    <string name="export_date_range">Esporta intervallo date</string>
+
+    <!-- Calendar Notifications -->
+    <string name="calendar_data_updated">Dati calendario aggiornati</string>
+    <string name="new_shift_assigned">Nuovo turno assegnato</string>
+    <string name="shift_changed">Turno modificato</string>
+    <string name="event_reminder">Promemoria evento</string>
+
+    <!-- Plurals for Events -->
+    <plurals name="events_count">
+        <item quantity="zero">Nessun evento</item>
+        <item quantity="one">1 evento</item>
+        <item quantity="other">%d eventi</item>
+    </plurals>
+
+    <!-- Format Strings -->
+    <string name="date_format_full">EEEE, d MMMM yyyy</string>
+    <string name="date_format_short">d/M/yyyy</string>
+    <string name="month_year_format">MMMM yyyy</string>
+    <string name="time_format_short">HH:mm</string>
+
+    <!-- Calendar Integration -->
+    <string name="sync_with_google_calendar">Sincronizza con Google Calendar</string>
+    <string name="add_to_device_calendar">Aggiungi al calendario dispositivo</string>
+    <string name="calendar_sync_enabled">Sincronizzazione calendario attivata</string>
+    <string name="calendar_sync_disabled">Sincronizzazione calendario disattivata</string>
 </resources>

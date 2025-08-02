@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/navigation/calendar_navigation.xml -->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/calendar_navigation"
+    app:startDestination="@id/calendarViewFragment">
+
+    <!-- Main Calendar View Fragment -->
+    <fragment
+        android:id="@+id/calendarViewFragment"
+        android:name="net.calvuz.qdue.ui.features.calendar.presentation.CalendarViewFragment"
+        android:label="@string/calendar_title"
+        tools:layout="@layout/fragment_calendar_view">
+
+        <!-- Arguments -->
+        <argument
+            android:name="initial_date"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <argument
+            android:name="view_mode"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="month" />
+
+        <argument
+            android:name="user_id"
+            app:argType="long"
+            app:nullable="true"
+            android:defaultValue="-1L" />
+
+        <!-- Actions -->
+        <action
+            android:id="@+id/action_calendar_to_event_details"
+            app:destination="@id/eventDetailsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_calendar_to_create_event"
+            app:destination="@id/createEventFragment"
+            app:enterAnim="@anim/slide_in_bottom"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_bottom" />
+
+        <action
+            android:id="@+id/action_calendar_to_day_details"
+            app:destination="@id/dayDetailsFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+
+    </fragment>
+
+    <!-- Event Details Fragment (placeholder) -->
+    <fragment
+        android:id="@+id/eventDetailsFragment"
+        android:name="net.calvuz.qdue.ui.features.events.presentation.EventDetailsFragment"
+        android:label="@string/event_details_title"
+        tools:layout="@layout/fragment_event_details">
+
+        <argument
+            android:name="event_id"
+            app:argType="long" />
+
+        <argument
+            android:name="event_date"
+            app:argType="string"
+            app:nullable="true" />
+
+    </fragment>
+
+    <!-- Create Event Fragment (placeholder) -->
+    <fragment
+        android:id="@+id/createEventFragment"
+        android:name="net.calvuz.qdue.ui.features.events.presentation.CreateEventFragment"
+        android:label="@string/create_event_title"
+        tools:layout="@layout/fragment_create_event">
+
+        <argument
+            android:name="initial_date"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="event_type"
+            app:argType="string"
+            app:nullable="true" />
+
+    </fragment>
+
+    <!-- Day Details Fragment (placeholder) -->
+    <fragment
+        android:id="@+id/dayDetailsFragment"
+        android:name="net.calvuz.qdue.ui.features.calendar.presentation.DayDetailsFragment"
+        android:label="@string/day_details_title"
+        tools:layout="@layout/fragment_day_details">
+
+        <argument
+            android:name="selected_date"
+            app:argType="string" />
+
+    </fragment>
+
+</navigation>
