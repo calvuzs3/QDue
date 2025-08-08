@@ -2,14 +2,18 @@ package net.calvuz.qdue.core.di;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
+import net.calvuz.qdue.core.services.WorkScheduleService;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
 import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.services.impl.WorkScheduleServiceImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -41,6 +45,9 @@ public class ServiceProviderImpl implements ServiceProvider {
     private volatile OrganizationService mOrganizationService;
     private volatile CoreBackupManager mCoreBackupManager;
 
+    // NEW: Work schedule service
+    private volatile WorkScheduleService mWorkScheduleService;
+
     // Service dependencies
     private QDueDatabase mDatabase;
 
@@ -60,17 +67,17 @@ public class ServiceProviderImpl implements ServiceProvider {
      */
     private ServiceProviderImpl(Context context) {
         mContext = context.getApplicationContext();
-        Log.d(TAG, "ServiceProvider created");
+        Log.d( TAG, "ServiceProvider created" );
     }
 
     /**
      * Get singleton instance
      */
     public static ServiceProviderImpl getInstance(Context context) {
-        if (INSTANCE == null) {
+        if ( INSTANCE == null ) {
             synchronized (ServiceProviderImpl.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new ServiceProviderImpl(context);
+                if ( INSTANCE == null ) {
+                    INSTANCE = new ServiceProviderImpl( context );
                 }
             }
         }
@@ -80,37 +87,37 @@ public class ServiceProviderImpl implements ServiceProvider {
     @Override
     public void initializeServices() {
         synchronized (mInitializationLock) {
-            if (mServicesInitialized || mServicesShutdown) {
-                Log.d(TAG, "Services already initialized or shutdown, skipping");
+            if ( mServicesInitialized || mServicesShutdown ) {
+                Log.d( TAG, "Services already initialized or shutdown, skipping" );
                 return;
             }
 
             try {
-                Log.d(TAG, "Initializing services...");
+                Log.d( TAG, "Initializing services..." );
 
                 // Initialize database first
-                mDatabase = QDueDatabase.getInstance(mContext);
+                mDatabase = QDueDatabase.getInstance( mContext );
 
                 // Services will be lazy-initialized when first accessed
                 mServicesInitialized = true;
 
-                Log.d(TAG, "✅ Services initialization completed");
+                Log.d( TAG, "✅ Services initialization completed" );
 
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error initializing services: " + e.getMessage());
-                throw new RuntimeException("Service initialization failed", e);
+                Log.e( TAG, "❌ Error initializing services: " + e.getMessage() );
+                throw new RuntimeException( "Service initialization failed", e );
             }
         }
     }
 
     @Override
     public EventsService getEventsService() {
-        if (mEventsService == null) {
+        if ( mEventsService == null ) {
             synchronized (mEventsServiceLock) {
-                if (mEventsService == null) {
+                if ( mEventsService == null ) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating EventsService instance");
-                    mEventsService = new EventsServiceImpl(mContext, mDatabase);
+                    Log.d( TAG, "Creating EventsService instance" );
+                    mEventsService = new EventsServiceImpl( mContext, mDatabase );
                 }
             }
         }
@@ -119,12 +126,12 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public UserService getUserService() {
-        if (mUserService == null) {
+        if ( mUserService == null ) {
             synchronized (mUserServiceLock) {
-                if (mUserService == null) {
+                if ( mUserService == null ) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating UserService instance");
-                    mUserService = new UserServiceImpl(mContext, mDatabase);
+                    Log.d( TAG, "Creating UserService instance" );
+                    mUserService = new UserServiceImpl( mContext, mDatabase );
                 }
             }
         }
@@ -133,12 +140,12 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public OrganizationService getOrganizationService() {
-        if (mOrganizationService == null) {
+        if ( mOrganizationService == null ) {
             synchronized (mOrganizationServiceLock) {
-                if (mOrganizationService == null) {
+                if ( mOrganizationService == null ) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating OrganizationService instance");
-                    mOrganizationService = new OrganizationServiceImpl(mContext, mDatabase);
+                    Log.d( TAG, "Creating OrganizationService instance" );
+                    mOrganizationService = new OrganizationServiceImpl( mContext, mDatabase );
                 }
             }
         }
@@ -147,55 +154,84 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public CoreBackupManager getCoreBackupManager() {
-        if (mCoreBackupManager == null) {
+        if ( mCoreBackupManager == null ) {
             synchronized (mBackupManagerLock) {
-                if (mCoreBackupManager == null) {
+                if ( mCoreBackupManager == null ) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating CoreBackupManager instance");
-                    mCoreBackupManager = new CoreBackupManager(mContext, mDatabase);
+                    Log.d( TAG, "Creating CoreBackupManager instance" );
+                    mCoreBackupManager = new CoreBackupManager( mContext, mDatabase );
                 }
             }
         }
         return mCoreBackupManager;
     }
 
+    /**
+     * NEW: Get WorkScheduleService instance.
+     * Creates service with proper dependency injection including UserService.
+     *
+     * @return WorkScheduleService instance
+     */
+    @Override
+    @NonNull
+    public WorkScheduleService getWorkScheduleService() {
+        if ( mWorkScheduleService == null ) {
+            synchronized (this) {
+                if ( mWorkScheduleService == null ) {
+                    // WorkScheduleService depends on UserService for team assignments
+                    UserService userService = getUserService();
+
+                    mWorkScheduleService = new WorkScheduleServiceImpl(
+                            mContext,
+                            mDatabase,
+                            mCoreBackupManager,
+                            userService
+                    );
+
+                    Log.d( TAG, "WorkScheduleService created with UserService dependency" );
+                }
+            }
+        }
+        return mWorkScheduleService;
+    }
+
     @Override
     public void shutdownServices() {
         synchronized (mInitializationLock) {
-            if (mServicesShutdown) {
-                Log.d(TAG, "Services already shutdown");
+            if ( mServicesShutdown ) {
+                Log.d( TAG, "Services already shutdown" );
                 return;
             }
 
-            Log.d(TAG, "Shutting down services...");
+            Log.d( TAG, "Shutting down services..." );
 
             try {
                 // Shutdown services in reverse order of dependency
-                if (mCoreBackupManager != null) {
+                if ( mCoreBackupManager != null ) {
                     // CoreBackupManager shutdown if needed
-                    Log.d(TAG, "CoreBackupManager shutdown");
+                    Log.d( TAG, "CoreBackupManager shutdown" );
                 }
 
-                if (mOrganizationService != null) {
+                if ( mOrganizationService != null ) {
                     // OrganizationService shutdown if needed
-                    Log.d(TAG, "OrganizationService shutdown");
+                    Log.d( TAG, "OrganizationService shutdown" );
                 }
 
-                if (mUserService != null) {
+                if ( mUserService != null ) {
                     // UserService shutdown if needed
-                    Log.d(TAG, "UserService shutdown");
+                    Log.d( TAG, "UserService shutdown" );
                 }
 
-                if (mEventsService != null) {
+                if ( mEventsService != null ) {
                     // EventsService shutdown if needed
-                    Log.d(TAG, "EventsService shutdown");
+                    Log.d( TAG, "EventsService shutdown" );
                 }
 
                 mServicesShutdown = true;
-                Log.d(TAG, "✅ Services shutdown completed");
+                Log.d( TAG, "✅ Services shutdown completed" );
 
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error during service shutdown: " + e.getMessage());
+                Log.e( TAG, "❌ Error during service shutdown: " + e.getMessage() );
             }
         }
     }
@@ -209,16 +245,16 @@ public class ServiceProviderImpl implements ServiceProvider {
      * Ensure services are initialized before use
      */
     private void ensureInitialized() {
-        if (!mServicesInitialized) {
+        if ( !mServicesInitialized ) {
             synchronized (mInitializationLock) {
-                if (!mServicesInitialized) {
+                if ( !mServicesInitialized ) {
                     initializeServices();
                 }
             }
         }
 
-        if (mServicesShutdown) {
-            throw new IllegalStateException("Services have been shutdown and cannot be used");
+        if ( mServicesShutdown ) {
+            throw new IllegalStateException( "Services have been shutdown and cannot be used" );
         }
     }
 
@@ -240,31 +276,16 @@ public class ServiceProviderImpl implements ServiceProvider {
     /**
      * Service health status data class
      */
-    public static class ServiceHealthStatus {
-        public final boolean initialized;
-        public final boolean shutdown;
-        public final boolean databaseReady;
-        public final boolean eventsServiceCreated;
-        public final boolean userServiceCreated;
-        public final boolean organizationServiceCreated;
-        public final boolean backupManagerCreated;
-
-        public ServiceHealthStatus(boolean initialized, boolean shutdown, boolean databaseReady,
-                                   boolean eventsServiceCreated, boolean userServiceCreated,
-                                   boolean organizationServiceCreated, boolean backupManagerCreated) {
-            this.initialized = initialized;
-            this.shutdown = shutdown;
-            this.databaseReady = databaseReady;
-            this.eventsServiceCreated = eventsServiceCreated;
-            this.userServiceCreated = userServiceCreated;
-            this.organizationServiceCreated = organizationServiceCreated;
-            this.backupManagerCreated = backupManagerCreated;
-        }
+    public record ServiceHealthStatus(boolean initialized, boolean shutdown, boolean databaseReady,
+                                      boolean eventsServiceCreated, boolean userServiceCreated,
+                                      boolean organizationServiceCreated,
+                                      boolean backupManagerCreated) {
 
         public boolean isHealthy() {
             return initialized && !shutdown && databaseReady;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return String.format(

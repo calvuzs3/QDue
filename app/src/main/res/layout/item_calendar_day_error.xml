@@ -46,7 +46,7 @@
             android:layout_below="@id/error_indicator"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="2dp"
-            android:text="@string/text_tap_to_retry"
+            android:text="@string/loading_tap_to_retry"
             android:textSize="11sp"
             android:textColor="?attr/colorOnErrorContainer"
             android:alpha="0.8" />

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/values/dimens_swipe_calendar.xml -->
+<!-- Dimension resources for SwipeCalendar feature -->
+<resources>
+
+    <!-- ==================== CALENDAR DAY DIMENSIONS ==================== -->
+
+    <!-- Day Cell Basic Dimensions -->
+    <dimen name="calendar_day_size">80dp</dimen>                        <!-- Fixed height for day cells - 48 -->
+    <dimen name="calendar_day_min_width">48dp</dimen>                   <!-- Minimum width for day cells -->
+    <dimen name="calendar_day_margin">2dp</dimen>                       <!-- Margin around day cells - 1 -->
+    <dimen name="calendar_day_padding">8dp</dimen>                      <!-- Internal padding for day cells - 4 -->
+
+    <!-- Day Cell Corner Radius -->
+    <dimen name="calendar_day_corner_radius">8dp</dimen>                <!-- Corner radius for day cells -->
+    <dimen name="calendar_day_corner_radius_small">4dp</dimen>          <!-- Small corner radius variant -->
+
+    <!-- Day Cell Stroke -->
+    <dimen name="calendar_day_stroke_width">1dp</dimen>                 <!-- Default stroke width -->
+    <dimen name="calendar_day_today_stroke_width">2dp</dimen>           <!-- Today stroke width -->
+    <dimen name="calendar_day_selected_stroke_width">2dp</dimen>        <!-- Selected day stroke width -->
+
+
+
+    <!-- ==================== EVENT INDICATOR DIMENSIONS ==================== -->
+
+    <!-- Event Type Indicator Bar -->
+    <dimen name="event_indicator_width">3dp</dimen>                     <!-- Width of event type indicator -->
+    <dimen name="event_indicator_height">24dp</dimen>                   <!-- Height of event type indicator -->
+    <dimen name="event_indicator_radius">2dp</dimen>                    <!-- Corner radius for event indicator -->
+
+    <!-- Event Priority Badge -->
+    <dimen name="event_priority_badge_size">6dp</dimen>                 <!-- Size of priority badge -->
+    <dimen name="event_priority_badge_margin">2dp</dimen>               <!-- Margin for priority badge -->
+
+    <!-- Event Count Text -->
+    <dimen name="event_count_text_size">10sp</dimen>                    <!-- Event count text size -->
+    <dimen name="event_count_background_size">16dp</dimen>              <!-- Event count background size -->
+    <dimen name="event_count_background_radius">8dp</dimen>             <!-- Event count background radius -->
+
+    <!-- ==================== WORK SCHEDULE INDICATOR ==================== -->
+
+    <!-- Work Schedule Indicator -->
+    <dimen name="work_schedule_indicator_height">4dp</dimen>            <!-- Height of work schedule bar -->
+    <dimen name="work_schedule_indicator_width">20dp</dimen>            <!-- Width of work schedule bar -->
+    <dimen name="work_schedule_indicator_radius">2dp</dimen>            <!-- Corner radius for work schedule -->
+    <dimen name="work_schedule_indicator_margin">2dp</dimen>            <!-- Margin for work schedule indicator -->
+
+    <!-- ==================== CALENDAR LAYOUT DIMENSIONS ==================== -->
+
+    <!-- Calendar Grid -->
+    <dimen name="calendar_grid_spacing">1dp</dimen>                     <!-- Spacing between grid items -->
+    <dimen name="calendar_week_header_height">32dp</dimen>              <!-- Height of week days header -->
+    <dimen name="calendar_week_header_padding">8dp</dimen>              <!-- Padding for week header -->
+
+    <!-- Month Container -->
+    <dimen name="calendar_month_padding">4dp</dimen>                    <!-- Padding around month container -->
+    <dimen name="calendar_month_margin">8dp</dimen>                     <!-- Margin around month container -->
+
+    <!-- ViewPager -->
+    <dimen name="calendar_viewpager_margin">4dp</dimen>                 <!-- Margin for ViewPager -->
+    <dimen name="calendar_viewpager_padding">0dp</dimen>                <!-- Padding for ViewPager -->
+
+    <!-- ==================== HEADER DIMENSIONS ==================== -->
+
+    <!-- Toolbar -->
+    <dimen name="calendar_toolbar_height">64dp</dimen>                  <!-- Height of calendar toolbar -->
+    <dimen name="calendar_toolbar_padding">16dp</dimen>                 <!-- Padding for toolbar -->
+    <dimen name="calendar_toolbar_elevation">4dp</dimen>                <!-- Elevation for toolbar -->
+
+    <!-- Header Buttons -->
+    <dimen name="calendar_nav_button_size">48dp</dimen>                 <!-- Size of navigation buttons -->
+    <dimen name="calendar_nav_button_margin">8dp</dimen>                <!-- Margin for navigation buttons -->
+    <dimen name="calendar_today_button_padding">12dp</dimen>            <!-- Padding for today button -->
+    <dimen name="calendar_today_button_min_width">64dp</dimen>          <!-- Min width for today button -->
+
+    <!-- Month/Year Title -->
+    <dimen name="calendar_title_text_size">20sp</dimen>                 <!-- Month/year title text size -->
+    <dimen name="calendar_title_margin">16dp</dimen>                    <!-- Margin for title -->
+
+    <!-- ==================== FLOATING ACTION BUTTON ==================== -->
+
+    <!-- FAB Dimensions -->
+    <dimen name="calendar_fab_margin">16dp</dimen>                      <!-- Margin for FAB -->
+    <dimen name="calendar_fab_elevation">6dp</dimen>                    <!-- Elevation for FAB -->
+    <dimen name="calendar_fab_size">56dp</dimen>                        <!-- Standard FAB size -->
+    <dimen name="calendar_fab_mini_size">40dp</dimen>                   <!-- Mini FAB size -->
+
+    <!-- ==================== LOADING AND ERROR STATES ==================== -->
+
+    <!-- Loading Indicators -->
+    <dimen name="calendar_loading_progress_size">32dp</dimen>           <!-- Loading progress indicator size -->
+    <dimen name="calendar_loading_progress_margin">16dp</dimen>         <!-- Margin for loading indicator -->
+    <dimen name="calendar_loading_text_margin">8dp</dimen>              <!-- Margin for loading text -->
+
+    <!-- Error State -->
+    <dimen name="calendar_error_icon_size">48dp</dimen>                 <!-- Error icon size -->
+    <dimen name="calendar_error_icon_margin">24dp</dimen>               <!-- Margin for error icon -->
+    <dimen name="calendar_error_text_margin">16dp</dimen>               <!-- Margin for error text -->
+    <dimen name="calendar_error_button_margin">24dp</dimen>             <!-- Margin for error action button -->
+
+    <!-- ==================== OVERLAY DIMENSIONS ==================== -->
+
+    <!-- Loading Overlay -->
+    <dimen name="calendar_overlay_padding">32dp</dimen>                 <!-- Padding for overlay content -->
+    <dimen name="calendar_overlay_margin">16dp</dimen>                  <!-- Margin for overlay -->
+    <dimen name="calendar_overlay_corner_radius">12dp</dimen>           <!-- Corner radius for overlay -->
+
+    <!-- Content Spacing in Overlays -->
+    <dimen name="calendar_overlay_content_spacing">16dp</dimen>         <!-- Spacing between overlay elements -->
+    <dimen name="calendar_overlay_title_margin">8dp</dimen>             <!-- Margin for overlay titles -->
+
+    <!-- ==================== ACCESSIBILITY DIMENSIONS ==================== -->
+    <!-- Touch Target Sizes -->
+    <dimen name="calendar_min_touch_target">48dp</dimen>                <!-- Minimum touch target size -->
+    <dimen name="calendar_recommended_touch_target">56dp</dimen>        <!-- Recommended touch target size -->
+
+    <!-- Focus Indicators -->
+    <dimen name="calendar_focus_outline_width">2dp</dimen>              <!-- Focus outline width -->
+    <dimen name="calendar_focus_outline_radius">4dp</dimen>             <!-- Focus outline corner radius -->
+
+    <!-- ==================== RESPONSIVE DIMENSIONS ==================== -->
+
+    <!-- Tablet Specific (for values-sw600dp) -->
+    <dimen name="calendar_day_size_tablet">96dp</dimen>                 <!-- Larger day cells for tablets -->
+    <dimen name="calendar_day_padding_tablet">12dp</dimen>              <!-- Larger padding for tablets -->
+    <dimen name="text_number_size_tablet">18sp</dimen>                  <!-- Larger text for tablets -->
+    <dimen name="calendar_month_margin_tablet">16dp</dimen>             <!-- Larger margins for tablets -->
+
+    <!-- Landscape Specific -->
+    <dimen name="calendar_toolbar_height_landscape">56dp</dimen>        <!-- Smaller toolbar in landscape -->
+    <dimen name="calendar_fab_margin_landscape">24dp</dimen>            <!-- Larger FAB margin in landscape -->
+
+    <!-- ==================== ANIMATION DIMENSIONS ==================== -->
+
+    <!-- Animation Distances -->
+    <dimen name="calendar_swipe_threshold">100dp</dimen>                <!-- Swipe threshold distance -->
+    <dimen name="calendar_snap_distance">50dp</dimen>                   <!-- Snap-to-position distance -->
+
+    <!-- Animation Offsets -->
+    <dimen name="calendar_slide_offset">200dp</dimen>                   <!-- Slide animation offset -->
+    <dimen name="calendar_fade_offset">20dp</dimen>                     <!-- Fade animation offset -->
+
+
+</resources>

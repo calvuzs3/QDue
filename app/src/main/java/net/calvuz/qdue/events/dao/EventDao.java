@@ -135,7 +135,7 @@ public interface EventDao {
      * @return Total number of events in database
      */
     @Query("SELECT COUNT(*) FROM events")
-    int getEventsCount();
+    int getTotalEventCount();
 
     // ==================== CALENDAR-SPECIFIC QUERIES ====================
 

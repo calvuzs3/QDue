@@ -241,7 +241,7 @@ public class Day implements Cloneable {
             return "";
         }
 
-        return shifts.get(position).getTeamsAsString();
+        return shifts.get(position).getHalfTeamsAsString();
     }
 
     /**
@@ -338,5 +338,9 @@ public class Day implements Cloneable {
         }
 
         return cloned;
+    }
+
+    public boolean hasWorkSchedule() {
+        return this.shifts.size() > 0;
     }
 }

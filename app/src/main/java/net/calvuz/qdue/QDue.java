@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import android.view.View;
 
 import com.google.android.material.color.DynamicColors;
 
@@ -59,16 +60,13 @@ public class QDue extends Application {
         enableDynamicColors();
         Log.d(TAG, "=== DynamicColors initialized");
 
-        // Initialize QuattroDue
-        quattrodue = QuattroDue.getInstance(this);
-        Log.d(TAG, "=== QuattroDue initialized");
-
-        // Initialize ShiftTypeFactory
-        //Log.d(TAG, "=== ShiftTypeFactory initialized: " + ShiftTypeFactory.isInitialized());
-
         // Initialize unified database
         QDueDatabase.getInstance(this);
         Log.d(TAG, "=== QDueDatabase initialized");
+
+        // Initialize QuattroDue
+        quattrodue = QuattroDue.getInstance(this);
+        Log.d(TAG, "=== QuattroDue initialized");
 
         // 🆕 Initialize back handling services early
         BackHandlingModule.initialize(this);
@@ -162,15 +160,28 @@ public class QDue extends Application {
 
         // Constants for configuration
         public static final String QD_PREF_NAME = "qdue_prefs";
-        public static final String QD_KEY_WELCOME_COMPLETED = "qdue_welcome_completed";
-        public static final String QD_KEY_SELECTED_TEAM = "qdue_selected_team";
-        public static final String QD_KEY_VIEW_MODE = "qdue_view_mode";
-        public static final String QD_KEY_DYNAMIC_COLORS = "qdue_dynamic_colors_enabled";
+        public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString(R.string.qd_preference_welcome_completed);
+        public static final String QD_KEY_SELECTED_TEAM = getContext().getString( R.string.qd_preference_selected_team );
+        public static final String QD_KEY_VIEW_MODE = getContext().getString(R.string.qd_preference_view_mode);
+        public static final String QD_KEY_DYNAMIC_COLORS = getContext().getString(R.string.qd_preference_dynamic_colors_enabled);
 
 
         // View mode constants
-        public static final String VIEW_MODE_CALENDAR = "calendar";
-        public static final String VIEW_MODE_DAYSLIST = "dayslist";
+        public enum ViewMode {
+            CALENDAR( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[0] ), //"calendar"),
+            DAYS( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[1] ), //"dayslist");
+            SWIPE_CALENDAR( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[2] ); //"swipe_calendar"),
+
+            private final String name;
+            ViewMode(String name) { this.name = name; }
+
+            public String getName() { return this.name; }
+        }
+        public static final String VIEW_MODE_CALENDAR = ViewMode.CALENDAR.getName();
+        public static final String VIEW_MODE_DAYSLIST = ViewMode.DAYS.getName();
+        public static final String VIEW_MODE_SWIPE_CALENDAR = ViewMode.SWIPE_CALENDAR.getName();
+
+
 
         // Animation constants
         public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 1500; // 3 seconds

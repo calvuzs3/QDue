@@ -15,6 +15,10 @@
          android:name="net.calvuz.qdue.ui.features.dayslist.presentation.DayslistViewFragment"
          android:label="@string/menu_dayslist" />
 
+    <fragment
+        android:id="@+id/nav_swipe_calendar"
+        android:name="net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarFragment"
+        android:label="@string/menu_swipe_calendar" />
     <!-- About Dialog -->
     <dialog
         android:id="@+id/nav_about"

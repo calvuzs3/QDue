@@ -103,7 +103,7 @@ public final class SchemeManager {
                     // Add teams according to scheme
                     for (char teamChar : SCHEME[dayIndex][shiftIndex]) {
                         HalfTeam team = HalfTeamFactory.getByChar(teamChar);
-                        shift.addTeam(team);
+                        shift.addHalfTeam(team);
                     }
 
                     // Add shift to day
@@ -197,58 +197,6 @@ public final class SchemeManager {
         }
 
         return -1;
-    }
-
-    /**
-     * Finds the next date when a team is on shift, starting from a specified date.
-     *
-     * @param startDate Search start date
-     * @param team Team to search for
-     * @param maxDaysToCheck Maximum number of days to check
-     * @return Date of next shift, or null if not found within limit
-     */
-    public static LocalDate findNextShiftDate(LocalDate startDate, HalfTeam team, int maxDaysToCheck) {
-        if (startDate == null || team == null || maxDaysToCheck <= 0) {
-            return null;
-        }
-
-        try {
-            // List of template cycle days
-            List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
-            // Old version
-//            List<ShiftType> shiftTypes = new ArrayList<>();
-//            for (int i = 0; i < SHIFTS_PER_DAY; i++) {
-//                shiftTypes.add(ShiftTypeFactory.createCustom(String.valueOf(i + 1),
-//                        "Shift " + (i + 1), 5 + i*8, 0, 8, 0));
-//            }
-
-            List<Day> cycleDays = generateCycleDays(shiftTypes);
-
-            // Search in future days
-            LocalDate currentDate = startDate;
-
-            for (int i = 0; i < maxDaysToCheck; i++) {
-                // Calculate days between reference date and current date
-                int daysBetween = (int) Period.between(referenceStartDate, currentDate).toTotalMonths() * 30 +
-                        Period.between(referenceStartDate, currentDate).getDays();
-
-                // Calculate cycle index
-                int cycleIndex = Math.floorMod(daysBetween, CYCLE_LENGTH);
-
-                // Check if team is on shift this day
-                Day day = cycleDays.get(cycleIndex);
-                if (findTeamShiftIndex(day, team) >= 0) {
-                    return currentDate;
-                }
-
-                // Move to next day
-                currentDate = currentDate.plusDays(1);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error searching next shift: " + e.getMessage());
-        }
-
-        return null; // Not found within limit
     }
 
     /**

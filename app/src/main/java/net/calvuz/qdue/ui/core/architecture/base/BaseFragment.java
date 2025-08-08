@@ -892,8 +892,8 @@ public abstract class BaseFragment extends Fragment implements
                 GridLayoutManager gridManager = (GridLayoutManager) mGridLayoutManager;
 
                 // Calcola posizione ottimale per centrare today
-                int optimalPosition = Math.max(0, mTodayPosition - (4 * getGridColumnCount())); // 4 righe sopra
-                gridManager.scrollToPositionWithOffset(optimalPosition, 20);
+                int optimalPosition = Math.max(0, mTodayPosition - (getGridColumnCount()==1 ?  10  : 14 ));
+                mGridLayoutManager.scrollToPositionWithOffset(optimalPosition, 20);
 
                 if (DEBUG_BASEFRAGMENT) {
                     Log.d(TAG, mTAG + "Using GridLayoutManager positioning for today: " + mTodayPosition +
@@ -957,17 +957,20 @@ public abstract class BaseFragment extends Fragment implements
         return RecyclerView.NO_POSITION;
     }
 
+    /**
+     * Scroll to TODAY
+     */
     public void scrollToToday() {
-        final String mTAG = "scrollToToday: ";
-
         if (mTodayPosition >= 0 && mTodayPosition < mItemsCache.size()) {
-            Log.v(TAG, mTAG + "Scrolling to today, position: " + mTodayPosition);
             if (mGridLayoutManager != null) {
-                mRecyclerView.smoothScrollToPosition(mTodayPosition);
+
+                // Center today
+                int optimalPosition = Math.max(0, mTodayPosition - (getGridColumnCount()==1 ?  10  : 14 ));
+                mGridLayoutManager.scrollToPositionWithOffset(optimalPosition, 20);
             }
         } else {
-            // Rebuild cache centered on today
-            Log.v(TAG, mTAG + "Today not in cache, rebuilding");
+            // Rebuild cache
+            Log.d(TAG, "ScrollToToday: today not in cache, rebuilding");
             mCurrentDate = LocalDate.now().withDayOfMonth(1);
             setupInfiniteScrolling();
         }

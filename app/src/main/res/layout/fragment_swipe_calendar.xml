@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/fragment_swipe_calendar.xml -->
+<!-- Main layout for SwipeCalendarFragment with month navigation -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <!-- Main Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Calendar Header Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/calendar_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurfaceVariant"
+            android:elevation="@dimen/elevation_toolbar"
+            app:contentInsetStart="@dimen/spacing_m">
+
+            <!-- Custom header layout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingEnd="@dimen/spacing_m">
+
+                <!-- Previous Month Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_previous_month"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_s"
+                    app:icon="@drawable/ic_rounded_chevron_left_24"
+                    app:iconTint="?attr/colorOnSurfaceVariant"
+                    android:contentDescription="@string/calendar_navigation_previous_month"
+                    android:tooltipText="@string/calendar_navigation_previous_month" />
+
+                <!-- Month/Year Display -->
+                <TextView
+                    android:id="@+id/month_year_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:gravity="center"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.02"
+                    tools:text="January 2024" />
+
+                <!-- Next Month Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_next_month"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    app:icon="@drawable/ic_rounded_chevron_right_24"
+                    app:iconTint="?attr/colorOnSurfaceVariant"
+                    android:contentDescription="@string/calendar_navigation_next_month"
+                    android:tooltipText="@string/calendar_navigation_next_month" />
+
+                <!-- Today Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_today"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_m"
+                    android:text="@string/calendar_navigation_today"
+                    android:textSize="12sp"
+                    android:minWidth="64dp"
+                    android:paddingHorizontal="@dimen/spacing_s"
+                    app:cornerRadius="@dimen/radius_s"
+                    app:strokeColor="?attr/colorPrimary"
+                    app:strokeWidth="1dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <!-- Calendar Card Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/calendar_card"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="@dimen/spacing_s"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="@dimen/radius_m"
+            app:cardElevation="@dimen/elevation_card"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp">
+
+            <!-- ViewPager2 for month navigation -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/calendar_view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/spacing_xs"
+                android:overScrollMode="never"
+                android:clipToPadding="false"
+                android:clipChildren="false" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Bottom Action Bar (Optional) -->
+        <LinearLayout
+            android:id="@+id/bottom_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/spacing_m"
+            android:paddingVertical="@dimen/spacing_s"
+            android:background="?attr/colorSurfaceVariant"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <!-- Calendar info text -->
+            <TextView
+                android:id="@+id/calendar_info_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:gravity="start|center_vertical"
+                tools:text="January 1900 - December 2100" />
+
+            <!-- View mode toggle (for future use) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_mode"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_switch_to_infinite_view"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Floating Action Button for Quick Event Creation -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_quick_event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacing_l"
+        android:contentDescription="@string/calendar_fab_create_event"
+        app:srcCompat="@drawable/ic_add"
+        app:tint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="@dimen/elevation_fab"
+        app:borderWidth="0dp" />
+
+    <!-- Loading Overlay (for initial setup) -->
+    <FrameLayout
+        android:id="@+id/initial_loading_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:visibility="gone"
+        android:alpha="0.95">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:indicatorColor="?attr/colorPrimary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_initializing"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="@dimen/spacing_s" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_initializing_subtitle"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Error State Overlay -->
+    <LinearLayout
+        android:id="@+id/error_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/spacing_xl"
+        android:background="?attr/colorSurface"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:src="@drawable/ic_rounded_error_24"
+            app:tint="?attr/colorError"
+            android:contentDescription="@string/calendar_error_icon_description" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:text="@string/calendar_error_title"
+            android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/error_message_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_l"
+            android:text="@string/calendar_error_generic_message"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="center" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_retry_setup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_retry"
+            app:icon="@drawable/ic_refresh" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

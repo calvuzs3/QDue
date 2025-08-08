@@ -5,17 +5,43 @@
     <!-- Material 3 compliant 8dp grid system -->
     <!-- ============================================ -->
 
-    <!-- Base spacing units -->
+    <!-- ==================== SPACING SYSTEM ==================== -->
+
+    <!-- Standard Spacing Scale -->
     <dimen name="spacing_xxxs">1dp</dimen>    <!-- Extra Extra Extra small -->
-    <dimen name="spacing_xxs">2dp</dimen>     <!-- Extra Extra small -->
-    <dimen name="spacing_xs">4dp</dimen>      <!-- Extra small -->
-    <dimen name="spacing_s">8dp</dimen>       <!-- Small -->
+    <dimen name="spacing_xxs">2dp</dimen>                               <!-- Extra extra small spacing -->
+    <dimen name="spacing_xs">4dp</dimen>                                <!-- Extra small spacing -->
+    <dimen name="spacing_s">8dp</dimen>                                 <!-- Small spacing -->
     <dimen name="spacing_sm">12dp</dimen>     <!-- Small Medium -->
-    <dimen name="spacing_m">16dp</dimen>      <!-- Medium (standard) -->
+    <dimen name="spacing_m">16dp</dimen>                                <!-- Medium spacing -->
     <dimen name="spacing_ml">20dp</dimen>     <!-- Medium Large -->
-    <dimen name="spacing_l">24dp</dimen>      <!-- Large -->
-    <dimen name="spacing_xl">32dp</dimen>     <!-- Extra large -->
-    <dimen name="spacing_xxl">48dp</dimen>    <!-- Double extra large -->
+    <dimen name="spacing_l">24dp</dimen>                                <!-- Large spacing -->
+    <dimen name="spacing_xl">32dp</dimen>                               <!-- Extra large spacing -->
+    <dimen name="spacing_xxl">48dp</dimen>                              <!-- Extra extra large spacing -->
+
+    <!-- ==================== ELEVATION SYSTEM ==================== -->
+
+    <!-- Material Design Elevation Scale -->
+    <dimen name="elevation_card">2dp</dimen>                            <!-- Card elevation -->
+    <dimen name="elevation_toolbar">4dp</dimen>                         <!-- Toolbar elevation -->
+    <dimen name="elevation_fab">6dp</dimen>                             <!-- FAB elevation -->
+    <dimen name="elevation_modal">8dp</dimen>                           <!-- Modal elevation -->
+    <dimen name="elevation_overlay">16dp</dimen>                        <!-- Overlay elevation -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_navbar">8dp</dimen>
+    <dimen name="elevation_sidebar">12dp</dimen>
+    <dimen name="elevation_dialog">24dp</dimen>
+
+
+    <!-- ==================== RADIUS SYSTEM ==================== -->
+
+    <!-- Material Design Corner Radius Scale -->
+    <dimen name="radius_xs">4dp</dimen>                                 <!-- Extra small radius -->
+    <dimen name="radius_s">8dp</dimen>                                  <!-- Small radius -->
+    <dimen name="radius_sm">10dp</dimen>
+    <dimen name="radius_m">12dp</dimen>                                 <!-- Medium radius -->
+    <dimen name="radius_l">16dp</dimen>                                 <!-- Large radius -->
+    <dimen name="radius_xl">24dp</dimen>                                <!-- Extra large radius -->
 
     <!-- ============================================ -->
     <!-- CONTENT SPACING -->
@@ -59,12 +85,6 @@
     <!-- ============================================ -->
     <!-- CALENDAR SPECIFIC -->
     <!-- ============================================ -->
-
-    <!-- Calendar day cells -->
-    <dimen name="calendar_day_size">48dp</dimen>
-    <dimen name="calendar_day_margin">1dp</dimen>
-    <dimen name="calendar_day_padding">@dimen/spacing_xs</dimen>
-    <dimen name="calendar_day_corner_radius">8dp</dimen>
 
     <!-- Shift indicators -->
     <dimen name="shift_indicator_height">3dp</dimen>
@@ -148,25 +168,16 @@
 
     <!-- Line spacing -->
     <dimen name="text_line_spacing">4dp</dimen>
-    <dimen name="text_badge_size">10dp</dimen>
-    <dimen name="text_number_size">16sp</dimen>
-    <dimen name="text_shift_name_size">24dp</dimen>
+
+    <!-- Day Number Text -->
+    <dimen name="text_number_size">16sp</dimen>                         <!-- Day number text size -->
+    <dimen name="text_number_size_large">16sp</dimen>                   <!-- Large day number text size -->
+    <dimen name="text_number_size_small">12sp</dimen>                   <!-- Small day number text size -->
+    <dimen name="text_shift_name_size">24sp</dimen>
 
     <!-- Icon and text spacing -->
+    <dimen name="text_badge_size">10sp</dimen>
     <dimen name="icon_text_spacing">@dimen/spacing_s</dimen>
-
-    <!-- ============================================ -->
-    <!-- ELEVATION LEVELS -->
-    <!-- Material Design elevation scale -->
-    <!-- ============================================ -->
-
-    <dimen name="elevation_none">0dp</dimen>
-    <dimen name="elevation_card">2dp</dimen>
-    <dimen name="elevation_fab">6dp</dimen>
-    <dimen name="elevation_navbar">8dp</dimen>
-    <dimen name="elevation_sidebar">12dp</dimen>
-    <dimen name="elevation_dialog">24dp</dimen>
-
 
     <!-- ============================================ -->
     <!-- APPBAR DIMENSIONS -->
@@ -205,13 +216,26 @@
     <dimen name="drawer_header_icon_margin">12dp</dimen>
     <dimen name="drawer_header_icon_padding">8dp</dimen>
     <dimen name="radius_floating_menu">28dp</dimen>
-    <dimen name="radius_sm">12dp</dimen>
-    <dimen name="radius_m">16dp</dimen>
 
     <dimen name="progress_bar_corner_radius">@dimen/spacing_xs</dimen>
     <dimen name="card_elevation_high">@dimen/spacing_s</dimen>
     <dimen name="card_elevation_low">@dimen/spacing_xxs</dimen>
     <dimen name="card_elevation_medium">@dimen/spacing_xs</dimen>
     <dimen name="item_padding_very_small">4dp</dimen>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </resources>

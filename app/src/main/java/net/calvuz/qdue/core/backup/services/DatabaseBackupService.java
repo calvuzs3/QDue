@@ -500,7 +500,7 @@ public class DatabaseBackupService {
         try {
             switch (entityType.toLowerCase()) {
                 case "events":
-                    return mEventDao.getEventsCount();
+                    return mEventDao.getTotalEventCount();
                 case "users":
                     return mUserDao.getAllUsers().size();
                 case "establishments":

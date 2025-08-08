@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/values/strings_swipe_calendar.xml -->
+<!-- String resources for SwipeCalendar feature -->
+<resources>
+
+    <!-- ==================== NAVIGATION ==================== -->
+
+    <!-- Calendar Navigation -->
+    <string name="calendar_navigation_previous_month">Mese precedente</string>
+    <string name="calendar_navigation_next_month">Mese successivo</string>
+    <string name="calendar_navigation_today">Oggi</string>
+    <string name="calendar_navigated_to_today">Navigato al mese corrente</string>
+
+    <!-- Month/Year Format -->
+    <string name="calendar_month_year_format">%1$s %2$s</string>
+
+    <!-- Boundary Messages -->
+    <string name="calendar_boundary_start_message">Hai raggiunto il primo mese disponibile (Gennaio 1900)</string>
+    <string name="calendar_boundary_end_message">Hai raggiunto l\'ultimo mese disponibile (Dicembre 2100)</string>
+
+    <!-- View Mode Switching -->
+    <string name="calendar_switch_to_infinite_view">Vista scorrevole</string>
+    <string name="calendar_switch_to_swipe_view">Vista mensile</string>
+
+    <!-- ==================== WEEK DAYS ==================== -->
+
+    <!-- Short week day names (Monday-Sunday) -->
+    <string name="calendar_day_monday_short">Lun</string>
+    <string name="calendar_day_tuesday_short">Mar</string>
+    <string name="calendar_day_wednesday_short">Mer</string>
+    <string name="calendar_day_thursday_short">Gio</string>
+    <string name="calendar_day_friday_short">Ven</string>
+    <string name="calendar_day_saturday_short">Sab</string>
+    <string name="calendar_day_sunday_short">Dom</string>
+
+    <!-- ==================== LOADING STATES ==================== -->
+
+    <!-- Initial Loading -->
+    <string name="calendar_initializing">Inizializzazione calendario</string>
+    <string name="calendar_initializing_subtitle">Configurazione della vista mensile in corso…</string>
+
+    <!-- Month Data Loading -->
+    <string name="calendar_loading_month_data">Caricamento dati del mese…</string>
+    <string name="calendar_loading_events">Caricamento eventi…</string>
+    <string name="calendar_loading_work_schedule">Caricamento programma di lavoro…</string>
+
+    <!-- ==================== ERROR STATES ==================== -->
+
+    <!-- General Errors -->
+    <string name="calendar_error_title">Errore Calendario</string>
+    <string name="calendar_error_generic_message">Si è verificato un errore durante il caricamento del calendario. Verifica la connessione e riprova.</string>
+    <string name="calendar_error_icon_description">Icona errore calendario</string>
+
+    <!-- Specific Errors -->
+    <string name="error_calendar_initialization_failed">Impossibile inizializzare il calendario</string>
+    <string name="error_calendar_setup_failed">Errore durante la configurazione del calendario</string>
+    <string name="error_calendar_month_load_failed">Errore durante il caricamento dei dati per %1$s</string>
+    <string name="calendar_error_loading_month">Errore caricamento mese</string>
+    <string name="calendar_error_loading_month_subtitle">Tocca per riprovare</string>
+
+    <!-- Network Errors -->
+    <string name="calendar_error_network">Errore di connessione durante il caricamento dei dati</string>
+    <string name="calendar_error_timeout">Timeout durante il caricamento. Riprova.</string>
+
+    <!-- ==================== ACTIONS ==================== -->
+
+    <!-- Calendar Actions -->
+    <string name="calendar_fab_create_event">Crea nuovo evento</string>
+    <string name="calendar_action_view_day">Visualizza giorno</string>
+    <string name="calendar_action_create_event">Crea evento</string>
+    <string name="calendar_action_edit_event">Modifica evento</string>
+
+    <!-- ==================== ACCESSIBILITY ==================== -->
+
+    <!-- Content Descriptions -->
+    <string name="calendar_accessibility_today">oggi</string>
+    <string name="calendar_accessibility_work_scheduled">lavoro programmato</string>
+    <string name="calendar_accessibility_weekend">fine settimana</string>
+    <string name="calendar_accessibility_other_month">altro mese</string>
+
+    <!-- Event Count -->
+    <plurals name="calendar_accessibility_events_count">
+        <item quantity="zero">nessun evento</item>
+        <item quantity="one">%d evento</item>
+        <item quantity="other">%d eventi</item>
+    </plurals>
+
+    <!-- State Descriptions -->
+    <string name="calendar_accessibility_loading">caricamento in corso</string>
+    <string name="calendar_accessibility_error">errore di caricamento</string>
+    <string name="calendar_accessibility_empty">nessun dato disponibile</string>
+
+    <!-- ==================== EVENT INTEGRATION ==================== -->
+
+    <!-- Event Creation -->
+    <string name="calendar_quick_event_title">Evento Rapido</string>
+    <string name="calendar_quick_event_subtitle">Crea un nuovo evento per %1$s</string>
+    <string name="calendar_event_created_success">Evento creato con successo</string>
+    <string name="calendar_event_creation_failed">Errore durante la creazione dell\'evento</string>
+
+    <!-- Event Display -->
+    <string name="calendar_events_for_date">Eventi per %1$s</string>
+    <string name="calendar_no_events">Nessun evento programmato</string>
+    <string name="calendar_multiple_events">%1$d eventi</string>
+
+    <!-- ==================== WORK SCHEDULE ==================== -->
+
+    <!-- Work Schedule Display -->
+    <string name="calendar_work_schedule_tooltip">Turno di lavoro programmato</string>
+    <string name="calendar_no_work_schedule">Nessun turno programmato</string>
+    <string name="calendar_work_schedule_error">Errore caricamento turni</string>
+
+    <!-- ==================== CALENDAR RANGE INFO ==================== -->
+
+    <!-- Range Display -->
+    <string name="calendar_range_info">Dal %1$s al %2$s</string>
+    <string name="calendar_range_total_months">%1$d mesi disponibili</string>
+    <string name="calendar_current_position">Posizione: %1$d di %2$d</string>
+
+    <!-- Range Boundaries -->
+    <string name="calendar_range_start">Gennaio 1900</string>
+    <string name="calendar_range_end">Dicembre 2100</string>
+    <string name="calendar_range_description">Intervallo calendario: 1900-2100</string>
+
+    <!-- ==================== SWIPE GESTURES ==================== -->
+
+    <!-- Gesture Instructions -->
+    <string name="calendar_swipe_instruction">Scorri orizzontalmente per cambiare mese</string>
+    <string name="calendar_swipe_left_hint">Scorri a sinistra per il mese successivo</string>
+    <string name="calendar_swipe_right_hint">Scorri a destra per il mese precedente</string>
+
+    <!-- Gesture Feedback -->
+    <string name="calendar_swipe_blocked">Impossibile scorrere oltre questo limite</string>
+    <string name="calendar_month_changed">Mese cambiato: %1$s</string>
+
+    <!-- ==================== STATE MANAGEMENT ==================== -->
+
+    <!-- State Messages -->
+    <string name="calendar_state_restored">Posizione calendario ripristinata</string>
+    <string name="calendar_state_reset">Posizione calendario reimpostata</string>
+    <string name="calendar_first_launch">Benvenuto nella vista calendario mensile</string>
+
+    <!-- Debug Messages (for development) -->
+    <string name="calendar_debug_position">Posizione: %1$d</string>
+    <string name="calendar_debug_month">Mese: %1$s</string>
+    <string name="calendar_debug_state">Stato: %1$s</string>
+
+    <!-- ==================== INTEGRATION MESSAGES ==================== -->
+
+    <!-- Service Integration -->
+    <string name="calendar_service_unavailable">Servizio calendario non disponibile</string>
+    <string name="calendar_data_sync_error">Errore sincronizzazione dati</string>
+    <string name="calendar_permission_required">Autorizzazione richiesta per accedere al calendario</string>
+
+    <!-- User Context -->
+    <string name="calendar_user_not_selected">Seleziona un utente per visualizzare i dati</string>
+    <string name="calendar_team_data_loading">Caricamento dati squadra…</string>
+
+</resources>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/values/colors_swipe_calendar.xml -->
+<!-- Color resources for SwipeCalendar feature -->
+<resources>
+
+    <!-- ==================== CALENDAR DAY COLORS ==================== -->
+
+    <!-- Today Highlighting -->
+    <color name="calendar_day_today_background">#E3F2FD</color>         <!-- Light blue background for today -->
+    <color name="calendar_day_today_text">#1565C0</color>               <!-- Dark blue text for today -->
+    <color name="calendar_day_today_stroke">#2196F3</color>             <!-- Blue stroke for today -->
+
+    <!-- Current Month Days -->
+    <color name="calendar_day_current_month_background">@android:color/transparent</color>
+    <color name="calendar_day_current_month_text">#212121</color>       <!-- Dark gray for current month -->
+
+    <!-- Other Month Days (Previous/Next month overflow) -->
+    <color name="calendar_day_other_month_background">@android:color/transparent</color>
+    <color name="calendar_day_other_month_text">#BDBDBD</color>         <!-- Light gray for other months -->
+
+    <!-- Weekend Days -->
+    <color name="calendar_day_weekend_text">#F44336</color>             <!-- Red for weekends -->
+
+    <!-- Selected Day -->
+    <color name="calendar_day_selected">#E8F5E8</color>                 <!-- Light green background -->
+    <color name="calendar_day_selected_stroke">#4CAF50</color>          <!-- Green stroke -->
+    <color name="calendar_day_selected_text">#2E7D32</color>            <!-- Dark green text -->
+
+    <!-- Pressed State -->
+    <color name="calendar_day_pressed">#F5F5F5</color>                  <!-- Light gray for pressed state -->
+
+    <!-- ==================== EVENT INDICATOR COLORS ==================== -->
+
+    <!-- Default Event Colors -->
+    <color name="calendar_event_default_color">#FF9800</color>          <!-- Orange for default events -->
+    <color name="calendar_event_personal_color">#2196F3</color>         <!-- Blue for personal events -->
+    <color name="calendar_event_work_color">#4CAF50</color>             <!-- Green for work events -->
+    <color name="calendar_event_important_color">#F44336</color>        <!-- Red for important events -->
+    <color name="calendar_event_reminder_color">#9C27B0</color>         <!-- Purple for reminders -->
+
+    <!-- Event Priority Colors -->
+    <color name="calendar_event_priority_high">#D32F2F</color>          <!-- Dark red for high priority -->
+    <color name="calendar_event_priority_medium">#F57C00</color>        <!-- Dark orange for medium priority -->
+    <color name="calendar_event_priority_low">#388E3C</color>           <!-- Dark green for low priority -->
+
+    <!-- ==================== WORK SCHEDULE COLORS ==================== -->
+
+    <!-- Default Work Schedule -->
+    <color name="calendar_work_schedule_default_color">#607D8B</color>  <!-- Blue gray for work schedule -->
+
+    <!-- Quattrodue Shift Type Colors -->
+    <color name="calendar_work_shift_morning">#FFC107</color>           <!-- Amber for morning shift -->
+    <color name="calendar_work_shift_afternoon">#FF9800</color>         <!-- Orange for afternoon shift -->
+    <color name="calendar_work_shift_night">#3F51B5</color>             <!-- Indigo for night shift -->
+    <color name="calendar_work_shift_off">#9E9E9E</color>               <!-- Gray for off days -->
+
+    <!-- Team Colors (for multi-team support) -->
+    <color name="calendar_team_a_color">#E91E63</color>                 <!-- Pink for Team A -->
+    <color name="calendar_team_b_color">#9C27B0</color>                 <!-- Purple for Team B -->
+    <color name="calendar_team_c_color">#673AB7</color>                 <!-- Deep purple for Team C -->
+    <color name="calendar_team_d_color">#3F51B5</color>                 <!-- Indigo for Team D -->
+
+    <!-- ==================== UI STATE COLORS ==================== -->
+
+    <!-- Loading States -->
+    <color name="calendar_loading_background">#FAFAFA</color>           <!-- Very light gray for loading -->
+    <color name="calendar_loading_shimmer">#E0E0E0</color>              <!-- Light gray for shimmer effect -->
+
+    <!-- Error States -->
+    <color name="calendar_error_background">#FFEBEE</color>             <!-- Light red for error background -->
+    <color name="calendar_error_text">#C62828</color>                   <!-- Dark red for error text -->
+    <color name="calendar_error_icon">#F44336</color>                   <!-- Red for error icons -->
+
+    <!-- Success States -->
+    <color name="calendar_success_background">#E8F5E8</color>           <!-- Light green for success -->
+    <color name="calendar_success_text">#2E7D32</color>                 <!-- Dark green for success text -->
+
+    <!-- ==================== MATERIAL DESIGN VARIANTS ==================== -->
+
+    <!-- Surface Variants -->
+    <color name="calendar_surface_variant">#F5F5F5</color>              <!-- Light surface variant -->
+    <color name="calendar_surface_elevated">#FFFFFF</color>             <!-- Elevated surface (white) -->
+
+    <!-- Outline Variants -->
+    <color name="calendar_outline_variant">#E0E0E0</color>              <!-- Light outline -->
+    <color name="calendar_outline_strong">#BDBDBD</color>               <!-- Stronger outline -->
+
+    <!-- Overlay Colors -->
+    <color name="calendar_overlay_light">#80FFFFFF</color>              <!-- Semi-transparent white -->
+    <color name="calendar_overlay_dark">#80000000</color>               <!-- Semi-transparent black -->
+
+    <!-- ==================== ACCESSIBILITY COLORS ==================== -->
+
+    <!-- High Contrast Mode -->
+    <color name="calendar_high_contrast_text">#000000</color>           <!-- Pure black for high contrast -->
+    <color name="calendar_high_contrast_background">#FFFFFF</color>     <!-- Pure white for high contrast -->
+    <color name="calendar_high_contrast_border">#000000</color>         <!-- Black border for high contrast -->
+
+    <!-- Focus Indicators -->
+    <color name="calendar_focus_outline">#2196F3</color>                <!-- Blue focus outline -->
+    <color name="calendar_focus_background">#E3F2FD</color>             <!-- Light blue focus background -->
+
+    <!-- ==================== DARK THEME COLORS ==================== -->
+
+    <!-- Today in Dark Theme -->
+    <color name="calendar_day_today_background_dark">#1E3A8A</color>    <!-- Dark blue for today (dark theme) -->
+    <color name="calendar_day_today_text_dark">#BFDBFE</color>          <!-- Light blue text (dark theme) -->
+
+    <!-- Current Month in Dark Theme -->
+    <color name="calendar_day_current_month_text_dark">#E5E7EB</color>  <!-- Light gray (dark theme) -->
+
+    <!-- Other Month in Dark Theme -->
+    <color name="calendar_day_other_month_text_dark">#6B7280</color>    <!-- Darker gray (dark theme) -->
+
+    <!-- Weekend in Dark Theme -->
+    <color name="calendar_day_weekend_text_dark">#EF4444</color>        <!-- Bright red for weekends (dark theme) -->
+
+    <!-- ==================== CUSTOM ALPHA VARIANTS ==================== -->
+
+    <!-- Semi-transparent colors for overlays -->
+    <color name="calendar_event_indicator_alpha">#80FF9800</color>      <!-- Semi-transparent orange -->
+    <color name="calendar_work_schedule_alpha">#80607D8B</color>        <!-- Semi-transparent blue gray -->
+    <color name="calendar_selection_alpha">#4D2196F3</color>            <!-- Semi-transparent blue -->
+
+</resources>

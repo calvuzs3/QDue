@@ -97,7 +97,7 @@ public class PatternMergeEngine {
             case VACATION:
             case SICK_LEAVE:
             case PERSONAL_LEAVE:
-            case PERMIT_104:
+            case PERMIT_SPECIAL:
                 // Remove user from all shifts (no work)
                 removeUserFromAllShifts(modifiedDay, userHalfTeam);
                 break;

@@ -20,14 +20,14 @@
 
         <!-- Default View Mode -->
         <ListPreference
-            app:key="qdue_view_mode"
-            app:title="@string/settings_default_view_title"
-            app:summary="@string/settings_default_view_summary"
-            app:entries="@array/view_mode_entries"
-            app:entryValues="@array/view_mode_values"
             app:defaultValue="calendar"
-            app:useSimpleSummaryProvider="true"
-            app:icon="@drawable/ic_rounded_visibility_24" />
+            app:entries="@array/qdue_view_mode_entries"
+            app:entryValues="@array/qdue_view_mode_values"
+            app:icon="@drawable/ic_rounded_visibility_24"
+            app:key="@string/qd_preference_view_mode"
+            app:summary="@string/settings_default_view_summary"
+            app:title="@string/settings_default_view_title"
+            app:useSimpleSummaryProvider="true" />
 
         <!-- Colori dinamici (solo per Android 12+) -->
         <SwitchPreferenceCompat

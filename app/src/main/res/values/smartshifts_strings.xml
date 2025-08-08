@@ -394,18 +394,7 @@
     <string name="error_no_data_selected">Seleziona almeno un tipo di dati da esportare</string>
     <string name="error_title">Errore</string>
 
-    <!-- Common Actions -->
-    <string name="action_export">Esporta</string>
-    <string name="action_import">Importa</string>
-    <string name="action_cancel">Annulla</string>
-    <string name="action_ok">OK</string>
-    <string name="action_close">Chiudi</string>
-    <string name="action_share">Condividi</string>
-    <string name="action_open">Apri</string>
-    <string name="action_open_location">Apri Posizione</string>
-    <string name="action_retry">Riprova</string>
-    <string name="action_apply">Applica</string>
-    <string name="action_skip_all">Salta Tutti</string>
+
 
     <!-- Color Resources for SmartShifts -->
     <color name="smartshifts_success">#4CAF50</color>
@@ -574,6 +563,9 @@
     <string name="common_yesterday">ieri</string>
 
     <!--    FINE NUOVO SISTEMA-->
+
+
+
 
 
 

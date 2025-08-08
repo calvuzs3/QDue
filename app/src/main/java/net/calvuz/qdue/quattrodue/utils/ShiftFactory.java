@@ -22,72 +22,73 @@ public final class ShiftFactory {
     private static final String TAG = ShiftFactory.class.getSimpleName();
 
     // Prevent instantiation
-    private ShiftFactory() {}
+    private ShiftFactory() {
+    }
 
     /**
      * Creates a shift using a shift type from the dynamic factory.
      *
      * @param shiftIndex Shift index (0-based) from ShiftTypeFactory
-     * @param date Shift date
+     * @param date       Shift date
      * @return New Shift, or null if shift type not found
      */
     public static Shift createShift(int shiftIndex, LocalDate date) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
+        ShiftType shiftType = ShiftTypeFactory.getShiftType( shiftIndex );
 
-        if (shiftType == null) {
-            Log.w(TAG, "No shift type found at index " + shiftIndex);
+        if ( shiftType == null ) {
+            Log.w( TAG, "No shift type found at index " + shiftIndex );
             return null;
         }
 
-        return new Shift(shiftType, date);
+        return new Shift( shiftType, date );
     }
 
     /**
      * Creates a shift using a named shift type from the dynamic factory.
      *
      * @param shiftName Name of the shift type
-     * @param date Shift date
+     * @param date      Shift date
      * @return New Shift, or null if shift type not found
      */
     public static Shift createShift(String shiftName, LocalDate date) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftName);
+        ShiftType shiftType = ShiftTypeFactory.getShiftType( shiftName );
 
-        if (shiftType == null) {
-            Log.w(TAG, "No shift type found with name: " + shiftName);
+        if ( shiftType == null ) {
+            Log.w( TAG, "No shift type found with name: " + shiftName );
             return null;
         }
 
-        return new Shift(shiftType, date);
+        return new Shift( shiftType, date );
     }
 
     /**
      * Creates a standard shift by legacy index (for backward compatibility).
      *
-     * @deprecated Use createShift(int, LocalDate) instead
      * @param type Legacy shift type (1=first, 2=second, 3=third shift)
      * @param date Shift date
      * @return New Shift
      * @throws IllegalArgumentException if shift type is invalid or not available
+     * @deprecated Use createShift(int, LocalDate) instead
      */
     @Deprecated
     public static Shift createStandardShift(int type, LocalDate date) {
-        if (type < 1) {
-            throw new IllegalArgumentException("Shift type must be >= 1, got: " + type);
+        if ( type < 1 ) {
+            throw new IllegalArgumentException( "Shift type must be >= 1, got: " + type );
         }
 
         // Convert 1-based to 0-based index
         int shiftIndex = type - 1;
         int availableShifts = ShiftTypeFactory.getShiftCount();
 
-        if (shiftIndex >= availableShifts) {
+        if ( shiftIndex >= availableShifts ) {
             throw new IllegalArgumentException(
                     "Shift type " + type + " not available. Only " + availableShifts + " shifts configured."
             );
         }
 
-        Shift shift = createShift(shiftIndex, date);
-        if (shift == null) {
-            throw new IllegalArgumentException("Failed to create shift for type: " + type);
+        Shift shift = createShift( shiftIndex, date );
+        if ( shift == null ) {
+            throw new IllegalArgumentException( "Failed to create shift for type: " + type );
         }
 
         return shift;
@@ -102,19 +103,19 @@ public final class ShiftFactory {
      */
     public static List<Shift> createDailyShifts(LocalDate date) {
         int shiftCount = ShiftTypeFactory.getShiftCount();
-        List<Shift> shifts = new ArrayList<>(shiftCount);
+        List<Shift> shifts = new ArrayList<>( shiftCount );
 
         for (int i = 0; i < shiftCount; i++) {
-            Shift shift = createShift(i, date);
-            if (shift != null) {
-                shifts.add(shift);
+            Shift shift = createShift( i, date );
+            if ( shift != null ) {
+                shifts.add( shift );
             } else {
-                Log.w(TAG, "Skipped null shift at index " + i + " for date " + date);
+                Log.w( TAG, "Skipped null shift at index " + i + " for date " + date );
             }
         }
 
-        if (shifts.isEmpty()) {
-            Log.e(TAG, "No shifts created for date " + date + ". ShiftTypeFactory not initialized?");
+        if ( shifts.isEmpty() ) {
+            Log.e( TAG, "No shifts created for date " + date + ". ShiftTypeFactory not initialized?" );
         }
 
         return shifts;
@@ -123,19 +124,19 @@ public final class ShiftFactory {
     /**
      * Creates all shifts with specific names for a date.
      *
-     * @param date Date for the shifts
+     * @param date       Date for the shifts
      * @param shiftNames Array of shift names to create
      * @return List of created shifts (may be smaller than input if some names not found)
      */
     public static List<Shift> createNamedShifts(LocalDate date, String... shiftNames) {
-        List<Shift> shifts = new ArrayList<>(shiftNames.length);
+        List<Shift> shifts = new ArrayList<>( shiftNames.length );
 
         for (String shiftName : shiftNames) {
-            Shift shift = createShift(shiftName, date);
-            if (shift != null) {
-                shifts.add(shift);
+            Shift shift = createShift( shiftName, date );
+            if ( shift != null ) {
+                shifts.add( shift );
             } else {
-                Log.w(TAG, "Shift not found: " + shiftName);
+                Log.w( TAG, "Shift not found: " + shiftName );
             }
         }
 
@@ -146,24 +147,24 @@ public final class ShiftFactory {
      * Creates a custom shift with specified parameters.
      *
      * @param shiftType Type of shift (from ShiftTypeFactory or custom)
-     * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
+     * @param date      Shift date
+     * @param isStop    Indicates if shift is during plant stop
+     * @param teams     Teams assigned to the shift
      * @return New Shift
      */
     public static Shift createCustomShift(ShiftType shiftType, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        if (shiftType == null) {
-            Log.e(TAG, "Cannot create shift with null ShiftType");
+        if ( shiftType == null ) {
+            Log.e( TAG, "Cannot create shift with null ShiftType" );
             return null;
         }
 
-        Shift shift = new Shift(shiftType, date);
-        shift.setStop(isStop);
+        Shift shift = new Shift( shiftType, date );
+        shift.setStop( isStop );
 
-        if (teams != null) {
+        if ( teams != null ) {
             for (HalfTeam team : teams) {
-                shift.addTeam(team);
+                shift.addHalfTeam( team );
             }
         }
 
@@ -174,30 +175,30 @@ public final class ShiftFactory {
      * Creates a custom shift with teams, using a shift type from the factory.
      *
      * @param shiftIndex Index of shift type in factory
-     * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
+     * @param date       Shift date
+     * @param isStop     Indicates if shift is during plant stop
+     * @param teams      Teams assigned to the shift
      * @return New Shift, or null if shift type not found
      */
     public static Shift createCustomShift(int shiftIndex, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
-        return createCustomShift(shiftType, date, isStop, teams);
+        ShiftType shiftType = ShiftTypeFactory.getShiftType( shiftIndex );
+        return createCustomShift( shiftType, date, isStop, teams );
     }
 
     /**
      * Creates a custom shift with teams, using a named shift type from the factory.
      *
      * @param shiftName Name of shift type in factory
-     * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
+     * @param date      Shift date
+     * @param isStop    Indicates if shift is during plant stop
+     * @param teams     Teams assigned to the shift
      * @return New Shift, or null if shift type not found
      */
     public static Shift createCustomShift(String shiftName, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftName);
-        return createCustomShift(shiftType, date, isStop, teams);
+        ShiftType shiftType = ShiftTypeFactory.getShiftType( shiftName );
+        return createCustomShift( shiftType, date, isStop, teams );
     }
 
     /**
@@ -215,20 +216,20 @@ public final class ShiftFactory {
      * @return String with shift type information
      */
     public static String getAvailableShiftsInfo() {
-        if (!isFactoryReady()) {
+        if ( !isFactoryReady() ) {
             return "ShiftTypeFactory not initialized";
         }
 
         StringBuilder info = new StringBuilder();
-        info.append("Available shifts (").append(ShiftTypeFactory.getShiftCount()).append("):\n");
+        info.append( "Available shifts (" ).append( ShiftTypeFactory.getShiftCount() ).append( "):\n" );
 
         List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
         for (int i = 0; i < shiftTypes.size(); i++) {
-            ShiftType shift = shiftTypes.get(i);
-            info.append("  [").append(i).append("] ")
-                    .append(shift.getName())
-                    .append(" (").append(shift.getFormattedStartTime())
-                    .append("-").append(shift.getFormattedEndTime()).append(")\n");
+            ShiftType shift = shiftTypes.get( i );
+            info.append( "  [" ).append( i ).append( "] " )
+                    .append( shift.getName() )
+                    .append( " (" ).append( shift.getFormattedStartTime() )
+                    .append( "-" ).append( shift.getFormattedEndTime() ).append( ")\n" );
         }
 
         return info.toString();
@@ -295,8 +296,8 @@ public final class ShiftFactory {
          * Adds a team to the shift.
          */
         public Builder addTeam(HalfTeam team) {
-            if (team != null) {
-                this.teams.add(team);
+            if ( team != null ) {
+                this.teams.add( team );
             }
             return this;
         }
@@ -305,8 +306,8 @@ public final class ShiftFactory {
          * Adds multiple teams to the shift.
          */
         public Builder addTeams(List<HalfTeam> teams) {
-            if (teams != null) {
-                this.teams.addAll(teams);
+            if ( teams != null ) {
+                this.teams.addAll( teams );
             }
             return this;
         }
@@ -317,28 +318,28 @@ public final class ShiftFactory {
          * @return Created Shift, or null if configuration is invalid
          */
         public Shift build() {
-            if (date == null) {
-                Log.e(TAG, "Cannot build shift without date");
+            if ( date == null ) {
+                Log.e( TAG, "Cannot build shift without date" );
                 return null;
             }
 
             ShiftType shiftType = null;
 
             // Determine shift type from configuration
-            if (customShiftType != null) {
+            if ( customShiftType != null ) {
                 shiftType = customShiftType;
-            } else if (shiftName != null) {
-                shiftType = ShiftTypeFactory.getShiftType(shiftName);
-            } else if (shiftIndex >= 0) {
-                shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
+            } else if ( shiftName != null ) {
+                shiftType = ShiftTypeFactory.getShiftType( shiftName );
+            } else if ( shiftIndex >= 0 ) {
+                shiftType = ShiftTypeFactory.getShiftType( shiftIndex );
             }
 
-            if (shiftType == null) {
-                Log.e(TAG, "Cannot determine shift type for builder");
+            if ( shiftType == null ) {
+                Log.e( TAG, "Cannot determine shift type for builder" );
                 return null;
             }
 
-            return createCustomShift(shiftType, date, isStop, teams);
+            return createCustomShift( shiftType, date, isStop, teams );
         }
     }
 }

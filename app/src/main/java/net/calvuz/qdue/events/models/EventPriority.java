@@ -18,4 +18,8 @@ public enum EventPriority {
 
     public String getDisplayName() { return displayName; }
     public int getColor() { return color; }
+
+    public boolean isHigh() {
+        return this.equals( EventPriority.HIGH ) || this.equals( EventPriority.URGENT );
+    }
 }

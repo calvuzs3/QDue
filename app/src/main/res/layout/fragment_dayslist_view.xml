@@ -22,13 +22,13 @@
         android:background="@android:color/transparent"
         app:elevation="6dp">
 
-        <include
-            android:id="@+id/qdue_dayslist_column_header"
-            layout="@layout/item_dayslist_column_header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxWidth="600dp"
-            app:layout_scrollFlags="scroll|enterAlways" />
+<!--        <include-->
+<!--            android:id="@+id/qdue_dayslist_column_header"-->
+<!--            layout="@layout/item_dayslist_column_header"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:maxWidth="600dp"-->
+<!--            app:layout_scrollFlags="scroll|enterAlways" />-->
 
     </com.google.android.material.appbar.AppBarLayout>
 

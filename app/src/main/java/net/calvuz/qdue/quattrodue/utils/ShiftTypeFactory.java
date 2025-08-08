@@ -4,12 +4,18 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import net.calvuz.qdue.ui.core.common.utils.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,14 +27,21 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Dynamic factory for creating and managing shift types.
+ * Dynamic factory for creating and managing shift types with UUID support.
  * <p>
- * Supports variable number of shifts with external JSON API loading.
- * Members access cached elements generated during setup phase rather
- * than static predefined elements. Provides both local persistence
- * and remote configuration capabilities.
+ * Enhanced factory supporting variable number of shifts with external JSON API loading
+ * and unique identifier management. Members access cached elements generated during
+ * setup phase rather than static predefined elements.
+ * <p>
+ * Features:
+ * - UUID-based shift type identification
+ * - Backward compatibility with existing data
+ * - Automatic ID generation for legacy data
+ * - Multiple lookup methods (by ID, name, index)
+ * - Local persistence and remote configuration capabilities
+ * - Dependency injection compliant
  *
- * @author Updated 21/05/2025
+ * @author Updated 08/08/2025 - UUID Support Added
  */
 public class ShiftTypeFactory {
 
@@ -42,6 +55,7 @@ public class ShiftTypeFactory {
 
     // JSON keys for API response parsing
     private static final String JSON_KEY_SHIFTS = "shifts";
+    private static final String JSON_KEY_ID = "id";
     private static final String JSON_KEY_NAME = "name";
     private static final String JSON_KEY_DESCRIPTION = "description";
     private static final String JSON_KEY_START_HOUR = "startHour";
@@ -49,15 +63,12 @@ public class ShiftTypeFactory {
     private static final String JSON_KEY_DURATION_HOURS = "durationHours";
     private static final String JSON_KEY_DURATION_MINUTES = "durationMinutes";
     private static final String JSON_KEY_COLOR = "color";
-    private static final String JSON_KEY_ID = "id";
 
-    // Dynamic cache for shift types (thread-safe)
-    private static final Map<String, ShiftType> dynamicCache = new ConcurrentHashMap<>();
-    private static final Map<Integer, ShiftType> indexCache = new ConcurrentHashMap<>();
-
-    public static boolean isInitialized() {
-        return initialized;
-    }
+    // Enhanced caching system with UUID support
+    private static final Map<String, ShiftType> idCache = new ConcurrentHashMap<>();         // ID -> ShiftType
+    private static final Map<String, ShiftType> nameCache = new ConcurrentHashMap<>();       // Name -> ShiftType
+    private static final Map<Integer, ShiftType> indexCache = new ConcurrentHashMap<>();     // Index -> ShiftType
+    private static final Map<String, Integer> idToIndexMap = new ConcurrentHashMap<>();      // ID -> Index
 
     // Factory state
     private static volatile boolean initialized = false;
@@ -79,22 +90,26 @@ public class ShiftTypeFactory {
             Color.parseColor("#FFCCBC")   // Light Deep Orange
     };
 
-    // Prevent instantiation
+    // Prevent instantiation - Static factory pattern
     private ShiftTypeFactory() {}
 
     /**
      * Initializes the factory with a specific number of shifts.
      * Creates default shift types if no external source is configured.
+     * <p>
+     * This method maintains backward compatibility while providing UUID support.
      *
      * @param context Application context
-     * @param shiftCount Number of shifts to create
+     * @param shiftCount Number of shifts to create (1-8)
      * @return CompletableFuture that completes when initialization is done
      */
-    public static CompletableFuture<Boolean> initialize(Context context, int shiftCount) {
+    public static CompletableFuture<Boolean> initialize(@NonNull Context context, int shiftCount) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                clearCache();
+                clearAllCaches();
                 currentShiftCount = Math.max(1, Math.min(shiftCount, 8)); // Limit 1-8 shifts
+
+                Log.d(TAG, "ShiftTypeFactory initialization started with " + currentShiftCount + " shifts");
 
                 // Try to load from local storage first
                 if (loadFromLocalStorage(context)) {
@@ -125,10 +140,12 @@ public class ShiftTypeFactory {
      * @param apiEndpoint URL to fetch shift types JSON
      * @return CompletableFuture with success status
      */
-    public static CompletableFuture<Boolean> initializeFromApi(Context context, String apiEndpoint) {
+    public static CompletableFuture<Boolean> initializeFromApi(@NonNull Context context, @NonNull String apiEndpoint) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 lastApiEndpoint = apiEndpoint;
+
+                Log.i(TAG, "Initializing from API: " + apiEndpoint);
 
                 // Try API first
                 String jsonResponse = fetchFromApi(apiEndpoint);
@@ -161,45 +178,58 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Refreshes shift types from the last used API endpoint.
+     * Gets a shift type by UUID from the cache.
      *
-     * @param context Application context
-     * @return CompletableFuture with success status
+     * @param id Shift UUID
+     * @return ShiftType or null if not found
      */
-    public static CompletableFuture<Boolean> refreshFromApi(Context context) {
-        if (lastApiEndpoint == null) {
-            return CompletableFuture.completedFuture(false);
-        }
-        return initializeFromApi(context, lastApiEndpoint);
+    @Nullable
+    public static ShiftType getShiftTypeById(@NonNull String id) {
+        ensureInitialized();
+        return idCache.get(id);
     }
 
     /**
-     * Gets a shift type by index from the dynamic cache.
+     * Gets a shift type by index from the cache (backward compatibility).
      *
      * @param index Shift index (0-based)
      * @return ShiftType or null if not found
      */
+    @Nullable
     public static ShiftType getShiftType(int index) {
         ensureInitialized();
         return indexCache.get(index);
     }
 
     /**
-     * Gets a shift type by name from the dynamic cache.
+     * Gets a shift type by name from the cache (backward compatibility).
      *
      * @param name Shift name
      * @return ShiftType or null if not found
      */
-    public static ShiftType getShiftType(String name) {
+    @Nullable
+    public static ShiftType getShiftType(@NonNull String name) {
         ensureInitialized();
-        return dynamicCache.get(name);
+        return nameCache.get(name);
     }
 
     /**
-     * Gets all shift types from the dynamic cache.
+     * Gets the index of a shift type by its UUID.
      *
-     * @return List of all configured shift types
+     * @param id Shift UUID
+     * @return Index or -1 if not found
      */
+    public static int getIndexById(@NonNull String id) {
+        ensureInitialized();
+        return idToIndexMap.getOrDefault(id, -1);
+    }
+
+    /**
+     * Gets all shift types from the cache.
+     *
+     * @return List of all configured shift types in index order
+     */
+    @NonNull
     public static List<ShiftType> getAllShiftTypes() {
         ensureInitialized();
         List<ShiftType> result = new ArrayList<>();
@@ -213,6 +243,39 @@ public class ShiftTypeFactory {
     }
 
     /**
+     * Gets all shift type IDs in index order.
+     *
+     * @return List of all shift type UUIDs
+     */
+    @NonNull
+    public static List<String> getAllShiftTypeIds() {
+        ensureInitialized();
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < currentShiftCount; i++) {
+            ShiftType shift = indexCache.get(i);
+            if (shift != null) {
+                result.add(shift.getId());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a mapping of shift type IDs to names for UI purposes.
+     *
+     * @return Map of ID -> Name
+     */
+    @NonNull
+    public static Map<String, String> getIdToNameMapping() {
+        ensureInitialized();
+        Map<String, String> mapping = new HashMap<>();
+        for (ShiftType shiftType : idCache.values()) {
+            mapping.put(shiftType.getId(), shiftType.getName());
+        }
+        return mapping;
+    }
+
+    /**
      * Gets the current number of configured shifts.
      *
      * @return Number of shifts
@@ -223,46 +286,83 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Adds a new shift type to the dynamic cache.
+     * Checks if the factory is properly initialized.
      *
-     * @param shiftType Shift type to add
-     * @return Index assigned to the shift type
+     * @return true if initialized
      */
-    public static int addShiftType(ShiftType shiftType) {
-        if (shiftType == null) return -1;
+    public static boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Adds a new shift type to the cache.
+     * <p>
+     * The shift type will be assigned the next available index and
+     * added to all cache maps.
+     *
+     * @param shiftType Shift type to add (must have valid UUID)
+     * @return Index assigned to the shift type, or -1 if failed
+     */
+    public static int addShiftType(@NonNull ShiftType shiftType) {
+        if (shiftType == null || shiftType.getId() == null) {
+            Log.w(TAG, "Cannot add null shift type or shift type without ID");
+            return -1;
+        }
+
+        // Check for duplicate IDs
+        if (idCache.containsKey(shiftType.getId())) {
+            Log.w(TAG, "Shift type with ID " + shiftType.getId() + " already exists");
+            return getIndexById(shiftType.getId());
+        }
 
         int index = currentShiftCount;
-        dynamicCache.put(shiftType.getName(), shiftType);
-        indexCache.put(index, shiftType);
+        addToAllCaches(shiftType, index);
         currentShiftCount++;
 
-        Log.d(TAG, "Added shift type: " + shiftType.getName() + " at index " + index);
+        Log.d(TAG, "Added shift type: " + shiftType.getName() + " with ID " + shiftType.getId() + " at index " + index);
         return index;
     }
 
     /**
      * Updates an existing shift type in the cache.
      *
+     * @param id New shift type UUID
+     * @param shiftType New shift type data
+     * @return true if update was successful
+     */
+    public static boolean updateShiftTypeById(@NonNull String id, @NonNull ShiftType shiftType) {
+        Integer index = idToIndexMap.get(id);
+        if (index == null) {
+            Log.w(TAG, "Cannot update shift type with unknown ID: " + id);
+            return false;
+        }
+
+        return updateShiftType(index, shiftType);
+    }
+
+    /**
+     * Updates an existing shift type in the cache by index.
+     *
      * @param index Index to update
      * @param shiftType New shift type
      * @return true if update was successful
      */
-    public static boolean updateShiftType(int index, ShiftType shiftType) {
+    public static boolean updateShiftType(int index, @NonNull ShiftType shiftType) {
         if (index < 0 || index >= currentShiftCount || shiftType == null) {
+            Log.w(TAG, "Invalid index " + index + " for update or null shift type");
             return false;
         }
 
-        // Remove old entry from name cache
+        // Remove old entry from all caches
         ShiftType oldShift = indexCache.get(index);
         if (oldShift != null) {
-            dynamicCache.remove(oldShift.getName());
+            removeFromAllCaches(oldShift);
         }
 
         // Add new entry
-        dynamicCache.put(shiftType.getName(), shiftType);
-        indexCache.put(index, shiftType);
+        addToAllCaches(shiftType, index);
 
-        Log.d(TAG, "Updated shift type at index " + index + ": " + shiftType.getName());
+        Log.d(TAG, "Updated shift type at index " + index + ": " + shiftType.getName() + " (ID: " + shiftType.getId() + ")");
         return true;
     }
 
@@ -278,7 +378,7 @@ public class ShiftTypeFactory {
      * @param color Shift color (ARGB)
      * @return Index of the created shift type
      */
-    public static int createAndAddShiftType(String name, String description,
+    public static int createAndAddShiftType(@NonNull String name, @NonNull String description,
                                             int startHour, int startMinute,
                                             int durationHours, int durationMinutes,
                                             int color) {
@@ -288,12 +388,28 @@ public class ShiftTypeFactory {
     }
 
     /**
+     * Refreshes shift types from the last used API endpoint.
+     *
+     * @param context Application context
+     * @return CompletableFuture with success status
+     */
+    public static CompletableFuture<Boolean> refreshFromApi(@NonNull Context context) {
+        if (lastApiEndpoint == null) {
+            Log.w(TAG, "No API endpoint configured for refresh");
+            return CompletableFuture.completedFuture(false);
+        }
+        return initializeFromApi(context, lastApiEndpoint);
+    }
+
+    /**
      * Saves current shift types to local storage for persistence.
+     * <p>
+     * Includes UUID information for future compatibility.
      *
      * @param context Application context
      * @return true if save was successful
      */
-    public static boolean saveToLocalStorage(Context context) {
+    public static boolean saveToLocalStorage(@NonNull Context context) {
         try {
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
@@ -301,13 +417,14 @@ public class ShiftTypeFactory {
             // Save metadata
             editor.putInt(KEY_SHIFT_COUNT, currentShiftCount);
             editor.putLong(KEY_LAST_API_SYNC, System.currentTimeMillis());
-            editor.putInt(KEY_CACHE_VERSION, 1);
+            editor.putInt(KEY_CACHE_VERSION, 2); // Incremented for UUID support
 
-            // Save each shift type
+            // Save each shift type with UUID
             for (int i = 0; i < currentShiftCount; i++) {
                 ShiftType shift = indexCache.get(i);
                 if (shift != null) {
                     String prefix = "shift_" + i + "_";
+                    editor.putString(prefix + "id", shift.getId());
                     editor.putString(prefix + "name", shift.getName());
                     editor.putString(prefix + "description", shift.getDescription());
                     editor.putInt(prefix + "start_hour", shift.getStartHour());
@@ -315,11 +432,12 @@ public class ShiftTypeFactory {
                     editor.putInt(prefix + "duration_hours", shift.getDurationHours());
                     editor.putInt(prefix + "duration_minutes", shift.getDurationMinutes());
                     editor.putInt(prefix + "color", shift.getColor());
+                    editor.putBoolean(prefix + "rest_type", shift.isRestType());
                 }
             }
 
             editor.apply();
-            Log.d(TAG, "Saved " + currentShiftCount + " shift types to local storage");
+            Log.d(TAG, "Saved " + currentShiftCount + " shift types to local storage with UUIDs");
             return true;
 
         } catch (Exception e) {
@@ -343,27 +461,59 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Clears both dynamic caches.
+     * Clears all cache maps.
      */
-    private static void clearCache() {
-        dynamicCache.clear();
+    private static void clearAllCaches() {
+        idCache.clear();
+        nameCache.clear();
         indexCache.clear();
-        Log.d(TAG, "Cache cleared");
+        idToIndexMap.clear();
+        Log.d(TAG, "All caches cleared");
+    }
+
+    /**
+     * Adds a shift type to all cache maps.
+     *
+     * @param shiftType ShiftType to add
+     * @param index Index position
+     */
+    private static void addToAllCaches(@NonNull ShiftType shiftType, int index) {
+        idCache.put(shiftType.getId(), shiftType);
+        nameCache.put(shiftType.getName(), shiftType);
+        indexCache.put(index, shiftType);
+        idToIndexMap.put(shiftType.getId(), index);
+    }
+
+    /**
+     * Removes a shift type from all cache maps.
+     *
+     * @param shiftType ShiftType to remove
+     */
+    private static void removeFromAllCaches(@NonNull ShiftType shiftType) {
+        idCache.remove(shiftType.getId());
+        nameCache.remove(shiftType.getName());
+        idToIndexMap.remove(shiftType.getId());
+        // Note: indexCache entry will be overwritten, not removed
     }
 
     /**
      * Creates default shift types for fallback scenarios.
      */
     private static void createDefaultShifts() {
-        clearCache();
+        clearAllCaches();
 
         String[] defaultNames = {"Morning", "Afternoon", "Night"};
-        int[] defaultStartHours = {5, 13, 21};
+        String[] defaultDescriptions = {
+                "Morning shift 06:00-14:00",
+                "Afternoon shift 14:00-22:00",
+                "Night shift 22:00-06:00"
+        };
+        int[] defaultStartHours = {6, 14, 22};
 
         for (int i = 0; i < currentShiftCount && i < defaultNames.length; i++) {
             ShiftType shift = new ShiftType(
                     defaultNames[i],
-                    defaultNames[i],
+                    defaultDescriptions[i],
                     defaultStartHours[i],
                     0,
                     8,
@@ -371,29 +521,32 @@ public class ShiftTypeFactory {
                     DEFAULT_COLORS[i % DEFAULT_COLORS.length]
             );
 
-            dynamicCache.put(shift.getName(), shift);
-            indexCache.put(i, shift);
+            addToAllCaches(shift, i);
         }
 
-        Log.d(TAG, "Created " + currentShiftCount + " default shifts");
+        Log.d(TAG, "Created " + currentShiftCount + " default shifts with UUIDs");
     }
 
     /**
-     * Loads shift types from local storage.
+     * Loads shift types from local storage with UUID migration support.
      *
      * @param context Application context
      * @return true if loading was successful
      */
-    private static boolean loadFromLocalStorage(Context context) {
+    private static boolean loadFromLocalStorage(@NonNull Context context) {
         try {
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
             currentShiftCount = prefs.getInt(KEY_SHIFT_COUNT, 0);
             if (currentShiftCount == 0) {
+                Log.d(TAG, "No shift types found in local storage");
                 return false;
             }
 
-            clearCache();
+            clearAllCaches();
+
+            int cacheVersion = prefs.getInt(KEY_CACHE_VERSION, 1);
+            boolean needsMigration = cacheVersion < 2;
 
             // Load each shift type
             for (int i = 0; i < currentShiftCount; i++) {
@@ -402,17 +555,33 @@ public class ShiftTypeFactory {
 
                 if (name == null) continue;
 
+                // Get ID (with migration support)
+                String id = prefs.getString(prefix + "id", null);
+                // If no ID exists (old format), one will be generated by ShiftType constructor
+
                 String description = prefs.getString(prefix + "description", "");
                 int startHour = prefs.getInt(prefix + "start_hour", 8);
                 int startMinute = prefs.getInt(prefix + "start_minute", 0);
                 int durationHours = prefs.getInt(prefix + "duration_hours", 8);
                 int durationMinutes = prefs.getInt(prefix + "duration_minutes", 0);
                 int color = prefs.getInt(prefix + "color", DEFAULT_COLORS[i % DEFAULT_COLORS.length]);
+                boolean restType = prefs.getBoolean(prefix + "rest_type", false);
 
-                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                ShiftType shift = new ShiftType(id, name, description, startHour, startMinute,
                         durationHours, durationMinutes, color);
-                dynamicCache.put(name, shift);
-                indexCache.put(i, shift);
+                shift.setRestType(restType);
+
+                addToAllCaches(shift, i);
+
+                if (needsMigration && id == null) {
+                    Log.d(TAG, "Generated UUID for legacy shift: " + shift.getName() + " -> " + shift.getId());
+                }
+            }
+
+            // Save with UUIDs if migration occurred
+            if (needsMigration) {
+                Log.i(TAG, "Migrating local storage to UUID format");
+                saveToLocalStorage(context);
             }
 
             Log.d(TAG, "Loaded " + currentShiftCount + " shifts from local storage");
@@ -430,11 +599,13 @@ public class ShiftTypeFactory {
      * @param apiEndpoint API URL
      * @return JSON response string or null if failed
      */
-    private static String fetchFromApi(String apiEndpoint) {
+    @Nullable
+    private static String fetchFromApi(@NonNull String apiEndpoint) {
         try {
             Request request = new Request.Builder()
                     .url(apiEndpoint)
                     .addHeader("Accept", "application/json")
+                    .addHeader("User-Agent", "QDue-ShiftTypeFactory/1.0")
                     .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
@@ -451,21 +622,24 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Parses JSON response and populates the cache.
+     * Parses JSON response and populates the cache with UUID support.
      *
      * @param jsonResponse JSON string from API
      * @return true if parsing was successful
      */
-    private static boolean parseJsonShifts(String jsonResponse) {
+    private static boolean parseJsonShifts(@NonNull String jsonResponse) {
         try {
             JSONObject root = new JSONObject(jsonResponse);
             JSONArray shiftsArray = root.getJSONArray(JSON_KEY_SHIFTS);
 
-            clearCache();
+            clearAllCaches();
             currentShiftCount = shiftsArray.length();
 
             for (int i = 0; i < shiftsArray.length(); i++) {
                 JSONObject shiftJson = shiftsArray.getJSONObject(i);
+
+                // Get ID (optional in JSON, will be generated if missing)
+                String id = shiftJson.optString(JSON_KEY_ID, null);
 
                 String name = shiftJson.getString(JSON_KEY_NAME);
                 String description = shiftJson.optString(JSON_KEY_DESCRIPTION, "");
@@ -489,10 +663,14 @@ public class ShiftTypeFactory {
                     }
                 }
 
-                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                ShiftType shift = new ShiftType(id, name, description, startHour, startMinute,
                         durationHours, durationMinutes, color);
-                dynamicCache.put(name, shift);
-                indexCache.put(i, shift);
+
+                addToAllCaches(shift, i);
+
+                if (id == null) {
+                    Log.d(TAG, "Generated UUID for API shift: " + shift.getName() + " -> " + shift.getId());
+                }
             }
 
             Log.d(TAG, "Parsed " + currentShiftCount + " shifts from JSON");
@@ -519,7 +697,7 @@ public class ShiftTypeFactory {
      * @param apiEndpoint API URL
      * @param callback Result callback
      */
-    public static void loadFromApiAsync(Context context, String apiEndpoint, LoadCallback callback) {
+    public static void loadFromApiAsync(@NonNull Context context, @NonNull String apiEndpoint, @NonNull LoadCallback callback) {
         initializeFromApi(context, apiEndpoint).thenAccept(success -> {
             if (success) {
                 callback.onSuccess(currentShiftCount);

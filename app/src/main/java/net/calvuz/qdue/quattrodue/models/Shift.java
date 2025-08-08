@@ -79,7 +79,7 @@ public class Shift implements Cloneable {
      *
      * @param halfTeam Team to add
      */
-    public void addTeam(HalfTeam halfTeam) {
+    public void addHalfTeam(HalfTeam halfTeam) {
         if (halfTeam == null) {
             if (LOG_ENABLED) Log.w(TAG, "Attempt to add null team");
             return;
@@ -111,7 +111,7 @@ public class Shift implements Cloneable {
     /**
      * @return Concatenated string with all team names in the shift
      */
-    public String getTeamsAsString() {
+    public String getHalfTeamsAsString() {
         return halfTeams.stream()
                 .map(HalfTeam::getName)
                 .collect(Collectors.joining());
@@ -182,7 +182,7 @@ public class Shift implements Cloneable {
         }
 
         if (!halfTeams.isEmpty()) {
-            sb.append(" HalfTeams: ").append(getTeamsAsString());
+            sb.append(" HalfTeams: ").append( getHalfTeamsAsString());
         }
 
         sb.append("}");
@@ -225,7 +225,7 @@ public class Shift implements Cloneable {
         // Clone teams
         for (HalfTeam team : this.halfTeams) {
             try {
-                clone.addTeam(team.clone());
+                clone.addHalfTeam(team.clone());
             } catch (CloneNotSupportedException e) {
                 Log.e(TAG, "Error cloning team: " + e.getMessage());
             }
@@ -275,7 +275,7 @@ public class Shift implements Cloneable {
         public Shift build() {
             Shift shift = new Shift(shiftType, date);
             shift.setStop(stop);
-            halfTeams.forEach(shift::addTeam);
+            halfTeams.forEach(shift::addHalfTeam );
             return shift;
         }
     }

@@ -413,7 +413,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<RecyclerView.View
         for (int i = 0; i < numShifts; i++) {
             if (holder.shiftTexts[i] != null) {
                 try {
-                    String teamText = shifts.get(i).getTeamsAsString();
+                    String teamText = shifts.get(i).getHalfTeamsAsString();
                     holder.shiftTexts[i].setText(teamText != null && !teamText.isEmpty() ?
                             mContext.getString(R.string.str_scheme, teamText) : "");
                 } catch (Exception e) {

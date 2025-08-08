@@ -329,7 +329,7 @@ public class EventsServiceImpl implements EventsService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // Get count before deletion
-                int count = mEventDao.getEventsCount();
+                int count = mEventDao.getTotalEventCount();
 
                 if (count == 0) {
                     return OperationResult.success(0, "No events to delete",
@@ -775,7 +775,7 @@ public class EventsServiceImpl implements EventsService {
     public CompletableFuture<OperationResult<Integer>> getEventsCount() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                int count = mEventDao.getEventsCount();
+                int count = mEventDao.getTotalEventCount();
                 return OperationResult.success(count, OperationResult.OperationType.COUNT);
             } catch (Exception e) {
                 Log.e(TAG, "Failed to get events count: " + e.getMessage(), e);

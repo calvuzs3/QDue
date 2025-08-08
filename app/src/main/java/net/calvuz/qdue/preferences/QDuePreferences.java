@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import net.calvuz.qdue.QDue;
+import net.calvuz.qdue.R;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -50,7 +51,8 @@ public class QDuePreferences {
     public static void setDefaultViewMode(Context context, String viewMode) {
         // Validate input
         if (!QDue.Settings.VIEW_MODE_CALENDAR.equals(viewMode) &&
-                !QDue.Settings.VIEW_MODE_DAYSLIST.equals(viewMode)) {
+                !QDue.Settings.VIEW_MODE_DAYSLIST.equals(viewMode) &&
+                !QDue.Settings.VIEW_MODE_SWIPE_CALENDAR.equals( viewMode )) {
             Log.w(TAG, "Invalid view mode: " + viewMode + ". Using default.");
             viewMode = QDue.Settings.VIEW_MODE_CALENDAR;
         }
@@ -215,8 +217,10 @@ public class QDuePreferences {
         // Note: These IDs must match your actual navigation graph
         if (QDue.Settings.VIEW_MODE_DAYSLIST.equals(viewMode)) {
             return net.calvuz.qdue.R.id.nav_dayslist;
-        } else {
+        } else if (QDue.Settings.VIEW_MODE_CALENDAR.equals( (viewMode) )){
             return net.calvuz.qdue.R.id.nav_calendar;
+        } else {
+            return R.id.nav_swipe_calendar;
         }
     }
 

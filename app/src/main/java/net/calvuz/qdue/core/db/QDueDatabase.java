@@ -211,7 +211,7 @@ public abstract class QDueDatabase extends RoomDatabase {
             DatabaseStatistics stats = new DatabaseStatistics();
 
             // Event statistics
-            stats.totalEvents = eventDao().getEventsCount();
+            stats.totalEvents = eventDao().getTotalEventCount();
             stats.upcomingEvents = eventDao().getUpcomingEventsCount(java.time.LocalDateTime.now());
 
             // Exception statistics

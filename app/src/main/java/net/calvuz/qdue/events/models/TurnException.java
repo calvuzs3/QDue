@@ -92,8 +92,8 @@ public class TurnException {
         VACATION("Ferie"),
         SICK_LEAVE("Malattia"),
         OVERTIME("Straordinario"),
-        PERMIT("Permesso"),
-        PERMIT_104("Permesso 104"),
+        PERMIT_PERSONAL("Permesso"),
+        PERMIT_SPECIAL("Permesso 104"),
         PERMIT_SYNDICATE("Permesso sindacale"),
         TRAINING("Formazione"),
         PERSONAL_LEAVE("Permesso personale"),
@@ -180,8 +180,8 @@ public class TurnException {
         return exceptionType == ExceptionType.VACATION ||
                 exceptionType == ExceptionType.SICK_LEAVE ||
                 exceptionType == ExceptionType.PERSONAL_LEAVE ||
-                exceptionType == ExceptionType.PERMIT_104 ||
-                exceptionType == ExceptionType.PERMIT ||
+                exceptionType == ExceptionType.PERMIT_SPECIAL ||
+                exceptionType == ExceptionType.PERMIT_PERSONAL ||
                 exceptionType == ExceptionType.PERMIT_SYNDICATE;
     }
 

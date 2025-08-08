@@ -91,6 +91,7 @@ public class EventsActivity extends AppCompatActivity implements
     public static final String EXTRA_EVENTS_CHANGED = "events_changed";
     public static final String EXTRA_EVENTS_COUNT = "events_count";
     public static final String EXTRA_CHANGE_TYPE = "change_type";
+    public static final String EXTRA_FILTER_DATE ="filter_date";  // TODO: still to implement
 
     public static final String CHANGE_TYPE_IMPORT = "import";
     public static final String CHANGE_TYPE_EXPORT = "export";
@@ -1485,7 +1486,7 @@ public class EventsActivity extends AppCompatActivity implements
     private void checkInitialEventsState() {
         new Thread(() -> {
             try {
-                int count = mDatabase.eventDao().getEventsCount();
+                int count = mDatabase.eventDao().getTotalEventCount();
                 runOnUiThread(() -> {
                     mHasEvents = count > 0;
                     mTotalEventsCount = count;
@@ -1500,7 +1501,7 @@ public class EventsActivity extends AppCompatActivity implements
     private void updateEventsCount() {
         new Thread(() -> {
             try {
-                int count = mDatabase.eventDao().getEventsCount();
+                int count = mDatabase.eventDao().getTotalEventCount();
                 runOnUiThread(() -> {
                     mTotalEventsCount = count;
                 });
