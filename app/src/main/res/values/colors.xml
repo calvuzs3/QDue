@@ -102,7 +102,7 @@
     <!-- 2. FUNCTIONAL COLORS - SHIFT MANAGEMENT -->
     <!-- ============================================ -->
 
-    <!-- Shift Type Colors (8 Required Types) -->
+    <!-- LegacyShift Type Colors (8 Required Types) -->
     <color name="qdue_morning_shift">#4CAF50</color>       <!-- Green - Fresh start -->
     <color name="qdue_afternoon_shift">#FF9800</color>     <!-- Orange - Midday energy -->
     <color name="qdue_night_shift">#3F51B5</color>         <!-- Indigo - Night calm -->
@@ -118,7 +118,7 @@
 
     <!-- Calendar Day States -->
     <color name="qdue_today_highlight">#FF6B35</color>     <!-- Bright Orange - Today emphasis -->
-    <color name="qdue_user_day">#6750A4</color>           <!-- Brand Purple - User's shift -->
+    <color name="qdue_user_day">#6750A4</color>           <!-- Brand Purple - User's legacyShift -->
     <color name="qdue_sunday_special">#FF5722</color>      <!-- Deep Orange - Weekend -->
     <color name="qdue_holiday">#F44336</color>            <!-- Red - Public holiday -->
 
@@ -277,12 +277,12 @@
     - qdue_ocean_blue: Secondary actions, links, accent elements
 
     SHIFT COLORS:
-    - Use specific shift colors for calendar cells, badges, indicators
-    - Maintain consistency across all shift-related UI elements
+    - Use specific legacyShift colors for calendar cells, badges, indicators
+    - Maintain consistency across all legacyShift-related UI elements
 
     STATUS COLORS:
     - qdue_today_highlight: Always for current day indication
-    - qdue_user_day: User's assigned shifts
+    - qdue_user_day: User's assigned legacyShifts
     - qdue_sunday_special: Weekend/Sunday highlighting
 
     UI SEMANTICS:
@@ -309,17 +309,17 @@
     <!-- ============================================ -->
 
     <!-- PRIMARY SHIFTS (Most Important) -->
-    <!-- Morning Shift - Warm Orange/Amber -->
+    <!-- Morning LegacyShift - Warm Orange/Amber -->
 <!--    <color name="shift_afternoon">#FF8F00</color>           &lt;!&ndash; Deep Orange 600 &ndash;&gt;-->
     <color name="shift_afternoon_light">#FFCC02</color>     <!-- Amber 600 -->
     <color name="shift_afternoon_dark">#E65100</color>      <!-- Deep Orange 900 -->
 
-    <!-- Afternoon Shift - Forest Green -->
+    <!-- Afternoon LegacyShift - Forest Green -->
 <!--    <color name="shift_morning">#388E3C</color>         &lt;!&ndash; Green 600 &ndash;&gt;-->
     <color name="shift_morning_light">#66BB6A</color>   <!-- Green 400 -->
     <color name="shift_morning_dark">#1B5E20</color>    <!-- Green 900 -->
 
-    <!-- Night Shift - Deep Blue -->
+    <!-- Night LegacyShift - Deep Blue -->
 <!--    <color name="shift_night">#1976D2</color>             &lt;!&ndash; Blue 600 &ndash;&gt;-->
     <color name="shift_night_light">#42A5F5</color>       <!-- Blue 400 -->
     <color name="shift_night_dark">#0D47A1</color>        <!-- Blue 900 -->
@@ -338,7 +338,7 @@
 
     <!-- ============================================ -->
     <!-- SPECIAL HIGHLIGHTING - HIERARCHICAL -->
-    <!-- Priority: Today > User Shift > Sunday -->
+    <!-- Priority: Today > User LegacyShift > Sunday -->
     <!-- ============================================ -->
 
     <!-- TODAY - Highest Priority (Golden Yellow) -->
@@ -364,10 +364,10 @@
 
     <!-- ============================================ -->
     <!-- COMBINED HIGHLIGHTING COLORS -->
-    <!-- For overlapping states (Today + User Shift, etc.) -->
+    <!-- For overlapping states (Today + User LegacyShift, etc.) -->
     <!-- ============================================ -->
 
-    <!-- Today + User Shift (Most Important Combination) -->
+    <!-- Today + User LegacyShift (Most Important Combination) -->
     <color name="today_user_background_light">#FFF3C4</color>   <!-- Mix of amber and green -->
     <color name="today_user_background_dark">#FF8F00</color>    <!-- Amber dominant -->
     <color name="today_user_border">#FF9800</color>             <!-- Orange 500 -->
@@ -376,7 +376,7 @@
     <color name="today_sunday_background_light">#FFF0E1</color> <!-- Mix of amber and red -->
     <color name="today_sunday_background_dark">#F57C00</color>  <!-- Orange 600 -->
 
-    <!-- User Shift + Sunday -->
+    <!-- User LegacyShift + Sunday -->
     <color name="user_sunday_background_light">#F1F8E9</color>  <!-- Light green-red mix -->
     <color name="user_sunday_background_dark">#689F38</color>   <!-- Light green 700 -->
 
@@ -433,19 +433,12 @@
 
     <!-- Calendar EVENTS -->
 
-    <!-- Event Type Colors (for left indicator) -->
-    <color name="event_type_general">#2196F3</color>           <!-- Blue -->
-    <color name="event_type_stop_planned">#FF9800</color>      <!-- Orange -->
-    <color name="event_type_stop_unplanned">#F44336</color>    <!-- Red -->
-    <color name="event_type_stop_shortage">#9C27B0</color>     <!-- Purple -->
-    <color name="event_type_maintenance">#4CAF50</color>       <!-- Green -->
-    <color name="event_type_meeting">#00BCD4</color>           <!-- Cyan -->
-    <color name="event_type_training">#FF5722</color>          <!-- Deep Orange -->
 
     <!-- Priority Colors (for chips) -->
-    <color name="priority_high">#F44336</color>        <!-- Red -->
-    <color name="priority_normal">#FFC107</color>      <!-- Amber -->
-    <color name="priority_low">#E0E0E0</color>         <!-- Light Grey -->
+    <color name="priority_urgent">#D50000</color>      <!-- Red A700 -->
+    <color name="priority_high">#DD2C00</color>        <!-- Orange A700 -->
+    <color name="priority_normal">#FFD600</color>      <!-- Amber A700 -->
+    <color name="priority_low">#AEEA00</color>         <!-- Green A700 -->
 
     <!-- Status Colors -->
     <color name="success_color">#4CAF50</color>        <!-- Green -->
@@ -478,5 +471,125 @@
     <color name="type_maintenance">#FF9800</color>     <!-- Orange - Maintenance -->
     <color name="type_meeting">#2196F3</color>         <!-- Blue - Meetings -->
     <color name="type_general">#9C27B0</color>         <!-- Purple - General events -->
+
+
+
+
+
+    <!-- =====================================================================
+         Calendar Feature Colors
+         ===================================================================== -->
+
+    <!-- Calendar Day Colors -->
+    <color name="calendar_day_default_background">#F8F9FA</color>
+    <color name="calendar_day_adjacent_month_background">#F5F5F5</color>
+    <color name="calendar_day_text_color">#1F2937</color>
+    <color name="calendar_day_text_color_light">#6B7280</color>
+
+    <!-- Today Indicator -->
+    <color name="today_indicator_color">#3B82F6</color>
+    <color name="today_stroke_color">#3B82F6</color>
+    <color name="today_background_highlight">#EFF6FF</color>
+
+    <!-- Weekend Colors -->
+    <color name="weekend_day_background">#FEF3F2</color>
+    <color name="weekend_day_text">#DC2626</color>
+
+    <!-- Shift Type Colors (Default fallbacks) -->
+    <color name="shift_morning_default">#FEF3C7</color>
+    <color name="shift_afternoon_default">#DBEAFE</color>
+    <color name="shift_night_default">#E0E7FF</color>
+    <color name="shift_rest_default">#F3F4F6</color>
+
+    <!-- Event Indicators -->
+    <color name="event_count_background">#EF4444</color>
+    <color name="event_count_text_color">#FFFFFF</color>
+    <color name="high_priority_event_indicator">#DC2626</color>
+    <color name="normal_event_indicator">#6B7280</color>
+
+    <!-- Loading and Error States -->
+    <color name="skeleton_shimmer_color">#E5E7EB</color>
+    <color name="skeleton_shimmer_highlight">#F9FAFB</color>
+    <color name="error_indicator_color">#EF4444</color>
+    <color name="loading_indicator_color">#3B82F6</color>
+
+    <!-- Calendar Grid -->
+    <color name="calendar_grid_line">#E5E7EB</color>
+    <color name="calendar_header_background">#F9FAFB</color>
+    <color name="calendar_header_text">#374151</color>
+
+    <!-- Month Navigation -->
+    <color name="month_navigation_button">#6B7280</color>
+    <color name="month_navigation_button_active">#3B82F6</color>
+    <color name="month_title_text">#1F2937</color>
+
+    <!-- Calendar Card -->
+    <color name="calendar_card_background">#FFFFFF</color>
+    <color name="calendar_card_shadow">#1F29370A</color>
+    <color name="calendar_card_stroke">#E5E7EB</color>
+
+    <!-- Week Days Header -->
+    <color name="week_day_header_background">#F9FAFB</color>
+    <color name="week_day_header_text">#6B7280</color>
+    <color name="week_day_weekend_text">#DC2626</color>
+
+    <!-- Selected Day -->
+    <color name="calendar_day_selected">#E8F5E8</color>                 <!-- Light green background -->
+    <color name="calendar_day_selected_stroke">#4CAF50</color>          <!-- Green stroke -->
+    <color name="calendar_day_selected_text">#2E7D32</color>            <!-- Dark green text -->
+
+    <!-- Pressed State -->
+    <color name="calendar_day_pressed">#F5F5F5</color>                  <!-- Light gray for pressed state -->
+
+    <!-- Event Type Indicator Colors -->
+    <!-- Event Type Colors (for left indicator) -->
+<!--    <color name="event_type_general">#2196F3</color>           &lt;!&ndash; Blue &ndash;&gt;-->
+    <color name="event_type_stop_planned">#FF9800</color>      <!-- Orange -->
+    <color name="event_type_stop_unplanned">#F44336</color>    <!-- Red -->
+    <color name="event_type_stop_shortage">#9C27B0</color>     <!-- Purple -->
+<!--    <color name="event_type_maintenance">#4CAF50</color>       &lt;!&ndash; Green &ndash;&gt;-->
+<!--    <color name="event_type_meeting">#00BCD4</color>           &lt;!&ndash; Cyan &ndash;&gt;-->
+<!--    <color name="event_type_training">#FF5722</color>          &lt;!&ndash; Deep Orange &ndash;&gt;-->
+    <color name="event_type_general">#6B7280</color>
+    <color name="event_type_meeting">#3B82F6</color>
+    <color name="event_type_training">#10B981</color>
+    <color name="event_type_vacation">#059669</color>
+    <color name="event_type_sick_leave">#DC2626</color>
+    <color name="event_type_emergency">#EF4444</color>
+    <color name="event_type_maintenance">#6B7280</color>
+
+    <!-- Loading Skeleton Animation -->
+    <color name="skeleton_base">#E5E7EB</color>
+    <color name="skeleton_highlight">#F3F4F6</color>
+
+    <!-- Calendar View Modes -->
+    <color name="view_mode_active">#3B82F6</color>
+    <color name="view_mode_inactive">#9CA3AF</color>
+
+    <!-- Quick Actions -->
+    <color name="quick_action_background">#3B82F6</color>
+    <color name="quick_action_text">#FFFFFF</color>
+    <color name="quick_action_ripple">#FFFFFF20</color>
+
+    <!-- Material Design 3 Calendar Colors -->
+    <color name="md3_calendar_surface">#FFFBFE</color>
+    <color name="md3_calendar_on_surface">#1C1B1F</color>
+    <color name="md3_calendar_surface_variant">#E7E0EC</color>
+    <color name="md3_calendar_on_surface_variant">#49454F</color>
+    <color name="md3_calendar_primary">#6750A4</color>
+    <color name="md3_calendar_on_primary">#FFFFFF</color>
+
+    <!-- Dark Theme Colors (Optional) -->
+    <color name="calendar_day_default_background_dark">#1F2937</color>
+    <color name="calendar_day_text_color_dark">#F9FAFB</color>
+    <color name="calendar_card_background_dark">#374151</color>
+    <color name="today_indicator_color_dark">#60A5FA</color>
+    <color name="skeleton_shimmer_color_dark">#374151</color>
+    <color name="skeleton_shimmer_highlight_dark">#4B5563</color>
+
+
+
+
+
 
 </resources>

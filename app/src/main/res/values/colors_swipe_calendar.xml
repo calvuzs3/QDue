@@ -21,13 +21,6 @@
     <!-- Weekend Days -->
     <color name="calendar_day_weekend_text">#F44336</color>             <!-- Red for weekends -->
 
-    <!-- Selected Day -->
-    <color name="calendar_day_selected">#E8F5E8</color>                 <!-- Light green background -->
-    <color name="calendar_day_selected_stroke">#4CAF50</color>          <!-- Green stroke -->
-    <color name="calendar_day_selected_text">#2E7D32</color>            <!-- Dark green text -->
-
-    <!-- Pressed State -->
-    <color name="calendar_day_pressed">#F5F5F5</color>                  <!-- Light gray for pressed state -->
 
     <!-- ==================== EVENT INDICATOR COLORS ==================== -->
 
@@ -74,6 +67,7 @@
     <!-- Success States -->
     <color name="calendar_success_background">#E8F5E8</color>           <!-- Light green for success -->
     <color name="calendar_success_text">#2E7D32</color>                 <!-- Dark green for success text -->
+    <color name="calendar_success_icon">#10B981</color>
 
     <!-- ==================== MATERIAL DESIGN VARIANTS ==================== -->
 
