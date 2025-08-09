@@ -204,7 +204,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     @NonNull
     @Override
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = mInflater.inflate(R.layout.item_calendar_month, parent, false);
+        View itemView = mInflater.inflate(R.layout.item_calendar_swipe_month, parent, false);
         return new MonthViewHolder(itemView);
     }
 

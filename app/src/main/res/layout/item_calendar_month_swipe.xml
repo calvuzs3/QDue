@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/item_calendar_month_swipe.xml -->
+<!-- Monthly calendar grid container for SwipeCalendar feature -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!--    android:background="?attr/colorSurface"-->
+
+    <!-- Week Days Header -->
+    <LinearLayout
+        android:id="@+id/week_days_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_xs"
+        android:paddingVertical="@dimen/spacing_s">
+
+        <!--        android:background="?attr/colorSurfaceVariant"-->
+
+        <!-- Monday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_monday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+
+        <!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <!-- Tuesday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_tuesday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <!-- Wednesday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_wednesday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <!-- Thursday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_thursday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <!-- Friday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_friday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <!-- Saturday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_saturday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorPrimary"-->
+
+
+        <!-- Sunday -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/calendar_day_sunday_short"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textStyle="bold" />
+
+        <!--        android:textColor="?attr/colorPrimary"-->
+
+    </LinearLayout>
+
+    <!-- Month Days Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_month_days"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="@dimen/spacing_xs"
+        android:paddingVertical="@dimen/spacing_xs"
+        tools:itemCount="42"
+        tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        tools:listitem="@layout/item_calendar_day"
+        tools:spanCount="7" />
+
+    <!-- Loading State Overlay -->
+    <FrameLayout
+        android:id="@+id/loading_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:alpha="0.8"
+        android:visibility="gone">
+<!--        android:background="?attr/colorSurface"-->
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ProgressBar
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginBottom="@dimen/spacing_s"
+                app:indicatorColor="?attr/colorPrimary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/calendar_loading_month_data"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                 />
+
+<!--            android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- Error State -->
+    <LinearLayout
+        android:id="@+id/error_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_l"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="@dimen/spacing_m"
+            android:contentDescription="@string/calendar_error_loading_month"
+            android:src="@drawable/ic_rounded_error_24"
+            app:tint="?attr/colorError" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:gravity="center"
+            android:text="@string/calendar_error_loading_month"
+            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+             />
+<!--        android:textColor="?attr/colorOnSurface"-->
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_m"
+            android:gravity="center"
+            android:text="@string/calendar_error_loading_month_subtitle"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+         />
+<!--        android:textColor="?attr/colorOnSurfaceVariant"-->
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_retry"
+            android:text="@string/action_retry"
+            app:icon="@drawable/ic_refresh" />
+
+<!--        <com.google.android.material.button.MaterialButton-->
+<!--            android:id="@+id/btn_retry"-->
+<!--            style="@style/Widget.Material3.Button"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/action_retry"-->
+<!--            app:icon="@drawable/ic_refresh" />-->
+
+
+    </LinearLayout>
+
+</LinearLayout>
