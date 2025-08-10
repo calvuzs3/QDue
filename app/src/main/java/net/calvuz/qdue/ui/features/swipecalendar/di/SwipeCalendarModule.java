@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.features.swipecalendar.di;
 
+import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -89,7 +90,11 @@ public class SwipeCalendarModule {
                                @NonNull EventsService eventsService,
                                @NonNull UserService userService,
                                @NonNull WorkScheduleService workScheduleService) {
-        this.mContext = context.getApplicationContext();
+        // ✅ VALIDATION: Ensure context has proper theming capabilities
+        if (!(context instanceof Activity)) {
+            Log.w(TAG, "Warning: Context is not an Activity - theme resolution may fail");
+        }
+        this.mContext = context;
         this.mEventsService = eventsService;
         this.mUserService = userService;
         this.mWorkScheduleService = workScheduleService;

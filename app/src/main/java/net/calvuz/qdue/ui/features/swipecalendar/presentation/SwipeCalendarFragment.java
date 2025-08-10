@@ -72,7 +72,7 @@ import java.util.Locale;
  * @version 1.0.0
  * @since Database Version 6
  */
-public class SwipeCalendarFragment extends Fragment {
+public class SwipeCalendarFragment extends Fragment  {
 
     private static final String TAG = "SwipeCalendarFragment";
 
@@ -230,7 +230,7 @@ public class SwipeCalendarFragment extends Fragment {
 
             // Create calendar module with dependencies
             mCalendarModule = new SwipeCalendarModule(
-                    requireContext(),
+                    requireActivity(),  // pass the ActivityContext for theme resolution
                     mEventsService,
                     mUserService,
                     mWorkScheduleService
@@ -254,11 +254,12 @@ public class SwipeCalendarFragment extends Fragment {
      */
     @NonNull
     private ServiceProvider getServiceProvider() {
-        Context context = requireContext();
+        Context context = requireActivity(); // requireContext();
         if ( context instanceof Injectable ) {
             // Activity implements Injectable, get ServiceProvider from it
             //return ((Injectable) context).getServiceProvider(); // Activity doesnt provide ServiceProvider
-            Log.w(TAG, "Activity doesn't provide ServiceProvider");
+            Log.e(TAG, "Activity doesn't provide ServiceProvider");
+            throw new RuntimeException("Activity doesn't provide ServiceProvider");
         }
 
         // Fallback to application-level ServiceProvider

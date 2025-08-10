@@ -3,11 +3,13 @@ package net.calvuz.qdue.ui.features.swipecalendar.adapters;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -186,6 +188,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
 
         setHasStableIds(true);
         Log.d(TAG, "MonthPagerAdapter created");
+        Log.d(TAG, "MonthPagerAdapter created with context: " + context.getClass().getSimpleName());
     }
 
     // ==================== ADAPTER IMPLEMENTATION ====================
@@ -204,8 +207,41 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     @NonNull
     @Override
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = mInflater.inflate(R.layout.item_calendar_swipe_month, parent, false);
-        return new MonthViewHolder(itemView);
+
+        try {
+            View itemView = mInflater.inflate(R.layout.item_calendar_month_swipe, parent, false);
+            return new MonthViewHolder(itemView);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to inflate layout with themed context, trying parent context", e);
+
+            // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
+            try {
+                View fallbackView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_calendar_month_swipe, parent, false);
+                Log.w(TAG, "Successfully inflated layout with parent context (fallback)");
+                return new MonthViewHolder(fallbackView);
+
+            } catch (Exception fallbackError) {
+                Log.e(TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError);
+
+                // ✅ LAST RESORT: Create minimal layout programmatically
+                LinearLayout errorLayout = new LinearLayout(parent.getContext());
+                errorLayout.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                ));
+                errorLayout.setOrientation(LinearLayout.VERTICAL);
+
+                TextView errorText = new TextView(parent.getContext());
+                errorText.setText("Layout inflation failed");
+                errorText.setGravity( Gravity.CENTER);
+                errorLayout.addView(errorText);
+
+                Log.e(TAG, "Created emergency layout due to inflation failure");
+                return new MonthViewHolder(errorLayout);
+            }
+        }
     }
 
     @Override
