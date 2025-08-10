@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/item_calendar_month_swipe.xml -->
+<!-- res/layout/item_swipe_calendar_month.xml -->
 <!-- Monthly calendar grid container for SwipeCalendar feature -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

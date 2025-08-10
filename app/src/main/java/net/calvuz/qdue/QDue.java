@@ -158,6 +158,10 @@ public class QDue extends Application {
      */
     public static class Settings {
 
+        // Animation constants
+        public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 1500; // 3 seconds
+        public static final long QD_WELCOME_DISPLAY_DURATION = 2500; // 2 seconds after animation
+
         // Constants for configuration
         public static final String QD_PREF_NAME = "qdue_prefs";
         public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString(R.string.qd_preference_welcome_completed);
@@ -165,8 +169,7 @@ public class QDue extends Application {
         public static final String QD_KEY_VIEW_MODE = getContext().getString(R.string.qd_preference_view_mode);
         public static final String QD_KEY_DYNAMIC_COLORS = getContext().getString(R.string.qd_preference_dynamic_colors_enabled);
 
-
-        // View mode constants
+        // View mode enum
         public enum ViewMode {
             CALENDAR( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[0] ), //"calendar"),
             DAYS( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[1] ), //"dayslist");
@@ -177,16 +180,11 @@ public class QDue extends Application {
 
             public String getName() { return this.name; }
         }
+
+        // View mode constants
         public static final String VIEW_MODE_CALENDAR = ViewMode.CALENDAR.getName();
         public static final String VIEW_MODE_DAYSLIST = ViewMode.DAYS.getName();
         public static final String VIEW_MODE_SWIPE_CALENDAR = ViewMode.SWIPE_CALENDAR.getName();
-
-
-
-        // Animation constants
-        public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 1500; // 3 seconds
-        public static final long QD_WELCOME_DISPLAY_DURATION = 2500; // 2 seconds after animation
-
     }
 
     public static final class Debug {
@@ -267,9 +265,9 @@ public class QDue extends Application {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Enable dynamic colors for all activities
                 DynamicColors.applyToActivitiesIfAvailable(this);
-                Log.i(TAG, "=== Material You dynamic colors enabled");
+                Log.v(TAG, "=== Material You dynamic colors enabled");
             } else {
-                Log.i(TAG, "=== Using fallback purple-blue theme (Android < 12)");
+                Log.v(TAG, "=== Using fallback purple-blue theme (Android < 12)");
             }
         } catch (Exception e) {
             Log.e(TAG, "Error enabling dynamic colors: " + e.getMessage());

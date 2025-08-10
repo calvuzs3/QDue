@@ -209,7 +209,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         try {
-            View itemView = mInflater.inflate(R.layout.item_calendar_month_swipe, parent, false);
+            View itemView = mInflater.inflate(R.layout.item_swipe_calendar_month, parent, false);
             return new MonthViewHolder(itemView);
 
         } catch (Exception e) {
@@ -218,7 +218,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
             try {
                 View fallbackView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_calendar_month_swipe, parent, false);
+                        .inflate(R.layout.item_swipe_calendar_month, parent, false);
                 Log.w(TAG, "Successfully inflated layout with parent context (fallback)");
                 return new MonthViewHolder(fallbackView);
 

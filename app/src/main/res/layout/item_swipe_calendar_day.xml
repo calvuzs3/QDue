@@ -89,46 +89,43 @@
 
         </FrameLayout>
 
-        <!-- 3. Nome turno - basso a destra, sopra l'indicatore turno -->
-        <TextView
-            android:id="@+id/tv_shift_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/v_shift_indicator"
-            android:layout_below="@+id/events_container"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:gravity="center|center_vertical"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="@dimen/text_shift_name_size"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_day_number"
-            tools:text="M"
-            tools:visibility="visible" />
-<!--        android:fontFamily="@font/lato_black"-->
-<!--        android:textStyle="bold"-->
-
-
-        <!-- 4. Indicatore turno - come prima, in basso -->
+        <!-- Work Schedule Indicator -->
         <View
-            android:id="@+id/v_shift_indicator"
+            android:id="@+id/v_work_indicator"
             android:layout_width="fill_parent"
             android:layout_height="@dimen/spacing_sm"
             android:layout_alignParentBottom="true"
             android:layout_marginHorizontal="@dimen/spacing_xs"
             android:layout_marginVertical="@dimen/spacing_xxxs"
             android:background="@drawable/shift_indicator_rounded"
-            android:visibility="invisible"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_shift_name"
+            app:layout_constraintTop_toBottomOf="@+id/tv_day_number"
             tools:background="?attr/colorPrimary"
             tools:visibility="visible" />
+
+        <!-- Work Schedule Text -->
+        <TextView
+            android:id="@+id/tv_work_schedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/events_container"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:gravity="bottom|center_horizontal"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="@dimen/text_shift_name_size"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/v_work_indicator"
+            tools:text="M"
+            tools:visibility="visible" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

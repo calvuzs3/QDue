@@ -153,18 +153,18 @@
     </LinearLayout>
 
     <!-- Floating Action Button for Quick Event Creation -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_quick_event"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/spacing_l"
-        android:contentDescription="@string/calendar_fab_create_event"
-        app:srcCompat="@drawable/ic_add"
-        app:tint="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/elevation_fab"
-        app:borderWidth="0dp" />
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fab_quick_event"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom|end"-->
+<!--        android:layout_margin="@dimen/spacing_l"-->
+<!--        android:contentDescription="@string/calendar_fab_create_event"-->
+<!--        app:srcCompat="@drawable/ic_add"-->
+<!--        app:tint="?attr/colorOnPrimary"-->
+<!--        app:backgroundTint="?attr/colorPrimary"-->
+<!--        app:elevation="@dimen/elevation_fab"-->
+<!--        app:borderWidth="0dp" />-->
 
     <!-- Loading Overlay (for initial setup) -->
     <FrameLayout

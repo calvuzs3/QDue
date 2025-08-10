@@ -340,6 +340,16 @@ public class Day implements Cloneable {
         return cloned;
     }
 
+    /**
+     * Used in WorkScheduleImpl to check if day has work schedule for the user
+     *
+     * @return true if the user has a working schedule for the day
+     */
+    public boolean hasWorkSchedule(HalfTeam userHalfTeam) {
+        return this.getInWichTeamIsHalfTeam( userHalfTeam ) >= 0;
+
+        //return this.shifts.size() > 0;
+    }
     public boolean hasWorkSchedule() {
         return this.shifts.size() > 0;
     }

@@ -1,6 +1,5 @@
 package net.calvuz.qdue.ui.features.swipecalendar.presentation;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,9 +22,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.di.ServiceProviderImpl;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.WorkScheduleService;
@@ -72,7 +71,7 @@ import java.util.Locale;
  * @version 1.0.0
  * @since Database Version 6
  */
-public class SwipeCalendarFragment extends Fragment  {
+public class SwipeCalendarFragment extends Fragment implements Injectable {
 
     private static final String TAG = "SwipeCalendarFragment";
 
@@ -106,7 +105,7 @@ public class SwipeCalendarFragment extends Fragment  {
     private MonthPagerAdapter mPagerAdapter;
 
     // FAB
-    private FloatingActionButton mFabQuickEvent;
+//    private FloatingActionButton mFabQuickEvent;
 
     // ==================== STATE ====================
 
@@ -169,7 +168,11 @@ public class SwipeCalendarFragment extends Fragment  {
         super.onViewCreated( view, savedInstanceState );
 
         // Initialize dependency injection
+        //initializeDependencyInjection();
+
+        // ✅ NEW: Separate injection and feature initialization
         initializeDependencyInjection();
+        initializeFeatureComponents();
 
         // Initialize UI components
         initializeViews( view );
@@ -213,59 +216,135 @@ public class SwipeCalendarFragment extends Fragment  {
     // ==================== DEPENDENCY INJECTION ====================
 
     /**
-     * Initialize dependency injection using ServiceProvider pattern.
+     * ✅ NEW: Receive dependencies from ServiceProvider
+     */
+    @Override
+    public void inject(ServiceProvider serviceProvider) {
+        mEventsService = serviceProvider.getEventsService();
+        mUserService = serviceProvider.getUserService();
+        mWorkScheduleService = serviceProvider.getWorkScheduleService();
+
+        Log.d(TAG, "✅ Services injected via DependencyInjector");
+    }
+
+    /**
+     * ✅ NEW: Validate all dependencies are present
+     */
+    @Override
+    public boolean areDependenciesReady() {
+        return mEventsService != null
+                && mUserService != null
+                && mWorkScheduleService != null;
+    }
+
+    /**
+     * ✅ NEW: Standardized dependency injection using DependencyInjector
      */
     private void initializeDependencyInjection() {
         try {
-            // Get service provider from application
-            ServiceProvider serviceProvider = getServiceProvider();
+            Log.d(TAG, "Initializing dependencies with DependencyInjector...");
 
-            // Inject services
-            mEventsService = serviceProvider.getEventsService();
-            mUserService = serviceProvider.getUserService();
-            mWorkScheduleService = serviceProvider.getWorkScheduleService();
+            // ✅ ONE LINE INJECTION
+            DependencyInjector.inject(this, requireActivity());
 
-            // Create locale manager
-            mLocaleManager = new LocaleManager( requireContext() );
-
-            // Create calendar module with dependencies
-            mCalendarModule = new SwipeCalendarModule(
-                    requireActivity(),  // pass the ActivityContext for theme resolution
-                    mEventsService,
-                    mUserService,
-                    mWorkScheduleService
-            );
-
-            // Configure user ID if provided
-            if ( mUserId != null ) {
-                mCalendarModule.setCurrentUserId( mUserId );
+            // ✅ VERIFICATION
+            if (!DependencyInjector.verifyInjection(this, requireActivity())) {
+                throw new RuntimeException("Dependency injection verification failed");
             }
 
-            Log.d( TAG, "Dependency injection completed successfully" );
+            Log.d(TAG, "✅ Dependencies injected and verified successfully");
 
         } catch (Exception e) {
-            Log.e( TAG, "Failed to initialize dependency injection", e );
-            showError( getString( R.string.error_calendar_initialization_failed ) );
+            Log.e(TAG, "❌ Failed to initialize dependency injection", e);
+            showError(getString(R.string.error_calendar_initialization_failed));
+            throw new RuntimeException("Dependency injection failed", e);
         }
     }
 
     /**
-     * Get ServiceProvider from hosting activity.
+     * ✅ NEW: Initialize feature components after successful injection
      */
-    @NonNull
-    private ServiceProvider getServiceProvider() {
-        Context context = requireActivity(); // requireContext();
-        if ( context instanceof Injectable ) {
-            // Activity implements Injectable, get ServiceProvider from it
-            //return ((Injectable) context).getServiceProvider(); // Activity doesnt provide ServiceProvider
-            Log.e(TAG, "Activity doesn't provide ServiceProvider");
-            throw new RuntimeException("Activity doesn't provide ServiceProvider");
-        }
+    private void initializeFeatureComponents() {
+        try {
+            mLocaleManager = new LocaleManager(requireContext());
 
-        // Fallback to application-level ServiceProvider
-        Log.w(TAG, "Fallback to ServiceProviderImpl.getInstance( context.getApplicationContext() )");
-        return ServiceProviderImpl.getInstance( context.getApplicationContext() );
+            mCalendarModule = new SwipeCalendarModule(
+                    requireActivity(),  // Activity context for theming
+                    mEventsService,     // Injected service
+                    mUserService,       // Injected service
+                    mWorkScheduleService // Injected service
+            );
+
+            if (mUserId != null) {
+                mCalendarModule.setCurrentUserId(mUserId);
+            }
+
+            if (!mCalendarModule.areDependenciesReady()) {
+                throw new IllegalStateException("SwipeCalendarModule dependencies not ready");
+            }
+
+            Log.d(TAG, "✅ Feature components initialized successfully");
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Failed to initialize feature components", e);
+            throw new RuntimeException("Feature components initialization failed", e);
+        }
     }
+
+//    /**
+//     * Initialize dependency injection using ServiceProvider pattern.
+//     */
+//    private void initializeDependencyInjection() {
+//        try {
+//            // Get service provider from application
+//            ServiceProvider serviceProvider = getServiceProvider();
+//
+//            // Inject services
+//            mEventsService = serviceProvider.getEventsService();
+//            mUserService = serviceProvider.getUserService();
+//            mWorkScheduleService = serviceProvider.getWorkScheduleService();
+//
+//            // Create locale manager
+//            mLocaleManager = new LocaleManager( requireContext() );
+//
+//            // Create calendar module with dependencies
+//            mCalendarModule = new SwipeCalendarModule(
+//                    requireActivity(),  // pass the ActivityContext for theme resolution
+//                    mEventsService,
+//                    mUserService,
+//                    mWorkScheduleService
+//            );
+//
+//            // Configure user ID if provided
+//            if ( mUserId != null ) {
+//                mCalendarModule.setCurrentUserId( mUserId );
+//            }
+//
+//            Log.d( TAG, "Dependency injection completed successfully" );
+//
+//        } catch (Exception e) {
+//            Log.e( TAG, "Failed to initialize dependency injection", e );
+//            showError( getString( R.string.error_calendar_initialization_failed ) );
+//        }
+//    }
+//
+//    /**
+//     * Get ServiceProvider from hosting activity.
+//     */
+//    @NonNull
+//    private ServiceProvider getServiceProvider() {
+//        Context context = requireActivity(); // requireContext();
+//        if ( context instanceof Injectable ) {
+//            // Activity implements Injectable, get ServiceProvider from it
+//            //return ((Injectable) context).getServiceProvider(); // Activity doesnt provide ServiceProvider
+//            Log.e(TAG, "Activity doesn't provide ServiceProvider");
+//            throw new RuntimeException("Activity doesn't provide ServiceProvider");
+//        }
+//
+//        // Fallback to application-level ServiceProvider
+//        Log.w(TAG, "Fallback to ServiceProviderImpl.getInstance( context.getApplicationContext() )");
+//        return ServiceProviderImpl.getInstance( context.getApplicationContext() );
+//    }
 
     // ==================== UI INITIALIZATION ====================
 
@@ -311,7 +390,7 @@ public class SwipeCalendarFragment extends Fragment  {
         mViewPager = rootView.findViewById( R.id.calendar_view_pager );
 
         // FAB
-        mFabQuickEvent = rootView.findViewById( R.id.fab_quick_event );
+//        mFabQuickEvent = rootView.findViewById( R.id.fab_quick_event );
 
         // Setup click listeners
         setupClickListeners();
@@ -340,9 +419,9 @@ public class SwipeCalendarFragment extends Fragment  {
         }
 
         // Quick event FAB
-        if ( mFabQuickEvent != null ) {
-            mFabQuickEvent.setOnClickListener( v -> openQuickEventCreation() );
-        }
+//        if ( mFabQuickEvent != null ) {
+//            mFabQuickEvent.setOnClickListener( v -> openQuickEventCreation() );
+//        }
     }
 
     /**
