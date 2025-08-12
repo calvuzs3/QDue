@@ -421,17 +421,17 @@ public class QuattroDue {
                 // Setup shifts for the day
                 for (int shiftIndex = 0; shiftIndex < QD_SHIFTS_PER_DAY; shiftIndex++) {
                     // Create a new Shift
-                    Shift shift = new Shift(shiftTypes.get(shiftIndex));
+                    Shift workScheduleShift = new Shift(shiftTypes.get(shiftIndex));
 
                     // Add (half)teams
                     for (int teamIndex = 0; teamIndex < QD_SCHEME[i][shiftIndex].length; teamIndex++) {
                         char teamName = QD_SCHEME[i][shiftIndex][teamIndex];
                         HalfTeam halfTeam = HalfTeamFactory.getByName(String.valueOf(teamName));
-                        shift.addHalfTeam(halfTeam);
+                        workScheduleShift.addHalfTeam(halfTeam);
                     }
 
                     // Add Shift to Day
-                    day.addShift(shift);
+                    day.addShift(workScheduleShift);
                 }
 
                 // Add Day to Scheme
@@ -439,9 +439,9 @@ public class QuattroDue {
 
                 // Verbose Log
                 StringBuilder sb = new StringBuilder("Day[" + (i + 1) + "]{");
-                for (Shift shift : day.getShifts()) {
-                    sb.append(shift.toString());
-                    for (HalfTeam halfTeam : shift.getHalfTeams()) {
+                for (Shift workScheduleShift : day.getShifts()) {
+                    sb.append(workScheduleShift.toString());
+                    for (HalfTeam halfTeam : workScheduleShift.getHalfTeams()) {
                         sb.append("[").append(halfTeam.getName()).append("]");
                     }
                 }

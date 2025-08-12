@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- res/drawable/shift_indicator_background_original.xml -->
-<!-- Rounded shift indicator with subtle gradient -->
+<!-- Rounded workScheduleShift indicator with subtle gradient -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 

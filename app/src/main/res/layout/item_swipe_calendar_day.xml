@@ -89,44 +89,49 @@
 
         </FrameLayout>
 
-        <!-- Work Schedule Indicator -->
-        <View
-            android:id="@+id/v_work_indicator"
-            android:layout_width="fill_parent"
-            android:layout_height="@dimen/spacing_sm"
-            android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="@dimen/spacing_xs"
-            android:layout_marginVertical="@dimen/spacing_xxxs"
-            android:background="@drawable/shift_indicator_rounded"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_day_number"
-            tools:background="?attr/colorPrimary"
-            tools:visibility="visible" />
-
-        <!-- Work Schedule Text -->
-        <TextView
-            android:id="@+id/tv_work_schedule"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/events_container"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
+        <LinearLayout
+            android:id="@+id/layout_work_indicators"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
             android:gravity="bottom|center_horizontal"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="@dimen/text_shift_name_size"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/v_work_indicator"
-            tools:text="M"
-            tools:visibility="visible" />
+            app:layout_constraintStart_toEndOf="@+id/tv_day_number"
+            app:layout_constraintTop_toBottomOf="@+id/tv_day_number">
 
+            <!-- Work Schedule Indicator -->
+            <View
+                android:id="@+id/v_work_indicator"
+                android:layout_width="fill_parent"
+                android:layout_height="@dimen/spacing_sm"
+                android:layout_marginHorizontal="@dimen/spacing_xs"
+                android:layout_marginVertical="@dimen/spacing_xxxs"
+                android:background="@drawable/shift_indicator_rounded"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_day_number"
+                tools:background="?attr/colorPrimary"
+                tools:visibility="visible" />
 
+            <!-- Work Schedule Text -->
+            <TextView
+                android:id="@+id/tv_work_schedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="bottom|center_horizontal"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="@dimen/text_shift_name_size"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/v_work_indicator"
+                tools:text="M"
+                tools:visibility="visible" />
+
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>

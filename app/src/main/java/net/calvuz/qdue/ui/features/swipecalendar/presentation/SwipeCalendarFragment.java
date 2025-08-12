@@ -18,7 +18,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.R;
@@ -27,9 +26,9 @@ import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
-import net.calvuz.qdue.core.services.WorkScheduleService;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
+import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
@@ -84,7 +83,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     private SwipeCalendarModule mCalendarModule;
     private EventsService mEventsService;
     private UserService mUserService;
-    private WorkScheduleService mWorkScheduleService;
+    private WorkScheduleRepository mWorkScheduleRepository;
     private LocaleManager mLocaleManager;
 
     // ==================== UI COMPONENTS ====================
@@ -222,7 +221,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     public void inject(ServiceProvider serviceProvider) {
         mEventsService = serviceProvider.getEventsService();
         mUserService = serviceProvider.getUserService();
-        mWorkScheduleService = serviceProvider.getWorkScheduleService();
+        mWorkScheduleRepository = serviceProvider.getWorkScheduleService();
 
         Log.d(TAG, "✅ Services injected via DependencyInjector");
     }
@@ -234,7 +233,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     public boolean areDependenciesReady() {
         return mEventsService != null
                 && mUserService != null
-                && mWorkScheduleService != null;
+                && mWorkScheduleRepository != null;
     }
 
     /**
@@ -272,7 +271,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
                     requireActivity(),  // Activity context for theming
                     mEventsService,     // Injected service
                     mUserService,       // Injected service
-                    mWorkScheduleService // Injected service
+                    mWorkScheduleRepository // Injected service
             );
 
             if (mUserId != null) {
@@ -302,7 +301,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 //            // Inject services
 //            mEventsService = serviceProvider.getEventsService();
 //            mUserService = serviceProvider.getUserService();
-//            mWorkScheduleService = serviceProvider.getWorkScheduleService();
+//            mWorkScheduleRepository = serviceProvider.getWorkScheduleService();
 //
 //            // Create locale manager
 //            mLocaleManager = new LocaleManager( requireContext() );
@@ -312,7 +311,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 //                    requireActivity(),  // pass the ActivityContext for theme resolution
 //                    mEventsService,
 //                    mUserService,
-//                    mWorkScheduleService
+//                    mWorkScheduleRepository
 //            );
 //
 //            // Configure user ID if provided
@@ -664,7 +663,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     private class MonthInteractionListener implements MonthPagerAdapter.OnMonthInteractionListener {
 
         @Override
-        public void onDayClick(@NonNull LocalDate date, @Nullable Day day, @NonNull List<LocalEvent> events) {
+        public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events) {
             // Handle day click - could open day detail view or event creation
             Log.d( TAG, "Day clicked: " + date + ", events count: " + events.size() );
 
@@ -678,7 +677,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         }
 
         @Override
-        public void onDayLongClick(@NonNull LocalDate date, @Nullable Day day, @NonNull View view) {
+        public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
             // Handle day long click - could open context menu or quick actions
             Log.d( TAG, "Day long clicked: " + date );
 

@@ -182,7 +182,7 @@ Map<String, String> getCustomProperties();
 **Scopo:** Script Bash per generazione automatica eventi di fermata
 
 **Caratteristiche:**
-- Generazione eventi shift-aware
+- Generazione eventi workScheduleShift-aware
 - Validazione JSON con JsonSchemaValidator
 - Pattern ID conformi a standard industriali
 - Gestione automatica periodi di validità

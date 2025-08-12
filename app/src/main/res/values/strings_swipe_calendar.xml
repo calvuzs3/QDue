@@ -156,4 +156,41 @@
     <string name="calendar_user_not_selected">Seleziona un utente per visualizzare i dati</string>
     <string name="calendar_team_data_loading">Caricamento dati squadra…</string>
 
+
+    <!-- Shift Type Names -->
+    <string name="shift_morning_name">Mattino</string>
+    <string name="shift_afternoon_name">Pomeriggio</string>
+    <string name="shift_night_name">Notte</string>
+
+    <!-- ==================== SHIFT TYPE ==================== -->
+
+    <!-- Shift Type Descriptions -->
+    <string name="shift_morning_description">Turno mattutino 05:00–13:00</string>
+    <string name="shift_afternoon_description">Turno pomeridiano 13:00–21:00</string>
+    <string name="shift_night_description">Turno notturno 21:00–05:00</string>
+
+    <string name="team_standard_description_template">Team standard QuattroDue</string>
+
+    <!-- Work Schedule Terms -->
+    <string name="schedule_pattern_quattrodue">QuattroDue 4–2</string>
+    <string name="schedule_cycle_length">Ciclo di 18 giorni</string>
+    <string name="schedule_team_working">Team al lavoro</string>
+    <string name="schedule_team_off_work">Team a riposo</string>
+    <string name="schedule_shift_break">Pausa</string>
+    <string name="schedule_shift_no_break">Senza pausa</string>
+
+    <!-- Calendar Integration -->
+    <string name="calendar_work_schedule_title">Programma Turni</string>
+    <string name="calendar_work_schedule_summary">Visualizza il programma dei turni di lavoro</string>
+
+    <!-- Validation Messages -->
+    <string name="error_scheme_date_invalid">Data inizio schema non valida</string>
+    <string name="error_team_not_found">Team non trovato</string>
+    <string name="error_shift_calculation_failed">Errore nel calcolo dei turni</string>
+
+    <!-- Success Messages -->
+    <string name="success_scheme_date_updated">Data inizio schema aggiornata</string>
+    <string name="success_cache_cleared">Cache pulita</string>
+    <string name="success_schedule_refreshed">Programma turni aggiornato</string>
+
 </resources>

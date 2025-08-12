@@ -7,13 +7,13 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
-import net.calvuz.qdue.core.services.WorkScheduleService;
+import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
+import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
 import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.impl.WorkScheduleServiceImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -46,7 +46,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     private volatile CoreBackupManager mCoreBackupManager;
 
     // NEW: Work schedule service
-    private volatile WorkScheduleService mWorkScheduleService;
+    private volatile WorkScheduleRepository mWorkScheduleRepository;
 
     // Service dependencies
     private QDueDatabase mDatabase;
@@ -167,32 +167,31 @@ public class ServiceProviderImpl implements ServiceProvider {
     }
 
     /**
-     * NEW: Get WorkScheduleService instance.
+     * NEW: Get WorkScheduleRepository instance.
      * Creates service with proper dependency injection including UserService.
      *
-     * @return WorkScheduleService instance
+     * @return WorkScheduleRepository instance
      */
     @Override
     @NonNull
-    public WorkScheduleService getWorkScheduleService() {
-        if ( mWorkScheduleService == null ) {
+    public WorkScheduleRepository getWorkScheduleService() {
+        if ( mWorkScheduleRepository == null ) {
             synchronized (this) {
-                if ( mWorkScheduleService == null ) {
-                    // WorkScheduleService depends on UserService for team assignments
+                if ( mWorkScheduleRepository == null ) {
+                    // WorkScheduleRepository depends on UserService for team assignments
                     UserService userService = getUserService();
 
-                    mWorkScheduleService = new WorkScheduleServiceImpl(
+                    mWorkScheduleRepository = new WorkScheduleRepositoryImpl(
                             mContext,
                             mDatabase,
-                            mCoreBackupManager,
-                            userService
+                            mCoreBackupManager
                     );
 
-                    Log.d( TAG, "WorkScheduleService created with UserService dependency" );
+                    Log.d( TAG, "WorkScheduleRepository created with UserService dependency" );
                 }
             }
         }
-        return mWorkScheduleService;
+        return mWorkScheduleRepository;
     }
 
     @Override

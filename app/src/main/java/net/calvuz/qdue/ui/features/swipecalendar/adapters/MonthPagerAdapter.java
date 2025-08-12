@@ -19,8 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -83,7 +83,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          * @param month Target month
          * @param callback Callback for results
          */
-        void loadWorkScheduleForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, Day>> callback);
+        void loadWorkScheduleForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, WorkScheduleDay>> callback);
     }
 
     /**
@@ -101,12 +101,12 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         /**
          * Called when user clicks on a day.
          */
-        void onDayClick(@NonNull LocalDate date, @Nullable Day day, @NonNull List<LocalEvent> events);
+        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events);
 
         /**
          * Called when user long-clicks on a day.
          */
-        void onDayLongClick(@NonNull LocalDate date, @Nullable Day day, @NonNull View view);
+        void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view);
 
         /**
          * Called when month data loading fails.
@@ -134,7 +134,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         final YearMonth month;
         LoadingState state = LoadingState.IDLE;
         Map<LocalDate, List<LocalEvent>> events = new ConcurrentHashMap<>();
-        Map<LocalDate, Day> workSchedule = new ConcurrentHashMap<>();
+        Map<LocalDate, WorkScheduleDay> workSchedule = new ConcurrentHashMap<>();
         Exception lastError;
 
         MonthData(@NonNull YearMonth month) {
@@ -262,7 +262,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      * ViewHolder for individual month pages.
      * Uses item_calendar_month.xml layout.
      */
-    class MonthViewHolder extends RecyclerView.ViewHolder {
+    public class MonthViewHolder extends RecyclerView.ViewHolder {
 
         // Views from item_calendar_month.xml
         private final RecyclerView monthDaysRecycler;
@@ -303,14 +303,14 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
                 dayAdapter = new SwipeCalendarDayAdapter(mContext, month);
                 dayAdapter.setOnDayClickListener(new SwipeCalendarDayAdapter.OnDayClickListener() {
                     @Override
-                    public void onDayClick(@NonNull LocalDate date, @Nullable Day day, @NonNull List<LocalEvent> dayEvents) {
+                    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
                         if (mInteractionListener != null) {
                             mInteractionListener.onDayClick(date, day, dayEvents);
                         }
                     }
 
                     @Override
-                    public void onDayLongClick(@NonNull LocalDate date, @Nullable Day day, @NonNull View view) {
+                    public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
                         if (mInteractionListener != null) {
                             mInteractionListener.onDayLongClick(date, day, view);
                         }
@@ -410,7 +410,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         private void loadWorkScheduleData(@NonNull MonthData monthData) {
             mDataLoader.loadWorkScheduleForMonth(monthData.month, new DataCallback<>() {
                 @Override
-                public void onSuccess(@NonNull Map<LocalDate, Day> workScheduleData) {
+                public void onSuccess(@NonNull Map<LocalDate, WorkScheduleDay> workScheduleData) {
                     mMainHandler.post(() -> {
                         monthData.workSchedule.clear();
                         monthData.workSchedule.putAll(workScheduleData);

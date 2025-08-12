@@ -28,7 +28,7 @@ import java.util.UUID;
  *
  * <h3>Integration Points:</h3>
  * <ul>
- *   <li>WorkScheduleService generates these events for date ranges</li>
+ *   <li>WorkScheduleRepository generates these events for date ranges</li>
  *   <li>SwipeCalendarFragment displays these in calendar grid</li>
  *   <li>EventsService can merge with persistent events</li>
  *   <li>CalendarDataProvider combines with LocalEvents for unified view</li>

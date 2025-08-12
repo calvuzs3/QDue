@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
- * Represents a shift type with schedule, duration and associated color.
+ * Represents a workScheduleShift type with schedule, duration and associated color.
  * <p>
  * Defines the template for shifts including start time, duration, and visual appearance.
  * Immutable value object that can be reused across multiple shifts.
@@ -28,7 +28,7 @@ public class ShiftType {
 
     // Core properties
     private final String name;             // Shift name (e.g., "Morning")
-    private final String description;      // Description (e.g., "Morning shift 6-14")
+    private final String description;      // Description (e.g., "Morning workScheduleShift 6-14")
     private final LocalTime startTime;     // Start time
     private final Duration duration;       // Shift duration
     private final @ColorInt int color;     // Associated color for UI
@@ -39,8 +39,8 @@ public class ShiftType {
     /**
      * Complete constructor with all parameters.
      *
-     * @param name            Name of the shift
-     * @param description     Description of the shift
+     * @param name            Name of the workScheduleShift
+     * @param description     Description of the workScheduleShift
      * @param startHour       Start hour (0-23)
      * @param startMinute     Start minute (0-59)
      * @param durationHours   Duration in hours
@@ -131,7 +131,7 @@ public class ShiftType {
     }
 
     /**
-     * Calculates the end time of the shift.
+     * Calculates the end time of the workScheduleShift.
      *
      * @return End time
      */
@@ -140,10 +140,10 @@ public class ShiftType {
     }
 
     /**
-     * Checks if a given time is within the shift.
+     * Checks if a given time is within the workScheduleShift.
      *
      * @param time Time to verify
-     * @return true if time is within the shift
+     * @return true if time is within the workScheduleShift
      */
     public boolean includes(LocalTime time) {
         return !time.isBefore(startTime) && !time.isAfter(getEndTime());

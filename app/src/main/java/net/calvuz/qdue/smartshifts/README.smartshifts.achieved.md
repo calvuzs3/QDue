@@ -158,7 +158,7 @@ Calendar Features
 ✅ SmartShiftsActivity con bottom navigation (4 sezioni)
 ✅ Setup Wizard completo (4 step: Welcome → Pattern → Date → Confirmation)
 ✅ Navigation structure Material Design 3
-✅ Calendar view con grid 42-day, shift indicators, legend
+✅ Calendar view con grid 42-day, workScheduleShift indicators, legend
 ✅ 20+ Layout XML completi e funzionali
 ✅ Resource files completi (menu, drawable, colors, strings.xml con 200+ stringhe)
 
@@ -284,7 +284,7 @@ SmartShifts è ora pronta per build e testing completo.
 ✅ CalendarViewModel           - Business logic calendario e eventi
 ✅ CalendarAdapter             - Adapter per griglia calendario (42 giorni)
 ✅ ShiftLegendAdapter          - Adapter per legenda turni e colori
-✅ CalendarDay model           - Modello per giorni con shift indicators
+✅ CalendarDay model           - Modello per giorni con workScheduleShift indicators
 ```
 
 ### 🧙‍♂️ **Setup Wizard Completo**

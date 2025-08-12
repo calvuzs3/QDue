@@ -1,6 +1,7 @@
 package net.calvuz.qdue.ui.features.swipecalendar.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
-import net.calvuz.qdue.quattrodue.models.Shift;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.text.MessageFormat;
@@ -75,7 +75,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
          * @param day       Day data (may be null for overflow days)
          * @param dayEvents Events for this day (may be empty)
          */
-        void onDayClick(@NonNull LocalDate date, @Nullable Day day, @NonNull List<LocalEvent> dayEvents);
+        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents);
 
         /**
          * Called when user long-clicks on a day cell.
@@ -84,7 +84,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
          * @param day  Day data (may be null for overflow days)
          * @param view Clicked view for animations
          */
-        void onDayLongClick(@NonNull LocalDate date, @Nullable Day day, @NonNull View view);
+        void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view);
     }
 
     // ==================== DATA CLASSES ====================
@@ -95,9 +95,9 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      * @param dayData May be null for overflow days
      */
     private record CalendarDayItem(LocalDate date, boolean isCurrentMonth, boolean isToday,
-                                   Day dayData, List<LocalEvent> events) {
+                                   WorkScheduleDay dayData, List<LocalEvent> events) {
         private CalendarDayItem(@NonNull LocalDate date, boolean isCurrentMonth, boolean isToday,
-                                @Nullable Day dayData, @NonNull List<LocalEvent> events) {
+                                @Nullable WorkScheduleDay dayData, @NonNull List<LocalEvent> events) {
             this.date = date;
             this.isCurrentMonth = isCurrentMonth;
             this.isToday = isToday;
@@ -120,7 +120,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
     private Map<LocalDate, List<LocalEvent>> mEventsCache = new ConcurrentHashMap<>();
 
     // Work schedule data cache by date
-    private Map<LocalDate, Day> mWorkScheduleCache = new ConcurrentHashMap<>();
+    private Map<LocalDate, WorkScheduleDay> mWorkScheduleCache = new ConcurrentHashMap<>();
 
     // ==================== LISTENERS ====================
 
@@ -276,17 +276,17 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
                 return;
             }
 
-            HalfTeam userHalfTeam = QuattroDue.getInstance( mContext ).getUserHalfTeam();
-            boolean hasWorkSchedule = dayItem.dayData.hasWorkSchedule( userHalfTeam );
+            String userTeam = QDuePreferences.getSelectedTeamNameForRepository( mContext ); // QuattroDue.getInstance( mContext ).getUserHalfTeam();
+            boolean hasWorkSchedule = dayItem.dayData.isTeamWorking( userTeam );
 
             // WorkSchedule Text
             if (hasWorkSchedule) {
                 // Set text
                 workScheduleText.setVisibility( View.VISIBLE );
-                workScheduleText.setText( getWorkScheduleText( dayItem.dayData, userHalfTeam ) );
+                workScheduleText.setText( getWorkScheduleText( dayItem.dayData, userTeam ) );
                 // Set card background color
-                int scheduleColor = getWorkScheduleColor( dayItem.dayData, userHalfTeam );
-                cardView.setCardBackgroundColor( scheduleColor );
+                String scheduleColor = getWorkScheduleColor( dayItem.dayData, userTeam );
+                cardView.findViewById( R.id.layout_work_indicators ).setBackgroundColor( Color.parseColor( scheduleColor ) ); //" ) .setCardBackgroundColor( Color.parseColor( scheduleColor ) );
             } else {
                 workScheduleText.setVisibility( View.GONE );
             }
@@ -338,6 +338,10 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             // Date information
             String dayName = dayItem.date.getDayOfWeek().getDisplayName( TextStyle.FULL, Locale.getDefault() );
             String monthName = dayItem.date.getMonth().getDisplayName( TextStyle.FULL, Locale.getDefault() );
+
+            // Team information
+            String userTeam = QDuePreferences.getSelectedTeamNameForRepository( mContext ); // QuattroDue.getInstance( mContext ).getUserHalfTeam();
+
             description.append( MessageFormat.format( "{0}, {1} {2} {3}",
                     dayName, dayItem.date.getDayOfMonth(), monthName, dayItem.date.getYear() ) );
 
@@ -355,7 +359,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             }
 
             // Work schedule information
-            if (dayItem.dayData != null && dayItem.dayData.hasWorkSchedule()) {
+            if (dayItem.dayData != null && dayItem.dayData.isTeamWorking( userTeam )) {
                 description.append( ", " ).append( mContext.getString( R.string.calendar_accessibility_work_scheduled ) );
             }
 
@@ -393,22 +397,19 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
         /**
          * Get color for work schedule.
          */
-        private int getWorkScheduleColor(@NonNull Day day, HalfTeam userHalfTeam) {
-            Shift shift = day.getShifts().get( day.getInWichTeamIsHalfTeam( userHalfTeam ) );
-            int color = shift.getShiftType().getColor();
+        private String getWorkScheduleColor(@NonNull WorkScheduleDay day, String userTeam) {
+            WorkScheduleShift shift = day.getShifts().get( day.findTeamShiftIndex( userTeam ) );
 
-            return color;
-//            return mContext.getColor(R.color.calendar_work_schedule_default_color);
+            return ( shift.getShift().getColorHex() );
         }
 
         /**
          * Get short name for work schedule.
          */
-        private String getWorkScheduleText(@NonNull Day day, HalfTeam userHalfTeam) {
-            Shift shift = day.getShifts().get( day.getInWichTeamIsHalfTeam( userHalfTeam ) );
-            String name = shift.getShiftType().getShortName();
+        private String getWorkScheduleText(@NonNull WorkScheduleDay day, String userTeam) {
+            WorkScheduleShift shift = day.getShifts().get( day.findTeamShiftIndex( userTeam ) );
 
-            return name;
+            return shift.getShift().getShortName(); // .getName();
         }
     }
 
@@ -449,7 +450,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      *
      * @param workScheduleMap Work schedule mapped by date
      */
-    public void updateWorkSchedule(@NonNull Map<LocalDate, Day> workScheduleMap) {
+    public void updateWorkSchedule(@NonNull Map<LocalDate, WorkScheduleDay> workScheduleMap) {
         mWorkScheduleCache.clear();
         mWorkScheduleCache.putAll( workScheduleMap );
 
@@ -493,7 +494,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             boolean isToday = currentDate.equals( today );
 
             // Get day data and events for this date
-            Day dayData = mWorkScheduleCache.get( currentDate );
+            WorkScheduleDay dayData = mWorkScheduleCache.get( currentDate );
             List<LocalEvent> events = mEventsCache.getOrDefault( currentDate, new ArrayList<>() );
 
             CalendarDayItem dayItem = new CalendarDayItem( currentDate, isCurrentMonth, isToday, dayData, events );

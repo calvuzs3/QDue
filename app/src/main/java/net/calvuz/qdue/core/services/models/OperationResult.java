@@ -235,6 +235,7 @@ public class OperationResult<T> {
         VALIDATION("Validation"),
         SEARCH("Search"),
         COUNT( "Count"),
+        REFRESH("Refresh"),
 
         // Backup operations
         BACKUP("Backup"),

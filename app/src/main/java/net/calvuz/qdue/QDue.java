@@ -4,11 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
-import android.view.View;
 
 import com.google.android.material.color.DynamicColors;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlerFactory;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlingModule;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
@@ -51,6 +51,9 @@ public class QDue extends Application {
 
         // INSTANCE reference
         INSTANCE = this;
+
+        QDuePreferences.migrateTeamPreferencesIfNeeded(this);
+        QDuePreferences.initializeDefaultsIfNeeded(this);
 
         // Locale
         locale = getSystemLocale();
@@ -166,6 +169,7 @@ public class QDue extends Application {
         public static final String QD_PREF_NAME = "qdue_prefs";
         public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString(R.string.qd_preference_welcome_completed);
         public static final String QD_KEY_SELECTED_TEAM = getContext().getString( R.string.qd_preference_selected_team );
+        public static final String QD_KEY_SELECTED_TEAM_NAME = getContext().getString( R.string.qd_preference_selected_team_name );
         public static final String QD_KEY_VIEW_MODE = getContext().getString(R.string.qd_preference_view_mode);
         public static final String QD_KEY_DYNAMIC_COLORS = getContext().getString(R.string.qd_preference_dynamic_colors_enabled);
 

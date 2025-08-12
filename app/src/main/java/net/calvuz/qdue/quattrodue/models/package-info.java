@@ -89,10 +89,10 @@
  *         ShiftType shift = ShiftTypeFactory.getShiftTypeById("uuid-here");
  *
  *         // Access by name (existing method)
- *         ShiftType morning = ShiftTypeFactory.getShiftType("Morning");
+ *         ShiftType morning = ShiftTypeFactory.getWorkScheduleShift("Morning");
  *
  *         // Access by index (existing method)
- *         ShiftType first = ShiftTypeFactory.getShiftType(0);
+ *         ShiftType first = ShiftTypeFactory.getWorkScheduleShift(0);
  *
  *         // Get all UUIDs
  *         List<String> allIds = ShiftTypeFactory.getAllShiftTypeIds();

@@ -1,8 +1,8 @@
 Summary of the New Dynamic ShiftTypeFactory
 🔄 Dynamic Architecture
 
-No static elements - All shift types are created and cached dynamically
-Variable shift count - Support for 1-8 shifts (configurable)
+No static elements - All workScheduleShift types are created and cached dynamically
+Variable workScheduleShift count - Support for 1-8 shifts (configurable)
 Runtime initialization - Members access cached elements after setup phase
 
 🌐 External JSON API Support
@@ -18,7 +18,7 @@ Fallback mechanisms - API → Local Cache → Defaults
   "shifts": [
     {
       "name": "Morning",
-      "description": "Morning shift (6-14)",
+      "description": "Morning workScheduleShift (6-14)",
       "startHour": 6,
       "startMinute": 0,
       "durationHours": 8,
@@ -27,7 +27,7 @@ Fallback mechanisms - API → Local Cache → Defaults
     },
     {
       "name": "Afternoon",
-      "description": "Afternoon shift (14-22)",
+      "description": "Afternoon workScheduleShift (14-22)",
       "startHour": 14,
       "startMinute": 0,
       "durationHours": 8,
@@ -67,9 +67,9 @@ ShiftType morningShift = ShiftTypeFactory.getShiftType(0);
 ShiftType namedShift = ShiftTypeFactory.getShiftType("Afternoon");
 List<ShiftType> allShifts = ShiftTypeFactory.getAllShiftTypes();
 
-// Add custom shift at runtime
+// Add custom workScheduleShift at runtime
 int newIndex = ShiftTypeFactory.createAndAddShiftType(
-    "Night", "Night shift", 22, 0, 8, 0, Color.BLUE);
+    "Night", "Night workScheduleShift", 22, 0, 8, 0, Color.BLUE);
 
 // Refresh from API
 ShiftTypeFactory.refreshFromApi(context);
@@ -80,7 +80,7 @@ ShiftTypeFactory.refreshFromApi(context);
 Graceful fallbacks when API is unavailable
 JSON validation with safe parsing
 Local cache backup when network fails
-Default shift creation as last resort
+Default workScheduleShift creation as last resort
 
 🔧 Key Benefits
 
@@ -88,7 +88,7 @@ Flexible configuration - Variable shifts from external sources
 Offline capability - Works without network after initial setup
 Performance optimized - Cached access after initialization
 Thread-safe - Concurrent access support
-Extensible - Easy to add new shift types at runtime
+Extensible - Easy to add new workScheduleShift types at runtime
 
 This new implementation allows your team to configure shifts dynamically 
 through external APIs while maintaining performance through intelligent 
@@ -105,10 +105,10 @@ caching and providing robust fallback mechanisms.
    Metodi Moderni (Raccomandati):
 ```java
 // Accesso per indice (0-based)
-Shift shift = ShiftFactory.createShift(0, date); // Primo turno configurato
+Shift workScheduleShift = ShiftFactory.createShift(0, date); // Primo turno configurato
 
 // Accesso per nome
-Shift shift = ShiftFactory.createShift("Morning", date);
+Shift workScheduleShift = ShiftFactory.createShift("Morning", date);
 
 // Crea tutti i turni configurati (variabile)
 List<Shift> dailyShifts = ShiftFactory.createDailyShifts(date);
@@ -120,12 +120,12 @@ Metodo Legacy (Backward Compatibility):
 ```java
 // DEPRECATO - ma mantiene compatibilità con codice esistente
 @Deprecated
-Shift shift = ShiftFactory.createStandardShift(1, date); // Throws exception se non disponibile
+Shift workScheduleShift = ShiftFactory.createStandardShift(1, date); // Throws exception se non disponibile
 ```
 3. 🛠️ Builder Pattern Avanzato
 ```java
-// Costruzione fluente di shift complessi
-Shift shift = new ShiftFactory.Builder()
+// Costruzione fluente di workScheduleShift complessi
+Shift workScheduleShift = new ShiftFactory.Builder()
 .withShiftName("Morning")           // o .withShiftIndex(0)
 .forDate(LocalDate.now())
 .asStop()                           // Marca come fermata impianto
@@ -149,7 +149,7 @@ Log.d("Shifts", info);
 5. ⚡ Gestione Errori Robusta
 
 Null Safety: Tutti i metodi gestiscono correttamente i casi null
-Logging: Warnings per shift non trovati invece di eccezioni
+Logging: Warnings per workScheduleShift non trovati invece di eccezioni
 Fallback: Continua con turni disponibili anche se alcuni mancano
 
 6. 🔄 Integrazione con il QuattroDue
@@ -163,9 +163,9 @@ public static List<Day> generateCycleDays(List<ShiftType> shiftTypes) {
         
         // Crea shifts dinamicamente
         List<Shift> shifts = ShiftFactory.createDailyShifts(dayDate);
-        for (Shift shift : shifts) {
+        for (Shift workScheduleShift : shifts) {
             // Applica lo schema...
-            day.addShift(shift);
+            day.addShift(workScheduleShift);
         }
     }
 }

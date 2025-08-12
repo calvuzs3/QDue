@@ -210,20 +210,20 @@ public static class ShiftTypeTemplate {
     }
     
     public ShiftType toShiftType(Context context) {
-        ShiftType shiftType = new ShiftType();
-        shiftType.id = this.id;
-        shiftType.name = context.getString(this.nameResId);  // Risolve da strings.xml
-        shiftType.startTime = this.startTime;
-        shiftType.endTime = this.endTime;
-        shiftType.colorHex = this.colorHex;
-        shiftType.iconName = this.iconName;
-        shiftType.isWorkingShift = this.isWorkingShift;
-        shiftType.sortOrder = this.sortOrder;
-        shiftType.isCustom = false;
-        shiftType.isActive = true;
-        shiftType.createdAt = System.currentTimeMillis();
-        shiftType.updatedAt = System.currentTimeMillis();
-        return shiftType;
+        ShiftType workScheduleShift = new ShiftType();
+        workScheduleShift.id = this.id;
+        workScheduleShift.name = context.getString(this.nameResId);  // Risolve da strings.xml
+        workScheduleShift.startTime = this.startTime;
+        workScheduleShift.endTime = this.endTime;
+        workScheduleShift.colorHex = this.colorHex;
+        workScheduleShift.iconName = this.iconName;
+        workScheduleShift.isWorkingShift = this.isWorkingShift;
+        workScheduleShift.sortOrder = this.sortOrder;
+        workScheduleShift.isCustom = false;
+        workScheduleShift.isActive = true;
+        workScheduleShift.createdAt = System.currentTimeMillis();
+        workScheduleShift.updatedAt = System.currentTimeMillis();
+        return workScheduleShift;
     }
 }
 ```
@@ -855,7 +855,7 @@ public class ContinuousCycleValidation {
 
 ### 📝 **Note Implementative per Internazionalizzazione:**
 
-1. **Template Class**: Tutti i pattern e shift types predefiniti ora usano resource ID invece di stringhe hardcoded
+1. **Template Class**: Tutti i pattern e workScheduleShift types predefiniti ora usano resource ID invece di stringhe hardcoded
 2. **Context Parameter**: Metodi che generano testo ora richiedono `Context` per accesso a `strings.xml`
 3. **Helper Utilities**: Classe `SmartShiftsStringUtils` per gestione centralizzata delle stringhe
 4. **Plurals Support**: Gestione forme plurali per conteggi (giorni, turni, etc.)

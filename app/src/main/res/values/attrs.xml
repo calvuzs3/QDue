@@ -89,7 +89,7 @@
     </declare-styleable>
 
     <declare-styleable name="QDueShiftIndicator">
-        <attr name="shiftType" format="enum">
+        <attr name="workScheduleShift" format="enum">
             <enum name="morning" value="0" />
             <enum name="afternoon" value="1" />
             <enum name="night" value="2" />

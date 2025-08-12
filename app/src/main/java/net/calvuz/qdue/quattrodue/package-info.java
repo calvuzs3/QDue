@@ -115,7 +115,7 @@
  *
  * <h4>Service Integration Pattern:</h4>
  * <pre>
- * WorkScheduleServiceImpl
+ * WorkScheduleRepositoryImpl
  * ├── QuattroDue.getInstance(context, database)
  * │   └── Dependency Injection → Database Instance
  * ├── getAllShiftTypes() → Database-backed Results
@@ -209,7 +209,7 @@
  * <h4>Service Integration:</h4>
  * <pre>
  * {@code
- * // WorkScheduleServiceImpl usage
+ * // WorkScheduleRepositoryImpl usage
  * QuattroDue quattroDue = QuattroDue.getInstance(context, database);
  * List<ShiftType> shifts = quattroDue.getShiftTypes(); // Database-backed
  * ShiftType shift = quattroDue.getShiftTypeById(1L);   // Direct lookup

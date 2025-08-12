@@ -98,7 +98,7 @@
  *   <li><strong>CalendarDataProvider</strong>: Reuses existing calendar data infrastructure</li>
  *   <li><strong>EventsService</strong>: Integrates with events loading and management</li>
  *   <li><strong>UserService</strong>: User preferences and team-specific data</li>
- *   <li><strong>WorkScheduleService</strong>: Quattrodue pattern integration</li>
+ *   <li><strong>WorkScheduleRepository</strong>: Quattrodue pattern integration</li>
  * </ul>
  *
  * @author QDue Development Team

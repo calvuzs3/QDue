@@ -10,13 +10,13 @@ app/src/main/java/net/calvuz/qdue/smartshifts/
 │   │   ├── SmartShiftsConverters.java        # Type converters for JSON
 │   │   └── DatabaseInitializer.java          # Pre-populated data initialization
 │   ├── 📁 entities/                  # Room entities (5 core entities)
-│   │   ├── ShiftType.java                    # Work shift types (Morning, Night, etc.)
+│   │   ├── ShiftType.java                    # Work workScheduleShift types (Morning, Night, etc.)
 │   │   ├── ShiftPattern.java                 # Recurring patterns (4-2, 3-2, etc.)
 │   │   ├── UserShiftAssignment.java          # User-pattern assignments
-│   │   ├── SmartShiftEvent.java              # Generated shift events
+│   │   ├── SmartShiftEvent.java              # Generated workScheduleShift events
 │   │   └── TeamContact.java                  # Team coordination contacts
 │   ├── 📁 dao/                       # Data Access Objects (5 DAOs)
-│   │   ├── ShiftTypeDao.java                 # 15+ CRUD methods for shift types
+│   │   ├── ShiftTypeDao.java                 # 15+ CRUD methods for workScheduleShift types
 │   │   ├── ShiftPatternDao.java              # 20+ methods for pattern management
 │   │   ├── UserShiftAssignmentDao.java       # 15+ assignment operations
 │   │   ├── SmartShiftEventDao.java           # 25+ complex queries for events
@@ -33,13 +33,13 @@ app/src/main/java/net/calvuz/qdue/smartshifts/
 │   │   ├── ShiftRecurrenceRule.java          # Recurrence rule domain model
 │   │   └── PatternValidationResult.java      # Pattern validation results
 │   ├── 📁 usecases/                  # Use Cases (Business Logic)
-│   │   ├── GetUserShiftsUseCase.java         # Retrieve user shift data
-│   │   ├── CreatePatternUseCase.java         # Create new shift patterns
+│   │   ├── GetUserShiftsUseCase.java         # Retrieve user workScheduleShift data
+│   │   ├── CreatePatternUseCase.java         # Create new workScheduleShift patterns
 │   │   ├── AssignPatternUseCase.java         # Assign patterns to users
 │   │   ├── ValidatePatternUseCase.java       # Validate pattern continuity
 │   │   └── ManageContactsUseCase.java        # Team contact operations
 │   ├── 📁 generators/                # Shift Generation Algorithms
-│   │   ├── ShiftGeneratorEngine.java         # Core shift generation engine
+│   │   ├── ShiftGeneratorEngine.java         # Core workScheduleShift generation engine
 │   │   ├── RecurrenceRuleParser.java         # JSON to domain object parser
 │   │   ├── PatternJsonGenerator.java         # Pattern to JSON converter
 │   │   ├── ContinuousCycleValidator.java     # Continuous pattern validation
@@ -175,7 +175,7 @@ Database Architecture:
 
 ```java
 Core Business Components:
-├── ShiftGeneratorEngine     → Complex shift calculation algorithms
+├── ShiftGeneratorEngine     → Complex workScheduleShift calculation algorithms
 ├── RecurrenceRuleParser     → JSON pattern interpretation
 ├── ContinuousCycleValidator → Pattern continuity validation
 ├── PatternJsonGenerator     → Pattern-to-JSON conversion
@@ -183,11 +183,11 @@ Core Business Components:
 ```
 
 **🎯 Algorithm Capabilities:**
-- **4 Predefined Patterns**: 4-2, 3-2, 5-2, 6-1 shift cycles
-- **Continuous Validation**: Ensures no gaps in shift coverage
+- **4 Predefined Patterns**: 4-2, 3-2, 5-2, 6-1 workScheduleShift cycles
+- **Continuous Validation**: Ensures no gaps in workScheduleShift coverage
 - **Complex Recurrence**: Handles irregular patterns and exceptions
 - **Future Generation**: Generates shifts months in advance
-- **Multi-user Support**: Concurrent shift assignments
+- **Multi-user Support**: Concurrent workScheduleShift assignments
 
 ### 5. **UI/UX Architecture**
 
@@ -286,7 +286,7 @@ SmartShifts demonstrates **excellent Android architecture** with:
 
 - ✅ **Production-Ready Codebase**: Well-structured, maintainable, and scalable
 - ✅ **Modern Best Practices**: Hilt DI, MVVM, Material Design 3, Clean Architecture
-- ✅ **Complex Business Logic**: Advanced shift generation algorithms
+- ✅ **Complex Business Logic**: Advanced workScheduleShift generation algorithms
 - ✅ **Seamless Integration**: Zero impact on existing QDue functionality
 - ✅ **Extensible Design**: Ready for Phase 4 advanced features
 

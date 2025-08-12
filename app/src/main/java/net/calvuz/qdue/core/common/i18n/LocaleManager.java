@@ -457,4 +457,297 @@ public class LocaleManager {
                 "24-Hour Format: " + is24HourFormat() + "\n" +
                 "Date Pattern: " + getDateFormatPattern();
     }
+
+
+    // ==================== CALENDAR LOCALIZATION METHODS ====================
+
+    /**
+     * Get localized shift name by shift type.
+     *
+     * @param shiftType Shift type (MORNING, AFTERNOON, NIGHT, CUSTOM)
+     * @return Localized shift name
+     */
+    @NonNull
+    public String getShiftName(@NonNull String shiftType) {
+        String language = getCurrentLanguageCode();
+
+        switch (shiftType.toUpperCase()) {
+            case "MORNING":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Morning";
+                    case LANGUAGE_GERMAN:
+                        return "Morgen";
+                    case LANGUAGE_FRENCH:
+                        return "Matin";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Mattino";
+                }
+
+            case "AFTERNOON":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Afternoon";
+                    case LANGUAGE_GERMAN:
+                        return "Nachmittag";
+                    case LANGUAGE_FRENCH:
+                        return "Après-midi";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Pomeriggio";
+                }
+
+            case "NIGHT":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Night";
+                    case LANGUAGE_GERMAN:
+                        return "Nacht";
+                    case LANGUAGE_FRENCH:
+                        return "Nuit";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Notte";
+                }
+
+            case "CUSTOM":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Custom";
+                    case LANGUAGE_GERMAN:
+                        return "Benutzerdefiniert";
+                    case LANGUAGE_FRENCH:
+                        return "Personnalisé";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Personalizzato";
+                }
+
+            default:
+                Log.w(TAG, "Unknown shift type: " + shiftType);
+                return shiftType;
+        }
+    }
+
+    /**
+     * Get localized shift description by shift type.
+     *
+     * @param shiftType Shift type (MORNING, AFTERNOON, NIGHT, CUSTOM)
+     * @return Localized shift description
+     */
+    @NonNull
+    public String getShiftDescription(@NonNull String shiftType) {
+        String language = getCurrentLanguageCode();
+
+        switch (shiftType.toUpperCase()) {
+            case "MORNING":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Standard morning shift";
+                    case LANGUAGE_GERMAN:
+                        return "Standard-Morgenschicht";
+                    case LANGUAGE_FRENCH:
+                        return "Équipe de matin standard";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Turno standard del mattino";
+                }
+
+            case "AFTERNOON":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Standard afternoon shift";
+                    case LANGUAGE_GERMAN:
+                        return "Standard-Nachmittagsschicht";
+                    case LANGUAGE_FRENCH:
+                        return "Équipe d'après-midi standard";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Turno standard del pomeriggio";
+                }
+
+            case "NIGHT":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Standard night shift";
+                    case LANGUAGE_GERMAN:
+                        return "Standard-Nachtschicht";
+                    case LANGUAGE_FRENCH:
+                        return "Équipe de nuit standard";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Turno standard della notte";
+                }
+
+            case "CUSTOM":
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "User-defined shift";
+                    case LANGUAGE_GERMAN:
+                        return "Benutzerdefinierte Schicht";
+                    case LANGUAGE_FRENCH:
+                        return "Équipe personnalisée";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Turno personalizzato";
+                }
+
+            default:
+                Log.w(TAG, "Unknown shift type: " + shiftType);
+                switch (language) {
+                    case LANGUAGE_ENGLISH:
+                        return "Unknown shift";
+                    case LANGUAGE_GERMAN:
+                        return "Unbekannte Schicht";
+                    case LANGUAGE_FRENCH:
+                        return "Équipe inconnue";
+                    case LANGUAGE_ITALIAN:
+                    default:
+                        return "Turno sconosciuto";
+                }
+        }
+    }
+
+    /**
+     * Get localized team description template.
+     *
+     * @return Localized team description template
+     */
+    @NonNull
+    public String getTeamDescriptionTemplate() {
+        String language = getCurrentLanguageCode();
+
+        switch (language) {
+            case LANGUAGE_ENGLISH:
+                return "Standard QuattroDue team";
+            case LANGUAGE_GERMAN:
+                return "Standard Vier-Zwei Team";
+            case LANGUAGE_FRENCH:
+                return "Équipe Quatre-Deux standard";
+            case LANGUAGE_ITALIAN:
+            default:
+                return "Team standard QuattroDue";
+        }
+    }
+
+    /**
+     * Get localized team display name.
+     *
+     * @param teamCode Team code (A, B, C, etc.)
+     * @return Localized team display name
+     */
+    @NonNull
+    public String getTeamDisplayName(@NonNull String teamCode) {
+        String language = getCurrentLanguageCode();
+
+        switch (language) {
+            case LANGUAGE_ENGLISH:
+                return "Team " + teamCode;
+            case LANGUAGE_GERMAN:
+                return "Team " + teamCode;
+            case LANGUAGE_FRENCH:
+                return "Équipe " + teamCode;
+            case LANGUAGE_ITALIAN:
+            default:
+                return "Team " + teamCode;
+        }
+    }
+
+    /**
+     * Get localized break time text.
+     *
+     * @return Localized break time text
+     */
+    @NonNull
+    public String getBreakTimeText() {
+        String language = getCurrentLanguageCode();
+
+        switch (language) {
+            case LANGUAGE_ENGLISH:
+                return "Break";
+            case LANGUAGE_GERMAN:
+                return "Pause";
+            case LANGUAGE_FRENCH:
+                return "Pause";
+            case LANGUAGE_ITALIAN:
+            default:
+                return "Pausa";
+        }
+    }
+
+    /**
+     * Get localized work duration text.
+     *
+     * @return Localized work duration text
+     */
+    @NonNull
+    public String getWorkDurationText() {
+        String language = getCurrentLanguageCode();
+
+        switch (language) {
+            case LANGUAGE_ENGLISH:
+                return "Work duration";
+            case LANGUAGE_GERMAN:
+                return "Arbeitszeit";
+            case LANGUAGE_FRENCH:
+                return "Durée de travail";
+            case LANGUAGE_ITALIAN:
+            default:
+                return "Durata lavorativa";
+        }
+    }
+
+    // ==================== STATIC UTILITY METHODS ====================
+
+    /**
+     * Get localized shift name using context (static utility).
+     *
+     * @param context Application context
+     * @param shiftType Shift type
+     * @return Localized shift name
+     */
+    @NonNull
+    public static String getShiftName(@NonNull Context context, @NonNull String shiftType) {
+        LocaleManager localeManager = new LocaleManager(context);
+        return localeManager.getShiftName(shiftType);
+    }
+
+    /**
+     * Get localized shift description using context (static utility).
+     *
+     * @param context Application context
+     * @param shiftType Shift type
+     * @return Localized shift description
+     */
+    @NonNull
+    public static String getShiftDescription(@NonNull Context context, @NonNull String shiftType) {
+        LocaleManager localeManager = new LocaleManager(context);
+        return localeManager.getShiftDescription(shiftType);
+    }
+
+    /**
+     * Get localized team description template using context (static utility).
+     *
+     * @param context Application context
+     * @return Localized team description template
+     */
+    @NonNull
+    public static String getTeamDescriptionTemplate(@NonNull Context context) {
+        LocaleManager localeManager = new LocaleManager(context);
+        return localeManager.getTeamDescriptionTemplate();
+    }
+
+    /**
+     * Get localized team display name using context (static utility).
+     *
+     * @param context Application context
+     * @param teamCode Team code
+     * @return Localized team display name
+     */
+    @NonNull
+    public static String getTeamDisplayName(@NonNull Context context, @NonNull String teamCode) {
+        LocaleManager localeManager = new LocaleManager(context);
+        return localeManager.getTeamDisplayName(teamCode);
+    }
 }

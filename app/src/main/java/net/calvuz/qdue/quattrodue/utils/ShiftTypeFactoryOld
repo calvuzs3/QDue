@@ -21,7 +21,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Dynamic factory for creating and managing shift types.
+ * Dynamic factory for creating and managing workScheduleShift types.
  * <p>
  * Supports variable number of shifts with external JSON API loading.
  * Members access cached elements generated during setup phase rather
@@ -51,7 +51,7 @@ public class ShiftTypeFactory {
     private static final String JSON_KEY_COLOR = "color";
     private static final String JSON_KEY_ID = "id";
 
-    // Dynamic cache for shift types (thread-safe)
+    // Dynamic cache for workScheduleShift types (thread-safe)
     private static final Map<String, ShiftType> dynamicCache = new ConcurrentHashMap<>();
     private static final Map<Integer, ShiftType> indexCache = new ConcurrentHashMap<>();
 
@@ -84,7 +84,7 @@ public class ShiftTypeFactory {
 
     /**
      * Initializes the factory with a specific number of shifts.
-     * Creates default shift types if no external source is configured.
+     * Creates default workScheduleShift types if no external source is configured.
      *
      * @param context Application context
      * @param shiftCount Number of shifts to create
@@ -119,10 +119,10 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Initializes the factory by loading shift types from external JSON API.
+     * Initializes the factory by loading workScheduleShift types from external JSON API.
      *
      * @param context Application context
-     * @param apiEndpoint URL to fetch shift types JSON
+     * @param apiEndpoint URL to fetch workScheduleShift types JSON
      * @return CompletableFuture with success status
      */
     public static CompletableFuture<Boolean> initializeFromApi(Context context, String apiEndpoint) {
@@ -161,7 +161,7 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Refreshes shift types from the last used API endpoint.
+     * Refreshes workScheduleShift types from the last used API endpoint.
      *
      * @param context Application context
      * @return CompletableFuture with success status
@@ -174,7 +174,7 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Gets a shift type by index from the dynamic cache.
+     * Gets a workScheduleShift type by index from the dynamic cache.
      *
      * @param index Shift index (0-based)
      * @return ShiftType or null if not found
@@ -185,7 +185,7 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Gets a shift type by name from the dynamic cache.
+     * Gets a workScheduleShift type by name from the dynamic cache.
      *
      * @param name Shift name
      * @return ShiftType or null if not found
@@ -196,17 +196,17 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Gets all shift types from the dynamic cache.
+     * Gets all workScheduleShift types from the dynamic cache.
      *
-     * @return List of all configured shift types
+     * @return List of all configured workScheduleShift types
      */
     public static List<ShiftType> getAllShiftTypes() {
         ensureInitialized();
         List<ShiftType> result = new ArrayList<>();
         for (int i = 0; i < currentShiftCount; i++) {
-            ShiftType shift = indexCache.get(i);
-            if (shift != null) {
-                result.add(shift);
+            ShiftType workScheduleShift = indexCache.get(i);
+            if (workScheduleShift != null) {
+                result.add(workScheduleShift);
             }
         }
         return result;
@@ -223,32 +223,32 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Adds a new shift type to the dynamic cache.
+     * Adds a new workScheduleShift type to the dynamic cache.
      *
-     * @param shiftType Shift type to add
-     * @return Index assigned to the shift type
+     * @param workScheduleShift Shift type to add
+     * @return Index assigned to the workScheduleShift type
      */
-    public static int addShiftType(ShiftType shiftType) {
-        if (shiftType == null) return -1;
+    public static int addShiftType(ShiftType workScheduleShift) {
+        if (workScheduleShift == null) return -1;
 
         int index = currentShiftCount;
-        dynamicCache.put(shiftType.getName(), shiftType);
-        indexCache.put(index, shiftType);
+        dynamicCache.put(workScheduleShift.getName(), workScheduleShift);
+        indexCache.put(index, workScheduleShift);
         currentShiftCount++;
 
-        Log.d(TAG, "Added shift type: " + shiftType.getName() + " at index " + index);
+        Log.d(TAG, "Added workScheduleShift type: " + workScheduleShift.getName() + " at index " + index);
         return index;
     }
 
     /**
-     * Updates an existing shift type in the cache.
+     * Updates an existing workScheduleShift type in the cache.
      *
      * @param index Index to update
-     * @param shiftType New shift type
+     * @param workScheduleShift New workScheduleShift type
      * @return true if update was successful
      */
-    public static boolean updateShiftType(int index, ShiftType shiftType) {
-        if (index < 0 || index >= currentShiftCount || shiftType == null) {
+    public static boolean updateShiftType(int index, ShiftType workScheduleShift) {
+        if (index < 0 || index >= currentShiftCount || workScheduleShift == null) {
             return false;
         }
 
@@ -259,15 +259,15 @@ public class ShiftTypeFactory {
         }
 
         // Add new entry
-        dynamicCache.put(shiftType.getName(), shiftType);
-        indexCache.put(index, shiftType);
+        dynamicCache.put(workScheduleShift.getName(), workScheduleShift);
+        indexCache.put(index, workScheduleShift);
 
-        Log.d(TAG, "Updated shift type at index " + index + ": " + shiftType.getName());
+        Log.d(TAG, "Updated workScheduleShift type at index " + index + ": " + workScheduleShift.getName());
         return true;
     }
 
     /**
-     * Creates a custom shift type and adds it to the cache.
+     * Creates a custom workScheduleShift type and adds it to the cache.
      *
      * @param name Shift name
      * @param description Shift description
@@ -276,19 +276,19 @@ public class ShiftTypeFactory {
      * @param durationHours Duration in hours
      * @param durationMinutes Additional duration in minutes
      * @param color Shift color (ARGB)
-     * @return Index of the created shift type
+     * @return Index of the created workScheduleShift type
      */
     public static int createAndAddShiftType(String name, String description,
                                             int startHour, int startMinute,
                                             int durationHours, int durationMinutes,
                                             int color) {
-        ShiftType shiftType = new ShiftType(name, description, startHour, startMinute,
+        ShiftType workScheduleShift = new ShiftType(name, description, startHour, startMinute,
                 durationHours, durationMinutes, color);
-        return addShiftType(shiftType);
+        return addShiftType(workScheduleShift);
     }
 
     /**
-     * Saves current shift types to local storage for persistence.
+     * Saves current workScheduleShift types to local storage for persistence.
      *
      * @param context Application context
      * @return true if save was successful
@@ -303,23 +303,23 @@ public class ShiftTypeFactory {
             editor.putLong(KEY_LAST_API_SYNC, System.currentTimeMillis());
             editor.putInt(KEY_CACHE_VERSION, 1);
 
-            // Save each shift type
+            // Save each workScheduleShift type
             for (int i = 0; i < currentShiftCount; i++) {
-                ShiftType shift = indexCache.get(i);
-                if (shift != null) {
+                ShiftType workScheduleShift = indexCache.get(i);
+                if (workScheduleShift != null) {
                     String prefix = "shift_" + i + "_";
-                    editor.putString(prefix + "name", shift.getName());
-                    editor.putString(prefix + "description", shift.getDescription());
-                    editor.putInt(prefix + "start_hour", shift.getStartHour());
-                    editor.putInt(prefix + "start_minute", shift.getStartMinute());
-                    editor.putInt(prefix + "duration_hours", shift.getDurationHours());
-                    editor.putInt(prefix + "duration_minutes", shift.getDurationMinutes());
-                    editor.putInt(prefix + "color", shift.getColor());
+                    editor.putString(prefix + "name", workScheduleShift.getName());
+                    editor.putString(prefix + "description", workScheduleShift.getDescription());
+                    editor.putInt(prefix + "start_hour", workScheduleShift.getStartHour());
+                    editor.putInt(prefix + "start_minute", workScheduleShift.getStartMinute());
+                    editor.putInt(prefix + "duration_hours", workScheduleShift.getDurationHours());
+                    editor.putInt(prefix + "duration_minutes", workScheduleShift.getDurationMinutes());
+                    editor.putInt(prefix + "color", workScheduleShift.getColor());
                 }
             }
 
             editor.apply();
-            Log.d(TAG, "Saved " + currentShiftCount + " shift types to local storage");
+            Log.d(TAG, "Saved " + currentShiftCount + " workScheduleShift types to local storage");
             return true;
 
         } catch (Exception e) {
@@ -352,7 +352,7 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Creates default shift types for fallback scenarios.
+     * Creates default workScheduleShift types for fallback scenarios.
      */
     private static void createDefaultShifts() {
         clearCache();
@@ -361,7 +361,7 @@ public class ShiftTypeFactory {
         int[] defaultStartHours = {5, 13, 21};
 
         for (int i = 0; i < currentShiftCount && i < defaultNames.length; i++) {
-            ShiftType shift = new ShiftType(
+            ShiftType workScheduleShift = new ShiftType(
                     defaultNames[i],
                     defaultNames[i],
                     defaultStartHours[i],
@@ -371,15 +371,15 @@ public class ShiftTypeFactory {
                     DEFAULT_COLORS[i % DEFAULT_COLORS.length]
             );
 
-            dynamicCache.put(shift.getName(), shift);
-            indexCache.put(i, shift);
+            dynamicCache.put(workScheduleShift.getName(), workScheduleShift);
+            indexCache.put(i, workScheduleShift);
         }
 
         Log.d(TAG, "Created " + currentShiftCount + " default shifts");
     }
 
     /**
-     * Loads shift types from local storage.
+     * Loads workScheduleShift types from local storage.
      *
      * @param context Application context
      * @return true if loading was successful
@@ -395,7 +395,7 @@ public class ShiftTypeFactory {
 
             clearCache();
 
-            // Load each shift type
+            // Load each workScheduleShift type
             for (int i = 0; i < currentShiftCount; i++) {
                 String prefix = "shift_" + i + "_";
                 String name = prefs.getString(prefix + "name", null);
@@ -409,10 +409,10 @@ public class ShiftTypeFactory {
                 int durationMinutes = prefs.getInt(prefix + "duration_minutes", 0);
                 int color = prefs.getInt(prefix + "color", DEFAULT_COLORS[i % DEFAULT_COLORS.length]);
 
-                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                ShiftType workScheduleShift = new ShiftType(name, description, startHour, startMinute,
                         durationHours, durationMinutes, color);
-                dynamicCache.put(name, shift);
-                indexCache.put(i, shift);
+                dynamicCache.put(name, workScheduleShift);
+                indexCache.put(i, workScheduleShift);
             }
 
             Log.d(TAG, "Loaded " + currentShiftCount + " shifts from local storage");
@@ -485,14 +485,14 @@ public class ShiftTypeFactory {
                             color = shiftJson.getInt(JSON_KEY_COLOR);
                         }
                     } catch (Exception e) {
-                        Log.w(TAG, "Invalid color for shift " + name + ", using default");
+                        Log.w(TAG, "Invalid color for workScheduleShift " + name + ", using default");
                     }
                 }
 
-                ShiftType shift = new ShiftType(name, description, startHour, startMinute,
+                ShiftType workScheduleShift = new ShiftType(name, description, startHour, startMinute,
                         durationHours, durationMinutes, color);
-                dynamicCache.put(name, shift);
-                indexCache.put(i, shift);
+                dynamicCache.put(name, workScheduleShift);
+                indexCache.put(i, workScheduleShift);
             }
 
             Log.d(TAG, "Parsed " + currentShiftCount + " shifts from JSON");

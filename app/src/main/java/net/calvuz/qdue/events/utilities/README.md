@@ -127,7 +127,7 @@ Ti guida step-by-step nella creazione di eventi personalizzati.
 #### Cambi Turno Giornalieri
 ```bash
 # 30 giorni di cambi turno
-./qd-batch-stops.zsh shift-change 2025-06-15 30 cambi_turno_mese.json
+./qd-batch-stops.zsh workScheduleShift-change 2025-06-15 30 cambi_turno_mese.json
 ```
 
 #### Pulizie Weekend

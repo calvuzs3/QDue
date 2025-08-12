@@ -92,31 +92,242 @@ public class QDuePreferences {
         Log.d( TAG, "Welcome flow marked as completed" );
     }
 
-    // ==================== TEAM PREFERENCES (COMPATIBLE) ====================
+    // ==================== LEGACY TEAM PREFERENCES (DEPRECATED) ====================
 
     /**
-     * Get the selected team preference
-     * Compatible with WelcomeActivity team selection
+     * Get the selected team preference (legacy method).
      *
+     * @deprecated Use {@link #getSelectedTeamName(Context)} for modern Team model support.
      * @param context Application context
      * @return Selected team ID or default (1)
      */
+    @Deprecated
     public static int getSelectedTeam(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences( QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE );
-        return prefs.getInt( QDue.Settings.QD_KEY_SELECTED_TEAM, 1 );
+           SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+
+        // Try to get from modern preference first
+        if (prefs.contains(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME)) {
+            String teamName = prefs.getString(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME, "A");
+            return convertTeamNameToLegacyId(teamName);
+        }
+
+        // Fallback to legacy preference
+        return prefs.getInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1);
     }
 
     /**
-     * Set the selected team preference
-     * Compatible with WelcomeActivity team selection
+     * Set the selected team preference (legacy method).
      *
+     * @deprecated Use {@link #setSelectedTeamName(Context, String)} for modern Team model support.
      * @param context Application context
      * @param teamId  Team identifier (integer)
      */
+    @Deprecated
     public static void setSelectedTeam(Context context, int teamId) {
-        SharedPreferences prefs = context.getSharedPreferences( QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE );
-        prefs.edit().putInt( QDue.Settings.QD_KEY_SELECTED_TEAM, teamId ).apply();
-        Log.d( TAG, "Selected team set to: " + teamId );
+        // Convert to team name and use modern method
+        String teamName = convertLegacyTeamIdToName(teamId);
+        setSelectedTeamName(context, teamName);
+
+        Log.d(TAG, "Legacy setSelectedTeam called with ID " + teamId + ", converted to name: " + teamName);
+    }
+
+    // ==================== TEAM PREFERENCES ====================
+
+    /**
+     * Get the selected team name (modern approach).
+     * Uses team name (A, B, C, etc.) instead of integer ID.
+     *
+     * @param context Application context
+     * @return Selected team name or default ("A")
+     */
+    public static String getSelectedTeamName(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+
+        // Check if we have the modern string-based preference
+        if (prefs.contains(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME)) {
+            return prefs.getString(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME, "A");
+        }
+
+        // Fallback: convert legacy int preference to team name
+        if (prefs.contains(QDue.Settings.QD_KEY_SELECTED_TEAM)) {
+            int legacyTeamId = prefs.getInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1);
+            String teamName = convertLegacyTeamIdToName(legacyTeamId);
+
+            // Migrate to new format
+            setSelectedTeamName(context, teamName);
+            Log.d(TAG, "Migrated legacy team ID " + legacyTeamId + " to team name: " + teamName);
+
+            return teamName;
+        }
+
+        // Ultimate fallback
+        return "A";
+    }
+
+    /**
+     * Set the selected team name (modern approach).
+     * Stores team name (A, B, C, etc.) directly.
+     *
+     * @param context Application context
+     * @param teamName Team name (A, B, C, D, E, F, G, H, I)
+     */
+    public static void setSelectedTeamName(Context context, String teamName) {
+        // Validate team name
+        if (!isValidQuattroDueTeamName(teamName)) {
+            Log.w(TAG, "Invalid team name: " + teamName + ". Using default 'A'.");
+            teamName = "A";
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // Save modern preference
+        editor.putString(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME, teamName);
+
+        // Also update legacy preference for backward compatibility
+        int legacyTeamId = convertTeamNameToLegacyId(teamName);
+        editor.putInt(QDue.Settings.QD_KEY_SELECTED_TEAM, legacyTeamId);
+
+        editor.apply();
+        Log.d(TAG, "Selected team set to: " + teamName + " (legacy ID: " + legacyTeamId + ")");
+    }
+
+    /**
+     * Set the selected team using Team object (modern approach).
+     *
+     * @param context Application context
+     * @param team Team object from domain model
+     */
+    public static void setSelectedTeam(Context context, net.calvuz.qdue.domain.calendar.models.Team team) {
+        if (team == null) {
+            Log.w(TAG, "Null team provided. Using default 'A'.");
+            setSelectedTeamName(context, "A");
+            return;
+        }
+
+        setSelectedTeamName(context, team.getName());
+        Log.d(TAG, "Selected team set from Team object: " + team.getName());
+    }
+
+    /**
+     * Get the selected team as a Team object (modern approach).
+     * This method requires database access, so it's async-friendly.
+     *
+     * @param context Application context
+     * @return Team name that can be used to lookup Team object from repository
+     */
+    public static String getSelectedTeamNameForRepository(Context context) {
+        return getSelectedTeamName(context);
+    }
+
+    // ==================== TEAM CONVERSION UTILITIES ====================
+
+    /**
+     * Convert legacy team ID to team name.
+     * Maps 1=A, 2=B, 3=C, etc.
+     *
+     * @param teamId Legacy team ID (1-9)
+     * @return Team name (A-I)
+     */
+    private static String convertLegacyTeamIdToName(int teamId) {
+        // QuattroDue teams: 1=A, 2=B, 3=C, 4=D, 5=E, 6=F, 7=G, 8=H, 9=I
+        switch (teamId) {
+            case 1: return "A";
+            case 2: return "B";
+            case 3: return "C";
+            case 4: return "D";
+            case 5: return "E";
+            case 6: return "F";
+            case 7: return "G";
+            case 8: return "H";
+            case 9: return "I";
+            default:
+                Log.w(TAG, "Unknown legacy team ID: " + teamId + ". Using 'A'.");
+                return "A";
+        }
+    }
+
+    /**
+     * Convert team name to legacy team ID.
+     * Maps A=1, B=2, C=3, etc.
+     *
+     * @param teamName Team name (A-I)
+     * @return Legacy team ID (1-9)
+     */
+    private static int convertTeamNameToLegacyId(String teamName) {
+        if (teamName == null) return 1;
+
+        switch (teamName.toUpperCase()) {
+            case "A": return 1;
+            case "B": return 2;
+            case "C": return 3;
+            case "D": return 4;
+            case "E": return 5;
+            case "F": return 6;
+            case "G": return 7;
+            case "H": return 8;
+            case "I": return 9;
+            default:
+                Log.w(TAG, "Unknown team name: " + teamName + ". Using ID 1.");
+                return 1;
+        }
+    }
+
+
+    /**
+     * Validate if team name is a valid QuattroDue team.
+     *
+     * @param teamName Team name to validate
+     * @return true if valid QuattroDue team name
+     */
+    private static boolean isValidQuattroDueTeamName(String teamName) {
+        if (teamName == null) return false;
+
+        String[] validTeams = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+        String upperTeamName = teamName.toUpperCase();
+
+        for (String validTeam : validTeams) {
+            if (validTeam.equals(upperTeamName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // ==================== MIGRATION HELPERS ====================
+
+    /**
+     * Migrate legacy team preferences to modern format.
+     * Call this once during app startup to ensure smooth transition.
+     *
+     * @param context Application context
+     */
+    public static void migrateTeamPreferencesIfNeeded(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+
+        // If modern preference already exists, no migration needed
+        if (prefs.contains(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME)) {
+            Log.d(TAG, "Team preferences already migrated - no action needed");
+            return;
+        }
+
+        // If legacy preference exists, migrate it
+        if (prefs.contains(QDue.Settings.QD_KEY_SELECTED_TEAM)) {
+            int legacyTeamId = prefs.getInt(QDue.Settings.QD_KEY_SELECTED_TEAM, 1);
+            String teamName = convertLegacyTeamIdToName(legacyTeamId);
+
+            // Save modern preference
+            prefs.edit()
+                    .putString(QDue.Settings.QD_KEY_SELECTED_TEAM_NAME, teamName)
+                    .apply();
+
+            Log.d(TAG, "Migrated team preference: ID " + legacyTeamId + " -> Name " + teamName);
+        } else {
+            // No legacy preference, set default
+            setSelectedTeamName(context, "A");
+            Log.d(TAG, "No legacy team preference found - set default 'A'");
+        }
     }
 
     // ==================== DYNAMIC COLORS PREFERENCES ====================
@@ -202,7 +413,13 @@ public class QDuePreferences {
         if (!prefs.contains( QDue.Settings.QD_KEY_SELECTED_TEAM )) {
             editor.putInt( QDue.Settings.QD_KEY_SELECTED_TEAM, 1 );
             needsCommit = true;
-            Log.d( TAG, "Set default team: 1" );
+            Log.d( TAG, "Set default team (deprecated): 1" );
+        }
+
+        if (!prefs.contains( QDue.Settings.QD_KEY_SELECTED_TEAM_NAME )) {
+            editor.putString( QDue.Settings.QD_KEY_SELECTED_TEAM_NAME, "A" );
+            needsCommit = true;
+            Log.d( TAG, "Set default team name: A" );
         }
 
         if (needsCommit) {
@@ -285,7 +502,8 @@ public class QDuePreferences {
         Log.d( TAG, "=== QDue Preferences Debug Info ===" );
         Log.d( TAG, "View Mode: " + getDefaultViewMode( context ) );
         Log.d( TAG, "Welcome Completed: " + isWelcomeCompleted( context ) );
-        Log.d( TAG, "Selected Team: " + getSelectedTeam( context ) );
+        Log.d( TAG, "Selected Team (deprecated): " + getSelectedTeam( context ) );
+        Log.d( TAG, "Selected Team Name: " + getSelectedTeamName( context ) );
         Log.d( TAG, "Dynamic Colors: " + isDynamicColorsEnabled( context ) );
         Log.d( TAG, "First Time Launch: " + isFirstTimeLaunch( context ) );
         Log.d( TAG, "Should Show Welcome: " + shouldShowWelcome( context ) );
@@ -318,6 +536,7 @@ public class QDuePreferences {
         editor.remove( QDue.Settings.QD_KEY_VIEW_MODE );
         editor.remove( QDue.Settings.QD_KEY_WELCOME_COMPLETED );
         editor.remove( QDue.Settings.QD_KEY_SELECTED_TEAM );
+        editor.remove( QDue.Settings.QD_KEY_SELECTED_TEAM_NAME );
         editor.remove( QDue.Settings.QD_KEY_DYNAMIC_COLORS );
 
         editor.apply();

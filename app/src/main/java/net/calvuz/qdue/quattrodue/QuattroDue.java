@@ -631,7 +631,7 @@ public class QuattroDue {
      *
      * @param date The date to calculate the cycle position for
      * @return Day position in cycle (0-17), or -1 if calculation fails
-     * @since Added for WorkScheduleService compatibility
+     * @since Added for WorkScheduleRepository compatibility
      */
     public int getDayInCycle(@NonNull LocalDate date) {
         final String TAG = QuattroDue.TAG + ":getDayInCycle";
@@ -680,7 +680,7 @@ public class QuattroDue {
      *
      * @param date The date to get the Day object for
      * @return Day object with shifts and teams, or null if calculation fails
-     * @since Added for WorkScheduleService compatibility
+     * @since Added for WorkScheduleRepository compatibility
      */
     @Nullable
     public Day getDayByDate(@NonNull LocalDate date) {
@@ -748,7 +748,7 @@ public class QuattroDue {
      *
      * @param date The date to check
      * @return true if the date has work schedule, false otherwise
-     * @since Added for WorkScheduleService compatibility
+     * @since Added for WorkScheduleRepository compatibility
      */
     public boolean hasWorkScheduleOnDate(@NonNull LocalDate date) {
         final String TAG = QuattroDue.TAG + ":hasWorkScheduleOnDate";
@@ -776,7 +776,7 @@ public class QuattroDue {
      * including cycle length, scheme start date, and validation status.
      *
      * @return Map containing cycle information
-     * @since Added for WorkScheduleService compatibility
+     * @since Added for WorkScheduleRepository compatibility
      */
     @NonNull
     public Map<String, Object> getCycleInfo() {
@@ -812,7 +812,7 @@ public class QuattroDue {
      *
      * @param date The date to validate
      * @return true if the date can be calculated, false otherwise
-     * @since Added for WorkScheduleService compatibility
+     * @since Added for WorkScheduleRepository compatibility
      */
     public boolean isDateCalculatable(@NonNull LocalDate date) {
         final String TAG = QuattroDue.TAG + ":isDateCalculatable";

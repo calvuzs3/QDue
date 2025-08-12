@@ -19,29 +19,36 @@ import java.util.Map;
 /**
  * WorkScheduleService - Service interface for work schedule operations.
  *
- * <p>Provides comprehensive work schedule management functionality for the Quattrodue
- * pattern system. Handles schedule generation, team management, shift type configuration,
- * and integration with the calendar system.</p>
+ * <p>Provides comprehensive work schedule management functionality for the QuattroDue
+ * pattern system. This interface maintains backward compatibility with existing UI code
+ * while supporting both legacy and clean architecture implementations.</p>
+ *
+ * <h3>Architecture Support:</h3>
+ * <ul>
+ *   <li><strong>Legacy Implementation</strong>: Uses existing QuattroDue singleton</li>
+ *   <li><strong>Clean Architecture</strong>: Uses WorkScheduleServiceAdapter with domain models</li>
+ *   <li><strong>Backward Compatibility</strong>: Same interface for both implementations</li>
+ * </ul>
  *
  * <h3>Core Responsibilities:</h3>
  * <ul>
  *   <li><strong>Schedule Generation</strong>: Calculate work schedules for any date range</li>
  *   <li><strong>Team Management</strong>: Handle team assignments and rotations</li>
  *   <li><strong>Shift Types</strong>: Manage shift type definitions and configurations</li>
- *   <li><strong>Pattern Calculation</strong>: Apply Quattrodue 4-2 pattern calculations</li>
+ *   <li><strong>Pattern Calculation</strong>: Apply QuattroDue 4-2 pattern calculations</li>
  *   <li><strong>Calendar Integration</strong>: Provide data for calendar views</li>
  * </ul>
  *
  * <h3>Pattern Details:</h3>
  * <ul>
- *   <li><strong>Quattrodue Pattern</strong>: 4 consecutive work days, 2 rest days</li>
+ *   <li><strong>QuattroDue Pattern</strong>: 4 consecutive work days, 2 rest days</li>
  *   <li><strong>18-Day Cycle</strong>: Complete rotation cycle for all teams</li>
  *   <li><strong>3 Shifts per Day</strong>: Morning, Afternoon, Night shifts</li>
  *   <li><strong>9 Teams</strong>: Teams A through I in rotation</li>
  * </ul>
  *
  * @author QDue Development Team
- * @version 1.0.0
+ * @version 2.0.0 - Clean Architecture Compatible
  * @since Database Version 6
  */
 public interface WorkScheduleService {
@@ -66,7 +73,7 @@ public interface WorkScheduleService {
      * @param startDate Start date (inclusive)
      * @param endDate End date (inclusive)
      * @param userId Optional user ID for team filtering (null for all teams)
-     * @return Map of dates to Day objects, empty map if no schedules
+     * @return Map of dates to Day objects with schedule information
      */
     @NonNull
     Map<LocalDate, Day> getWorkScheduleForDateRange(@NonNull LocalDate startDate,
@@ -131,20 +138,9 @@ public interface WorkScheduleService {
      *
      * @param userId User ID
      * @param team Team to assign
-     * @return Operation result
+     * @return true if assignment was successful
      */
-    @NonNull
-    OperationResult<Void> setTeamForUser(@NonNull Long userId, @NonNull Team team);
-
-    /**
-     * Set team for user using HalfTeam (compatibility method).
-     *
-     * @param userId User ID
-     * @param halfTeam HalfTeam to assign (will be used to find or create appropriate Team)
-     * @return Operation result
-     */
-    @NonNull
-    OperationResult<Void> setHalfTeamForUser(@NonNull Long userId, @NonNull HalfTeam halfTeam);
+    boolean setTeamForUser(@NonNull Long userId, @NonNull Team team);
 
     /**
      * Get teams working on specific date.
@@ -246,7 +242,7 @@ public interface WorkScheduleService {
      * Calculate which day in the 18-day cycle a date falls on.
      *
      * @param date Target date
-     * @return Day in cycle (0-17)
+     * @return Day in cycle (0-17), or -1 if calculation fails
      */
     int getDayInCycle(@NonNull LocalDate date);
 
@@ -309,7 +305,7 @@ public interface WorkScheduleService {
      * Utility method for calendar display logic.
      *
      * @param day Day to check
-     * @return true if day has work schedule
+     * @return true if day has schedule data
      */
     boolean hasWorkSchedule(@Nullable Day day);
 
@@ -335,7 +331,14 @@ public interface WorkScheduleService {
     @Nullable
     String getWorkScheduleSummary(@NonNull LocalDate date, @Nullable Long userId);
 
-    // ==================== DATA MANAGEMENT ====================
+    // ==================== SERVICE STATUS ====================
+
+    /**
+     * Check if service is ready for operations.
+     *
+     * @return true if service is ready
+     */
+    boolean isServiceReady();
 
     /**
      * Refresh work schedule data.
@@ -349,8 +352,11 @@ public interface WorkScheduleService {
     /**
      * Clear work schedule cache.
      * Clears all cached schedule calculations.
+     *
+     * @return Operation result
      */
-    void clearCache();
+    @NonNull
+    OperationResult<Void> clearCache();
 
     /**
      * Get service status information.
@@ -367,15 +373,81 @@ public interface WorkScheduleService {
      * Validate work schedule configuration.
      * Checks if current configuration is valid and complete.
      *
-     * @return Operation result with validation details
+     * @return Operation result containing validation details
      */
     @NonNull
     OperationResult<Map<String, Object>> validateConfiguration();
 
+    // ==================== TEAM UTILITIES ====================
+
     /**
-     * Check if service is ready for operations.
+     * Find team by name.
+     * Convenience method for team lookup.
      *
-     * @return true if service is properly configured and ready
+     * @param teamName Name of the team to find
+     * @return Team object, or null if not found
      */
-    boolean isServiceReady();
+    @Nullable
+    Team findTeamByName(@NonNull String teamName);
+
+    /**
+     * Find team by ID.
+     * Convenience method for team lookup.
+     *
+     * @param teamId ID of the team to find
+     * @return Team object, or null if not found
+     */
+    @Nullable
+    Team findTeamById(@NonNull String teamId);
+
+    /**
+     * Create standard teams for the work schedule system.
+     * This creates the default team structure (A, B, C, D, E, F, G, H, I).
+     *
+     * @return List of created teams
+     */
+    @NonNull
+    List<Team> createStandardTeams();
+
+    // ==================== ADVANCED PATTERN OPERATIONS ====================
+
+    /**
+     * Get next working day for specific team.
+     *
+     * @param team Team to check
+     * @param fromDate Starting date (exclusive)
+     * @return Next working date, or null if none found in reasonable range
+     */
+    @Nullable
+    LocalDate getNextWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate);
+
+    /**
+     * Get previous working day for specific team.
+     *
+     * @param team Team to check
+     * @param fromDate Starting date (exclusive)
+     * @return Previous working date, or null if none found in reasonable range
+     */
+    @Nullable
+    LocalDate getPreviousWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate);
+
+    /**
+     * Get working days count for team in date range.
+     *
+     * @param team Team to check
+     * @param startDate Start date (inclusive)
+     * @param endDate End date (inclusive)
+     * @return Working days count
+     */
+    int getWorkingDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+
+    /**
+     * Get rest days count for team in date range.
+     *
+     * @param team Team to check
+     * @param startDate Start date (inclusive)
+     * @param endDate End date (inclusive)
+     * @return Rest days count
+     */
+    int getRestDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
 }

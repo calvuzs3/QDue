@@ -42,9 +42,9 @@
     <color name="calendar_work_schedule_default_color">#607D8B</color>  <!-- Blue gray for work schedule -->
 
     <!-- Quattrodue Shift Type Colors -->
-    <color name="calendar_work_shift_morning">#FFC107</color>           <!-- Amber for morning shift -->
-    <color name="calendar_work_shift_afternoon">#FF9800</color>         <!-- Orange for afternoon shift -->
-    <color name="calendar_work_shift_night">#3F51B5</color>             <!-- Indigo for night shift -->
+    <color name="calendar_work_shift_morning">#FFC107</color>           <!-- Amber for morning workScheduleShift -->
+    <color name="calendar_work_shift_afternoon">#FF9800</color>         <!-- Orange for afternoon workScheduleShift -->
+    <color name="calendar_work_shift_night">#3F51B5</color>             <!-- Indigo for night workScheduleShift -->
     <color name="calendar_work_shift_off">#9E9E9E</color>               <!-- Gray for off days -->
 
     <!-- Team Colors (for multi-team support) -->

@@ -12,8 +12,8 @@ import java.util.List;
  * Factory for creating shifts (Shift objects).
  * <p>
  * Updated to work with the new dynamic ShiftTypeFactory.
- * No longer relies on static shift types but accesses the
- * dynamically configured shift types from the factory cache.
+ * No longer relies on static workScheduleShift types but accesses the
+ * dynamically configured workScheduleShift types from the factory cache.
  *
  * @author Updated 21/05/2025
  */
@@ -25,49 +25,49 @@ public final class ShiftFactory {
     private ShiftFactory() {}
 
     /**
-     * Creates a shift using a shift type from the dynamic factory.
+     * Creates a workScheduleShift using a workScheduleShift type from the dynamic factory.
      *
      * @param shiftIndex Shift index (0-based) from ShiftTypeFactory
      * @param date Shift date
-     * @return New Shift, or null if shift type not found
+     * @return New Shift, or null if workScheduleShift type not found
      */
     public static Shift createShift(int shiftIndex, LocalDate date) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
+        ShiftType workScheduleShift = ShiftTypeFactory.getShiftType(shiftIndex);
 
-        if (shiftType == null) {
-            Log.w(TAG, "No shift type found at index " + shiftIndex);
+        if (workScheduleShift == null) {
+            Log.w(TAG, "No workScheduleShift type found at index " + shiftIndex);
             return null;
         }
 
-        return new Shift(shiftType, date);
+        return new Shift(workScheduleShift, date);
     }
 
     /**
-     * Creates a shift using a named shift type from the dynamic factory.
+     * Creates a workScheduleShift using a named workScheduleShift type from the dynamic factory.
      *
-     * @param shiftName Name of the shift type
+     * @param shiftName Name of the workScheduleShift type
      * @param date Shift date
-     * @return New Shift, or null if shift type not found
+     * @return New Shift, or null if workScheduleShift type not found
      */
     public static Shift createShift(String shiftName, LocalDate date) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftName);
+        ShiftType workScheduleShift = ShiftTypeFactory.getShiftType(shiftName);
 
-        if (shiftType == null) {
-            Log.w(TAG, "No shift type found with name: " + shiftName);
+        if (workScheduleShift == null) {
+            Log.w(TAG, "No workScheduleShift type found with name: " + shiftName);
             return null;
         }
 
-        return new Shift(shiftType, date);
+        return new Shift(workScheduleShift, date);
     }
 
     /**
-     * Creates a standard shift by legacy index (for backward compatibility).
+     * Creates a standard workScheduleShift by legacy index (for backward compatibility).
      *
      * @deprecated Use createShift(int, LocalDate) instead
-     * @param type Legacy shift type (1=first, 2=second, 3=third shift)
+     * @param type Legacy workScheduleShift type (1=first, 2=second, 3=third workScheduleShift)
      * @param date Shift date
      * @return New Shift
-     * @throws IllegalArgumentException if shift type is invalid or not available
+     * @throws IllegalArgumentException if workScheduleShift type is invalid or not available
      */
     @Deprecated
     public static Shift createStandardShift(int type, LocalDate date) {
@@ -85,17 +85,17 @@ public final class ShiftFactory {
             );
         }
 
-        Shift shift = createShift(shiftIndex, date);
-        if (shift == null) {
-            throw new IllegalArgumentException("Failed to create shift for type: " + type);
+        Shift workScheduleShift = createShift(shiftIndex, date);
+        if (workScheduleShift == null) {
+            throw new IllegalArgumentException("Failed to create workScheduleShift for type: " + type);
         }
 
-        return shift;
+        return workScheduleShift;
     }
 
     /**
      * Creates all configured shifts for a specific date.
-     * Uses all shift types available in the ShiftTypeFactory.
+     * Uses all workScheduleShift types available in the ShiftTypeFactory.
      *
      * @param date Date for the shifts
      * @return List of shifts (size depends on factory configuration)
@@ -105,11 +105,11 @@ public final class ShiftFactory {
         List<Shift> shifts = new ArrayList<>(shiftCount);
 
         for (int i = 0; i < shiftCount; i++) {
-            Shift shift = createShift(i, date);
-            if (shift != null) {
-                shifts.add(shift);
+            Shift workScheduleShift = createShift(i, date);
+            if (workScheduleShift != null) {
+                shifts.add(workScheduleShift);
             } else {
-                Log.w(TAG, "Skipped null shift at index " + i + " for date " + date);
+                Log.w(TAG, "Skipped null workScheduleShift at index " + i + " for date " + date);
             }
         }
 
@@ -124,16 +124,16 @@ public final class ShiftFactory {
      * Creates all shifts with specific names for a date.
      *
      * @param date Date for the shifts
-     * @param shiftNames Array of shift names to create
+     * @param shiftNames Array of workScheduleShift names to create
      * @return List of created shifts (may be smaller than input if some names not found)
      */
     public static List<Shift> createNamedShifts(LocalDate date, String... shiftNames) {
         List<Shift> shifts = new ArrayList<>(shiftNames.length);
 
         for (String shiftName : shiftNames) {
-            Shift shift = createShift(shiftName, date);
-            if (shift != null) {
-                shifts.add(shift);
+            Shift workScheduleShift = createShift(shiftName, date);
+            if (workScheduleShift != null) {
+                shifts.add(workScheduleShift);
             } else {
                 Log.w(TAG, "Shift not found: " + shiftName);
             }
@@ -143,61 +143,61 @@ public final class ShiftFactory {
     }
 
     /**
-     * Creates a custom shift with specified parameters.
+     * Creates a custom workScheduleShift with specified parameters.
      *
-     * @param shiftType Type of shift (from ShiftTypeFactory or custom)
+     * @param workScheduleShift Type of workScheduleShift (from ShiftTypeFactory or custom)
      * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
+     * @param isStop Indicates if workScheduleShift is during plant stop
+     * @param teams Teams assigned to the workScheduleShift
      * @return New Shift
      */
-    public static Shift createCustomShift(ShiftType shiftType, LocalDate date,
+    public static Shift createCustomShift(ShiftType workScheduleShift, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        if (shiftType == null) {
-            Log.e(TAG, "Cannot create shift with null ShiftType");
+        if (workScheduleShift == null) {
+            Log.e(TAG, "Cannot create workScheduleShift with null ShiftType");
             return null;
         }
 
-        Shift shift = new Shift(shiftType, date);
-        shift.setStop(isStop);
+        Shift workScheduleShift = new Shift(workScheduleShift, date);
+        workScheduleShift.setStop(isStop);
 
         if (teams != null) {
             for (HalfTeam team : teams) {
-                shift.addHalfTeam(team);
+                workScheduleShift.addHalfTeam(team);
             }
         }
 
-        return shift;
+        return workScheduleShift;
     }
 
     /**
-     * Creates a custom shift with teams, using a shift type from the factory.
+     * Creates a custom workScheduleShift with teams, using a workScheduleShift type from the factory.
      *
-     * @param shiftIndex Index of shift type in factory
+     * @param shiftIndex Index of workScheduleShift type in factory
      * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
-     * @return New Shift, or null if shift type not found
+     * @param isStop Indicates if workScheduleShift is during plant stop
+     * @param teams Teams assigned to the workScheduleShift
+     * @return New Shift, or null if workScheduleShift type not found
      */
     public static Shift createCustomShift(int shiftIndex, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
-        return createCustomShift(shiftType, date, isStop, teams);
+        ShiftType workScheduleShift = ShiftTypeFactory.getShiftType(shiftIndex);
+        return createCustomShift(workScheduleShift, date, isStop, teams);
     }
 
     /**
-     * Creates a custom shift with teams, using a named shift type from the factory.
+     * Creates a custom workScheduleShift with teams, using a named workScheduleShift type from the factory.
      *
-     * @param shiftName Name of shift type in factory
+     * @param shiftName Name of workScheduleShift type in factory
      * @param date Shift date
-     * @param isStop Indicates if shift is during plant stop
-     * @param teams Teams assigned to the shift
-     * @return New Shift, or null if shift type not found
+     * @param isStop Indicates if workScheduleShift is during plant stop
+     * @param teams Teams assigned to the workScheduleShift
+     * @return New Shift, or null if workScheduleShift type not found
      */
     public static Shift createCustomShift(String shiftName, LocalDate date,
                                           boolean isStop, List<HalfTeam> teams) {
-        ShiftType shiftType = ShiftTypeFactory.getShiftType(shiftName);
-        return createCustomShift(shiftType, date, isStop, teams);
+        ShiftType workScheduleShift = ShiftTypeFactory.getShiftType(shiftName);
+        return createCustomShift(workScheduleShift, date, isStop, teams);
     }
 
     /**
@@ -210,9 +210,9 @@ public final class ShiftFactory {
     }
 
     /**
-     * Gets information about available shift types for debugging.
+     * Gets information about available workScheduleShift types for debugging.
      *
-     * @return String with shift type information
+     * @return String with workScheduleShift type information
      */
     public static String getAvailableShiftsInfo() {
         if (!isFactoryReady()) {
@@ -224,11 +224,11 @@ public final class ShiftFactory {
 
         List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
         for (int i = 0; i < shiftTypes.size(); i++) {
-            ShiftType shift = shiftTypes.get(i);
+            ShiftType workScheduleShift = shiftTypes.get(i);
             info.append("  [").append(i).append("] ")
-                    .append(shift.getName())
-                    .append(" (").append(shift.getFormattedStartTime())
-                    .append("-").append(shift.getFormattedEndTime()).append(")\n");
+                    .append(workScheduleShift.getName())
+                    .append(" (").append(workScheduleShift.getFormattedStartTime())
+                    .append("-").append(workScheduleShift.getFormattedEndTime()).append(")\n");
         }
 
         return info.toString();
@@ -246,7 +246,7 @@ public final class ShiftFactory {
         private List<HalfTeam> teams = new ArrayList<>();
 
         /**
-         * Sets shift type by factory index.
+         * Sets workScheduleShift type by factory index.
          */
         public Builder withShiftIndex(int index) {
             this.shiftIndex = index;
@@ -256,7 +256,7 @@ public final class ShiftFactory {
         }
 
         /**
-         * Sets shift type by name from factory.
+         * Sets workScheduleShift type by name from factory.
          */
         public Builder withShiftName(String name) {
             this.shiftName = name;
@@ -266,17 +266,17 @@ public final class ShiftFactory {
         }
 
         /**
-         * Sets custom shift type (not from factory).
+         * Sets custom workScheduleShift type (not from factory).
          */
-        public Builder withCustomShiftType(ShiftType shiftType) {
-            this.customShiftType = shiftType;
+        public Builder withCustomShiftType(ShiftType workScheduleShift) {
+            this.customShiftType = workScheduleShift;
             this.shiftIndex = -1;
             this.shiftName = null;
             return this;
         }
 
         /**
-         * Sets the shift date.
+         * Sets the workScheduleShift date.
          */
         public Builder forDate(LocalDate date) {
             this.date = date;
@@ -284,7 +284,7 @@ public final class ShiftFactory {
         }
 
         /**
-         * Marks the shift as during plant stop.
+         * Marks the workScheduleShift as during plant stop.
          */
         public Builder asStop() {
             this.isStop = true;
@@ -292,7 +292,7 @@ public final class ShiftFactory {
         }
 
         /**
-         * Adds a team to the shift.
+         * Adds a team to the workScheduleShift.
          */
         public Builder addTeam(HalfTeam team) {
             if (team != null) {
@@ -302,7 +302,7 @@ public final class ShiftFactory {
         }
 
         /**
-         * Adds multiple teams to the shift.
+         * Adds multiple teams to the workScheduleShift.
          */
         public Builder addTeams(List<HalfTeam> teams) {
             if (teams != null) {
@@ -312,33 +312,33 @@ public final class ShiftFactory {
         }
 
         /**
-         * Builds the shift with configured parameters.
+         * Builds the workScheduleShift with configured parameters.
          *
          * @return Created Shift, or null if configuration is invalid
          */
         public Shift build() {
             if (date == null) {
-                Log.e(TAG, "Cannot build shift without date");
+                Log.e(TAG, "Cannot build workScheduleShift without date");
                 return null;
             }
 
-            ShiftType shiftType = null;
+            ShiftType workScheduleShift = null;
 
-            // Determine shift type from configuration
+            // Determine workScheduleShift type from configuration
             if (customShiftType != null) {
-                shiftType = customShiftType;
+                workScheduleShift = customShiftType;
             } else if (shiftName != null) {
-                shiftType = ShiftTypeFactory.getShiftType(shiftName);
+                workScheduleShift = ShiftTypeFactory.getShiftType(shiftName);
             } else if (shiftIndex >= 0) {
-                shiftType = ShiftTypeFactory.getShiftType(shiftIndex);
+                workScheduleShift = ShiftTypeFactory.getShiftType(shiftIndex);
             }
 
-            if (shiftType == null) {
-                Log.e(TAG, "Cannot determine shift type for builder");
+            if (workScheduleShift == null) {
+                Log.e(TAG, "Cannot determine workScheduleShift type for builder");
                 return null;
             }
 
-            return createCustomShift(shiftType, date, isStop, teams);
+            return createCustomShift(workScheduleShift, date, isStop, teams);
         }
     }
 }

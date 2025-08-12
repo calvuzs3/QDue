@@ -169,6 +169,7 @@
     <string name="qd_preference_welcome_completed" translatable="false">qdue_welcome_completed</string>
     <string name="qd_preference_view_mode" translatable="false">qdue_view_mode</string>
     <string name="qd_preference_selected_team" translatable="false">qdue_selected_team</string>
+    <string name="qd_preference_selected_team_name" translatable="false">qdue_selected_team_name</string>
     <string name="qd_preference_dynamic_colors_enabled" translatable="false">qdue_dynamic_colors_enabled</string>
 
     <!-- Development Placeholders -->

@@ -444,7 +444,7 @@ public void testSwipeCalendarModuleDependencyInjection() {
 Context context = ApplicationProvider.getApplicationContext();
 EventsService mockEventsService = mock(EventsService.class);
 UserService mockUserService = mock(UserService.class);
-WorkScheduleService mockWorkScheduleService = mock(WorkScheduleService.class);
+WorkScheduleRepository mockWorkScheduleService = mock(WorkScheduleRepository.class);
 
     // Act
     SwipeCalendarModule module = new SwipeCalendarModule(
