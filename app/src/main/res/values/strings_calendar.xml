@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/values/strings_calendar.xml -->
+<!-- String resources for SwipeCalendar feature -->
+<resources>
+
+    <!-- ==================== NAVIGATION ==================== -->
+
+    <!-- Calendar Navigation -->
+    <string name="calendar_navigation_previous_month">Mese precedente</string>
+    <string name="calendar_navigation_next_month">Mese successivo</string>
+    <string name="calendar_navigation_today">Oggi</string>
+    <string name="calendar_navigated_to_today">Navigato al mese corrente</string>
+
+    <!-- Month/Year Format -->
+    <string name="calendar_month_year_format">%1$s %2$s</string>
+
+    <!-- Boundary Messages -->
+    <string name="calendar_boundary_start_message">Hai raggiunto il primo mese disponibile (Gennaio 1900)</string>
+    <string name="calendar_boundary_end_message">Hai raggiunto l\'ultimo mese disponibile (Dicembre 2100)</string>
+
+    <!-- View Mode Switching -->
+    <string name="calendar_switch_to_infinite_view">Vista scorrevole</string>
+    <string name="calendar_switch_to_swipe_view">Vista mensile</string>
+
+    <!-- ==================== WEEK DAYS ==================== -->
+
+    <!-- Short week day names (Monday-Sunday) -->
+    <string name="calendar_day_monday_short">Lun</string>
+    <string name="calendar_day_tuesday_short">Mar</string>
+    <string name="calendar_day_wednesday_short">Mer</string>
+    <string name="calendar_day_thursday_short">Gio</string>
+    <string name="calendar_day_friday_short">Ven</string>
+    <string name="calendar_day_saturday_short">Sab</string>
+    <string name="calendar_day_sunday_short">Dom</string>
+
+    <!-- ==================== LOADING STATES ==================== -->
+
+    <!-- Initial Loading -->
+    <string name="calendar_initializing">Inizializzazione calendario</string>
+    <string name="calendar_initializing_subtitle">Configurazione della vista mensile in corso…</string>
+
+    <!-- Month Data Loading -->
+    <string name="calendar_loading_month_data">Caricamento dati del mese…</string>
+    <string name="calendar_loading_events">Caricamento eventi…</string>
+    <string name="calendar_loading_work_schedule">Caricamento programma di lavoro…</string>
+
+    <!-- ==================== ERROR STATES ==================== -->
+
+    <!-- General Errors -->
+    <string name="calendar_error_title">Errore Calendario</string>
+    <string name="calendar_error_generic_message">Si è verificato un errore durante il caricamento del calendario. Verifica la connessione e riprova.</string>
+    <string name="calendar_error_icon_description">Icona errore calendario</string>
+
+    <!-- Specific Errors -->
+    <string name="error_calendar_initialization_failed">Impossibile inizializzare il calendario</string>
+    <string name="error_calendar_setup_failed">Errore durante la configurazione del calendario</string>
+    <string name="error_calendar_month_load_failed">Errore durante il caricamento dei dati per %1$s</string>
+    <string name="calendar_error_loading_month">Errore caricamento mese</string>
+    <string name="calendar_error_loading_month_subtitle">Tocca per riprovare</string>
+
+    <!-- Network Errors -->
+    <string name="calendar_error_network">Errore di connessione durante il caricamento dei dati</string>
+    <string name="calendar_error_timeout">Timeout durante il caricamento. Riprova.</string>
+
+    <!-- ==================== ACTIONS ==================== -->
+
+    <!-- Calendar Actions -->
+    <string name="calendar_fab_create_event">Crea nuovo evento</string>
+    <string name="calendar_action_view_day">Visualizza giorno</string>
+    <string name="calendar_action_create_event">Crea evento</string>
+    <string name="calendar_action_edit_event">Modifica evento</string>
+
+    <!-- ==================== ACCESSIBILITY ==================== -->
+
+    <!-- Content Descriptions -->
+    <string name="calendar_accessibility_today">oggi</string>
+    <string name="calendar_accessibility_work_scheduled">lavoro programmato</string>
+    <string name="calendar_accessibility_weekend">fine settimana</string>
+    <string name="calendar_accessibility_other_month">altro mese</string>
+
+    <!-- Event Count -->
+    <plurals name="calendar_accessibility_events_count">
+        <item quantity="zero">nessun evento</item>
+        <item quantity="one">%d evento</item>
+        <item quantity="other">%d eventi</item>
+    </plurals>
+
+    <!-- State Descriptions -->
+    <string name="calendar_accessibility_loading">caricamento in corso</string>
+    <string name="calendar_accessibility_error">errore di caricamento</string>
+    <string name="calendar_accessibility_empty">nessun dato disponibile</string>
+
+    <!-- ==================== EVENT INTEGRATION ==================== -->
+
+    <!-- Event Creation -->
+    <string name="calendar_quick_event_title">Evento Rapido</string>
+    <string name="calendar_quick_event_subtitle">Crea un nuovo evento per %1$s</string>
+    <string name="calendar_event_created_success">Evento creato con successo</string>
+    <string name="calendar_event_creation_failed">Errore durante la creazione dell\'evento</string>
+
+    <!-- Event Display -->
+    <string name="calendar_events_for_date">Eventi per %1$s</string>
+    <string name="calendar_no_events">Nessun evento programmato</string>
+    <string name="calendar_multiple_events">%1$d eventi</string>
+
+    <!-- ==================== WORK SCHEDULE ==================== -->
+
+    <!-- Work Schedule Display -->
+    <string name="calendar_work_schedule_tooltip">Turno di lavoro programmato</string>
+    <string name="calendar_no_work_schedule">Nessun turno programmato</string>
+    <string name="calendar_work_schedule_error">Errore caricamento turni</string>
+
+    <!-- ==================== CALENDAR RANGE INFO ==================== -->
+
+    <!-- Range Display -->
+    <string name="calendar_range_info">Dal %1$s al %2$s</string>
+    <string name="calendar_range_total_months">%1$d mesi disponibili</string>
+    <string name="calendar_current_position">Posizione: %1$d di %2$d</string>
+
+    <!-- Range Boundaries -->
+    <string name="calendar_range_start">Gennaio 1900</string>
+    <string name="calendar_range_end">Dicembre 2100</string>
+    <string name="calendar_range_description">Intervallo calendario: 1900–2100</string>
+
+    <!-- ==================== SWIPE GESTURES ==================== -->
+
+    <!-- Gesture Instructions -->
+    <string name="calendar_swipe_instruction">Scorri orizzontalmente per cambiare mese</string>
+    <string name="calendar_swipe_left_hint">Scorri a sinistra per il mese successivo</string>
+    <string name="calendar_swipe_right_hint">Scorri a destra per il mese precedente</string>
+
+    <!-- Gesture Feedback -->
+    <string name="calendar_swipe_blocked">Impossibile scorrere oltre questo limite</string>
+    <string name="calendar_month_changed">Mese cambiato: %1$s</string>
+
+    <!-- ==================== STATE MANAGEMENT ==================== -->
+
+    <!-- State Messages -->
+    <string name="calendar_state_restored">Posizione calendario ripristinata</string>
+    <string name="calendar_state_reset">Posizione calendario reimpostata</string>
+    <string name="calendar_first_launch">Benvenuto nella vista calendario mensile</string>
+
+    <!-- Debug Messages (for development) -->
+    <string name="calendar_debug_position">Posizione: %1$d</string>
+    <string name="calendar_debug_month">Mese: %1$s</string>
+    <string name="calendar_debug_state">Stato: %1$s</string>
+
+    <!-- ==================== INTEGRATION MESSAGES ==================== -->
+
+    <!-- Service Integration -->
+    <string name="calendar_service_unavailable">Servizio calendario non disponibile</string>
+    <string name="calendar_data_sync_error">Errore sincronizzazione dati</string>
+    <string name="calendar_permission_required">Autorizzazione richiesta per accedere al calendario</string>
+
+    <!-- User Context -->
+    <string name="calendar_user_not_selected">Seleziona un utente per visualizzare i dati</string>
+    <string name="calendar_team_data_loading">Caricamento dati squadra…</string>
+
+
+    <!-- Shift Type Names -->
+    <string name="shift_morning_name">Mattino</string>
+    <string name="shift_afternoon_name">Pomeriggio</string>
+    <string name="shift_night_name">Notte</string>
+
+    <!-- ==================== SHIFT TYPE ==================== -->
+
+    <!-- Shift Type Descriptions -->
+    <string name="shift_morning_description">Turno mattutino 05:00–13:00</string>
+    <string name="shift_afternoon_description">Turno pomeridiano 13:00–21:00</string>
+    <string name="shift_night_description">Turno notturno 21:00–05:00</string>
+
+    <string name="team_standard_description_template">Team standard QuattroDue</string>
+
+    <!-- Work Schedule Terms -->
+    <string name="schedule_pattern_quattrodue">QuattroDue 4–2</string>
+    <string name="schedule_cycle_length">Ciclo di 18 giorni</string>
+    <string name="schedule_team_working">Team al lavoro</string>
+    <string name="schedule_team_off_work">Team a riposo</string>
+    <string name="schedule_shift_break">Pausa</string>
+    <string name="schedule_shift_no_break">Senza pausa</string>
+
+    <!-- Calendar Integration -->
+    <string name="calendar_work_schedule_title">Programma Turni</string>
+    <string name="calendar_work_schedule_summary">Visualizza il programma dei turni di lavoro</string>
+
+    <!-- Validation Messages -->
+    <string name="error_scheme_date_invalid">Data inizio schema non valida</string>
+    <string name="error_team_not_found">Team non trovato</string>
+    <string name="error_shift_calculation_failed">Errore nel calcolo dei turni</string>
+
+    <!-- Success Messages -->
+    <string name="success_scheme_date_updated">Data inizio schema aggiornata</string>
+    <string name="success_cache_cleared">Cache pulita</string>
+    <string name="success_schedule_refreshed">Programma turni aggiornato</string>
+
+
+    <!-- Recurrence Rule Frequencies -->
+    <string name="frequency_daily">Giornaliero</string>
+    <string name="frequency_weekly">Settimanale</string>
+    <string name="frequency_monthly">Mensile</string>
+    <string name="frequency_quattrodue_cycle">Ciclo QuattroDue</string>
+
+    <!-- Exception Types -->
+    <string name="exception_type_vacation">Ferie</string>
+    <string name="exception_type_sick_leave">Malattia</string>
+    <string name="exception_type_shift_swap">Scambio turno</string>
+    <string name="exception_type_personal_reduction">Riduzione personale</string>
+    <string name="exception_type_rol_reduction">ROL</string>
+    <string name="exception_type_union_time">Permesso sindacale</string>
+
+    <!-- Approval Status -->
+    <string name="approval_status_draft">Bozza</string>
+    <string name="approval_status_pending">In attesa</string>
+    <string name="approval_status_approved">Approvato</string>
+    <string name="approval_status_rejected">Rifiutato</string>
+    <string name="approval_status_cancelled">Annullato</string>
+    <string name="approval_status_expired">Scaduto</string>
+
+    <!-- Priority Levels -->
+    <string name="priority_low_priority">Priorità bassa</string>
+    <string name="priority_normal_priority">Priorità normale</string>
+    <string name="priority_high_priority">Priorità alta</string>
+    <string name="priority_urgent_priority">Priorità urgente</string>
+    <string name="priority_override_priority">Priorità sostituzione</string>
+
+    <!-- Assignment Status -->
+    <string name="assignment_status_active">Attivo</string>
+    <string name="assignment_status_pending">In attesa</string>
+    <string name="assignment_status_expired">Scaduto</string>
+    <string name="assignment_status_suspended">Sospeso</string>
+    <string name="assignment_status_cancelled">Annullato</string>
+
+    <!-- Templates -->
+    <string name="user_display_template">Utente %d</string>
+    <string name="assignment_display_title">%s → %s</string>
+    <string name="assignment_permanent_period">Dal %s (Permanente)</string>
+    <string name="assignment_time_period">Dal %s al %s</string>
+    <string name="recurrence_end_count_template">Termina dopo %d occorrenze</string>
+    <string name="recurrence_end_date_template">Termina il %s</string>
+    <string name="default_shift_swap_title">Scambio turno con utente %d</string>
+
+    <!-- Default Titles -->
+    <string name="standard_assignment_title">Assegnazione standard team</string>
+    <string name="temporary_assignment_title">Assegnazione temporanea</string>
+    <string name="team_transfer_title">Trasferimento team</string>
+    <string name="default_exception_title_absence_vacation">Ferie</string>
+    <string name="default_exception_title_absence_sick">Malattia</string>
+    <string name="default_exception_title_change_swap">Scambio turno</string>
+    <string name="default_reduction_title_personal_reduction">Riduzione orario personale</string>
+    <string name="default_reduction_title_rol_reduction">ROL</string>
+    <string name="default_reduction_title_union_time">Permesso sindacale</string>
+
+    <!-- Recurrence Rules -->
+    <string name="recurrence_rule_quattrodue_cycle">Ciclo QuattroDue 4–2</string>
+    <string name="recurrence_rule_weekdays">Solo giorni feriali</string>
+    <string name="recurrence_rule_daily">Pattern giornaliero</string>
+    <string name="recurrence_rule_desc_quattrodue_cycle">Pattern QuattroDue standard: 4 periodi lavoro, 2 riposo</string>
+    <string name="recurrence_rule_desc_weekdays">Dal lunedì al venerdì</string>
+    <string name="recurrence_rule_desc_daily">Ogni %d giorni</string>
+
+    <!-- End Conditions -->
+    <string name="recurrence_end_never">Nessuna fine</string>
+    <string name="recurrence_end_count">Numero occorrenze</string>
+    <string name="recurrence_end_until_date">Fino a data specifica</string>
+
+
+    <!--
+    ==================== SHIFT EXCEPTION LOCALIZATION ====================
+    Scope: shift_exception
+    Used by: ShiftException domain model
+    ====================
+    -->
+
+    <!-- Exception Types -->
+    <string name="domain_shift_exception_type_absence_vacation">Ferie</string>
+    <string name="domain_shift_exception_type_absence_vacation_description">Giorni di ferie programmati</string>
+
+    <string name="domain_shift_exception_type_absence_sick">Malattia</string>
+    <string name="domain_shift_exception_type_absence_sick_description">Assenza per motivi medici</string>
+
+    <string name="domain_shift_exception_type_absence_special">Permesso Speciale</string>
+    <string name="domain_shift_exception_type_absence_special_description">Permesso personale, familiare o di emergenza</string>
+
+    <string name="domain_shift_exception_type_change_company">Cambio Aziendale</string>
+    <string name="domain_shift_exception_type_change_company_description">Cambio turno disposto dall\'azienda</string>
+
+    <string name="domain_shift_exception_type_change_swap">Scambio Turno</string>
+    <string name="domain_shift_exception_type_change_swap_description">Scambio volontario tra colleghi</string>
+
+    <string name="domain_shift_exception_type_change_special">Copertura Speciale</string>
+    <string name="domain_shift_exception_type_change_special_description">Copertura per eventi o emergenze</string>
+
+    <string name="domain_shift_exception_type_reduction_personal">Riduzione Personale</string>
+    <string name="domain_shift_exception_type_reduction_personal_description">Richiesta di riduzione orario personale</string>
+
+    <string name="domain_shift_exception_type_reduction_rol">Riduzione ROL</string>
+    <string name="domain_shift_exception_type_reduction_rol_description">Riduzione Orario di Lavoro</string>
+
+    <string name="domain_shift_exception_type_reduction_union">Attività Sindacale</string>
+    <string name="domain_shift_exception_type_reduction_union_description">Permesso per attività sindacali</string>
+
+    <string name="domain_shift_exception_type_custom">Eccezione Personalizzata</string>
+    <string name="domain_shift_exception_type_custom_description">Regola aziendale personalizzata</string>
+
+    <!-- Exception Status -->
+    <string name="domain_shift_exception_status_draft">Bozza</string>
+    <string name="domain_shift_exception_status_draft_description">In fase di creazione, non ancora inviata</string>
+
+    <string name="domain_shift_exception_status_pending">In Attesa</string>
+    <string name="domain_shift_exception_status_pending_description">Inviata, in attesa di approvazione</string>
+
+    <string name="domain_shift_exception_status_approved">Approvata</string>
+    <string name="domain_shift_exception_status_approved_description">Approvata e attiva</string>
+
+    <string name="domain_shift_exception_status_rejected">Rifiutata</string>
+    <string name="domain_shift_exception_status_rejected_description">Rifiutata dal supervisore</string>
+
+    <string name="domain_shift_exception_status_cancelled">Annullata</string>
+    <string name="domain_shift_exception_status_cancelled_description">Annullata dal richiedente</string>
+
+    <string name="domain_shift_exception_status_expired">Scaduta</string>
+    <string name="domain_shift_exception_status_expired_description">Scaduta senza approvazione</string>
+
+    <!-- Exception Priority -->
+    <string name="domain_shift_exception_priority_low">Bassa</string>
+    <string name="domain_shift_exception_priority_normal">Normale</string>
+    <string name="domain_shift_exception_priority_high">Alta</string>
+    <string name="domain_shift_exception_priority_urgent">Urgente</string>
+
+    <!-- Duration Descriptions -->
+    <string name="domain_shift_exception_duration_full_day">Giornata Intera</string>
+    <string name="domain_shift_exception_duration_unspecified">Non Specificato</string>
+    <string name="domain_shift_exception_duration_hours_minutes">%1$dh %2$dm</string>
+    <string name="domain_shift_exception_duration_hours_only">%1$dh</string>
+    <string name="domain_shift_exception_duration_minutes_only">%1$dm</string>
+
+    <!-- Approval Messages -->
+    <string name="domain_shift_exception_approval_approved_by">Approvata da %1$s</string>
+    <string name="domain_shift_exception_approval_rejected_reason">Rifiutata: %1$s</string>
+    <string name="domain_shift_exception_approval_pending_review">In Attesa di Revisione</string>
+
+    <!--
+    ==================== USER ASSIGNMENT LOCALIZATION ====================
+    Scope: user_assignment
+    Used by: UserScheduleAssignment domain model
+    ====================
+    -->
+
+    <!-- Assignment Priority -->
+    <string name="domain_user_assignment_priority_low">Bassa</string>
+    <string name="domain_user_assignment_priority_normal">Normale</string>
+    <string name="domain_user_assignment_priority_high">Alta</string>
+    <string name="domain_user_assignment_priority_override">Priorità Assoluta</string>
+
+    <!-- Assignment Status -->
+    <string name="domain_user_assignment_status_active">Attiva</string>
+    <string name="domain_user_assignment_status_active_description">Assegnazione attualmente attiva</string>
+
+    <string name="domain_user_assignment_status_pending">In Attesa</string>
+    <string name="domain_user_assignment_status_pending_description">Assegnazione futura non ancora attiva</string>
+
+    <string name="domain_user_assignment_status_expired">Scaduta</string>
+    <string name="domain_user_assignment_status_expired_description">Assegnazione passata non più attiva</string>
+
+    <string name="domain_user_assignment_status_suspended">Sospesa</string>
+    <string name="domain_user_assignment_status_suspended_description">Temporaneamente sospesa</string>
+
+    <string name="domain_user_assignment_status_cancelled">Annullata</string>
+    <string name="domain_user_assignment_status_cancelled_description">Assegnazione annullata</string>
+
+    <!-- Display and Period -->
+    <string name="domain_user_assignment_display_title">%1$s - %2$s</string>
+    <string name="domain_user_assignment_period_permanent">Dal %1$s</string>
+    <string name="domain_user_assignment_period_temporary">%1$s al %2$s</string>
+
+    <!-- Assignment Types -->
+    <string name="domain_user_assignment_type_permanent">Assegnazione Permanente</string>
+    <string name="domain_user_assignment_type_short_term">Assegnazione a Breve Termine (%1$d giorni)</string>
+    <string name="domain_user_assignment_type_medium_term">Assegnazione a Medio Termine (%1$d giorni)</string>
+    <string name="domain_user_assignment_type_long_term">Assegnazione a Lungo Termine (%1$d giorni)</string>
+
+    <!-- Effective Status Messages -->
+    <string name="domain_user_assignment_effective_status_active_permanent">Attiva (Permanente)</string>
+    <string name="domain_user_assignment_effective_status_active_temporary">Attiva (Fino al %1$s)</string>
+    <string name="domain_user_assignment_effective_status_pending_start">Inizia il %1$s</string>
+    <string name="domain_user_assignment_effective_status_expired_on">Scaduta il %1$s</string>
+
+    <!-- Duration Descriptions -->
+    <string name="domain_user_assignment_duration_permanent">Permanente</string>
+    <string name="domain_user_assignment_duration_unspecified">Non Specificato</string>
+    <string name="domain_user_assignment_duration_one_day">1 Giorno</string>
+    <string name="domain_user_assignment_duration_days">%1$d Giorni</string>
+    <string name="domain_user_assignment_duration_weeks">%1$d Settimane</string>
+    <string name="domain_user_assignment_duration_weeks_days">%1$d Settimane, %2$d Giorni</string>
+    <string name="domain_user_assignment_duration_months">%1$d Mesi</string>
+    <string name="domain_user_assignment_duration_months_days">%1$d Mesi, %2$d Giorni</string>
+
+    <!-- Context Information -->
+    <string name="domain_user_assignment_context_assigned_by">Assegnata da %1$s</string>
+    <string name="domain_user_assignment_context_department_role">%1$s - %2$s</string>
+    <string name="domain_user_assignment_context_department_only">Dipartimento: %1$s</string>
+    <string name="domain_user_assignment_context_role_only">Ruolo: %1$s</string>
+    <string name="domain_user_assignment_context_standard">Assegnazione Standard</string>
+
+    <!--
+    ==================== COMMON CALENDAR LOCALIZATION ====================
+    Used by: General calendar functionality
+    ====================
+    -->
+
+    <!-- Common Terms -->
+    <string name="domain_calendar_common_user">Utente</string>
+    <string name="domain_calendar_common_team">Squadra</string>
+    <string name="domain_calendar_common_shift">Turno</string>
+    <string name="domain_calendar_common_schedule">Programma</string>
+    <string name="domain_calendar_common_assignment">Assegnazione</string>
+    <string name="domain_calendar_common_exception">Eccezione</string>
+
+    <!-- Date and Time -->
+    <string name="domain_calendar_time_start">Inizio</string>
+    <string name="domain_calendar_time_end">Fine</string>
+    <string name="domain_calendar_time_duration">Durata</string>
+    <string name="domain_calendar_date_from">Dal</string>
+    <string name="domain_calendar_date_to">Al</string>
+    <string name="domain_calendar_date_on">Il</string>
+
+    <!-- Actions -->
+    <string name="domain_calendar_action_approve">Approva</string>
+    <string name="domain_calendar_action_reject">Rifiuta</string>
+    <string name="domain_calendar_action_cancel">Annulla</string>
+    <string name="domain_calendar_action_submit">Invia</string>
+    <string name="domain_calendar_action_edit">Modifica</string>
+    <string name="domain_calendar_action_delete">Elimina</string>
+
+    <!-- Validation Messages -->
+    <string name="domain_calendar_validation_required_field">Campo obbligatorio</string>
+    <string name="domain_calendar_validation_invalid_date">Data non valida</string>
+    <string name="domain_calendar_validation_invalid_time">Orario non valido</string>
+    <string name="domain_calendar_validation_conflict_detected">Conflitto rilevato</string>
+    <string name="domain_calendar_validation_end_before_start">L\'orario di fine non può essere precedente a quello di inizio</string>
+
+    <!-- Success Messages -->
+    <string name="domain_calendar_success_created">Creato con successo</string>
+    <string name="domain_calendar_success_updated">Aggiornato con successo</string>
+    <string name="domain_calendar_success_deleted">Eliminato con successo</string>
+    <string name="domain_calendar_success_approved">Approvato con successo</string>
+    <string name="domain_calendar_success_rejected">Rifiutato con successo</string>
+
+    <!-- Error Messages -->
+    <string name="domain_calendar_error_not_found">Elemento non trovato</string>
+    <string name="domain_calendar_error_permission_denied">Permesso negato</string>
+    <string name="domain_calendar_error_already_exists">Elemento già esistente</string>
+    <string name="domain_calendar_error_cannot_modify">Impossibile modificare</string>
+    <string name="domain_calendar_error_database">Errore del database</string>
+
+
+
+
+
+
+
+    <!--
+    ==================== RECURRENCE RULE LOCALIZATION ====================
+    Scope: recurrence
+    Used by: RecurrenceRule domain model
+    ====================
+    -->
+
+    <!-- Frequency Types -->
+    <string name="domain_recurrence_frequency_daily">Giornaliero</string>
+    <string name="domain_recurrence_frequency_daily_description">Ogni %d giorni</string>
+    <string name="domain_recurrence_frequency_weekly">Settimanale</string>
+    <string name="domain_recurrence_frequency_weekly_description">Ogni %d settimane</string>
+    <string name="domain_recurrence_frequency_monthly">Mensile</string>
+    <string name="domain_recurrence_frequency_monthly_description">Ogni %d mesi</string>
+    <string name="domain_recurrence_frequency_yearly">Annuale</string>
+    <string name="domain_recurrence_frequency_yearly_description">Ogni %d anni</string>
+    <string name="domain_recurrence_frequency_quattrodue_cycle">Ciclo QuattroDue</string>
+    <string name="domain_recurrence_frequency_quattrodue_cycle_description">Ciclo QuattroDue 4–2</string>
+
+    <!-- End Conditions -->
+    <string name="domain_recurrence_end_never">Mai</string>
+    <string name="domain_recurrence_end_count">Dopo %d occorrenze</string>
+    <string name="domain_recurrence_end_until">Fino al %s</string>
+    <string name="domain_recurrence_end_count_end_type">Conta</string>
+    <string name="domain_recurrence_end_until_date_end_type">Fino a data</string>
+
+    <!--
+    ==================== SHIFT LOCALIZATION ====================
+    Scope: shift
+    Used by: Shift domain model
+    ====================
+    -->
+
+    <!-- Shift Types -->
+    <string name="domain_shift_type_cycle_42">Ciclo 4–2</string>
+    <string name="domain_shift_type_daily">Giornaliero</string>
+    <string name="domain_shift_type_morning">Mattino</string>
+    <string name="domain_shift_type_afternoon">Pomeriggio</string>
+    <string name="domain_shift_type_night">Notte</string>
+
+    <!-- Shift Type Codes -->
+    <string name="domain_shift_code_cycle_42">C42</string>
+    <string name="domain_shift_code_daily">G</string>
+    <string name="domain_shift_code_morning">M</string>
+    <string name="domain_shift_code_afternoon">P</string>
+    <string name="domain_shift_code_night">N</string>
+
+    <!-- Shift Display -->
+    <string name="domain_shift_type_custom">Personalizzato</string>
+    <string name="domain_shift_description_custom">%s</string>
+
+    <!-- Break Information -->
+    <string name="domain_shift_break_label">pausa</string>
+    <string name="domain_shift_break_unpaid">non pagata</string>
+    <string name="domain_shift_break_none">Nessuna pausa</string>
+
+    <!-- Time Labels -->
+    <string name="domain_shift_time_minutes_short">min</string>
+    <string name="domain_shift_time_minutes">minuti</string>
+    <string name="domain_shift_time_crosses_midnight">attraversa la mezzanotte</string>
+
+    <!--
+    ==================== TEAM LOCALIZATION ====================
+    Scope: team
+    Used by: Team domain model
+    ====================
+    -->
+
+    <!-- Team Types -->
+    <string name="domain_team_type_standard">Standard</string>
+    <string name="domain_team_type_standard_description">Team di lavoro standard</string>
+    <string name="domain_team_type_quattrodue">QuattroDue</string>
+    <string name="domain_team_type_quattrodue_description">Team ciclo QuattroDue</string>
+    <string name="domain_team_type_emergency">Emergenza</string>
+    <string name="domain_team_type_emergency_description">Team di risposta alle emergenze</string>
+    <string name="domain_team_type_management">Gestione</string>
+    <string name="domain_team_type_management_description">Team di gestione e supervisione</string>
+    <string name="domain_team_type_support">Supporto</string>
+    <string name="domain_team_type_support_description">Team di supporto e ausiliari</string>
+    <string name="domain_team_type_unspecified">Non specificato</string>
+    <string name="domain_team_type_unspecified_description">Nessun tipo specifico</string>
+
+    <!-- Team Status -->
+    <string name="domain_team_status_active">Attivo</string>
+    <string name="domain_team_status_inactive">Inattivo</string>
+
+    <!-- Team Labels -->
+    <string name="domain_team_label_team">Team</string>
+    <string name="domain_team_label_id">ID</string>
+    <string name="domain_team_label_type">Tipo</string>
+    <string name="domain_team_label_status">Stato</string>
+    <string name="domain_team_label_description">Descrizione</string>
+
+    <!-- Team Formatting -->
+    <string name="domain_team_format_name_description_separator"> - </string>
+    <string name="domain_team_format_id_parentheses"> (%s)</string>
+    <string name="domain_team_format_type_brackets"> [%s]</string>
+    <string name="domain_team_status_inactive_suffix"> [INATTIVO]</string>
+
+    <!--
+    ==================== CALENDAR DAY LOCALIZATION ====================
+    Scope: calendar (additional to existing)
+    Used by: WorkScheduleDay domain model
+    ====================
+    -->
+
+    <!-- Day Status -->
+    <string name="domain_calendar_status_working_day">Giorno Lavorativo</string>
+    <string name="domain_calendar_status_working_day_description">Giorno lavorativo regolare con turni</string>
+    <string name="domain_calendar_status_rest_day">Giorno di Riposo</string>
+    <string name="domain_calendar_status_rest_day_description">Giorno di riposo senza turni</string>
+    <string name="domain_calendar_status_holiday">Festività</string>
+    <string name="domain_calendar_status_holiday_description">Festività con accordi speciali</string>
+    <string name="domain_calendar_status_partial_day">Giornata Parziale</string>
+    <string name="domain_calendar_status_partial_day_description">Giornata lavorativa parziale con turni ridotti</string>
+
+    <!-- Day Names -->
+    <string name="domain_calendar_day_today">Oggi</string>
+    <string name="domain_calendar_day_yesterday">Ieri</string>
+    <string name="domain_calendar_day_tomorrow">Domani</string>
+
+    <!-- Days of Week -->
+    <string name="domain_calendar_day_of_week_monday">Lunedì</string>
+    <string name="domain_calendar_day_of_week_tuesday">Martedì</string>
+    <string name="domain_calendar_day_of_week_wednesday">Mercoledì</string>
+    <string name="domain_calendar_day_of_week_thursday">Giovedì</string>
+    <string name="domain_calendar_day_of_week_friday">Venerdì</string>
+    <string name="domain_calendar_day_of_week_saturday">Sabato</string>
+    <string name="domain_calendar_day_of_week_sunday">Domenica</string>
+
+    <!-- Shift Count -->
+    <string name="domain_calendar_shifts_none">Nessun turno</string>
+    <string name="domain_calendar_shifts_single">1 turno</string>
+    <string name="domain_calendar_shifts_multiple">%d turni</string>
+
+    <!-- Team Status -->
+    <string name="domain_calendar_teams_working">Team al lavoro</string>
+    <string name="domain_calendar_teams_off_work">Team a riposo</string>
+    <string name="domain_calendar_teams_no_info">Nessuna informazione sui team</string>
+
+    <!-- Time Relative -->
+    <string name="domain_calendar_time_in_one_day">Fra 1 giorno</string>
+    <string name="domain_calendar_time_in_days">Fra %d giorni</string>
+    <string name="domain_calendar_time_one_day_ago">1 giorno fa</string>
+    <string name="domain_calendar_time_days_ago">%d giorni fa</string>
+
+    <!-- Status Indicators -->
+    <string name="domain_calendar_status_working_day_indicator">L</string>
+    <string name="domain_calendar_status_rest_day_indicator">R</string>
+    <string name="domain_calendar_status_holiday_indicator">F</string>
+    <string name="domain_calendar_status_partial_day_indicator">P</string>
+    <string name="domain_calendar_indicator_has_shifts">●</string>
+
+    <!-- Formatting -->
+    <string name="domain_calendar_format_team_status_separator"> | </string>
+    <string name="domain_calendar_format_date_parentheses"> (%s)</string>
+    <string name="domain_calendar_format_status_brackets"> [%s]</string>
+    <string name="domain_calendar_format_summary_separator"> - </string>
+
+    <!--
+    ==================== WORK EVENT LOCALIZATION ====================
+    Scope: work_event
+    Used by: WorkScheduleEvent domain model
+    ====================
+    -->
+
+    <!-- Event Types -->
+    <string name="domain_work_event_type_shift_event">Evento Turno</string>
+    <string name="domain_work_event_type_shift_event_description">Evento turno di lavoro regolare</string>
+    <string name="domain_work_event_type_break_event">Evento Pausa</string>
+    <string name="domain_work_event_type_break_event_description">Evento pausa o periodo di riposo</string>
+    <string name="domain_work_event_type_overtime_event">Evento Straordinario</string>
+    <string name="domain_work_event_type_overtime_event_description">Evento lavoro straordinario</string>
+    <string name="domain_work_event_type_special_event">Evento Speciale</string>
+    <string name="domain_work_event_type_special_event_description">Evento speciale o personalizzato</string>
+
+    <!-- Time and Duration -->
+    <string name="domain_work_event_time_no_timing">Nessun orario</string>
+    <string name="domain_work_event_time_midnight_indicator">+1</string>
+    <string name="domain_work_event_duration_unknown">Durata sconosciuta</string>
+    <string name="domain_work_event_duration_one_minute">1 minuto</string>
+    <string name="domain_work_event_duration_minutes">%d minuti</string>
+    <string name="domain_work_event_duration_one_hour">1 ora</string>
+    <string name="domain_work_event_duration_hours">%d ore</string>
+    <string name="domain_work_event_duration_hours_minutes">%dh %dm</string>
+
+    <!-- Team Assignment -->
+    <string name="domain_work_event_team_no_assignment">Nessuna assegnazione team</string>
+    <string name="domain_work_event_team_label">Team</string>
+
+    <!-- Event Labels -->
+    <string name="domain_work_event_label_duration">Durata</string>
+    <string name="domain_work_event_label_pattern">Pattern</string>
+    <string name="domain_work_event_label_day_in_cycle"> (Giorno %d)</string>
+    <string name="domain_work_event_label_type">Tipo</string>
+    <string name="domain_work_event_label_time">Orario</string>
+
+    <!-- Event Formatting -->
+    <string name="domain_work_event_format_summary_separator"> - </string>
+    <string name="domain_work_event_format_type_brackets"> [%s]</string>
+
+    <!--
+    ==================== WORK SHIFT LOCALIZATION ====================
+    Scope: work_shift
+    Used by: WorkScheduleShift domain model
+    ====================
+    -->
+
+    <!-- Time Range -->
+    <string name="domain_work_shift_time_range_format">%s</string>
+    <string name="domain_work_shift_time_period"> (%s)</string>
+    <string name="domain_work_shift_time_start">Inizio</string>
+    <string name="domain_work_shift_time_end">Fine</string>
+
+    <!-- Teams -->
+    <string name="domain_work_shift_teams_none">Nessun team assegnato</string>
+    <string name="domain_work_shift_teams_none_assigned">Nessun team assegnato</string>
+    <string name="domain_work_shift_teams_single">1 team</string>
+    <string name="domain_work_shift_teams_multiple">%d team</string>
+    <string name="domain_work_shift_teams_assigned">Team</string>
+
+    <!-- Shift Information -->
+    <string name="domain_work_shift_shift_unknown">Turno sconosciuto</string>
+    <string name="domain_work_shift_description_label">Descrizione</string>
+    <string name="domain_work_shift_timing_details">Dettagli orario</string>
+    <string name="domain_work_shift_duration_label">Durata</string>
+    <string name="domain_work_shift_duration_minutes"> [%d min]</string>
+    <string name="domain_work_shift_time_minutes">minuti</string>
+    <string name="domain_work_shift_time_crosses_midnight_note">Nota: Questo turno attraversa la mezzanotte</string>
+
+    <!-- Shift Formatting -->
+    <string name="domain_work_shift_format_summary_separator"> - </string>
+
+</resources>

@@ -3,6 +3,10 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
+import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
+import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
+
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +18,7 @@ import java.util.UUID;
  *
  * <p>This is a clean architecture domain model representing shift type definitions independent
  * of external frameworks. Defines templates for shifts including timing, duration, breaks,
- * and visual appearance properties for calendar integration.</p>
+ * and visual appearance properties for calendar integration with full localization support.</p>
  *
  * <h3>Key Features:</h3>
  * <ul>
@@ -23,77 +27,87 @@ import java.util.UUID;
  *   <li><strong>Timing Management</strong>: Start/end times with midnight crossing support</li>
  *   <li><strong>Break Management</strong>: Optional break time with inclusion flexibility</li>
  *   <li><strong>Visual Properties</strong>: Color management for calendar display</li>
+ *   <li><strong>Localization Support</strong>: Full i18n support for all display text</li>
  *   <li><strong>Domain-Driven</strong>: No external dependencies, pure business model</li>
  * </ul>
  *
  * <h3>Shift Types:</h3>
  * <ul>
- *   <li><strong>MORNING</strong>: Early shift (typically 06:00-14:00)</li>
- *   <li><strong>AFTERNOON</strong>: Middle shift (typically 14:00-22:00)</li>
+ *   <li><strong>CYCLE_42</strong>: QuattroDue 4-2 cycle shift</li>
+ *   <li><strong>DAILY</strong>: Standard daily shift</li>
+ *   <li><strong>MORNING</strong>: Morning shift (typically 06:00-14:00)</li>
+ *   <li><strong>AFTERNOON</strong>: Afternoon shift (typically 14:00-22:00)</li>
  *   <li><strong>NIGHT</strong>: Night shift (typically 22:00-06:00)</li>
  * </ul>
  *
  * <h3>Usage Examples:</h3>
  * <pre>
  * {@code
- * // Create morning shift
+ * // Create localized morning shift
  * Shift morningShift = Shift.builder("Morning Shift")
  *     .setStartTime(LocalTime.of(6, 0))
  *     .setEndTime(LocalTime.of(14, 0))
+ *     .setShiftType(ShiftType.MORNING)
  *     .setColorHex("#4CAF50")
  *     .setHasBreakTime(true)
  *     .setBreakTimeDuration(Duration.ofMinutes(30))
+ *     .localizer(domainLocalizer)
  *     .build();
  *
- * // Check timing
- * boolean crossesMidnight = morningShift.crossesMidnight();
- * Duration workDuration = morningShift.getWorkDuration();
+ * // Get localized display
+ * String localizedName = morningShift.getTypeDisplayName();
+ * String localizedSummary = morningShift.getLocalizedSummary();
  * }
  * </pre>
  *
  * @author QDue Development Team
- * @version 1.0.0 - Clean Architecture Implementation
- * @since Database Version 6
+ * @version 2.0.0 - Localization Implementation
+ * @since Clean Architecture Phase 2
  */
-public class Shift {
+public class Shift extends LocalizableDomainModel {
 
     public static final String TAG = Shift.class.getSimpleName();
+
+    private static final String LOCALIZATION_SCOPE = "shift";
 
     // ==================== SHIFT TYPE ENUM ====================
 
     /**
-     * Enumeration of shift types in the work schedule system.
+     * Enumeration of shift types in the work schedule system with localization keys.
      */
     public enum ShiftType {
-        CYCLE_42("Cycle 4-2", "C42"),
-        DAILY("Daily", "D");
+        CYCLE_42("cycle_42", "c42"),
+        DAILY("daily", "d"),
+        MORNING("morning", "m"),
+        AFTERNOON("afternoon", "a"),
+        NIGHT("night", "n");
 
-        private final String displayName;
-        private final String shortCode;
+        private final String displayNameKey;
+        private final String shortCodeKey;
 
-        ShiftType(String displayName, String shortCode) {
-            this.displayName = displayName;
-            this.shortCode = shortCode;
+        ShiftType(String displayNameKey, String shortCodeKey) {
+            this.displayNameKey = displayNameKey;
+            this.shortCodeKey = shortCodeKey;
         }
 
         /**
-         * Get display name for UI presentation.
+         * Get localization key for display name.
          *
-         * @return Human-readable shift type name
+         * @return Localization key for display name
          */
         @NonNull
-        public String getDisplayName() {
-            return displayName;
+        public String getDisplayNameKey() {
+            return displayNameKey;
         }
 
         /**
-         * Get short code for compact display.
+         * Get localization key for short code.
          *
-         * @return Single character code (M/A/N)
+         * @return Localization key for short code
          */
         @NonNull
-        public String getShortCode() {
-            return shortCode;
+        public String getShortCodeKey() {
+            return shortCodeKey;
         }
     }
 
@@ -121,53 +135,32 @@ public class Shift {
     // ==================== CONSTRUCTORS ====================
 
     /**
-     * Complete constructor for Shift creation.
-     *
-     * @param id Unique identifier (null for auto-generation)
-     * @param name Shift name
-     * @param description Shift description
-     * @param shiftType Type classification
-     * @param startTime Start time
-     * @param endTime End time
-     * @param colorHex Color in hex format
-     * @param isUserRelevant Whether shift is relevant to current user
-     * @param hasBreakTime Whether shift includes break
-     * @param isBreakTimeIncluded Whether break is included in work duration
-     * @param breakTimeDuration Duration of break time
+     * Private constructor for builder pattern with localization support.
      */
-    public Shift(@Nullable String id,
-                 @NonNull String name,
-                 @Nullable String description,
-                 @Nullable ShiftType shiftType,
-                 @NonNull LocalTime startTime,
-                 @NonNull LocalTime endTime,
-                 @Nullable String colorHex,
-                 boolean isUserRelevant,
-                 boolean hasBreakTime,
-                 boolean isBreakTimeIncluded,
-                 @Nullable Duration breakTimeDuration) {
+    private Shift(@NonNull Builder builder) {
+        super(builder.mLocalizer, LOCALIZATION_SCOPE);
 
         // Validation
-        Objects.requireNonNull(name, "Shift name cannot be null");
-        Objects.requireNonNull(startTime, "Start time cannot be null");
-        Objects.requireNonNull(endTime, "End time cannot be null");
+        Objects.requireNonNull(builder.name, "Shift name cannot be null");
+        Objects.requireNonNull(builder.startTime, "Start time cannot be null");
+        Objects.requireNonNull(builder.endTime, "End time cannot be null");
 
-        if (name.trim().isEmpty()) {
+        if (builder.name.trim().isEmpty()) {
             throw new IllegalArgumentException("Shift name cannot be empty");
         }
 
         // Core properties
-        this.id = (id != null && !id.trim().isEmpty()) ? id.trim() : generateUUID();
-        this.name = name.trim();
-        this.description = description != null ? description.trim() : "";
-        this.shiftType = shiftType;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.colorHex = colorHex != null ? colorHex.trim() : "#2196F3"; // Default blue
-        this.isUserRelevant = isUserRelevant;
-        this.hasBreakTime = hasBreakTime;
-        this.isBreakTimeIncluded = isBreakTimeIncluded;
-        this.breakTimeDuration = breakTimeDuration != null ? breakTimeDuration : Duration.ZERO;
+        this.id = (builder.id != null && !builder.id.trim().isEmpty()) ? builder.id.trim() : generateUUID();
+        this.name = builder.name.trim();
+        this.description = builder.description != null ? builder.description.trim() : "";
+        this.shiftType = builder.shiftType;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
+        this.colorHex = builder.colorHex != null ? builder.colorHex.trim() : "#2196F3"; // Default blue
+        this.isUserRelevant = builder.isUserRelevant;
+        this.hasBreakTime = builder.hasBreakTime;
+        this.isBreakTimeIncluded = builder.isBreakTimeIncluded;
+        this.breakTimeDuration = builder.breakTimeDuration != null ? builder.breakTimeDuration : Duration.ZERO;
 
         // Calculate derived properties
         this.crossesMidnight = endTime.isBefore(startTime);
@@ -176,17 +169,6 @@ public class Shift {
 
         // Cache hash code
         this.hashCodeCache = Objects.hash(this.id);
-    }
-
-    /**
-     * Simplified constructor for basic shift creation.
-     *
-     * @param name Shift name
-     * @param startTime Start time
-     * @param endTime End time
-     */
-    public Shift(@NonNull String name, @NonNull LocalTime startTime, @NonNull LocalTime endTime) {
-        this(null, name, null, null, startTime, endTime, null, false, false, false, null);
     }
 
     // ==================== GETTERS ====================
@@ -437,17 +419,57 @@ public class Shift {
         return name.substring(0, 1).toUpperCase();
     }
 
+    // ==================== LOCALIZED DISPLAY METHODS ====================
+
     /**
-     * Get display name for UI presentation.
+     * Get localized shift type display name.
+     */
+    @NonNull
+    public String getTypeDisplayName() {
+        if (shiftType != null) {
+            return localize("type." + shiftType.name().toLowerCase(),
+                    shiftType.name(), // fallback
+                    shiftType.name());
+        }
+        return localize("type.custom", name, name);
+    }
+
+    /**
+     * Get localized shift type short code.
+     */
+    @NonNull
+    public String getTypeShortCode() {
+        if (shiftType != null) {
+            return localize("code." + shiftType.name().toLowerCase(),
+                    shiftType.name().substring(0, 1), // fallback to first letter
+                    shiftType.name().substring(0, 1));
+        }
+        return getShortName();
+    }
+
+    /**
+     * Get display title for UI with localization support.
+     */
+    @NonNull
+    public String getDisplayTitle() {
+        if (name != null && !name.trim().isEmpty()) {
+            return name;
+        }
+        return getTypeDisplayName();
+    }
+
+    /**
+     * Get localized display name for UI presentation.
+     * Uses shift type localization if available, falls back to name.
      *
-     * @return Display name with type and time range
+     * @return Localized display name with time range
      */
     @NonNull
     public String getDisplayName() {
         StringBuilder sb = new StringBuilder();
 
         if (shiftType != null) {
-            sb.append(shiftType.getDisplayName());
+            sb.append(getTypeDisplayName());
         } else {
             sb.append(name);
         }
@@ -460,39 +482,76 @@ public class Shift {
     /**
      * Get full name with description if available.
      *
-     * @return Full shift description
+     * @return Full shift description with localization
      */
     @NonNull
     public String getFullName() {
+        String displayName = getDisplayName();
+
         if (description.isEmpty()) {
-            return name;
+            return displayName;
         }
-        return name + " - " + description;
+
+        // Localize common descriptions or use as-is
+        String localizedDescription = localize("description.custom", description, description);
+        return displayName + " - " + localizedDescription;
     }
 
     /**
-     * Get summary information about the shift.
+     * Get localized summary information about the shift.
      *
-     * @return Shift summary with timing and break info
+     * @return Localized shift summary with timing and break info
      */
     @NonNull
     public String getSummary() {
         StringBuilder summary = new StringBuilder();
-        summary.append(name).append(" ").append(getTimeRange());
+
+        // Use localized display name
+        summary.append(getDisplayName());
 
         if (hasBreakTime) {
-            summary.append(" (break: ").append(getBreakDurationMinutes()).append("min");
+            String breakLabel = localize("break.label", "break", "break");
+            String minutesLabel = localize("time.minutes_short", "min", "min");
+
+            summary.append(" (").append(breakLabel).append(": ")
+                    .append(getBreakDurationMinutes()).append(minutesLabel);
+
             if (!isBreakTimeIncluded) {
-                summary.append(" - unpaid");
+                String unpaidLabel = localize("break.unpaid", "unpaid", "unpaid");
+                summary.append(" - ").append(unpaidLabel);
             }
             summary.append(")");
         }
 
         if (crossesMidnight) {
-            summary.append(" [crosses midnight]");
+            String midnightLabel = localize("time.crosses_midnight", "crosses midnight", "crosses midnight");
+            summary.append(" [").append(midnightLabel).append("]");
         }
 
         return summary.toString();
+    }
+
+    /**
+     * Get localized break information.
+     */
+    @NonNull
+    public String getBreakInfo() {
+        if (!hasBreakTime) {
+            return localize("break.none", "No break", "No break");
+        }
+
+        String minutesLabel = localize("time.minutes", "minutes", "minutes");
+        StringBuilder info = new StringBuilder()
+                .append(getBreakDurationMinutes())
+                .append(" ")
+                .append(minutesLabel);
+
+        if (!isBreakTimeIncluded) {
+            String unpaidLabel = localize("break.unpaid", "unpaid", "unpaid");
+            info.append(" (").append(unpaidLabel).append(")");
+        }
+
+        return info.toString();
     }
 
     // ==================== BUSINESS LOGIC ====================
@@ -545,6 +604,94 @@ public class Shift {
                 other.includesTime(this.endTime);
     }
 
+    // ==================== FACTORY METHODS ====================
+
+    /**
+     * Create a morning shift with localization support.
+     *
+     * @param localizer Optional domain localizer for i18n
+     * @return Morning shift (05:00-13:00)
+     */
+    @NonNull
+    public static Shift createMorningShift(@Nullable DomainLocalizer localizer) {
+        return builder("Morning Shift")
+                .setShiftType(ShiftType.MORNING)
+                .setStartTime(5, 0)
+                .setEndTime(13, 0)
+                .setColorHex("#4CAF50")
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create an afternoon shift with localization support.
+     *
+     * @param localizer Optional domain localizer for i18n
+     * @return Afternoon shift (13:00-21:00)
+     */
+    @NonNull
+    public static Shift createAfternoonShift(@Nullable DomainLocalizer localizer) {
+        return builder("Afternoon Shift")
+                .setShiftType(ShiftType.AFTERNOON)
+                .setStartTime(13, 0)
+                .setEndTime(21, 0)
+                .setColorHex("#FF9800")
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create a night shift with localization support.
+     *
+     * @param localizer Optional domain localizer for i18n
+     * @return Night shift (21:00-05:00)
+     */
+    @NonNull
+    public static Shift createNightShift(@Nullable DomainLocalizer localizer) {
+        return builder("Night Shift")
+                .setShiftType(ShiftType.NIGHT)
+                .setStartTime(21, 0)
+                .setEndTime(5, 0)
+                .setColorHex("#3F51B5")
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create a QuattroDue cycle shift with localization support.
+     *
+     * @param localizer Optional domain localizer for i18n
+     * @return QuattroDue cycle shift
+     */
+    @NonNull
+    public static Shift createQuattroDueCycleShift(@Nullable DomainLocalizer localizer) {
+        return builder("QuattroDue Cycle")
+                .setShiftType(ShiftType.CYCLE_42)
+                .setStartTime(6, 0)
+                .setEndTime(18, 0)
+                .setColorHex("#9C27B0")
+                .localizer(localizer)
+                .build();
+    }
+
+    // ==================== LOCALIZABLE IMPLEMENTATION ====================
+
+    /**
+     * Create a copy of this object with localizer injected.
+     * Useful for adding localization to existing instances.
+     *
+     * @param localizer DomainLocalizer to inject
+     * @return New instance with localizer support
+     */
+    @Override
+    @NonNull
+    public Shift withLocalizer(@NonNull DomainLocalizer localizer) {
+        return builder(this.name)
+                .copyFrom(this)
+                .localizer(localizer)
+                .build();
+    }
+
     // ==================== BUILDER PATTERN ====================
 
     /**
@@ -569,9 +716,9 @@ public class Shift {
     }
 
     /**
-     * Builder class for creating Shift instances.
+     * Builder class for creating Shift instances with localization support.
      */
-    public static class Builder {
+    public static class Builder extends LocalizableBuilder<Shift, Builder> {
         private String id;
         private final String name;
         private String description = "";
@@ -584,7 +731,7 @@ public class Shift {
         private boolean isBreakTimeIncluded = false;
         private Duration breakTimeDuration = Duration.ZERO;
 
-        private Builder(@NonNull String name) {
+        public Builder(@NonNull String name) {
             this.name = Objects.requireNonNull(name, "Name cannot be null");
         }
 
@@ -600,6 +747,25 @@ public class Shift {
             this.hasBreakTime = existingShift.hasBreakTime;
             this.isBreakTimeIncluded = existingShift.isBreakTimeIncluded;
             this.breakTimeDuration = existingShift.breakTimeDuration;
+        }
+
+        /**
+         * Copy data from existing Shift (for withLocalizer implementation).
+         */
+        @NonNull
+        public Builder copyFrom(@NonNull Shift source) {
+            this.id = source.id;
+            this.description = source.description;
+            this.shiftType = source.shiftType;
+            this.startTime = source.startTime;
+            this.endTime = source.endTime;
+            this.colorHex = source.colorHex;
+            this.isUserRelevant = source.isUserRelevant;
+            this.hasBreakTime = source.hasBreakTime;
+            this.isBreakTimeIncluded = source.isBreakTimeIncluded;
+            this.breakTimeDuration = source.breakTimeDuration;
+
+            return copyLocalizableFrom(source);
         }
 
         /**
@@ -760,12 +926,19 @@ public class Shift {
             return this;
         }
 
+        @Override
+        @NonNull
+        protected Builder self() {
+            return this;
+        }
+
         /**
          * Build the Shift instance.
          *
          * @return New Shift instance
          * @throws IllegalStateException if required fields are not set
          */
+        @Override
         @NonNull
         public Shift build() {
             if (startTime == null) {
@@ -775,8 +948,7 @@ public class Shift {
                 throw new IllegalStateException("End time must be set");
             }
 
-            return new Shift(id, name, description, shiftType, startTime, endTime,
-                    colorHex, isUserRelevant, hasBreakTime, isBreakTimeIncluded, breakTimeDuration);
+            return new Shift(this);
         }
     }
 
@@ -873,6 +1045,7 @@ public class Shift {
                 ", breakTimeDuration=" + breakTimeDuration +
                 ", totalDuration=" + totalDuration +
                 ", workDuration=" + workDuration +
+                ", hasLocalizationSupport=" + hasLocalizationSupport() +
                 '}';
     }
 }

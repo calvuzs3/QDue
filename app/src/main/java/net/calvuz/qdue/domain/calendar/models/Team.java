@@ -3,6 +3,10 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
+import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
+import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
+
 import java.util.Objects;
 
 /**
@@ -11,7 +15,7 @@ import java.util.Objects;
  * <p>This is a clean architecture domain model representing a work team entity.
  * Teams are fundamental business concepts that can be assigned to shifts and
  * have users as members. The model is designed to be simple but extensible
- * for future enhancements.</p>
+ * for future enhancements with full localization support.</p>
  *
  * <h3>Key Features:</h3>
  * <ul>
@@ -19,25 +23,33 @@ import java.util.Objects;
  *   <li><strong>Business Identity</strong>: Proper entity semantics with ID and name</li>
  *   <li><strong>Extensible</strong>: Designed for future property additions</li>
  *   <li><strong>Value Equality</strong>: Teams equal if they have same ID</li>
- *   <li><strong>Display Support</strong>: Methods for UI presentation</li>
+ *   <li><strong>Display Support</strong>: Localized methods for UI presentation</li>
+ *   <li><strong>Localization Support</strong>: Full i18n support for all display text</li>
+ * </ul>
+ *
+ * <h3>Team Types:</h3>
+ * <ul>
+ *   <li><strong>STANDARD</strong>: Regular work teams (A, B, C, etc.)</li>
+ *   <li><strong>QUATTRODUE</strong>: QuattroDue cycle teams</li>
+ *   <li><strong>EMERGENCY</strong>: Emergency response teams</li>
+ *   <li><strong>MANAGEMENT</strong>: Management and supervisory teams</li>
+ *   <li><strong>SUPPORT</strong>: Support and auxiliary teams</li>
  * </ul>
  *
  * <h3>Usage Examples:</h3>
  * <pre>
  * {@code
- * // Create teams
- * Team teamA = Team.builder("A").build();
- * Team teamAB = Team.builder("AB")
- *     .displayName("Team Alpha-Beta")
+ * // Create localized teams
+ * Team teamA = Team.builder("A")
+ *     .displayName("Team Alpha")
  *     .description("Primary morning shift team")
+ *     .teamType(TeamType.STANDARD)
+ *     .localizer(domainLocalizer)
  *     .build();
  *
- * // Use in collections
- * List<Team> workingTeams = Arrays.asList(teamA, teamAB);
- *
- * // Business logic
- * boolean sameTeam = teamA.equals(teamAB);
- * String display = teamA.getDisplayName();
+ * // Get localized display
+ * String localizedStatus = teamA.getStatusDisplayName();
+ * String localizedSummary = teamA.getLocalizedSummary();
  * }
  * </pre>
  *
@@ -52,10 +64,53 @@ import java.util.Objects;
  * </ul>
  *
  * @author QDue Development Team
- * @version 1.0.0 - Clean Architecture Implementation
- * @since Database Version 6
+ * @version 2.0.0 - Localization Implementation
+ * @since Clean Architecture Phase 2
  */
-public class Team {
+public class Team extends LocalizableDomainModel {
+
+    private static final String LOCALIZATION_SCOPE = "team";
+
+    // ==================== TEAM TYPE ENUM ====================
+
+    /**
+     * Enumeration of team types in the work schedule system with localization keys.
+     */
+    public enum TeamType {
+        STANDARD("standard", "standard_work_teams"),
+        QUATTRODUE("quattrodue", "quattrodue_cycle_teams"),
+        EMERGENCY("emergency", "emergency_response_teams"),
+        MANAGEMENT("management", "management_and_supervisory_teams"),
+        SUPPORT("support", "support_and_auxiliary_teams");
+
+        private final String displayNameKey;
+        private final String descriptionKey;
+
+        TeamType(String displayNameKey, String descriptionKey) {
+            this.displayNameKey = displayNameKey;
+            this.descriptionKey = descriptionKey;
+        }
+
+        /**
+         * Get localization key for display name.
+         *
+         * @return Localization key for display name
+         */
+        @NonNull
+        public String getDisplayNameKey() {
+            return displayNameKey;
+        }
+
+        /**
+         * Get localization key for description.
+         *
+         * @return Localization key for description
+         */
+        @NonNull
+        public String getDescriptionKey() {
+            return descriptionKey;
+        }
+    }
 
     // ==================== CORE PROPERTIES ====================
 
@@ -63,6 +118,7 @@ public class Team {
     private final String name;
     private final String displayName;
     private final String description;
+    private final TeamType teamType;
     private final boolean active;
 
     // ==================== CACHED VALUES ====================
@@ -72,43 +128,33 @@ public class Team {
     // ==================== CONSTRUCTORS ====================
 
     /**
-     * Creates a Team with basic information.
-     *
-     * @param id Unique team identifier
-     * @param name Team name (typically used in schedules)
+     * Private constructor for builder pattern with localization support.
      */
-    public Team(@NonNull String id, @NonNull String name) {
-        this(id, name, name, "", true);
-    }
-
-    /**
-     * Creates a Team with complete information.
-     *
-     * @param id Unique team identifier
-     * @param name Team name (typically used in schedules)
-     * @param displayName Human-readable display name
-     * @param description Team description
-     * @param active Whether team is currently active
-     */
-    public Team(@NonNull String id,
-                @NonNull String name,
-                @Nullable String displayName,
-                @Nullable String description,
-                boolean active) {
-        this.id = Objects.requireNonNull(id, "Team ID cannot be null").trim();
-        this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
-        this.displayName = displayName != null && !displayName.trim().isEmpty() ?
-                displayName.trim() : this.name;
-        this.description = description != null ? description.trim() : "";
-        this.active = active;
+    private Team(@NonNull Builder builder) {
+        super(builder.mLocalizer, LOCALIZATION_SCOPE);
 
         // Validation
-        if (this.id.isEmpty()) {
+        Objects.requireNonNull(builder.id, "Team ID cannot be null");
+        Objects.requireNonNull(builder.name, "Team name cannot be null");
+
+        String cleanId = builder.id.trim();
+        String cleanName = builder.name.trim();
+
+        if (cleanId.isEmpty()) {
             throw new IllegalArgumentException("Team ID cannot be empty");
         }
-        if (this.name.isEmpty()) {
+        if (cleanName.isEmpty()) {
             throw new IllegalArgumentException("Team name cannot be empty");
         }
+
+        // Core properties
+        this.id = cleanId;
+        this.name = cleanName;
+        this.displayName = builder.displayName != null && !builder.displayName.trim().isEmpty() ?
+                builder.displayName.trim() : this.name;
+        this.description = builder.description != null ? builder.description.trim() : "";
+        this.teamType = builder.teamType;
+        this.active = builder.active;
 
         // Cache hash code
         this.hashCodeCache = Objects.hash(this.id);
@@ -154,6 +200,16 @@ public class Team {
     @NonNull
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Get the team type classification.
+     *
+     * @return TeamType or null if not classified
+     */
+    @Nullable
+    public TeamType getTeamType() {
+        return teamType;
     }
 
     /**
@@ -206,7 +262,83 @@ public class Team {
         return this.id.equals(teamId.trim());
     }
 
-    // ==================== DISPLAY METHODS ====================
+    /**
+     * Check if this is a QuattroDue team.
+     *
+     * @return true if team type is QUATTRODUE
+     */
+    public boolean isQuattroDueTeam() {
+        return teamType == TeamType.QUATTRODUE;
+    }
+
+    /**
+     * Check if this is a management team.
+     *
+     * @return true if team type is MANAGEMENT
+     */
+    public boolean isManagementTeam() {
+        return teamType == TeamType.MANAGEMENT;
+    }
+
+    /**
+     * Check if this is an emergency team.
+     *
+     * @return true if team type is EMERGENCY
+     */
+    public boolean isEmergencyTeam() {
+        return teamType == TeamType.EMERGENCY;
+    }
+
+    // ==================== LOCALIZED DISPLAY METHODS ====================
+
+    /**
+     * Get localized team type display name.
+     */
+    @NonNull
+    public String getTypeDisplayName() {
+        if (teamType != null) {
+            return localize("type." + teamType.name().toLowerCase(),
+                    teamType.name(), // fallback
+                    teamType.name());
+        }
+        return localize("type.unspecified", "Unspecified", "Unspecified");
+    }
+
+    /**
+     * Get localized team type description.
+     */
+    @NonNull
+    public String getTypeDescription() {
+        if (teamType != null) {
+            return localize("type." + teamType.name().toLowerCase() + ".description",
+                    teamType.getDescriptionKey(), // fallback
+                    teamType.name());
+        }
+        return localize("type.unspecified.description", "No specific type", "No specific type");
+    }
+
+    /**
+     * Get localized status display name.
+     */
+    @NonNull
+    public String getStatusDisplayName() {
+        if (active) {
+            return localize("status.active", "Active", "Active");
+        } else {
+            return localize("status.inactive", "Inactive", "Inactive");
+        }
+    }
+
+    /**
+     * Get display title for UI with localization support.
+     */
+    @NonNull
+    public String getDisplayTitle() {
+        if (displayName != null && !displayName.trim().isEmpty()) {
+            return displayName;
+        }
+        return name;
+    }
 
     /**
      * Get short identifier for compact display.
@@ -219,7 +351,100 @@ public class Team {
     }
 
     /**
-     * Get full name with description if available.
+     * Get localized full name with description if available.
+     *
+     * @return Localized full team description
+     */
+    @NonNull
+    public String getLocalizedFullName() {
+        String title = getDisplayTitle();
+
+        if (description.isEmpty()) {
+            return title;
+        }
+
+        // Localize common descriptions or use as-is
+        String localizedDescription = localize("description.custom", description, description);
+        String separator = localize("format.name_description_separator", " - ", " - ");
+        return title + separator + localizedDescription;
+    }
+
+    /**
+     * Get localized summary information about the team.
+     *
+     * @return Localized team summary
+     */
+    @NonNull
+    public String getLocalizedSummary() {
+        StringBuilder summary = new StringBuilder();
+
+        // Team label with name
+        String teamLabel = localize("label.team", "Team", "Team");
+        summary.append(teamLabel).append(" ").append(getDisplayTitle());
+
+        // Add ID if different from display name
+        if (!name.equals(displayName)) {
+            String idTemplate = localize("format.id_parentheses", " ({0})", " ({0})");
+            summary.append(String.format(idTemplate.replace("{0}", "%s"), name));
+        }
+
+        // Add type if specified
+        if (teamType != null) {
+            String typeTemplate = localize("format.type_brackets", " [{0}]", " [{0}]");
+            summary.append(String.format(typeTemplate.replace("{0}", "%s"), getTypeDisplayName()));
+        }
+
+        // Add status if inactive
+        if (!active) {
+            String inactiveLabel = localize("status.inactive_suffix", " [INACTIVE]", " [INACTIVE]");
+            summary.append(inactiveLabel);
+        }
+
+        return summary.toString();
+    }
+
+    /**
+     * Get localized team card information for detailed display.
+     *
+     * @return Localized team card content
+     */
+    @NonNull
+    public String getLocalizedTeamCard() {
+        StringBuilder card = new StringBuilder();
+
+        // Title
+        card.append(getDisplayTitle()).append("\n");
+
+        // ID if different
+        if (!name.equals(displayName)) {
+            String idLabel = localize("label.id", "ID", "ID");
+            card.append(idLabel).append(": ").append(name).append("\n");
+        }
+
+        // Type
+        if (teamType != null) {
+            String typeLabel = localize("label.type", "Type", "Type");
+            card.append(typeLabel).append(": ").append(getTypeDisplayName()).append("\n");
+        }
+
+        // Status
+        String statusLabel = localize("label.status", "Status", "Status");
+        card.append(statusLabel).append(": ").append(getStatusDisplayName()).append("\n");
+
+        // Description
+        if (!description.isEmpty()) {
+            String descLabel = localize("label.description", "Description", "Description");
+            card.append(descLabel).append(": ").append(description);
+        }
+
+        return card.toString().trim();
+    }
+
+    // ==================== NON-LOCALIZED DISPLAY METHODS (Legacy Support) ====================
+
+    /**
+     * Get full name with description if available (non-localized version for backward compatibility).
+     * Consider using getLocalizedFullName() for new code.
      *
      * @return Full team description
      */
@@ -232,7 +457,8 @@ public class Team {
     }
 
     /**
-     * Get summary information about the team.
+     * Get summary information about the team (non-localized version).
+     * Consider using getLocalizedSummary() for new code.
      *
      * @return Team summary
      */
@@ -245,11 +471,87 @@ public class Team {
             summary.append(" (").append(name).append(")");
         }
 
+        if (teamType != null) {
+            summary.append(" [").append(teamType.name()).append("]");
+        }
+
         if (!active) {
             summary.append(" [INACTIVE]");
         }
 
         return summary.toString();
+    }
+
+    // ==================== FACTORY METHODS ====================
+
+    /**
+     * Create a standard QuattroDue team with localization support.
+     *
+     * @param teamLetter Team letter (A, B, C, etc.)
+     * @param localizer Optional domain localizer for i18n
+     * @return QuattroDue team
+     */
+    @NonNull
+    public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable DomainLocalizer localizer) {
+        return builder(teamLetter)
+                .name(teamLetter)
+                .displayName("Team " + teamLetter)
+                .teamType(TeamType.QUATTRODUE)
+                .description("QuattroDue cycle team " + teamLetter)
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create a management team with localization support.
+     *
+     * @param teamName Team name
+     * @param localizer Optional domain localizer for i18n
+     * @return Management team
+     */
+    @NonNull
+    public static Team createManagementTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
+        return builder(teamName)
+                .name(teamName)
+                .displayName(teamName)
+                .teamType(TeamType.MANAGEMENT)
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create an emergency team with localization support.
+     *
+     * @param teamName Team name
+     * @param localizer Optional domain localizer for i18n
+     * @return Emergency team
+     */
+    @NonNull
+    public static Team createEmergencyTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
+        return builder(teamName)
+                .name(teamName)
+                .displayName(teamName)
+                .teamType(TeamType.EMERGENCY)
+                .localizer(localizer)
+                .build();
+    }
+
+    // ==================== LOCALIZABLE IMPLEMENTATION ====================
+
+    /**
+     * Create a copy of this object with localizer injected.
+     * Useful for adding localization to existing instances.
+     *
+     * @param localizer DomainLocalizer to inject
+     * @return New instance with localizer support
+     */
+    @Override
+    @NonNull
+    public Team withLocalizer(@NonNull DomainLocalizer localizer) {
+        return builder(this.id)
+                .copyFrom(this)
+                .localizer(localizer)
+                .build();
     }
 
     // ==================== BUILDER PATTERN ====================
@@ -288,13 +590,14 @@ public class Team {
     }
 
     /**
-     * Builder class for creating Team instances.
+     * Builder class for creating Team instances with localization support.
      */
-    public static class Builder {
+    public static class Builder extends LocalizableBuilder<Team, Builder> {
         private final String id;
         private String name;
         private String displayName;
         private String description = "";
+        private TeamType teamType;
         private boolean active = true;
 
         private Builder(@NonNull String id) {
@@ -312,7 +615,22 @@ public class Team {
             this.name = existingTeam.name;
             this.displayName = existingTeam.displayName;
             this.description = existingTeam.description;
+            this.teamType = existingTeam.teamType;
             this.active = existingTeam.active;
+        }
+
+        /**
+         * Copy data from existing Team (for withLocalizer implementation).
+         */
+        @NonNull
+        public Builder copyFrom(@NonNull Team source) {
+            this.name = source.name;
+            this.displayName = source.displayName;
+            this.description = source.description;
+            this.teamType = source.teamType;
+            this.active = source.active;
+
+            return copyLocalizableFrom(source);
         }
 
         /**
@@ -352,6 +670,18 @@ public class Team {
         }
 
         /**
+         * Set team type classification.
+         *
+         * @param teamType Type classification
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder teamType(@Nullable TeamType teamType) {
+            this.teamType = teamType;
+            return this;
+        }
+
+        /**
          * Set team active status.
          *
          * @param active Whether team is active
@@ -374,19 +704,26 @@ public class Team {
             return this;
         }
 
+        @Override
+        @NonNull
+        protected Builder self() {
+            return this;
+        }
+
         /**
          * Build the Team instance.
          *
          * @return New Team instance
          * @throws IllegalArgumentException if required fields are not valid
          */
+        @Override
         @NonNull
         public Team build() {
-            return new Team(id, name, displayName, description, active);
+            return new Team(this);
         }
     }
 
-    // ==================== FACTORY METHODS ====================
+    // ==================== FACTORY METHODS (Legacy Support) ====================
 
     /**
      * Create a team from name (ID and name will be the same).
@@ -398,7 +735,7 @@ public class Team {
     public static Team fromName(@NonNull String name) {
         Objects.requireNonNull(name, "Team name cannot be null");
         String cleanName = name.trim();
-        return new Team(cleanName, cleanName);
+        return builder(cleanName).name(cleanName).build();
     }
 
     /**
@@ -410,7 +747,7 @@ public class Team {
      */
     @NonNull
     public static Team fromIdAndName(@NonNull String id, @NonNull String name) {
-        return new Team(id, name);
+        return builder(id, name).build();
     }
 
     /**
@@ -439,43 +776,94 @@ public class Team {
     public static class Standard {
 
         /**
-         * Create standard QuattroDue teams (A, B, C, D, E, F, G, H, I).
+         * Create standard QuattroDue teams (A, B, C, D, E, F, G, H, I) with localization.
+         *
+         * @param localizer Optional domain localizer for i18n
+         * @return Array of standard teams
+         */
+        @NonNull
+        public static Team[] createQuattroDueTeams(@Nullable DomainLocalizer localizer) {
+            String[] teamLetters = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+            Team[] teams = new Team[teamLetters.length];
+
+            for (int i = 0; i < teamLetters.length; i++) {
+                teams[i] = createQuattroDueTeam(teamLetters[i], localizer);
+            }
+
+            return teams;
+        }
+
+        /**
+         * Create standard QuattroDue teams without localization (legacy).
          *
          * @return Array of standard teams
          */
         @NonNull
         public static Team[] createQuattroDueTeams() {
-            return fromNames("A", "B", "C", "D", "E", "F", "G", "H", "I");
+            return createQuattroDueTeams(null);
         }
 
         /**
-         * Get team A.
+         * Get team A with localization support.
+         *
+         * @param localizer Optional domain localizer for i18n
+         * @return Team A
+         */
+        @NonNull
+        public static Team teamA(@Nullable DomainLocalizer localizer) {
+            return createQuattroDueTeam("A", localizer);
+        }
+
+        /**
+         * Get team A (legacy method).
          *
          * @return Team A
          */
         @NonNull
         public static Team teamA() {
-            return fromName("A");
+            return teamA(null);
         }
 
         /**
-         * Get team B.
+         * Get team B with localization support.
+         *
+         * @param localizer Optional domain localizer for i18n
+         * @return Team B
+         */
+        @NonNull
+        public static Team teamB(@Nullable DomainLocalizer localizer) {
+            return createQuattroDueTeam("B", localizer);
+        }
+
+        /**
+         * Get team B (legacy method).
          *
          * @return Team B
          */
         @NonNull
         public static Team teamB() {
-            return fromName("B");
+            return teamB(null);
         }
 
         /**
-         * Get team C.
+         * Get team C with localization support.
+         *
+         * @param localizer Optional domain localizer for i18n
+         * @return Team C
+         */
+        @NonNull
+        public static Team teamC(@Nullable DomainLocalizer localizer) {
+            return createQuattroDueTeam("C", localizer);
+        }
+
+        /**
+         * Get team C (legacy method).
          *
          * @return Team C
          */
         @NonNull
         public static Team teamC() {
-            return fromName("C");
+            return teamC(null);
         }
 
         // Additional standard teams can be added here as needed
@@ -504,6 +892,7 @@ public class Team {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", displayName='" + displayName + '\'' +
+                ", teamType=" + teamType +
                 ", active=" + active +
                 '}';
     }
@@ -520,7 +909,9 @@ public class Team {
                 ", name='" + name + '\'' +
                 ", displayName='" + displayName + '\'' +
                 ", description='" + description + '\'' +
+                ", teamType=" + teamType +
                 ", active=" + active +
+                ", hasLocalizationSupport=" + hasLocalizationSupport() +
                 '}';
     }
 
@@ -532,14 +923,35 @@ public class Team {
     public static class Utils {
 
         /**
-         * Convert team names to Team objects.
+         * Convert team names to Team objects with localization support.
+         *
+         * @param teamNames Array of team names
+         * @param localizer Optional domain localizer for i18n
+         * @return Array of Team objects
+         */
+        @NonNull
+        public static Team[] fromNameArray(@NonNull String[] teamNames, @Nullable DomainLocalizer localizer) {
+            Objects.requireNonNull(teamNames, "Team names array cannot be null");
+
+            Team[] teams = new Team[teamNames.length];
+            for (int i = 0; i < teamNames.length; i++) {
+                teams[i] = builder(teamNames[i])
+                        .name(teamNames[i])
+                        .localizer(localizer)
+                        .build();
+            }
+            return teams;
+        }
+
+        /**
+         * Convert team names to Team objects (legacy method).
          *
          * @param teamNames Array of team names
          * @return Array of Team objects
          */
         @NonNull
         public static Team[] fromNameArray(@NonNull String[] teamNames) {
-            return fromNames(teamNames);
+            return fromNameArray(teamNames, null);
         }
 
         /**

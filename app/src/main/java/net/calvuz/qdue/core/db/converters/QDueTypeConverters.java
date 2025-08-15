@@ -1,5 +1,6 @@
 package net.calvuz.qdue.core.db.converters;
 
+import androidx.annotation.Nullable;
 import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;
@@ -8,11 +9,14 @@ import com.google.gson.reflect.TypeToken;
 import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.events.models.EventPriority;
 import net.calvuz.qdue.events.models.TurnException;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 /**
@@ -25,6 +29,8 @@ import java.util.Map;
  * - New TurnException converters
  */
 public class QDueTypeConverters {
+
+    private static final String TAG = "QDueTypeConverters";
 
     private static final Gson gson = new Gson();
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -55,23 +61,57 @@ public class QDueTypeConverters {
     // ==================== LocalDate Converters ====================
 
     /**
-     * Convert LocalDate to String for database storage.
-     * @param date LocalDate to convert
-     * @return ISO formatted string or null
+     * Convert LocalDate to ISO string for database storage.
      */
     @TypeConverter
-    public static String fromLocalDate(LocalDate date) {
+    @Nullable
+    public static String fromLocalDate(@Nullable LocalDate date) {
         return date != null ? date.toString() : null;
     }
 
     /**
-     * Convert String back to LocalDate from database.
-     * @param dateString ISO formatted string
-     * @return LocalDate object or null
+     * Convert ISO string from database to LocalDate.
      */
     @TypeConverter
-    public static LocalDate toLocalDate(String dateString) {
-        return dateString != null ? LocalDate.parse(dateString) : null;
+    @Nullable
+    public static LocalDate toLocalDate(@Nullable String dateString) {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(dateString);
+        } catch (DateTimeParseException e) {
+            Log.e(TAG, "Failed to parse LocalDate: " + dateString, e);
+            return null;
+        }
+    }
+
+    /**
+     * Convert LocalTime to ISO string for database storage.
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromLocalTime(@Nullable LocalTime time) {
+        return time != null ? time.format(DateTimeFormatter.ISO_LOCAL_TIME) : null;
+    }
+
+    /**
+     * Convert ISO string from database to LocalTime.
+     */
+    @TypeConverter
+    @Nullable
+    public static LocalTime toLocalTime(@Nullable String timeString) {
+        if (timeString == null || timeString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return LocalTime.parse(timeString, DateTimeFormatter.ISO_LOCAL_TIME);
+        } catch (DateTimeParseException e) {
+            Log.e(TAG, "Failed to parse LocalTime: " + timeString, e);
+            return null;
+        }
     }
 
     // ==================== EventType Converters ====================

@@ -2,6 +2,7 @@ package net.calvuz.qdue.core.di;
 
 import android.content.Context;
 
+import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**

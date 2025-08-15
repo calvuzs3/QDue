@@ -245,7 +245,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 Shift domainShiftTemplate = mAllShifts.get(i);
 
                 // Create WorkScheduleShift
-                WorkScheduleShift.Builder shiftBuilder = WorkScheduleShift.builder(domainShiftTemplate)
+                WorkScheduleShift.Builder shiftBuilder = WorkScheduleShift.builder() //domainShiftTemplate
                         .startTime(domainShiftTemplate.getStartTime())
                         .endTime(domainShiftTemplate.getEndTime())
                         .description(domainShiftTemplate.getDescription());

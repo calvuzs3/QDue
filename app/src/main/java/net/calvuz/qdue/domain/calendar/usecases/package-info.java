@@ -7,10 +7,10 @@
  *
  * <h3>Available Use Cases:</h3>
  * <ul>
- *   <li>{@link GetWorkScheduleForMonthUseCase} - Get work schedule for entire month</li>
- *   <li>{@link GetWorkScheduleForDateUseCase} - Get work schedule for specific date</li>
- *   <li>{@link IsWorkingDayUseCase} - Check if date is working day</li>
- *   <li>{@link GetUserWorkScheduleUseCase} - Get user-specific work schedule</li>
+ *   <li>{@link net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase} - Advanced user schedule generation</li>
+ *   <li>{@link net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase} - Team coordination and management</li>
+ *   <li>{@link net.calvuz.qdue.domain.calendar.usecases.ApplyShiftExceptionsUseCase} - Exception handling workflow</li>
+ *   <li>{@link net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase} - Analytics and validation</li>
  * </ul>
  *
  * <h3>Usage Patterns:</h3>

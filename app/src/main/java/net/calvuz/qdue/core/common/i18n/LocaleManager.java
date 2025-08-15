@@ -12,6 +12,7 @@ import androidx.preference.PreferenceManager;
 
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -409,7 +410,6 @@ public class LocaleManager {
                 // US: MM/dd/yyyy, UK: dd/MM/yyyy
                 return "US".equals(mCurrentLocale.getCountry()) ? "MM/dd/yyyy" : "dd/MM/yyyy";
             case LANGUAGE_GERMAN:
-                return "dd.MM.yyyy";
             case LANGUAGE_FRENCH:
             case LANGUAGE_ITALIAN:
             default:
@@ -750,4 +750,464 @@ public class LocaleManager {
         LocaleManager localeManager = new LocaleManager(context);
         return localeManager.getTeamDisplayName(teamCode);
     }
+
+
+
+
+
+// ==================== RECURRENCE RULE I18N METHODS ====================
+
+    /**
+     * Get localized display name for recurrence frequency.
+     *
+     * @param context Application context (null safe)
+     * @param frequencyKey Frequency key (DAILY, WEEKLY, MONTHLY, QUATTRODUE_CYCLE)
+     * @return Localized frequency display name
+     */
+    @NonNull
+    public static String getFrequencyDisplayName(@Nullable Context context, @NonNull String frequencyKey) {
+        // Implementation would go here
+        // Italian examples:
+        // DAILY -> "Giornaliero"
+        // WEEKLY -> "Settimanale"
+        // MONTHLY -> "Mensile"
+        // QUATTRODUE_CYCLE -> "Ciclo QuattroDue"
+        return getLocalizedString(context, "frequency_" + frequencyKey.toLowerCase(), frequencyKey);
+    }
+
+    /**
+     * Get localized description for recurrence frequency.
+     */
+    @NonNull
+    public static String getFrequencyDescription(@Nullable Context context, @NonNull String frequencyKey) {
+        // Italian examples:
+        // DAILY -> "Ripetizione giornaliera"
+        // WEEKLY -> "Ripetizione settimanale su giorni specifici"
+        // QUATTRODUE_CYCLE -> "Pattern QuattroDue 4-2 (28 giorni lavoro, 14 riposo)"
+        return getLocalizedString(context, "frequency_desc_" + frequencyKey.toLowerCase(), "Ripetizione " + frequencyKey);
+    }
+
+    /**
+     * Get localized display name for end type.
+     */
+    @NonNull
+    public static String getEndTypeDisplayName(@Nullable Context context, @NonNull String endTypeKey) {
+        // Italian examples:
+        // NEVER -> "Mai"
+        // COUNT -> "Dopo N occorrenze"
+        // UNTIL_DATE -> "Fino a data"
+        return getLocalizedString(context, "end_type_" + endTypeKey.toLowerCase(), endTypeKey);
+    }
+
+    /**
+     * Get localized description for end type.
+     */
+    @NonNull
+    public static String getEndTypeDescription(@Nullable Context context, @NonNull String endTypeKey) {
+        return getLocalizedString(context, "end_type_desc_" + endTypeKey.toLowerCase(), "Condizione di fine: " + endTypeKey);
+    }
+
+    @NonNull
+    public static String getWeekStartDisplayName(@Nullable Context context, @NonNull String weekStartKey) {
+        return getLocalizedString(context, "week_start_" + weekStartKey.toLowerCase(), weekStartKey);
+    }
+
+    /**
+     * Get localized recurrence rule name.
+     */
+    @NonNull
+    public static String getRecurrenceRuleName(@Nullable Context context, @NonNull String ruleTypeKey) {
+        // Italian examples:
+        // QUATTRODUE_CYCLE -> "Ciclo QuattroDue 4-2"
+        // WEEKDAYS -> "Solo giorni feriali"
+        // DAILY -> "Pattern giornaliero"
+        return getLocalizedString(context, "recurrence_rule_" + ruleTypeKey.toLowerCase(), ruleTypeKey);
+    }
+
+    /**
+     * Get localized recurrence rule description.
+     */
+    @NonNull
+    public static String getRecurrenceRuleDescription(@Nullable Context context, @NonNull String ruleTypeKey) {
+        return getLocalizedString(context, "recurrence_rule_desc_" + ruleTypeKey.toLowerCase(), "Regola di ricorrenza: " + ruleTypeKey);
+    }
+
+    /**
+     * Get localized recurrence rule description with interval.
+     */
+    @NonNull
+    public static String getRecurrenceRuleDescriptionWithInterval(@Nullable Context context, @NonNull String ruleTypeKey, int interval) {
+        // Italian examples:
+        // DAILY, 2 -> "Ogni 2 giorni"
+        // WEEKLY, 3 -> "Ogni 3 settimane"
+        String template = getLocalizedString(context, "recurrence_rule_interval_" + ruleTypeKey.toLowerCase(), "Ogni %d " + ruleTypeKey);
+        return String.format(getCurrentLocale(context), template, interval);
+    }
+
+    /**
+     * Get localized end condition description.
+     */
+    @NonNull
+    public static String getRecurrenceEndCondition(@Nullable Context context, @NonNull String conditionKey) {
+        // Italian examples:
+        // NEVER -> "Nessuna fine"
+        // COUNT -> "Numero occorrenze"
+        // UNTIL_DATE -> "Fino a data specifica"
+        return getLocalizedString(context, "recurrence_end_" + conditionKey.toLowerCase(), conditionKey);
+    }
+
+    /**
+     * Get localized end condition with count.
+     */
+    @NonNull
+    public static String getRecurrenceEndConditionWithCount(@Nullable Context context, int count) {
+        // Italian: "Termina dopo 5 occorrenze"
+        String template = getLocalizedString(context, "recurrence_end_count_template", "Termina dopo %d occorrenze");
+        return String.format(getCurrentLocale(context), template, count);
+    }
+
+    /**
+     * Get localized end condition with date.
+     */
+    @NonNull
+    public static String getRecurrenceEndConditionWithDate(@Nullable Context context, @NonNull LocalDate endDate) {
+        // Italian: "Termina il 31/12/2024"
+        String template = getLocalizedString(context, "recurrence_end_date_template", "Termina il %s");
+        String formattedDate = formatDate(context, endDate);
+        return String.format(getCurrentLocale(context), template, formattedDate);
+    }
+
+// ==================== SHIFT EXCEPTION I18N METHODS ====================
+
+    /**
+     * Get localized display name for exception type.
+     */
+    @NonNull
+    public static String getExceptionTypeDisplayName(@Nullable Context context, @NonNull String typeKey) {
+        // Italian examples:
+        // vacation -> "Ferie"
+        // sick_leave -> "Malattia"
+        // shift_swap -> "Scambio turno"
+        // personal_reduction -> "Riduzione personale"
+        // rol_reduction -> "ROL"
+        return getLocalizedString(context, "exception_type_" + typeKey, typeKey);
+    }
+
+    /**
+     * Get localized description for exception type.
+     */
+    @NonNull
+    public static String getExceptionTypeDescription(@Nullable Context context, @NonNull String descriptionKey) {
+        // Italian examples:
+        // planned_vacation_holiday -> "Ferie pianificate o vacanza"
+        // medical_absence -> "Assenza per motivi medici"
+        // voluntary_swap_colleague -> "Scambio volontario con collega"
+        return getLocalizedString(context, "exception_desc_" + descriptionKey, descriptionKey);
+    }
+
+    /**
+     * Get localized display name for approval status.
+     */
+    @NonNull
+    public static String getApprovalStatusDisplayName(@Nullable Context context, @NonNull String statusKey) {
+        // Italian examples:
+        // draft -> "Bozza"
+        // pending -> "In attesa"
+        // approved -> "Approvato"
+        // rejected -> "Rifiutato"
+        return getLocalizedString(context, "approval_status_" + statusKey, statusKey);
+    }
+
+    /**
+     * Get localized description for approval status.
+     */
+    @NonNull
+    public static String getApprovalStatusDescription(@Nullable Context context, @NonNull String descriptionKey) {
+        // Italian examples:
+        // being_created_not_submitted -> "In creazione, non ancora inviato"
+        // submitted_awaiting_approval -> "Inviato, in attesa di approvazione"
+        return getLocalizedString(context, "approval_desc_" + descriptionKey, descriptionKey);
+    }
+
+    /**
+     * Get localized display name for priority level.
+     */
+    @NonNull
+    public static String getPriorityDisplayName(@Nullable Context context, @NonNull String priorityKey) {
+        // Italian examples:
+        // low_priority -> "Priorità bassa"
+        // normal_priority -> "Priorità normale"
+        // high_priority -> "Priorità alta"
+        // urgent_priority -> "Priorità urgente"
+        return getLocalizedString(context, "priority_" + priorityKey, priorityKey);
+    }
+
+    /**
+     * Get localized default exception title.
+     */
+    @NonNull
+    public static String getDefaultExceptionTitle(@Nullable Context context, @NonNull String exceptionTypeKey) {
+        // Italian examples:
+        // ABSENCE_VACATION -> "Ferie"
+        // ABSENCE_SICK -> "Malattia"
+        // CHANGE_SWAP -> "Scambio turno"
+        return getLocalizedString(context, "default_exception_title_" + exceptionTypeKey.toLowerCase(), exceptionTypeKey);
+    }
+
+    /**
+     * Get localized default shift swap title with user reference.
+     */
+    @NonNull
+    public static String getDefaultShiftSwapTitle(@Nullable Context context, @NonNull Long swapWithUserId) {
+        // Italian: "Scambio turno con utente 123"
+        String template = getLocalizedString(context, "default_shift_swap_title", "Scambio turno con utente %d");
+        return String.format(getCurrentLocale(context), template, swapWithUserId);
+    }
+
+    /**
+     * Get localized default time reduction title.
+     */
+    @NonNull
+    public static String getDefaultTimeReductionTitle(@Nullable Context context, @NonNull String reductionTypeKey) {
+        // Italian examples:
+        // personal_reduction -> "Riduzione orario personale"
+        // rol_reduction -> "ROL"
+        // union_time -> "Permesso sindacale"
+        return getLocalizedString(context, "default_reduction_title_" + reductionTypeKey, reductionTypeKey);
+    }
+
+// ==================== USER SCHEDULE ASSIGNMENT I18N METHODS ====================
+
+    /**
+     * Get localized display name for assignment priority.
+     */
+    @NonNull
+    public static String getAssignmentPriorityDisplayName(@Nullable Context context, @NonNull String priorityKey) {
+        // Italian examples:
+        // low_priority -> "Priorità bassa"
+        // normal_priority -> "Priorità normale"
+        // high_priority -> "Priorità alta"
+        // override_priority -> "Priorità sostituzione"
+        return getLocalizedString(context, "assignment_priority_" + priorityKey, priorityKey);
+    }
+
+    /**
+     * Get localized display name for assignment status.
+     */
+    @NonNull
+    public static String getAssignmentStatusDisplayName(@Nullable Context context, @NonNull String statusKey) {
+        // Italian examples:
+        // active -> "Attivo"
+        // pending -> "In attesa"
+        // expired -> "Scaduto"
+        // suspended -> "Sospeso"
+        // cancelled -> "Annullato"
+        return getLocalizedString(context, "assignment_status_" + statusKey, statusKey);
+    }
+
+    /**
+     * Get localized description for assignment status.
+     */
+    @NonNull
+    public static String getAssignmentStatusDescription(@Nullable Context context, @NonNull String descriptionKey) {
+        // Italian examples:
+        // currently_active_assignment -> "Assegnazione attualmente attiva"
+        // future_assignment_not_yet_active -> "Assegnazione futura non ancora attiva"
+        return getLocalizedString(context, "assignment_status_desc_" + descriptionKey, descriptionKey);
+    }
+
+    /**
+     * Get localized user display name template.
+     */
+    @NonNull
+    public static String getUserDisplayNameTemplate(@Nullable Context context, @NonNull Long userId) {
+        // Italian: "Utente 123"
+        String template = getLocalizedString(context, "user_display_template", "Utente %d");
+        return String.format(getCurrentLocale(context), template, userId);
+    }
+
+    /**
+     * Get localized assignment display title.
+     */
+    @NonNull
+    public static String getAssignmentDisplayTitle(@Nullable Context context, @NonNull String userDisplay, @NonNull String teamDisplay) {
+        // Italian: "Marco Rossi → Team A"
+        String template = getLocalizedString(context, "assignment_display_title", "%s → %s");
+        return String.format(getCurrentLocale(context), template, userDisplay, teamDisplay);
+    }
+
+    /**
+     * Get localized permanent assignment period description.
+     */
+    @NonNull
+    public static String getAssignmentPermanentPeriod(@Nullable Context context, @NonNull LocalDate startDate) {
+        // Italian: "Dal 01/01/2024 (Permanente)"
+        String template = getLocalizedString(context, "assignment_permanent_period", "Dal %s (Permanente)");
+        String formattedDate = formatDate(context, startDate);
+        return String.format(getCurrentLocale(context), template, formattedDate);
+    }
+
+    /**
+     * Get localized time period description.
+     */
+    @NonNull
+    public static String getAssignmentTimePeriod(@Nullable Context context, @NonNull LocalDate startDate, @Nullable LocalDate endDate) {
+        // Italian: "Dal 01/01/2024 al 31/12/2024"
+        String template = getLocalizedString(context, "assignment_time_period", "Dal %s al %s");
+        String formattedStartDate = formatDate(context, startDate);
+        String formattedEndDate = endDate != null ? formatDate(context, endDate) : "";
+        return String.format(getCurrentLocale(context), template, formattedStartDate, formattedEndDate);
+    }
+
+    /**
+     * Get localized standard assignment title.
+     */
+    @NonNull
+    public static String getStandardAssignmentTitle(@Nullable Context context) {
+        // Italian: "Assegnazione standard team"
+        return getLocalizedString(context, "standard_assignment_title", "Assegnazione standard team");
+    }
+
+    /**
+     * Get localized temporary assignment title.
+     */
+    @NonNull
+    public static String getTemporaryAssignmentTitle(@Nullable Context context) {
+        // Italian: "Assegnazione temporanea"
+        return getLocalizedString(context, "temporary_assignment_title", "Assegnazione temporanea");
+    }
+
+    /**
+     * Get localized team transfer title.
+     */
+    @NonNull
+    public static String getTeamTransferTitle(@Nullable Context context) {
+        // Italian: "Trasferimento team"
+        return getLocalizedString(context, "team_transfer_title", "Trasferimento team");
+    }
+
+    // ==================== PUBLIC LOCALIZED STRING ====================
+
+    /**
+     * Helper method to get localized string with fallback.
+     * This integrates with the existing LocaleManager pattern.
+     */
+    @NonNull
+    public static String getLocalizedString(@Nullable Context context, @NonNull String key, @NonNull String fallback) {
+        if (context == null) {
+            return fallback;
+        }
+
+        try {
+            Resources resources = context.getResources();
+            int resourceId = resources.getIdentifier(key, "string", context.getPackageName());
+
+            if (resourceId != 0) {
+                return resources.getString(resourceId);
+            }
+        } catch (Exception e) {
+            // Resource not found or error accessing it
+        }
+
+        // Return fallback if resource not found
+        return fallback;
+    }
+
+    /**
+     * Helper method to get current locale.
+     * This method should already exist in LocaleManager.
+     */
+    @NonNull
+    public static Locale getCurrentLocale(@NonNull Context context) {
+        LocaleManager localeManager = new LocaleManager(context);
+        return localeManager.getCurrentLocale();
+    }
+
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Helper method to format date according to current locale.
+     * This method should already exist in LocaleManager or needs to be implemented.
+     */
+    @NonNull
+    private static String formatDate(@Nullable Context context, @NonNull LocalDate date) {
+        // Implementation would format date according to current locale preferences
+        return date.toString(); // Placeholder implementation
+    }
+
+// ==================== STRING RESOURCES REQUIRED ====================
+
+    /*
+     * The following string resources need to be added to res/values/strings.xml (Italian)
+     * and res/values-en/strings.xml (English) and other supported languages:
+     *
+     * <!-- Recurrence Rule Frequencies -->
+     * <string name="frequency_daily">Giornaliero</string>
+     * <string name="frequency_weekly">Settimanale</string>
+     * <string name="frequency_monthly">Mensile</string>
+     * <string name="frequency_quattrodue_cycle">Ciclo QuattroDue</string>
+     *
+     * <!-- Exception Types -->
+     * <string name="exception_type_vacation">Ferie</string>
+     * <string name="exception_type_sick_leave">Malattia</string>
+     * <string name="exception_type_shift_swap">Scambio turno</string>
+     * <string name="exception_type_personal_reduction">Riduzione personale</string>
+     * <string name="exception_type_rol_reduction">ROL</string>
+     * <string name="exception_type_union_time">Permesso sindacale</string>
+     *
+     * <!-- Approval Status -->
+     * <string name="approval_status_draft">Bozza</string>
+     * <string name="approval_status_pending">In attesa</string>
+     * <string name="approval_status_approved">Approvato</string>
+     * <string name="approval_status_rejected">Rifiutato</string>
+     * <string name="approval_status_cancelled">Annullato</string>
+     * <string name="approval_status_expired">Scaduto</string>
+     *
+     * <!-- Priority Levels -->
+     * <string name="priority_low_priority">Priorità bassa</string>
+     * <string name="priority_normal_priority">Priorità normale</string>
+     * <string name="priority_high_priority">Priorità alta</string>
+     * <string name="priority_urgent_priority">Priorità urgente</string>
+     * <string name="priority_override_priority">Priorità sostituzione</string>
+     *
+     * <!-- Assignment Status -->
+     * <string name="assignment_status_active">Attivo</string>
+     * <string name="assignment_status_pending">In attesa</string>
+     * <string name="assignment_status_expired">Scaduto</string>
+     * <string name="assignment_status_suspended">Sospeso</string>
+     * <string name="assignment_status_cancelled">Annullato</string>
+     *
+     * <!-- Templates -->
+     * <string name="user_display_template">Utente %d</string>
+     * <string name="assignment_display_title">%s → %s</string>
+     * <string name="assignment_permanent_period">Dal %s (Permanente)</string>
+     * <string name="assignment_time_period">Dal %s al %s</string>
+     * <string name="recurrence_end_count_template">Termina dopo %d occorrenze</string>
+     * <string name="recurrence_end_date_template">Termina il %s</string>
+     * <string name="default_shift_swap_title">Scambio turno con utente %d</string>
+     *
+     * <!-- Default Titles -->
+     * <string name="standard_assignment_title">Assegnazione standard team</string>
+     * <string name="temporary_assignment_title">Assegnazione temporanea</string>
+     * <string name="team_transfer_title">Trasferimento team</string>
+     * <string name="default_exception_title_absence_vacation">Ferie</string>
+     * <string name="default_exception_title_absence_sick">Malattia</string>
+     * <string name="default_exception_title_change_swap">Scambio turno</string>
+     * <string name="default_reduction_title_personal_reduction">Riduzione orario personale</string>
+     * <string name="default_reduction_title_rol_reduction">ROL</string>
+     * <string name="default_reduction_title_union_time">Permesso sindacale</string>
+     *
+     * <!-- Recurrence Rules -->
+     * <string name="recurrence_rule_quattrodue_cycle">Ciclo QuattroDue 4-2</string>
+     * <string name="recurrence_rule_weekdays">Solo giorni feriali</string>
+     * <string name="recurrence_rule_daily">Pattern giornaliero</string>
+     * <string name="recurrence_rule_desc_quattrodue_cycle">Pattern QuattroDue standard: 4 periodi lavoro, 2 riposo</string>
+     * <string name="recurrence_rule_desc_weekdays">Dal lunedì al venerdì</string>
+     * <string name="recurrence_rule_desc_daily">Ogni %d giorni</string>
+     *
+     * <!-- End Conditions -->
+     * <string name="recurrence_end_never">Nessuna fine</string>
+     * <string name="recurrence_end_count">Numero occorrenze</string>
+     * <string name="recurrence_end_until_date">Fino a data specifica</string>
+     */
 }

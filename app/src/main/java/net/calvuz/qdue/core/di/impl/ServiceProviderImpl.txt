@@ -1,12 +1,15 @@
-package net.calvuz.qdue.core.di;
+package net.calvuz.qdue.core.di.impl;
 
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.core.di.ServiceProvider;
+import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
+import net.calvuz.qdue.core.services.impl.CalendarServiceImpl;
 import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
@@ -40,6 +43,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     private final Context mContext;
 
     // Core services - lazy initialized
+    private volatile CalendarService mCalendarService;
     private volatile EventsService mEventsService;
     private volatile UserService mUserService;
     private volatile OrganizationService mOrganizationService;
@@ -56,6 +60,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     private volatile boolean mServicesShutdown = false;
 
     // Synchronization objects
+    private final Object mCalendarServiceLock = new Object();
     private final Object mEventsServiceLock = new Object();
     private final Object mUserServiceLock = new Object();
     private final Object mOrganizationServiceLock = new Object();
@@ -65,7 +70,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     /**
      * Private constructor for singleton pattern
      */
-    private ServiceProviderImpl(Context context) {
+    ServiceProviderImpl(Context context) {
         mContext = context.getApplicationContext();
         Log.d( TAG, "ServiceProvider created" );
     }
@@ -74,9 +79,9 @@ public class ServiceProviderImpl implements ServiceProvider {
      * Get singleton instance
      */
     public static ServiceProviderImpl getInstance(Context context) {
-        if ( INSTANCE == null ) {
+        if (INSTANCE == null) {
             synchronized (ServiceProviderImpl.class) {
-                if ( INSTANCE == null ) {
+                if (INSTANCE == null) {
                     INSTANCE = new ServiceProviderImpl( context );
                 }
             }
@@ -87,34 +92,72 @@ public class ServiceProviderImpl implements ServiceProvider {
     @Override
     public void initializeServices() {
         synchronized (mInitializationLock) {
-            if ( mServicesInitialized || mServicesShutdown ) {
+            if (mServicesInitialized || mServicesShutdown) {
                 Log.d( TAG, "Services already initialized or shutdown, skipping" );
                 return;
             }
 
-            try {
-                Log.d( TAG, "Initializing services..." );
+            synchronized (mInitializationLock) {
+                if (mServicesInitialized) {
+                    return;
+                }
 
-                // Initialize database first
-                mDatabase = QDueDatabase.getInstance( mContext );
+                try {
+                    Log.d( TAG, "Initializing services..." );
 
-                // Services will be lazy-initialized when first accessed
-                mServicesInitialized = true;
+                    // Initialize database first
+                    mDatabase = QDueDatabase.getInstance( mContext );
 
-                Log.d( TAG, "✅ Services initialization completed" );
+                    // Initialize existing services
+                    getEventsService();
+                    getUserService();
+                    getOrganizationService();
+                    getCoreBackupManager();
+                    getWorkScheduleService();
+                    getCalendarService();
 
-            } catch (Exception e) {
-                Log.e( TAG, "❌ Error initializing services: " + e.getMessage() );
-                throw new RuntimeException( "Service initialization failed", e );
+                    // Services will be lazy-initialized when first accessed
+                    mServicesInitialized = true;
+
+                    Log.d( TAG, "✅ Services initialization completed" );
+                } catch (Exception e) {
+                    Log.e( TAG, "❌ Error initializing services: " + e.getMessage() );
+                    throw new RuntimeException( "Service initialization failed", e );
+                }
             }
         }
     }
 
+    // Aggiungere il metodo getter per CalendarService:
+    @Override
+    public CalendarService getCalendarService() {
+        if (mCalendarService == null) {
+            synchronized (mCalendarServiceLock) {
+                if (mCalendarService == null) {
+                    try {
+                        Log.d( TAG, "Initializing CalendarService..." );
+                        mCalendarService = new CalendarServiceImpl(
+                                mContext,
+                                mDatabase,
+                                getCoreBackupManager()
+                        );
+                        mCalendarService.initialize();
+                        Log.d( TAG, "CalendarService initialized successfully" );
+                    } catch (Exception e) {
+                        Log.e( TAG, "Failed to initialize CalendarService", e );
+                        throw new RuntimeException( "CalendarService initialization failed", e );
+                    }
+                }
+            }
+        }
+        return mCalendarService;
+    }
+
     @Override
     public EventsService getEventsService() {
-        if ( mEventsService == null ) {
+        if (mEventsService == null) {
             synchronized (mEventsServiceLock) {
-                if ( mEventsService == null ) {
+                if (mEventsService == null) {
                     ensureInitialized();
                     Log.d( TAG, "Creating EventsService instance" );
                     mEventsService = new EventsServiceImpl( mContext, mDatabase );
@@ -126,9 +169,9 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public UserService getUserService() {
-        if ( mUserService == null ) {
+        if (mUserService == null) {
             synchronized (mUserServiceLock) {
-                if ( mUserService == null ) {
+                if (mUserService == null) {
                     ensureInitialized();
                     Log.d( TAG, "Creating UserService instance" );
                     mUserService = new UserServiceImpl( mContext, mDatabase );
@@ -140,9 +183,9 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public OrganizationService getOrganizationService() {
-        if ( mOrganizationService == null ) {
+        if (mOrganizationService == null) {
             synchronized (mOrganizationServiceLock) {
-                if ( mOrganizationService == null ) {
+                if (mOrganizationService == null) {
                     ensureInitialized();
                     Log.d( TAG, "Creating OrganizationService instance" );
                     mOrganizationService = new OrganizationServiceImpl( mContext, mDatabase );
@@ -154,9 +197,9 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public CoreBackupManager getCoreBackupManager() {
-        if ( mCoreBackupManager == null ) {
+        if (mCoreBackupManager == null) {
             synchronized (mBackupManagerLock) {
-                if ( mCoreBackupManager == null ) {
+                if (mCoreBackupManager == null) {
                     ensureInitialized();
                     Log.d( TAG, "Creating CoreBackupManager instance" );
                     mCoreBackupManager = new CoreBackupManager( mContext, mDatabase );
@@ -175,9 +218,9 @@ public class ServiceProviderImpl implements ServiceProvider {
     @Override
     @NonNull
     public WorkScheduleRepository getWorkScheduleService() {
-        if ( mWorkScheduleRepository == null ) {
+        if (mWorkScheduleRepository == null) {
             synchronized (this) {
-                if ( mWorkScheduleRepository == null ) {
+                if (mWorkScheduleRepository == null) {
                     // WorkScheduleRepository depends on UserService for team assignments
                     UserService userService = getUserService();
 
@@ -197,7 +240,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     @Override
     public void shutdownServices() {
         synchronized (mInitializationLock) {
-            if ( mServicesShutdown ) {
+            if (mServicesShutdown) {
                 Log.d( TAG, "Services already shutdown" );
                 return;
             }
@@ -206,29 +249,33 @@ public class ServiceProviderImpl implements ServiceProvider {
 
             try {
                 // Shutdown services in reverse order of dependency
-                if ( mCoreBackupManager != null ) {
+                if (mCalendarService != null) {
+                    mCalendarService.cleanup();
+                    mCalendarService = null;
+                }
+
+                if (mCoreBackupManager != null) {
                     // CoreBackupManager shutdown if needed
                     Log.d( TAG, "CoreBackupManager shutdown" );
                 }
 
-                if ( mOrganizationService != null ) {
+                if (mOrganizationService != null) {
                     // OrganizationService shutdown if needed
                     Log.d( TAG, "OrganizationService shutdown" );
                 }
 
-                if ( mUserService != null ) {
+                if (mUserService != null) {
                     // UserService shutdown if needed
                     Log.d( TAG, "UserService shutdown" );
                 }
 
-                if ( mEventsService != null ) {
+                if (mEventsService != null) {
                     // EventsService shutdown if needed
                     Log.d( TAG, "EventsService shutdown" );
                 }
 
                 mServicesShutdown = true;
                 Log.d( TAG, "✅ Services shutdown completed" );
-
             } catch (Exception e) {
                 Log.e( TAG, "❌ Error during service shutdown: " + e.getMessage() );
             }
@@ -237,22 +284,31 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public boolean areServicesReady() {
-        return mServicesInitialized && !mServicesShutdown && mDatabase != null;
+
+        return
+                mEventsService != null && mEventsService.isReady() &&
+                        mUserService != null &&
+                        mOrganizationService != null &&
+                        mCoreBackupManager != null &&
+                        mWorkScheduleRepository != null &&
+                        mCalendarService != null && mCalendarService.isReady();
+
+//        return mServicesInitialized && !mServicesShutdown && mDatabase != null;
     }
 
     /**
      * Ensure services are initialized before use
      */
     private void ensureInitialized() {
-        if ( !mServicesInitialized ) {
+        if (!mServicesInitialized) {
             synchronized (mInitializationLock) {
-                if ( !mServicesInitialized ) {
+                if (!mServicesInitialized) {
                     initializeServices();
                 }
             }
         }
 
-        if ( mServicesShutdown ) {
+        if (mServicesShutdown) {
             throw new IllegalStateException( "Services have been shutdown and cannot be used" );
         }
     }

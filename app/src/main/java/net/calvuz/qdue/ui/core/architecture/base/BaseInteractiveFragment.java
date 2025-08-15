@@ -19,7 +19,7 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.di.ServiceProviderImpl;
+import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;

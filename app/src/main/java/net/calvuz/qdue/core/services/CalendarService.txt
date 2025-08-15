@@ -1,0 +1,282 @@
+package net.calvuz.qdue.core.services;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
+import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * CalendarService - Core Service Interface for QuattroDue Calendar Operations
+ *
+ * <p>Comprehensive service interface for calendar and work schedule operations
+ * within the QDue ServiceProvider architecture. Provides advanced scheduling
+ * capabilities with database-driven persistence and Google Calendar-like features.</p>
+ *
+ * <h3>Service Responsibilities:</h3>
+ * <ul>
+ *   <li><strong>User Schedule Management</strong>: Individual schedule generation and queries</li>
+ *   <li><strong>Team Coordination</strong>: Multi-team schedule coordination and planning</li>
+ *   <li><strong>Exception Handling</strong>: Shift exception processing and conflict resolution</li>
+ *   <li><strong>Schedule Validation</strong>: Business rule validation for schedule changes</li>
+ *   <li><strong>Analytics & Reporting</strong>: Schedule statistics and analysis</li>
+ *   <li><strong>Cache Management</strong>: Performance optimization through intelligent caching</li>
+ * </ul>
+ *
+ * <h3>Integration Features:</h3>
+ * <ul>
+ *   <li><strong>ServiceProvider Pattern</strong>: Full integration with existing DI system</li>
+ *   <li><strong>Async Operations</strong>: CompletableFuture for all database operations</li>
+ *   <li><strong>Error Handling</strong>: Consistent OperationResult pattern throughout</li>
+ *   <li><strong>Backup Integration</strong>: Automatic backup support for critical operations</li>
+ *   <li><strong>Lifecycle Management</strong>: Proper initialization and cleanup support</li>
+ * </ul>
+ *
+ * <h3>Advanced Capabilities:</h3>
+ * <ul>
+ *   <li><strong>RRULE Support</strong>: Google Calendar compatible recurrence rules</li>
+ *   <li><strong>Priority-Based Exceptions</strong>: Sophisticated exception resolution</li>
+ *   <li><strong>Multi-User Support</strong>: Team assignments and user coordination</li>
+ *   <li><strong>Performance Optimized</strong>: Batch operations and intelligent caching</li>
+ * </ul>
+ *
+ * <h3>Usage Example:</h3>
+ * <pre>
+ * // Via ServiceProvider
+ * CalendarService calendarService = serviceProvider.getCalendarService();
+ *
+ * // Get user schedule for today
+ * CompletableFuture&lt;OperationResult&lt;WorkScheduleDay&gt;&gt; result =
+ *     calendarService.getUserScheduleForDate(userId, LocalDate.now());
+ *
+ * // Process result
+ * result.thenAccept(operationResult -> {
+ *     if (operationResult.isSuccess()) {
+ *         WorkScheduleDay schedule = operationResult.getData();
+ *         // Use schedule data
+ *     } else {
+ *         // Handle error
+ *     }
+ * });
+ * </pre>
+ *
+ * @author QDue Development Team
+ * @version 3.1.0 - Fixed Interface Dependencies
+ * @since Step 3 - Engine Implementation
+ */
+public interface CalendarService {
+
+    // ==================== USER SCHEDULE OPERATIONS ====================
+
+    /**
+     * Get work schedule for specific user on specific date.
+     *
+     * <p>Retrieves the complete work schedule for a user on the specified date,
+     * including all shifts, exceptions, and team assignments. The schedule is
+     * generated using the QuattroDue engine with full database integration.</p>
+     *
+     * @param userId User ID for schedule lookup
+     * @param date Target date for schedule generation
+     * @return CompletableFuture with user's WorkScheduleDay or error
+     */
+    @NonNull
+    CompletableFuture<OperationResult<WorkScheduleDay>> getUserScheduleForDate(
+            @NonNull Long userId, @NonNull LocalDate date);
+
+    /**
+     * Get work schedule for specific user over date range.
+     *
+     * <p>Retrieves work schedules for a user across the specified date range.
+     * Optimized for batch operations with intelligent caching. Useful for
+     * calendar views and schedule planning.</p>
+     *
+     * @param userId User ID for schedule lookup
+     * @param startDate Start date (inclusive)
+     * @param endDate End date (inclusive)
+     * @return CompletableFuture with Map of dates to WorkScheduleDay objects
+     */
+    @NonNull
+    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForDateRange(
+            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+
+    /**
+     * Get work schedule for specific user for complete month.
+     *
+     * <p>Convenience method for retrieving a complete month's schedule for a user.
+     * Optimized for calendar month views with pre-calculated date boundaries.</p>
+     *
+     * @param userId User ID for schedule lookup
+     * @param month Target month (year and month)
+     * @return CompletableFuture with monthly schedule map
+     */
+    @NonNull
+    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForMonth(
+            @NonNull Long userId, @NonNull YearMonth month);
+
+    // ==================== TEAM SCHEDULE OPERATIONS ====================
+
+    /**
+     * Get team schedule for specific date.
+     *
+     * <p>Retrieves work schedule for entire team or organization on specified date.
+     * Useful for management views, coverage analysis, and team coordination.</p>
+     *
+     * @param date Target date for schedule generation
+     * @param teamId Optional team ID for filtering (null for all teams)
+     * @return CompletableFuture with team WorkScheduleDay
+     */
+    @NonNull
+    CompletableFuture<OperationResult<WorkScheduleDay>> getTeamScheduleForDate(
+            @NonNull LocalDate date, @Nullable Integer teamId);
+
+    /**
+     * Get team schedule for date range.
+     *
+     * <p>Retrieves team schedules across specified date range. Optimized for
+     * management reporting, coverage analysis, and team planning operations.</p>
+     *
+     * @param startDate Start date (inclusive)
+     * @param endDate End date (inclusive)
+     * @param teamId Optional team ID for filtering (null for all teams)
+     * @return CompletableFuture with Map of team schedules
+     */
+    @NonNull
+    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getTeamScheduleForDateRange(
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Integer teamId);
+
+    // ==================== EXCEPTION HANDLING OPERATIONS ====================
+
+    /**
+     * Apply shift exceptions for specific user and date.
+     *
+     * <p>Processes and applies shift exceptions (vacation, sick leave, overtime, etc.)
+     * for a user on the specified date. Includes priority-based conflict resolution
+     * and business rule validation.</p>
+     *
+     * @param userId User ID for exception processing
+     * @param date Target date for exception application
+     * @return CompletableFuture with updated WorkScheduleDay after exceptions
+     */
+    @NonNull
+    CompletableFuture<OperationResult<WorkScheduleDay>> applyShiftExceptions(
+            @NonNull Long userId, @NonNull LocalDate date);
+
+    /**
+     * Validate proposed schedule changes.
+     *
+     * <p>Validates proposed schedule modifications against business rules,
+     * regulations, and organizational policies. Provides comprehensive
+     * validation feedback for schedule change requests.</p>
+     *
+     * @param userId User ID for validation context
+     * @param originalDate Original date being modified
+     * @param proposedChanges Description of proposed changes
+     * @return CompletableFuture with detailed ScheduleValidationResult
+     */
+    @NonNull
+    CompletableFuture<OperationResult<GetScheduleStatsUseCase.ScheduleValidationResult>> validateScheduleChanges(
+            @NonNull Long userId, @NonNull LocalDate originalDate, @NonNull String proposedChanges);
+
+    // ==================== ANALYTICS AND REPORTING ====================
+
+    /**
+     * Get schedule statistics for date range.
+     *
+     * <p>Generates comprehensive schedule analytics and statistics for the
+     * specified period. Useful for reporting, planning, and performance analysis.</p>
+     *
+     * @param startDate Start of analysis period
+     * @param endDate End of analysis period
+     * @param userId Optional user ID for user-specific stats (null for all users)
+     * @return CompletableFuture with detailed ScheduleStats
+     */
+    @NonNull
+    CompletableFuture<OperationResult<GetScheduleStatsUseCase.ScheduleStats>> getScheduleStatistics(
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId);
+
+    // ==================== TEAM AND USER MANAGEMENT ====================
+
+    /**
+     * Get all users with active schedule assignments.
+     *
+     * <p>Retrieves list of all users who have active schedule assignments.
+     * Useful for management interfaces and user selection operations.</p>
+     *
+     * @return CompletableFuture with List of active user IDs
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<Long>>> getActiveUsers();
+
+    /**
+     * Get team assignment for specific user on specific date.
+     *
+     * <p>Retrieves the team assignment for a user on the specified date.
+     * Accounts for assignment changes over time and team transfers.</p>
+     *
+     * @param userId User ID for team lookup
+     * @param date Target date for assignment lookup
+     * @return CompletableFuture with Team assignment or null if not assigned
+     */
+    @NonNull
+    CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId, @NonNull LocalDate date);
+
+    // ==================== CACHE MANAGEMENT ====================
+
+    /**
+     * Clear schedule cache for performance optimization.
+     *
+     * <p>Clears all cached schedule data to free memory and force fresh
+     * calculations. Use when schedule rules or assignments have changed.</p>
+     */
+    void clearScheduleCache();
+
+    /**
+     * Clear cache for specific date range.
+     *
+     * <p>Clears cached schedule data for the specified date range.
+     * More efficient than clearing entire cache when only specific
+     * dates have changed.</p>
+     *
+     * @param startDate Start date for cache clearing
+     * @param endDate End date for cache clearing
+     */
+    void clearCacheForDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate);
+
+    // ==================== SERVICE LIFECYCLE ====================
+
+    /**
+     * Initialize service resources and connections.
+     *
+     * <p>Called by ServiceProvider during service initialization.
+     * Sets up database connections, initializes engines, and
+     * prepares the service for operations.</p>
+     */
+    void initialize();
+
+    /**
+     * Check if service is ready for operations.
+     *
+     * <p>Verifies that all service dependencies are initialized
+     * and the service is ready to handle requests.</p>
+     *
+     * @return true if service is ready, false otherwise
+     */
+    boolean isReady();
+
+    /**
+     * Cleanup service resources.
+     *
+     * <p>Called by ServiceProvider during service shutdown.
+     * Cleans up resources, closes connections, and prepares
+     * for service termination.</p>
+     */
+    void cleanup();
+}

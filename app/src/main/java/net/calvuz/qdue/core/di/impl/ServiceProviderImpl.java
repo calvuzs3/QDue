@@ -1,0 +1,374 @@
+package net.calvuz.qdue.core.di.impl;
+
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+
+import net.calvuz.qdue.core.di.ServiceProvider;
+import net.calvuz.qdue.core.services.CalendarService;
+import net.calvuz.qdue.core.services.EventsService;
+import net.calvuz.qdue.core.services.UserService;
+import net.calvuz.qdue.core.services.OrganizationService;
+import net.calvuz.qdue.core.services.impl.CalendarServiceImpl;
+import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
+import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
+import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
+import net.calvuz.qdue.core.services.impl.UserServiceImpl;
+import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
+import net.calvuz.qdue.core.backup.CoreBackupManager;
+import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.ui.core.common.utils.Log;
+
+/**
+ * ServiceProvider implementation for dependency injection
+ * <p>
+ * Provides centralized service management with lazy initialization
+ * and proper lifecycle management.
+ * <p>
+ * Features:
+ * - Lazy service initialization
+ * - Thread-safe singleton pattern
+ * - Proper error handling and logging
+ * - Service health monitoring
+ * - Graceful shutdown handling
+ */
+public class ServiceProviderImpl implements ServiceProvider {
+
+    private static final String TAG = "ServiceProviderImpl";
+
+    // Singleton instance
+    private static volatile ServiceProviderImpl INSTANCE;
+
+    // Application context
+    private final Context mContext;
+
+    // Core services - lazy initialized
+    private volatile CalendarService mCalendarService;
+    private volatile EventsService mEventsService;
+    private volatile UserService mUserService;
+    private volatile OrganizationService mOrganizationService;
+    private volatile CoreBackupManager mCoreBackupManager;
+
+    // NEW: Work schedule service
+    private volatile WorkScheduleRepository mWorkScheduleRepository;
+
+    // Service dependencies
+    private QDueDatabase mDatabase;
+
+    // State tracking
+    private volatile boolean mServicesInitialized = false;
+    private volatile boolean mServicesShutdown = false;
+
+    // Synchronization objects
+    private final Object mCalendarServiceLock = new Object();
+    private final Object mEventsServiceLock = new Object();
+    private final Object mUserServiceLock = new Object();
+    private final Object mOrganizationServiceLock = new Object();
+    private final Object mBackupManagerLock = new Object();
+    private final Object mInitializationLock = new Object();
+
+    /**
+     * Private constructor for singleton pattern
+     */
+    ServiceProviderImpl(Context context) {
+        mContext = context.getApplicationContext();
+        Log.d( TAG, "ServiceProvider created" );
+    }
+
+    /**
+     * Get singleton instance
+     */
+    public static ServiceProviderImpl getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (ServiceProviderImpl.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new ServiceProviderImpl( context );
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    @Override
+    public void initializeServices() {
+        synchronized (mInitializationLock) {
+            if (mServicesInitialized || mServicesShutdown) {
+                Log.d( TAG, "Services already initialized or shutdown, skipping" );
+                return;
+            }
+
+            synchronized (mInitializationLock) {
+                if (mServicesInitialized) {
+                    return;
+                }
+
+                try {
+                    Log.d( TAG, "Initializing services..." );
+
+                    // Initialize database first
+                    mDatabase = QDueDatabase.getInstance( mContext );
+
+                    // Initialize existing services
+//                    getEventsService();
+//                    getUserService();
+//                    getOrganizationService();
+//                    getCoreBackupManager();
+//                    getWorkScheduleService();
+//                    getCalendarService();
+
+                    // Services will be lazy-initialized when first accessed
+                    mServicesInitialized = true;
+
+                    Log.d( TAG, "✅ Services initialization completed" );
+                } catch (Exception e) {
+                    Log.e( TAG, "❌ Error initializing services: " + e.getMessage() );
+                    throw new RuntimeException( "Service initialization failed", e );
+                }
+            }
+        }
+    }
+
+    // Aggiungere il metodo getter per CalendarService:
+    @Override
+    public CalendarService getCalendarService() {
+        if (mCalendarService == null) {
+            synchronized (mCalendarServiceLock) {
+                if (mCalendarService == null) {
+                    try {
+                        Log.d( TAG, "Initializing CalendarService..." );
+                        mCalendarService = new CalendarServiceImpl(
+                                mContext,
+                                mDatabase,
+                                getCoreBackupManager()
+                        );
+                        mCalendarService.initialize();
+                        Log.d( TAG, "CalendarService initialized successfully" );
+                    } catch (Exception e) {
+                        Log.e( TAG, "Failed to initialize CalendarService", e );
+                        throw new RuntimeException( "CalendarService initialization failed", e );
+                    }
+                }
+            }
+        }
+        return mCalendarService;
+    }
+
+    @Override
+    public EventsService getEventsService() {
+        if (mEventsService == null) {
+            synchronized (mEventsServiceLock) {
+                if (mEventsService == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating EventsService instance" );
+                    mEventsService = new EventsServiceImpl( mContext, mDatabase );
+                }
+            }
+        }
+        return mEventsService;
+    }
+
+    @Override
+    public UserService getUserService() {
+        if (mUserService == null) {
+            synchronized (mUserServiceLock) {
+                if (mUserService == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating UserService instance" );
+                    mUserService = new UserServiceImpl( mContext, mDatabase );
+                }
+            }
+        }
+        return mUserService;
+    }
+
+    @Override
+    public OrganizationService getOrganizationService() {
+        if (mOrganizationService == null) {
+            synchronized (mOrganizationServiceLock) {
+                if (mOrganizationService == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating OrganizationService instance" );
+                    mOrganizationService = new OrganizationServiceImpl( mContext, mDatabase );
+                }
+            }
+        }
+        return mOrganizationService;
+    }
+
+    @Override
+    public CoreBackupManager getCoreBackupManager() {
+        if (mCoreBackupManager == null) {
+            synchronized (mBackupManagerLock) {
+                if (mCoreBackupManager == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating CoreBackupManager instance" );
+                    mCoreBackupManager = new CoreBackupManager( mContext, mDatabase );
+                }
+            }
+        }
+        return mCoreBackupManager;
+    }
+
+    /**
+     * NEW: Get WorkScheduleRepository instance.
+     * Creates service with proper dependency injection including UserService.
+     *
+     * @return WorkScheduleRepository instance
+     */
+    @Override
+    @NonNull
+    public WorkScheduleRepository getWorkScheduleService() {
+        if (mWorkScheduleRepository == null) {
+            synchronized (this) {
+                if (mWorkScheduleRepository == null) {
+                    // WorkScheduleRepository depends on UserService for team assignments
+                    UserService userService = getUserService();
+
+                    mWorkScheduleRepository = new WorkScheduleRepositoryImpl(
+                            mContext,
+                            mDatabase,
+                            mCoreBackupManager
+                    );
+
+                    Log.d( TAG, "WorkScheduleRepository created with UserService dependency" );
+                }
+            }
+        }
+        return mWorkScheduleRepository;
+    }
+
+    @Override
+    public void shutdownServices() {
+        synchronized (mInitializationLock) {
+            if (mServicesShutdown) {
+                Log.d( TAG, "Services already shutdown" );
+                return;
+            }
+
+            Log.d( TAG, "Shutting down services..." );
+
+            try {
+                // Shutdown services in reverse order of dependency
+                if (mCalendarService != null) {
+                    mCalendarService.cleanup();
+                    mCalendarService = null;
+                }
+                if (mCoreBackupManager != null) {
+                    // CoreBackupManager shutdown if needed
+                    mCoreBackupManager = null; // ✅ AGGIUNGERE reset a null
+                    Log.d( TAG, "CoreBackupManager shutdown" );
+                }
+
+                if (mOrganizationService != null) {
+                    // OrganizationService shutdown if needed
+                    mOrganizationService = null; // ✅ AGGIUNGERE reset a null
+                    Log.d( TAG, "OrganizationService shutdown" );
+                }
+
+                if (mUserService != null) {
+                    // UserService shutdown if needed
+                    mUserService = null; // ✅ AGGIUNGERE reset a null
+                    Log.d( TAG, "UserService shutdown" );
+                }
+
+                if (mEventsService != null) {
+                    // EventsService shutdown if needed
+                    mEventsService = null; // ✅ AGGIUNGERE reset a null
+                    Log.d( TAG, "EventsService shutdown" );
+                }
+
+                if (mWorkScheduleRepository != null) {
+                    mWorkScheduleRepository = null; // ✅ AGGIUNGERE reset a null
+                    Log.d(TAG, "WorkScheduleRepository shutdown"); // ✅ AGGIUNGERE
+                }
+
+                mServicesShutdown = true;
+                Log.d( TAG, "✅ Services shutdown completed" );
+            } catch (Exception e) {
+                Log.e( TAG, "❌ Error during service shutdown: " + e.getMessage() );
+            }
+        }
+    }
+
+    @Override
+    public boolean areServicesReady() {
+
+//        return
+//                mEventsService != null && mEventsService.isReady() &&
+//                        mUserService != null &&
+//                        mOrganizationService != null &&
+//                        mCoreBackupManager != null &&
+//                        mWorkScheduleRepository != null &&
+//                        mCalendarService != null && mCalendarService.isReady();
+
+        return mServicesInitialized && !mServicesShutdown && mDatabase != null;
+    }
+
+    /**
+     * Ensure services are initialized before use
+     */
+    private void ensureInitialized() {
+        if (!mServicesInitialized) {
+            synchronized (mInitializationLock) {
+                if (!mServicesInitialized) {
+                    // ✅ AGGIUNGERE: Initialize database if not already done
+                    if (mDatabase == null) {
+                        mDatabase = QDueDatabase.getInstance(mContext);
+                    }
+                    mServicesInitialized = true; // ✅ AGGIUNGERE
+
+                    //initializeServices();
+                }
+            }
+        }
+
+        if (mServicesShutdown) {
+            throw new IllegalStateException( "Services have been shutdown and cannot be used" );
+        }
+    }
+
+    /**
+     * Get service health status for debugging
+     */
+    public ServiceHealthStatus getServiceHealthStatus() {
+        return new ServiceHealthStatus(
+                mServicesInitialized,
+                mServicesShutdown,
+                mDatabase != null,
+                mEventsService != null,
+                mUserService != null,
+                mOrganizationService != null,
+                mCoreBackupManager != null,
+                mCalendarService != null,          // ✅ AGGIUNGERE
+                mWorkScheduleRepository != null    // ✅ AGGIUNGERE
+        );
+    }
+
+    /**
+     * Service health status data class
+     */
+    public record ServiceHealthStatus(boolean initialized, boolean shutdown, boolean databaseReady,
+                                      boolean eventsServiceCreated, boolean userServiceCreated,
+                                      boolean organizationServiceCreated,
+                                      boolean backupManagerCreated,
+                                      boolean calendarServiceCreated,
+                                      boolean workScheduleServiceCreated) {
+
+        public boolean isHealthy() {
+            return initialized && !shutdown && databaseReady;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return String.format(
+                    "ServiceHealth{initialized=%s, shutdown=%s, database=%s, " +
+                            "events=%s, user=%s, org=%s, backup=%s, calendar=%s, workSchedule=%s}",
+                    initialized, shutdown, databaseReady,
+                    eventsServiceCreated, userServiceCreated,
+                    organizationServiceCreated, backupManagerCreated,
+                    calendarServiceCreated, workScheduleServiceCreated
+            );
+        }
+    }
+}
