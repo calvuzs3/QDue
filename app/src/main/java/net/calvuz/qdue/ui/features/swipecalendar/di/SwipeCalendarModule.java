@@ -11,6 +11,7 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
+import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
@@ -33,13 +34,15 @@ import java.util.Map;
  * <h3>Clean Architecture Integration:</h3>
  * <ul>
  *   <li><strong>Repository Layer</strong>: Uses WorkScheduleRepository for data access</li>
- *   <li><strong>Use Case Layer</strong>: Delegates business logic to dedicated use cases</li>
+ *   <li><strong>Use Case Layer</strong>: Delegates business logic to GenerateUserScheduleUseCase</li>
  *   <li><strong>Async Operations</strong>: All data operations use CompletableFuture pattern</li>
  *   <li><strong>Dependency Injection</strong>: Constructor-based DI with proper lifecycle</li>
  * </ul>
  *
  * <h3>Module Features:</h3>
  * <ul>
+ *   <li><strong>Single User Application</strong>: Optimized for single user workflow</li>
+ *   <li><strong>Default User Support</strong>: Automatic default user management</li>
  *   <li><strong>Lazy Initialization</strong>: Components created on-demand for performance</li>
  *   <li><strong>Lifecycle Management</strong>: Proper cleanup and resource disposal</li>
  *   <li><strong>Thread Safety</strong>: Safe component creation and access</li>
@@ -52,16 +55,24 @@ import java.util.Map;
  *   <li>MonthPagerAdapter with async data loading via use cases</li>
  *   <li>SwipeCalendarStateManager for position persistence</li>
  *   <li>AsyncDataLoader implementation for events and work schedule</li>
- *   <li>Use case instances for calendar operations</li>
+ *   <li>GenerateUserScheduleUseCase for work schedule operations</li>
  * </ul>
  *
  * @author QDue Development Team
- * @version 2.0.0 - Clean Architecture Implementation
+ * @version 2.1.0 - Single User Implementation
  * @since Database Version 6
  */
 public class SwipeCalendarModule {
 
     private static final String TAG = "SwipeCalendarModule";
+
+    // ==================== SINGLE USER CONFIGURATION ====================
+
+    /**
+     * Default user ID for single user application.
+     * Uses 1L as conventional default user identifier.
+     */
+    private static final Long DEFAULT_USER_ID = 1L;
 
     // ==================== DEPENDENCIES ====================
 
@@ -73,7 +84,7 @@ public class SwipeCalendarModule {
     // ==================== CLEAN ARCHITECTURE COMPONENTS ====================
 
     private UseCaseFactory mUseCaseFactory;
-    private GetWorkScheduleForMonthUseCase mGetWorkScheduleForMonthUseCase;
+    private GenerateUserScheduleUseCase mGenerateUserScheduleUseCase;
 
     // ==================== CACHED INSTANCES ====================
 
@@ -83,7 +94,7 @@ public class SwipeCalendarModule {
 
     // ==================== CONFIGURATION ====================
 
-    private Long mCurrentUserId;
+    private Long mCurrentUserId = DEFAULT_USER_ID;
     private boolean mIsDestroyed = false;
 
     // ==================== CONSTRUCTOR ====================
@@ -114,7 +125,7 @@ public class SwipeCalendarModule {
         // Initialize clean architecture components
         initializeCleanArchitecture();
 
-        Log.d(TAG, "SwipeCalendarModule created with clean architecture support");
+        Log.d(TAG, "SwipeCalendarModule created with clean architecture support (single user: " + mCurrentUserId + ")");
     }
 
     // ==================== CLEAN ARCHITECTURE INITIALIZATION ====================
@@ -128,8 +139,8 @@ public class SwipeCalendarModule {
             // Create use case factory with repository dependency
             this.mUseCaseFactory = new UseCaseFactory(mWorkScheduleRepository);
 
-            // Get use case instances
-            this.mGetWorkScheduleForMonthUseCase = mUseCaseFactory.getWorkScheduleForMonthUseCase();
+            // Get user schedule use case instance for work schedule operations
+            this.mGenerateUserScheduleUseCase = mUseCaseFactory.getUserScheduleUseCase();
 
             Log.d(TAG, "✅ Clean architecture components initialized successfully");
 
@@ -142,18 +153,18 @@ public class SwipeCalendarModule {
     // ==================== USE CASE PROVIDERS ====================
 
     /**
-     * Get work schedule use case for month operations.
-     * Provides access to business logic layer for calendar operations.
+     * Get user schedule use case for work schedule operations.
+     * Provides access to business logic layer for calendar work schedule operations.
      *
-     * @return GetWorkScheduleForMonthUseCase instance
+     * @return GenerateUserScheduleUseCase instance
      * @throws IllegalStateException if module has been destroyed
      */
     @NonNull
-    public GetWorkScheduleForMonthUseCase getWorkScheduleForMonthUseCase() {
+    public GenerateUserScheduleUseCase getUserScheduleUseCase() {
         if (mIsDestroyed) {
             throw new IllegalStateException("Module has been destroyed");
         }
-        return mGetWorkScheduleForMonthUseCase;
+        return mGenerateUserScheduleUseCase;
     }
 
     /**
@@ -240,7 +251,8 @@ public class SwipeCalendarModule {
      * - Events: Direct service calls (maintained for compatibility)
      * - Work Schedule: Use case delegation for business logic separation
      * - Async operations: CompletableFuture with proper error handling
-     * - Thread safety: All operations handle concurrency properly</p>
+     * - Thread safety: All operations handle concurrency properly
+     * - Single User: Optimized for single user application workflow</p>
      */
     private class AsyncDataLoader implements MonthPagerAdapter.DataLoader {
 
@@ -295,8 +307,9 @@ public class SwipeCalendarModule {
         }
 
         /**
-         * Load work schedule for specified month using clean architecture use case.
-         * Delegates to GetWorkScheduleForMonthUseCase for proper business logic separation.
+         * Load work schedule for specified month using GenerateUserScheduleUseCase.
+         * Delegates to GenerateUserScheduleUseCase for proper business logic separation.
+         * Uses default user ID for single user application workflow.
          *
          * @param month Target month
          * @param callback Callback for async result delivery
@@ -308,16 +321,17 @@ public class SwipeCalendarModule {
             Log.d(TAG, "Loading work schedule for month: " + month + " (userId: " + mCurrentUserId + ")");
 
             try {
-                mGetWorkScheduleForMonthUseCase.execute(month  /*, mCurrentUserId*/ )
+                // Use GenerateUserScheduleUseCase.executeForMonth with current user ID
+                mGenerateUserScheduleUseCase.executeForMonth(mCurrentUserId, month)
                         .thenAccept(result -> {
                             if (result.isSuccess() && result.getData() != null) {
                                 callback.onSuccess(result.getData());
-                                Log.d(TAG, "✅ Work schedule loaded successfully via use case for " + month +
-                                        " (" + result.getData().size() + " days)");
+                                Log.d(TAG, "✅ Work schedule loaded successfully via GenerateUserScheduleUseCase for " + month +
+                                        " (user: " + mCurrentUserId + ", " + result.getData().size() + " days)");
                             } else {
                                 String errorMsg = result.getErrorMessage() != null ? result.getErrorMessage() : "Unknown error";
                                 Exception error = new RuntimeException("Failed to load work schedule: " + errorMsg);
-                                Log.w(TAG, "❌ Work schedule use case returned error for " + month + ": " + errorMsg);
+                                Log.w(TAG, "❌ GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg);
                                 callback.onError(error);
                             }
                         })
@@ -401,28 +415,49 @@ public class SwipeCalendarModule {
         }
     }
 
-    // ==================== CONFIGURATION ====================
+    // ==================== SINGLE USER CONFIGURATION ====================
 
     /**
      * Set current user ID for data operations.
-     * Updates the user context for all subsequent data loading operations.
+     * For single user applications, this typically remains the default user.
      *
-     * @param userId User ID, or null for default user
+     * @param userId User ID, or null to use default user
      */
     public synchronized void setCurrentUserId(@Nullable Long userId) {
-        this.mCurrentUserId = userId;
-        Log.d(TAG, "Current user ID updated to: " + userId);
+        this.mCurrentUserId = userId != null ? userId : DEFAULT_USER_ID;
+        Log.d(TAG, "Current user ID updated to: " + this.mCurrentUserId);
     }
 
     /**
      * Get current user ID being used for data operations.
      *
-     * @return Current user ID, or null if using default user
+     * @return Current user ID (always non-null, defaults to DEFAULT_USER_ID)
      */
-    @Nullable
+    @NonNull
     public Long getCurrentUserId() {
         return mCurrentUserId;
     }
+
+    /**
+     * Get default user ID for single user application.
+     *
+     * @return Default user ID constant
+     */
+    @NonNull
+    public static Long getDefaultUserId() {
+        return DEFAULT_USER_ID;
+    }
+
+    /**
+     * Reset to default user configuration.
+     * Useful for debugging or application reset scenarios.
+     */
+    public synchronized void resetToDefaultUser() {
+        setCurrentUserId(DEFAULT_USER_ID);
+        Log.d(TAG, "Reset to default user: " + DEFAULT_USER_ID);
+    }
+
+    // ==================== DEPENDENCY VALIDATION ====================
 
     /**
      * Check if all dependencies are ready for operation.
@@ -436,7 +471,7 @@ public class SwipeCalendarModule {
                 mUserService != null &&
                 mWorkScheduleRepository != null &&
                 mUseCaseFactory != null &&
-                mGetWorkScheduleForMonthUseCase != null;
+                mGenerateUserScheduleUseCase != null;
     }
 
     // ==================== LIFECYCLE MANAGEMENT ====================
@@ -489,13 +524,13 @@ public class SwipeCalendarModule {
             }
 
             // Clear use case references
-            mGetWorkScheduleForMonthUseCase = null;
+            mGenerateUserScheduleUseCase = null;
 
             // Clear state manager reference
             mStateManager = null;
 
-            // Clear configuration
-            mCurrentUserId = null;
+            // Reset to default user configuration
+            mCurrentUserId = DEFAULT_USER_ID;
 
             mIsDestroyed = true;
             Log.d(TAG, "✅ SwipeCalendarModule destroyed successfully");
@@ -517,18 +552,19 @@ public class SwipeCalendarModule {
     @NonNull
     public String getModuleInfo() {
         StringBuilder info = new StringBuilder();
-        info.append("SwipeCalendarModule Status:\n");
-        info.append("────────────────────────────────\n");
+        info.append("SwipeCalendarModule Status (Single User):\n");
+        info.append("──────────────────────────────────────────\n");
         info.append("• Destroyed: ").append(mIsDestroyed).append("\n");
         info.append("• Dependencies Ready: ").append(areDependenciesReady()).append("\n");
-        info.append("• Current User ID: ").append(mCurrentUserId != null ? mCurrentUserId : "null").append("\n");
+        info.append("• Current User ID: ").append(mCurrentUserId).append("\n");
+        info.append("• Default User ID: ").append(DEFAULT_USER_ID).append("\n");
         info.append("\nComponents:\n");
         info.append("• State Manager: ").append(mStateManager != null ? "✅ Created" : "❌ Not Created").append("\n");
         info.append("• Pager Adapter: ").append(mPagerAdapter != null ? "✅ Created" : "❌ Not Created").append("\n");
         info.append("• Data Loader: ").append(mDataLoader != null ? "✅ Created" : "❌ Not Created").append("\n");
         info.append("\nClean Architecture:\n");
         info.append("• Use Case Factory: ").append(mUseCaseFactory != null ? "✅ Ready" : "❌ Not Ready").append("\n");
-        info.append("• Get Schedule Use Case: ").append(mGetWorkScheduleForMonthUseCase != null ? "✅ Ready" : "❌ Not Ready").append("\n");
+        info.append("• GenerateUserScheduleUseCase: ").append(mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready").append("\n");
         info.append("\nServices:\n");
         info.append("• Events Service: ").append(mEventsService != null ? "✅ Available" : "❌ Unavailable").append("\n");
         info.append("• User Service: ").append(mUserService != null ? "✅ Available" : "❌ Unavailable").append("\n");
@@ -553,11 +589,12 @@ public class SwipeCalendarModule {
         validation.put("user_service_available", mUserService != null);
         validation.put("work_schedule_repository_available", mWorkScheduleRepository != null);
         validation.put("use_case_factory_ready", mUseCaseFactory != null);
-        validation.put("get_schedule_use_case_ready", mGetWorkScheduleForMonthUseCase != null);
+        validation.put("generate_user_schedule_use_case_ready", mGenerateUserScheduleUseCase != null);
         validation.put("state_manager_created", mStateManager != null);
         validation.put("pager_adapter_created", mPagerAdapter != null);
         validation.put("data_loader_created", mDataLoader != null);
         validation.put("current_user_id", mCurrentUserId);
+        validation.put("default_user_id", DEFAULT_USER_ID);
 
         return validation;
     }

@@ -21,7 +21,6 @@ import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,8 +222,52 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     // ==================== BRIDGE CONVERSION METHODS ====================
 
+
+    /**
+     * Enhanced conversion method with comprehensive error handling.
+     *
+     * @param quattroduDay QuattroDue Day object
+     * @return Domain WorkScheduleDay object, never null
+     */
+    private WorkScheduleDay convertDayToWorkScheduleDayRobust(Day quattroduDay) {
+        // Pre-validation
+        if (quattroduDay == null) {
+            Log.w(TAG, "Attempted to convert null QuattroDue Day");
+            return createFallbackWorkScheduleDay(LocalDate.now(), "Null input day");
+        }
+
+        LocalDate date = quattroduDay.getLocalDate();
+        if (date == null) {
+            Log.e(TAG, "QuattroDue Day has null date");
+            return createFallbackWorkScheduleDay(LocalDate.now(), "Null date in input");
+        }
+
+        // Validate mappings
+        if (!validateShiftMappings()) {
+            return createFallbackWorkScheduleDay(date, "Invalid shift mappings");
+        }
+
+        try {
+            return convertDayToWorkScheduleDay(quattroduDay);
+
+        } catch (IllegalStateException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Shift template must be set")) {
+                Log.e(TAG, "❌ Shift template validation failed - this should be fixed now", e);
+                return createFallbackWorkScheduleDay(date, "Shift template validation failed");
+            }
+            throw e; // Re-throw other state exceptions
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Unexpected error in day conversion for " + date, e);
+            return createFallbackWorkScheduleDay(date, "Unexpected conversion error: " + e.getMessage());
+        }
+    }
+
     /**
      * Convert QuattroDue Day to domain WorkScheduleDay.
+     *
+     * <p>Converts legacy QuattroDue Day objects to clean architecture domain models.
+     * Maps shifts, teams, and timing information while preserving business logic.</p>
      *
      * @param quattroduDay QuattroDue Day object
      * @return Domain WorkScheduleDay object
@@ -232,6 +275,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     private WorkScheduleDay convertDayToWorkScheduleDay(Day quattroduDay) {
         try {
             if (quattroduDay == null) {
+                Log.w(TAG, "Attempted to convert null QuattroDue Day");
                 return null;
             }
 
@@ -244,26 +288,46 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 net.calvuz.qdue.quattrodue.models.Shift quattroduShift = quattroduShifts.get(i);
                 Shift domainShiftTemplate = mAllShifts.get(i);
 
-                // Create WorkScheduleShift
-                WorkScheduleShift.Builder shiftBuilder = WorkScheduleShift.builder() //domainShiftTemplate
-                        .startTime(domainShiftTemplate.getStartTime())
-                        .endTime(domainShiftTemplate.getEndTime())
-                        .description(domainShiftTemplate.getDescription());
+                try {
+                    // Create WorkScheduleShift with proper shift template
+                    WorkScheduleShift.Builder shiftBuilder = WorkScheduleShift.builder()
+                            .shift(domainShiftTemplate)                    // ✅ FIX: Set shift template
+                            .startTime(domainShiftTemplate.getStartTime())
+                            .endTime(domainShiftTemplate.getEndTime())
+                            .description(domainShiftTemplate.getDescription());
 
-                // Add teams from QuattroDue shift
-                Set<HalfTeam> halfTeams = quattroduShift.getHalfTeams();
-                for (HalfTeam halfTeam : halfTeams) {
-                    Team domainTeam = mHalfTeamToTeamMap.get(halfTeam.getName());
-                    if (domainTeam != null) {
-                        shiftBuilder.addTeam(domainTeam);
+                    // Add teams from QuattroDue shift
+                    Set<HalfTeam> halfTeams = quattroduShift.getHalfTeams();
+                    int teamsAdded = 0;
+
+                    for (HalfTeam halfTeam : halfTeams) {
+                        Team domainTeam = mHalfTeamToTeamMap.get(halfTeam.getName());
+                        if (domainTeam != null) {
+                            shiftBuilder.addTeam(domainTeam);
+                            teamsAdded++;
+                        } else {
+                            Log.w(TAG, "Could not map HalfTeam to domain Team: " + halfTeam.getName());
+                        }
                     }
-                }
 
-                builder.addShift(shiftBuilder.build());
+                    // Build and add the shift to the day
+                    WorkScheduleShift workScheduleShift = shiftBuilder.build();
+                    builder.addShift(workScheduleShift);
+
+                    Log.v(TAG, "Converted shift " + i + " (" + domainShiftTemplate.getName() +
+                            ") with " + teamsAdded + " teams");
+
+                } catch (Exception shiftException) {
+                    Log.e(TAG, "Failed to convert shift " + i + " for date " +
+                            quattroduDay.getLocalDate(), shiftException);
+                    // Continue with other shifts rather than failing entire day
+                }
             }
 
             // Add off-work teams
             List<String> allTeamNames = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I");
+            int offWorkTeamsAdded = 0;
+
             for (String teamName : allTeamNames) {
                 boolean isWorking = quattroduShifts.stream()
                         .flatMap(shift -> shift.getHalfTeams().stream())
@@ -273,15 +337,28 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                     Team offTeam = mHalfTeamToTeamMap.get(teamName);
                     if (offTeam != null) {
                         builder.addOffWorkTeam(offTeam);
+                        offWorkTeamsAdded++;
                     }
                 }
             }
 
-            return builder.build();
+            WorkScheduleDay result = builder.build();
+
+            Log.d(TAG, "✅ Converted QuattroDue Day for " + quattroduDay.getLocalDate() +
+                    " - Shifts: " + result.getShifts().size() +
+                    ", Off-work teams: " + offWorkTeamsAdded);
+
+            return result;
 
         } catch (Exception e) {
-            Log.e(TAG, "Error converting QuattroDue Day to WorkScheduleDay", e);
-            return WorkScheduleDay.builder(quattroduDay.getLocalDate()).build();
+            Log.e(TAG, "❌ Error converting QuattroDue Day to WorkScheduleDay for date " +
+                    (quattroduDay != null ? quattroduDay.getLocalDate() : "null"), e);
+
+            // Return empty day rather than null to prevent downstream failures
+            if (quattroduDay != null) {
+                return WorkScheduleDay.builder(quattroduDay.getLocalDate()).build();
+            }
+            return null;
         }
     }
 
@@ -296,6 +373,39 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             return null;
         }
         return mHalfTeamToTeamMap.get(halfTeam.getName());
+    }
+
+
+    /**
+     * Create a fallback WorkScheduleDay when conversion fails.
+     * Provides a minimal valid day structure to prevent downstream failures.
+     *
+     * @param date Date for the fallback day
+     * @param reason Reason for fallback creation
+     * @return Minimal WorkScheduleDay
+     */
+    private WorkScheduleDay createFallbackWorkScheduleDay(@NonNull LocalDate date, @NonNull String reason) {
+        Log.w(TAG, "⚠️ Creating fallback WorkScheduleDay for " + date + " - Reason: " + reason);
+
+        try {
+            WorkScheduleDay.Builder builder = WorkScheduleDay.builder(date);
+
+            // Add all teams as off-work for fallback scenario
+            List<String> allTeamNames = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I");
+            for (String teamName : allTeamNames) {
+                Team team = mHalfTeamToTeamMap.get(teamName);
+                if (team != null) {
+                    builder.addOffWorkTeam(team);
+                }
+            }
+
+            return builder.build();
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Failed to create fallback WorkScheduleDay", e);
+            // Last resort: return empty day
+            return WorkScheduleDay.builder(date).build();
+        }
     }
 
     // ==================== SCHEDULE GENERATION (BRIDGE METHODS) ====================
@@ -342,37 +452,110 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         }, mExecutorService);
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForDateRange(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
+
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting work schedule for date range: " + startDate + " to " + endDate + " (using QuattroDue bridge)");
+                Log.d(TAG, "Getting work schedule for date range: " + startDate + " to " + endDate +
+                        " (userId: " + userId + ", using QuattroDue bridge)");
 
+                // Validate date range
+                if (startDate.isAfter(endDate)) {
+                    return OperationResult.failure("Start date cannot be after end date",
+                            OperationResult.OperationType.VALIDATION);
+                }
+
+                // Check for reasonable date range (business rule)
+                long daysDifference = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+                if (daysDifference > 365) {
+                    return OperationResult.failure("Date range cannot exceed 365 days",
+                            OperationResult.OperationType.VALIDATION);
+                }
+
+                // Validate shift mappings before processing
+                if (!validateShiftMappings()) {
+                    return OperationResult.failure("Shift mappings not properly initialized",
+                            OperationResult.OperationType.SYSTEM);
+                }
+
+                // ✅ CORRECT: Use existing QuattroDue methods
                 Map<LocalDate, WorkScheduleDay> scheduleMap = new ConcurrentHashMap<>();
                 LocalDate currentDate = startDate;
 
+                int totalDays = 0;
+                int successfulDays = 0;
+                int fallbackDays = 0;
+
                 while (!currentDate.isAfter(endDate)) {
-                    // Use QuattroDue for each day
-                    Day quattroduDay = mQuattroDue.getDayByDate(currentDate);
-                    if (quattroduDay != null) {
-                        WorkScheduleDay workScheduleDay = convertDayToWorkScheduleDay(quattroduDay);
-                        if (workScheduleDay != null) {
-                            scheduleMap.put(currentDate, workScheduleDay);
-                            mScheduleCache.put(currentDate, workScheduleDay); // Cache each day
+                    totalDays++;
+
+                    try {
+                        // Use QuattroDue bridge method for each day
+                        Day quattroduDay = mQuattroDue.getDayByDate(currentDate);
+
+                        if (quattroduDay != null) {
+                            WorkScheduleDay workScheduleDay = convertDayToWorkScheduleDay(quattroduDay);
+
+                            if (workScheduleDay != null) {
+                                scheduleMap.put(currentDate, workScheduleDay);
+                                mScheduleCache.put(currentDate, workScheduleDay); // Cache each day
+                                successfulDays++;
+                            } else {
+                                // Create fallback day
+                                WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
+                                        "Conversion returned null");
+                                scheduleMap.put(currentDate, fallbackDay);
+                                fallbackDays++;
+                            }
+                        } else {
+                            // QuattroDue returned null for this date
+                            WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
+                                    "QuattroDue returned null day");
+                            scheduleMap.put(currentDate, fallbackDay);
+                            fallbackDays++;
+                            Log.w(TAG, "QuattroDue returned null for date: " + currentDate);
                         }
+
+                    } catch (IllegalStateException e) {
+                        if (e.getMessage() != null && e.getMessage().contains("Shift template must be set")) {
+                            Log.e(TAG, "❌ Shift template error for " + currentDate + " - using fallback", e);
+
+                            WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
+                                    "Shift template validation failed");
+                            scheduleMap.put(currentDate, fallbackDay);
+                            fallbackDays++;
+                        } else {
+                            throw e; // Re-throw other state exceptions
+                        }
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "❌ Error converting day " + currentDate + " - using fallback", e);
+
+                        WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
+                                "Conversion error: " + e.getMessage());
+                        scheduleMap.put(currentDate, fallbackDay);
+                        fallbackDays++;
                     }
+
                     currentDate = currentDate.plusDays(1);
                 }
 
-                Log.d(TAG, "✅ Successfully calculated work schedule for range (" + scheduleMap.size() + " days)");
+                // Log conversion statistics
+                logConversionStats(totalDays, successfulDays, fallbackDays);
+
+                Log.d(TAG, "✅ Successfully processed work schedule for " + scheduleMap.size() +
+                        " days in range " + startDate + " to " + endDate);
+
                 return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Failed to get work schedule for date range " + startDate + " to " + endDate + ": " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e(TAG, "❌ Failed to get work schedule for date range: " +
+                        startDate + " to " + endDate, e);
+                return OperationResult.failure("Failed to get work schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -743,6 +926,44 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         }, mExecutorService);
     }
 
+    /**
+     * Validate shift mappings initialization.
+     * Ensures that all required mappings are properly initialized before conversion.
+     *
+     * @return true if mappings are valid
+     */
+    private boolean validateShiftMappings() {
+        if (mAllShifts == null || mAllShifts.isEmpty()) {
+            Log.e(TAG, "❌ Shift mappings not initialized - mAllShifts is empty");
+            return false;
+        }
+
+        if (mHalfTeamToTeamMap == null || mHalfTeamToTeamMap.isEmpty()) {
+            Log.e(TAG, "❌ Team mappings not initialized - mHalfTeamToTeamMap is empty");
+            return false;
+        }
+
+        // Validate each shift has required properties
+        for (int i = 0; i < mAllShifts.size(); i++) {
+            Shift shift = mAllShifts.get(i);
+            if (shift == null) {
+                Log.e(TAG, "❌ Null shift found at index " + i);
+                return false;
+            }
+
+            if (shift.getStartTime() == null || shift.getEndTime() == null) {
+                Log.e(TAG, "❌ Shift " + shift.getName() + " has null start/end time");
+                return false;
+            }
+        }
+
+        Log.d(TAG, "✅ Shift mappings validation passed - " +
+                mAllShifts.size() + " shifts, " +
+                mHalfTeamToTeamMap.size() + " team mappings");
+
+        return true;
+    }
+
     // ==================== DATA MANAGEMENT ====================
 
     @NonNull
@@ -963,5 +1184,21 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             // TODO: Implement using QuattroDue bridge
             return OperationResult.success(0, OperationResult.OperationType.READ);
         }, mExecutorService);
+    }
+
+    /**
+     * Debug method to log conversion statistics.
+     * Useful for monitoring conversion success rates and identifying issues.
+     */
+    private void logConversionStats(int totalDays, int successfulDays, int fallbackDays) {
+        if (totalDays > 0) {
+            double successRate = (double) successfulDays / totalDays * 100;
+            Log.i(TAG, String.format("Conversion Stats - Total: %d, Success: %d (%.1f%%), Fallbacks: %d",
+                    totalDays, successfulDays, successRate, fallbackDays));
+
+            if (fallbackDays > 0) {
+                Log.w(TAG, "⚠️ " + fallbackDays + " days required fallback conversion - check data quality");
+            }
+        }
     }
 }

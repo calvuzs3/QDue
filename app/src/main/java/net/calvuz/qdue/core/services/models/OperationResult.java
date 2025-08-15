@@ -243,7 +243,8 @@ public class OperationResult<T> {
 
         // System operations
         INITIALIZATION("Initialization"),
-        CLEANUP("Cleanup");
+        CLEANUP("Cleanup"),
+        SYSTEM( "System");
 
         private final String displayName;
 
