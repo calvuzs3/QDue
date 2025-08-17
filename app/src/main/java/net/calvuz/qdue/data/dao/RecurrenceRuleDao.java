@@ -14,24 +14,14 @@ import net.calvuz.qdue.data.entities.RecurrenceRuleEntity;
 import java.util.List;
 
 /**
- * Enhanced DAO Interfaces for Calendar Engine Database Operations
- *
- * <p>Provides business-optimized data access methods for the new calendar entities.
- * These DAOs are designed for high-performance schedule generation, conflict resolution,
- * and complex business queries needed by the calendar engine.</p>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Calendar Engine Database
- * @since Clean Architecture Phase 2
- */
-
-// ==================== RECURRENCE RULE DAO ====================
-
-/**
  * RecurrenceRuleDao - Data Access Object for recurrence patterns.
  *
  * <p>Optimized for pattern lookup, frequency filtering, and date range queries.
  * Supports both simple CRUD operations and complex pattern matching queries.</p>
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Calendar Engine Database
+ * @since Clean architecture
  */
 @Dao
 public interface RecurrenceRuleDao {
@@ -101,6 +91,28 @@ public interface RecurrenceRuleDao {
 
     @Query("UPDATE recurrence_rules SET updated_at = :timestamp WHERE id = :ruleId")
     int updateTimestamp(@NonNull String ruleId, long timestamp);
+
+    // ==================== NEW METHODS FOR BACKUP SUPPORT ====================
+
+     /**
+      * ✅ NEW: Get ALL recurrence rules for complete backup (including inactive)
+      */
+     @Query("SELECT * FROM recurrence_rules ORDER BY created_at DESC")
+     @NonNull
+     List<RecurrenceRuleEntity> getAllRecurrenceRules();
+
+     /**
+      * ✅ NEW: Get all recurrence rules with status filter
+      */
+     @Query("SELECT * FROM recurrence_rules WHERE active = :active ORDER BY created_at DESC")
+     @NonNull
+     List<RecurrenceRuleEntity> getAllRecurrenceRulesByStatus(boolean active);
+
+     /**
+      * ✅ NEW: Get total count for statistics
+      */
+     @Query("SELECT COUNT(*) FROM recurrence_rules")
+     int getTotalRecurrenceRuleCount();
 
     // ==================== STATISTICS QUERIES ====================
 

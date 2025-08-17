@@ -6,6 +6,7 @@ import net.calvuz.qdue.core.backup.models.EntityBackupPackage;
 import net.calvuz.qdue.core.backup.models.EventsBackupPackage;
 import net.calvuz.qdue.core.backup.models.UsersBackupPackage;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.events.dao.EventDao;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.user.data.dao.EstablishmentDao;
@@ -145,7 +146,7 @@ public class DatabaseBackupService {
                 }
                 metadata.put("departmentCounts", departmentCounts);
             }
-            backup.entityMetadata = metadata;
+            backup.metadata = metadata;
 
             return backup;
 
@@ -176,7 +177,7 @@ public class DatabaseBackupService {
                         byEstablishment.getOrDefault(dept.getEstablishmentId(), 0) + 1);
             }
             metadata.put("departmentsByEstablishment", byEstablishment);
-            backup.entityMetadata = metadata;
+            backup.metadata = metadata;
 
             return backup;
 
@@ -207,7 +208,7 @@ public class DatabaseBackupService {
                         byMacroDepartment.getOrDefault(subDept.getMacroDepartmentId(), 0) + 1);
             }
             metadata.put("subDepartmentsByMacroDepartment", byMacroDepartment);
-            backup.entityMetadata = metadata;
+            backup.metadata = metadata;
 
             return backup;
 
@@ -664,6 +665,206 @@ public class DatabaseBackupService {
         } catch (Exception e) {
             Log.e(TAG, "Referential integrity validation failed", e);
             return false;
+        }
+    }
+
+    // ==================== PUBLIC OPERATIONRESULT BACKUP METHODS ====================
+
+    /**
+     * ✅ NEW: Generate events backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<EntityBackupPackage> generateEventsBackup() {
+        try {
+            Log.d(TAG, "Generating events backup with OperationResult");
+            EntityBackupPackage eventsBackup = createEventsBackup();
+
+            if (eventsBackup == null) {
+                return OperationResult.failure("Failed to create events backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Events backup generated successfully: " + eventsBackup.entityCount + " entities");
+            return OperationResult.success(eventsBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate events backup", e);
+            return OperationResult.failure("Events backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate users backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<EntityBackupPackage> generateUsersBackup() {
+        try {
+            Log.d(TAG, "Generating users backup with OperationResult");
+            EntityBackupPackage usersBackup = createUsersBackup();
+
+            if (usersBackup == null) {
+                return OperationResult.failure("Failed to create users backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Users backup generated successfully: " + usersBackup.entityCount + " entities");
+            return OperationResult.success(usersBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate users backup", e);
+            return OperationResult.failure("Users backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate establishments backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<EntityBackupPackage> generateEstablishmentsBackup() {
+        try {
+            Log.d(TAG, "Generating establishments backup with OperationResult");
+            EntityBackupPackage establishmentsBackup = createEstablishmentsBackup();
+
+            if (establishmentsBackup == null) {
+                return OperationResult.failure("Failed to create establishments backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Establishments backup generated successfully: " + establishmentsBackup.entityCount + " entities");
+            return OperationResult.success(establishmentsBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate establishments backup", e);
+            return OperationResult.failure("Establishments backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate macro departments backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<EntityBackupPackage> generateMacroDepartmentsBackup() {
+        try {
+            Log.d(TAG, "Generating macro departments backup with OperationResult");
+            EntityBackupPackage macroDepartmentsBackup = createMacroDepartmentsBackup();
+
+            if (macroDepartmentsBackup == null) {
+                return OperationResult.failure("Failed to create macro departments backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Macro departments backup generated successfully: " + macroDepartmentsBackup.entityCount + " entities");
+            return OperationResult.success(macroDepartmentsBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate macro departments backup", e);
+            return OperationResult.failure("Macro departments backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate sub departments backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<EntityBackupPackage> generateSubDepartmentsBackup() {
+        try {
+            Log.d(TAG, "Generating sub departments backup with OperationResult");
+            EntityBackupPackage subDepartmentsBackup = createSubDepartmentsBackup();
+
+            if (subDepartmentsBackup == null) {
+                return OperationResult.failure("Failed to create sub departments backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Sub departments backup generated successfully: " + subDepartmentsBackup.entityCount + " entities");
+            return OperationResult.success(subDepartmentsBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate sub departments backup", e);
+            return OperationResult.failure("Sub departments backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate backup for any entity type with OperationResult wrapper
+     * Generic method that wraps createEntityBackup with OperationResult
+     */
+    public OperationResult<EntityBackupPackage> generateEntityBackupWithResult(String entityType) {
+        try {
+            Log.d(TAG, "Generating " + entityType + " backup with OperationResult");
+            EntityBackupPackage entityBackup = createEntityBackup(entityType);
+
+            if (entityBackup == null) {
+                return OperationResult.failure("Failed to create " + entityType + " backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, entityType + " backup generated successfully: " + entityBackup.entityCount + " entities");
+            return OperationResult.success(entityBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate " + entityType + " backup", e);
+            return OperationResult.failure(entityType + " backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
+// ==================== BULK BACKUP OPERATIONS WITH OPERATIONRESULT ====================
+
+    /**
+     * ✅ NEW: Generate all entities backup in a single operation
+     * Useful for complete database backup operations
+     */
+    public OperationResult<Map<String, EntityBackupPackage>> generateAllEntitiesBackup() {
+        try {
+            Log.d(TAG, "Generating complete database backup for all entities");
+
+            Map<String, EntityBackupPackage> allBackups = new HashMap<>();
+            List<String> errors = new ArrayList<>();
+
+            // Generate backup for each entity type
+            for (String entityType : getSupportedEntityTypes()) {
+                try {
+                    EntityBackupPackage backup = createEntityBackup(entityType);
+                    if (backup != null) {
+                        allBackups.put(entityType, backup);
+                        Log.d(TAG, "Successfully backed up " + entityType + ": " + backup.entityCount + " entities");
+                    } else {
+                        errors.add("Failed to backup " + entityType + ": null result");
+                    }
+                } catch (Exception e) {
+                    String error = "Failed to backup " + entityType + ": " + e.getMessage();
+                    errors.add(error);
+                    Log.e(TAG, error, e);
+                }
+            }
+
+            // Check if we have any successful backups
+            if (allBackups.isEmpty()) {
+                return OperationResult.failure("No entities could be backed up: " + String.join(", ", errors),
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            // Log results
+            int totalEntities = allBackups.values().stream().mapToInt(backup -> backup.entityCount).sum();
+            Log.d(TAG, "Complete database backup generated: " + allBackups.size() + " entity types, " +
+                    totalEntities + " total entities");
+
+            if (!errors.isEmpty()) {
+                Log.w(TAG, "Some backup operations failed: " + String.join(", ", errors));
+            }
+
+            return OperationResult.success(allBackups, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate complete database backup", e);
+            return OperationResult.failure("Complete database backup failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
         }
     }
 

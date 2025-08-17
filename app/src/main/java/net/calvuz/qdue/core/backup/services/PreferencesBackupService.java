@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 
 import net.calvuz.qdue.core.backup.models.PreferencesBackupPackage;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
@@ -27,13 +28,7 @@ public class PreferencesBackupService {
 
     private static final String TAG = "PreferencesBackupService";
 
-    // Standard preference categories
-    private static final String CATEGORY_BACKUP = "backup";
-    private static final String CATEGORY_UI = "ui";
-    private static final String CATEGORY_SECURITY = "security";
-    private static final String CATEGORY_SYNC = "sync";
-    private static final String CATEGORY_NOTIFICATIONS = "notifications";
-    private static final String CATEGORY_GENERAL = "general";
+    private static final String VERSION = "2.0";
 
     // Sensitive preferences that should not be backed up
     private static final String[] SENSITIVE_KEYS = {
@@ -57,153 +52,147 @@ public class PreferencesBackupService {
         Log.d(TAG, "PreferencesBackupService initialized");
     }
 
+    // ==================== CORE BACKUP METHODS ====================
+
+    /**
+     * ✅ NEW: Generate preferences backup with OperationResult wrapper
+     * Used by CoreBackupManager for unified backup operations
+     */
+    public OperationResult<PreferencesBackupPackage> generatePreferencesBackup() {
+        try {
+            Log.d(TAG, "Generating preferences backup with OperationResult");
+            PreferencesBackupPackage preferencesBackup = createPreferencesBackup();
+
+            if (preferencesBackup == null) {
+                return OperationResult.failure("Failed to create preferences backup package",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Preferences backup generated successfully: " + preferencesBackup.getPreferenceCount() + " preferences");
+            return OperationResult.success(preferencesBackup, OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to generate preferences backup", e);
+            return OperationResult.failure("Preferences backup generation failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
+    }
+
     // ==================== BACKUP OPERATIONS ====================
 
     /**
      * Create complete preferences backup
      */
     public PreferencesBackupPackage createPreferencesBackup() {
-        Log.d(TAG, "Creating preferences backup");
-
         try {
-            // Get all preferences (excluding sensitive ones)
-            Map<String, Object> allPreferences = getAllNonSensitivePreferences();
+            Log.d(TAG, "Creating preferences backup package");
 
-            // Categorize preferences
-            Map<String, Map<String, Object>> categorizedPreferences = categorizePreferences(allPreferences);
+            // Get all preferences
+            Map<String, ?> allPreferences = mDefaultPreferences.getAll();
+            Map<String, Object> backupPreferences = new HashMap<>();
+
+            // Convert all preference values to backup-safe formats
+            for (Map.Entry<String, ?> entry : allPreferences.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+
+                if (value != null) {
+                    // Convert to JSON-safe types
+                    if (value instanceof Boolean || value instanceof String ||
+                            value instanceof Integer || value instanceof Long ||
+                            value instanceof Float) {
+                        backupPreferences.put(key, value);
+                    } else {
+                        // Convert other types to string representation
+                        backupPreferences.put(key, value.toString());
+                    }
+                }
+            }
 
             // Create backup package
-            PreferencesBackupPackage backup = new PreferencesBackupPackage("1.0", allPreferences);
-            backup.categorizedPreferences = categorizedPreferences;
+            PreferencesBackupPackage backup = new PreferencesBackupPackage();
+            backup.preferences = backupPreferences;
+            backup.version = VERSION;
+            backup.timestamp = java.time.LocalDateTime.now().toString();
+            backup.preferenceCount = backupPreferences.size();
 
-            Log.d(TAG, "Created preferences backup with " + allPreferences.size() + " preferences");
+            // Add metadata
+            backup.metadata = new HashMap<>();
+            backup.metadata.put("totalPreferences", backupPreferences.size());
+            backup.metadata.put("backupSource", "SharedPreferences");
+            backup.metadata.put("backupMethod", "PreferencesBackupService");
+
+            Log.d(TAG, "Preferences backup package created: " + backupPreferences.size() + " preferences");
             return backup;
 
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create preferences backup", e);
-            return new PreferencesBackupPackage("1.0", new HashMap<>());
+            Log.e(TAG, "Failed to create preferences backup package", e);
+            return null;
         }
     }
 
-    /**
-     * Create category-specific preferences backup
-     */
-    public PreferencesBackupPackage createCategoryBackup(String category) {
-        Log.d(TAG, "Creating " + category + " preferences backup");
-
-        try {
-            Map<String, Object> allPreferences = getAllNonSensitivePreferences();
-            Map<String, Object> categoryPreferences = filterPreferencesByCategory(allPreferences, category);
-
-            PreferencesBackupPackage backup = new PreferencesBackupPackage("1.0", categoryPreferences);
-
-            // Add single category
-            Map<String, Map<String, Object>> categorized = new HashMap<>();
-            categorized.put(category, categoryPreferences);
-            backup.categorizedPreferences = categorized;
-
-            Log.d(TAG, "Created " + category + " backup with " + categoryPreferences.size() + " preferences");
-            return backup;
-
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to create " + category + " preferences backup", e);
-            return new PreferencesBackupPackage("1.0", new HashMap<>());
-        }
-    }
-
-    // ==================== RESTORE OPERATIONS ====================
+    // ==================== RESTORE METHODS ====================
 
     /**
-     * Restore preferences from backup
+     * ✅ Restore preferences from backup package
      */
-    public int restorePreferencesBackup(PreferencesBackupPackage backup) {
-        if (backup == null || backup.preferences == null) {
-            Log.w(TAG, "Cannot restore null preferences backup");
-            return 0;
-        }
-
-        Log.d(TAG, "Restoring preferences backup (" + backup.preferencesCount + " preferences)");
-
+    public OperationResult<Integer> restorePreferencesBackup(PreferencesBackupPackage backup) {
         try {
+            if (backup == null || backup.preferences == null) {
+                return OperationResult.failure("Invalid preferences backup package",
+                        OperationResult.OperationType.RESTORE);
+            }
+
+            Log.d(TAG, "Restoring preferences from backup: " + backup.preferences.size() + " preferences");
+
             SharedPreferences.Editor editor = mDefaultPreferences.edit();
-            int restored = 0;
+            int restoredCount = 0;
 
             for (Map.Entry<String, Object> entry : backup.preferences.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
 
-                // Skip sensitive keys
-                if (isSensitiveKey(key)) {
-                    Log.d(TAG, "Skipping sensitive preference: " + key);
-                    continue;
-                }
-
-                // Apply preference based on type
-                if (restorePreferenceValue(editor, key, value)) {
-                    restored++;
+                try {
+                    // Restore based on value type
+                    if (value instanceof Boolean) {
+                        editor.putBoolean(key, (Boolean) value);
+                        restoredCount++;
+                    } else if (value instanceof String) {
+                        editor.putString(key, (String) value);
+                        restoredCount++;
+                    } else if (value instanceof Integer) {
+                        editor.putInt(key, (Integer) value);
+                        restoredCount++;
+                    } else if (value instanceof Long) {
+                        editor.putLong(key, (Long) value);
+                        restoredCount++;
+                    } else if (value instanceof Float) {
+                        editor.putFloat(key, (Float) value);
+                        restoredCount++;
+                    } else {
+                        // Try to restore as string
+                        editor.putString(key, value.toString());
+                        restoredCount++;
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Failed to restore preference: " + key, e);
                 }
             }
 
-            // Commit changes
-            boolean success = editor.commit();
-
-            if (success) {
-                Log.d(TAG, "Successfully restored " + restored + " preferences");
-                return restored;
-            } else {
-                Log.e(TAG, "Failed to commit preferences changes");
-                return 0;
+            // Apply all changes
+            boolean applied = editor.commit();
+            if (!applied) {
+                return OperationResult.failure("Failed to apply preferences changes to storage",
+                        OperationResult.OperationType.RESTORE);
             }
+
+            Log.d(TAG, "Preferences restore completed: " + restoredCount + " preferences restored");
+            return OperationResult.success(restoredCount, OperationResult.OperationType.RESTORE);
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to restore preferences backup", e);
-            return 0;
-        }
-    }
-
-    /**
-     * Restore specific category from backup
-     */
-    public int restoreCategoryBackup(PreferencesBackupPackage backup, String category) {
-        if (backup == null || backup.categorizedPreferences == null) {
-            Log.w(TAG, "Cannot restore null categorized preferences backup");
-            return 0;
-        }
-
-        Map<String, Object> categoryPreferences = backup.categorizedPreferences.get(category);
-        if (categoryPreferences == null) {
-            Log.w(TAG, "Category " + category + " not found in backup");
-            return 0;
-        }
-
-        Log.d(TAG, "Restoring " + category + " preferences (" + categoryPreferences.size() + " preferences)");
-
-        try {
-            SharedPreferences.Editor editor = mDefaultPreferences.edit();
-            int restored = 0;
-
-            for (Map.Entry<String, Object> entry : categoryPreferences.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-
-                if (restorePreferenceValue(editor, key, value)) {
-                    restored++;
-                }
-            }
-
-            boolean success = editor.commit();
-
-            if (success) {
-                Log.d(TAG, "Successfully restored " + restored + " " + category + " preferences");
-                return restored;
-            } else {
-                Log.e(TAG, "Failed to commit " + category + " preferences changes");
-                return 0;
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to restore " + category + " preferences", e);
-            return 0;
+            return OperationResult.failure("Preferences restore failed: " + e.getMessage(),
+                    OperationResult.OperationType.RESTORE);
         }
     }
 
@@ -275,63 +264,6 @@ public class PreferencesBackupService {
         }
     }
 
-    /**
-     * Categorize preferences based on key patterns
-     */
-    private Map<String, Map<String, Object>> categorizePreferences(Map<String, Object> preferences) {
-        Map<String, Map<String, Object>> categorized = new HashMap<>();
-
-        // Initialize categories
-        categorized.put(CATEGORY_BACKUP, new HashMap<>());
-        categorized.put(CATEGORY_UI, new HashMap<>());
-        categorized.put(CATEGORY_SECURITY, new HashMap<>());
-        categorized.put(CATEGORY_SYNC, new HashMap<>());
-        categorized.put(CATEGORY_NOTIFICATIONS, new HashMap<>());
-        categorized.put(CATEGORY_GENERAL, new HashMap<>());
-
-        for (Map.Entry<String, Object> entry : preferences.entrySet()) {
-            String key = entry.getKey().toLowerCase();
-            String category = determineCategory(key);
-            categorized.get(category).put(entry.getKey(), entry.getValue());
-        }
-
-        return categorized;
-    }
-
-    /**
-     * Determine category for a preference key
-     */
-    private String determineCategory(String key) {
-        if (key.contains("backup") || key.contains("restore")) {
-            return CATEGORY_BACKUP;
-        } else if (key.contains("ui") || key.contains("theme") || key.contains("display")) {
-            return CATEGORY_UI;
-        } else if (key.contains("auth") || key.contains("security") || key.contains("login")) {
-            return CATEGORY_SECURITY;
-        } else if (key.contains("sync") || key.contains("cloud") || key.contains("server")) {
-            return CATEGORY_SYNC;
-        } else if (key.contains("notification") || key.contains("alert") || key.contains("sound")) {
-            return CATEGORY_NOTIFICATIONS;
-        } else {
-            return CATEGORY_GENERAL;
-        }
-    }
-
-    /**
-     * Filter preferences by category
-     */
-    private Map<String, Object> filterPreferencesByCategory(Map<String, Object> preferences, String category) {
-        Map<String, Object> filtered = new HashMap<>();
-
-        for (Map.Entry<String, Object> entry : preferences.entrySet()) {
-            String key = entry.getKey().toLowerCase();
-            if (determineCategory(key).equals(category)) {
-                filtered.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return filtered;
-    }
 
     /**
      * Check if key is sensitive and should not be backed up
@@ -386,28 +318,6 @@ public class PreferencesBackupService {
     }
 
     /**
-     * Get category count
-     */
-    public int getCategoryCount(String category) {
-        Map<String, Object> allPreferences = getAllNonSensitivePreferences();
-        return filterPreferencesByCategory(allPreferences, category).size();
-    }
-
-    /**
-     * Get available categories
-     */
-    public String[] getAvailableCategories() {
-        return new String[]{
-                CATEGORY_BACKUP,
-                CATEGORY_UI,
-                CATEGORY_SECURITY,
-                CATEGORY_SYNC,
-                CATEGORY_NOTIFICATIONS,
-                CATEGORY_GENERAL
-        };
-    }
-
-    /**
      * Validate preferences backup
      */
     public boolean validatePreferencesBackup(PreferencesBackupPackage backup) {
@@ -421,8 +331,8 @@ public class PreferencesBackupService {
             return false;
         }
 
-        if (backup.preferencesCount != backup.preferences.size()) {
-            Log.w(TAG, "Preferences count mismatch: declared=" + backup.preferencesCount +
+        if (backup.getPreferenceCount() != backup.preferences.size()) {
+            Log.w(TAG, "Preferences count mismatch: declared=" + backup.getPreferenceCount() +
                     ", actual=" + backup.preferences.size());
             return false;
         }

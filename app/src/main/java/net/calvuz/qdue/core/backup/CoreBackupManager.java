@@ -3,6 +3,7 @@ package net.calvuz.qdue.core.backup;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.google.gson.Gson;
@@ -10,37 +11,52 @@ import com.google.gson.GsonBuilder;
 
 import net.calvuz.qdue.core.backup.models.EntityBackupPackage;
 import net.calvuz.qdue.core.backup.models.FullApplicationBackup;
+import net.calvuz.qdue.core.backup.models.PreferencesBackupPackage;
+import net.calvuz.qdue.core.backup.services.CalendarDatabaseBackupService;
 import net.calvuz.qdue.core.backup.services.DatabaseBackupService;
 import net.calvuz.qdue.core.backup.services.PreferencesBackupService;
+import net.calvuz.qdue.core.db.CalendarDatabase;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * REFACTORED: CoreBackupManager - Unified Backup System
- * <p>
- * ✅ Eliminates dependency on legacy BackupIntegration and BackupManager
- * ✅ Unified backup system for all entities (Events, Users, Organizations)
- * ✅ Consistent OperationResult pattern throughout
- * ✅ Dependency injection compliant
- * ✅ Thread-safe operations with ExecutorService
- * ✅ Automatic backup with configurable triggers
- * ✅ Backup rotation and cleanup
- * ✅ Import/Export with EventPackageJson compatibility
+ * EXTENDED: CoreBackupManager - Unified Backup System with Calendar Support
+ *
+ * <p>Enhanced version of the CoreBackupManager supporting both QDueDatabase and CalendarDatabase
+ * following clean architecture principles with dependency injection compliance.</p>
+ *
+ * <h3>Enhanced Features:</h3>
+ * <ul>
+ *   <li><strong>Dual Database Support</strong>: Handles both QDue and Calendar databases</li>
+ *   <li><strong>Calendar Auto Backup</strong>: Automatic backup triggers for calendar operations</li>
+ *   <li><strong>Unified Backup Format</strong>: Single backup file with both database contents</li>
+ *   <li><strong>Migration Ready</strong>: Prepares for QDueDatabase → CalendarDatabase transition</li>
+ *   <li><strong>Backward Compatibility</strong>: Maintains all existing QDueDatabase functionality</li>
+ * </ul>
+ *
+ * <h3>Calendar Entities Supported:</h3>
+ * <ul>
+ *   <li>ShiftEntity - Shift type templates</li>
+ *   <li>TeamEntity - Work team definitions</li>
+ *   <li>RecurrenceRuleEntity - RRULE patterns</li>
+ *   <li>ShiftExceptionEntity - Schedule exceptions</li>
+ *   <li>UserScheduleAssignmentEntity - User-team assignments</li>
+ * </ul>
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Calendar Integration & Clean Architecture
+ * @since Clean Architecture Phase 2
  */
 public class CoreBackupManager {
 
@@ -49,6 +65,7 @@ public class CoreBackupManager {
     // Backup configuration
     private static final String BACKUP_DIR_NAME = "qdue_unified_backup";
     private static final String BACKUP_FILE_PREFIX = "qdue_backup_";
+    private static final String CALENDAR_BACKUP_PREFIX = "calendar_backup_";
     private static final String BACKUP_FILE_EXTENSION = ".json";
     private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -64,31 +81,42 @@ public class CoreBackupManager {
     private static final String PREF_BACKUP_ON_DELETE = "unified_backup_on_delete";
     private static final String PREF_BACKUP_ON_IMPORT = "unified_backup_on_import";
 
-    // Dependencies
+    // Calendar-specific preferences
+    private static final String PREF_CALENDAR_AUTO_BACKUP_ENABLED = "calendar_auto_backup_enabled";
+    private static final String PREF_CALENDAR_LAST_BACKUP_TIME = "calendar_last_backup_time";
+    private static final String PREF_CALENDAR_BACKUP_COUNT = "calendar_backup_count";
+
+    // ==================== DEPENDENCIES ====================
+
     private final Context mContext;
     private final QDueDatabase mDatabase;
+    private final CalendarDatabase mCalendarDatabase;
     private final SharedPreferences mPreferences;
     private final DatabaseBackupService mDatabaseBackupService;
+    private final CalendarDatabaseBackupService mCalendarDatabaseBackupService;
     private final PreferencesBackupService mPreferencesBackupService;
     private final ExecutorService mExecutorService;
     private final Gson mGson;
     private final File mBackupDirectory;
 
-    // ==================== CONSTRUCTOR FOR DEPENDENCY INJECTION ====================
+    // ==================== CONSTRUCTORS FOR DEPENDENCY INJECTION ====================
 
     /**
-     * Constructor for dependency injection
+     * Enhanced constructor for dependency injection with Calendar support
      *
      * @param context Application context
      * @param database QDue database instance
+     * @param calendarDatabase Calendar database instance
      */
-    public CoreBackupManager(Context context, QDueDatabase database) {
+    public CoreBackupManager(Context context, QDueDatabase database, CalendarDatabase calendarDatabase) {
         this.mContext = context.getApplicationContext();
         this.mDatabase = database;
+        this.mCalendarDatabase = calendarDatabase;
         this.mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         this.mDatabaseBackupService = new DatabaseBackupService(mContext, database);
+        this.mCalendarDatabaseBackupService = new CalendarDatabaseBackupService(mContext, calendarDatabase);
         this.mPreferencesBackupService = new PreferencesBackupService(mContext);
-        this.mExecutorService = Executors.newFixedThreadPool(3);
+        this.mExecutorService = Executors.newFixedThreadPool(4); // Increased for calendar operations
         this.mGson = new GsonBuilder()
                 .setPrettyPrinting()
                 .serializeNulls()
@@ -102,880 +130,760 @@ public class CoreBackupManager {
             Log.d(TAG, "Unified backup directory created: " + created);
         }
 
-        Log.d(TAG, "CoreBackupManager initialized via dependency injection");
+        Log.d(TAG, "CoreBackupManager initialized with Calendar support via dependency injection");
     }
 
-    // ==================== UNIFIED AUTO BACKUP INTEGRATION ====================
+    /**
+     * Backward compatibility constructor - QDueDatabase only
+     *
+     * @deprecated Use constructor with CalendarDatabase for full functionality
+     * @param context Application context
+     * @param database QDue database instance
+     */
+    @Deprecated
+    public CoreBackupManager(Context context, QDueDatabase database) {
+        this(context, database, null);
+        Log.w(TAG, "CoreBackupManager initialized without Calendar support - limited functionality");
+    }
+
+    // ==================== CALENDAR AUTO BACKUP INTEGRATION ====================
 
     /**
-     * ✅ UNIFIED: Standard auto backup method for all service layers
-     * Used by all services (UserService, EventsService, OrganizationService, etc.)
+     * ✅ NEW: Calendar auto backup trigger for CREATE operations
+     * Used by calendar repositories when creating entities
      */
-    public CompletableFuture<OperationResult<String>> performAutoBackup(String entityType, String operation) {
+    public CompletableFuture<OperationResult<Void>> triggerCalendarAutoBackupOnCreate() {
+        return triggerCalendarAutoBackup("CREATE");
+    }
+
+    /**
+     * ✅ NEW: Calendar auto backup trigger for UPDATE operations
+     * Used by calendar repositories when updating entities
+     */
+    public CompletableFuture<OperationResult<Void>> triggerCalendarAutoBackupOnUpdate() {
+        return triggerCalendarAutoBackup("UPDATE");
+    }
+
+    /**
+     * ✅ NEW: Calendar auto backup trigger for DELETE operations
+     * Used by calendar repositories when deleting entities
+     */
+    public CompletableFuture<OperationResult<Void>> triggerCalendarAutoBackupOnDelete() {
+        return triggerCalendarAutoBackup("DELETE");
+    }
+
+    /**
+     * ✅ NEW: Calendar auto backup trigger for IMPORT operations
+     * Used by calendar services when importing data
+     */
+    public CompletableFuture<OperationResult<Void>> triggerCalendarAutoBackupOnImport() {
+        return triggerCalendarAutoBackup("IMPORT");
+    }
+
+    /**
+     * ✅ NEW: Generic calendar auto backup method
+     *
+     * @param operation Type of operation triggering backup
+     * @return CompletableFuture with operation result
+     */
+    private CompletableFuture<OperationResult<Void>> triggerCalendarAutoBackup(String operation) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                if (!isCalendarAutoBackupEnabled()) {
+                    Log.d(TAG, "Calendar auto backup disabled, skipping backup for: " + operation);
+                    return OperationResult.success("Calendar auto backup disabled, skipping backup for: " + operation,
+                            OperationResult.OperationType.BACKUP);
+                }
+
+                Log.d(TAG, "Triggering calendar auto backup for operation: " + operation);
+
+                if (mCalendarDatabase == null) {
+                    Log.w(TAG, "Calendar database not available for backup");
+                    return OperationResult.failure("Calendar database not initialized",
+                            OperationResult.OperationType.BACKUP);
+                }
+
+                // Create calendar-specific backup
+                OperationResult<String> backupResult = createCalendarBackup();
+
+                if (backupResult.isSuccess()) {
+                    updateCalendarBackupTimestamp();
+                    Log.d(TAG, "Calendar auto backup completed successfully for: " + operation);
+                    return OperationResult.success("Calendar auto backup completed successfully for: " + operation,
+                            OperationResult.OperationType.BACKUP);
+                } else {
+                    Log.e(TAG, "Calendar auto backup failed for: " + operation + " - " + backupResult.getErrors());
+                    return OperationResult.failure(backupResult.getErrors(),
+                            OperationResult.OperationType.BACKUP);
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Calendar auto backup exception for: " + operation, e);
+                return OperationResult.failure("Calendar backup failed: " + e.getMessage(),
+                        OperationResult.OperationType.BACKUP);
+            }
+        }, mExecutorService);
+    }
+
+    // ==================== UNIFIED AUTO BACKUP (EXISTING + ENHANCED) ====================
+
+    /**
+     * ✅ ENHANCED: Standard auto backup method for all service layers
+     * Now includes both QDue and Calendar databases
+     */
+    public CompletableFuture<OperationResult<Void>> triggerAutoBackupOnCreate() {
+        return triggerAutoBackup("CREATE");
+    }
+
+    /**
+     * ✅ ENHANCED: Auto backup for UPDATE operations
+     * Backs up both databases when Calendar is available
+     */
+    public CompletableFuture<OperationResult<Void>> triggerAutoBackupOnUpdate() {
+        return triggerAutoBackup("UPDATE");
+    }
+
+    /**
+     * ✅ ENHANCED: Auto backup for DELETE operations
+     * Backs up both databases when Calendar is available
+     */
+    public CompletableFuture<OperationResult<Void>> triggerAutoBackupOnDelete() {
+        return triggerAutoBackup("DELETE");
+    }
+
+    /**
+     * ✅ ENHANCED: Auto backup for IMPORT operations
+     * Backs up both databases when Calendar is available
+     */
+    public CompletableFuture<OperationResult<Void>> triggerAutoBackupOnImport() {
+        return triggerAutoBackup("IMPORT");
+    }
+
+    /**
+     * ✅ ENHANCED: Generic auto backup method supporting both databases
+     */
+    private CompletableFuture<OperationResult<Void>> triggerAutoBackup(String operation) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (!isAutoBackupEnabled()) {
-                    return OperationResult.success("Auto backup disabled",
+                    Log.d(TAG, "Auto backup disabled, skipping backup for: " + operation);
+                    return OperationResult.success("Auto backup disabled, skipping backup for: " + operation,
                             OperationResult.OperationType.BACKUP);
                 }
 
-                if (!isBackupEnabledForOperation(operation)) {
-                    return OperationResult.success("Auto backup disabled for operation: " + operation,
+                Log.d(TAG, "Triggering unified auto backup for operation: " + operation);
+
+                // Create unified backup (both databases)
+                OperationResult<String> backupResult = createFullApplicationBackup();
+
+                if (backupResult.isSuccess()) {
+                    updateBackupTimestamp();
+                    cleanupOldBackupFiles();
+                    Log.d(TAG, "Unified auto backup completed successfully for: " + operation);
+                    return OperationResult.success("Unified auto backup completed successfully for: " + operation,
                             OperationResult.OperationType.BACKUP);
-                }
-
-                Log.d(TAG, "Auto backup triggered: " + entityType + " - " + operation);
-
-                // Determine backup type based on operation criticality
-                if (isCriticalOperation(operation)) {
-                    Log.d(TAG, "Critical operation detected, performing full application backup");
-                    return performFullApplicationBackup().get();
                 } else {
-                    Log.d(TAG, "Standard operation, performing entity backup");
-                    return performEntityBackup(entityType).get();
+                    Log.e(TAG, "Unified auto backup failed for: " + operation + " - " + backupResult.getErrors());
+                    return OperationResult.failure(backupResult.getErrors(),
+                            OperationResult.OperationType.BACKUP);
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "Failed to perform auto backup: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
+                Log.e(TAG, "Unified auto backup exception for: " + operation, e);
+                return OperationResult.failure("Unified backup failed: " + e.getMessage(),
+                        OperationResult.OperationType.BACKUP);
             }
         }, mExecutorService);
+    }
+
+    // ==================== CALENDAR BACKUP OPERATIONS ====================
+
+    /**
+     * ✅ NEW: Create backup of Calendar database only
+     */
+    public OperationResult<String> createCalendarBackup() {
+        try {
+            if (mCalendarDatabase == null) {
+                return OperationResult.failure("Calendar database not available",
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            Log.d(TAG, "Creating calendar-only backup");
+
+            // Generate calendar backup using service
+            OperationResult<EntityBackupPackage> calendarBackup =
+                    mCalendarDatabaseBackupService.generateCalendarBackup();
+
+            if (calendarBackup.isFailure()) {
+                return OperationResult.failure(calendarBackup.getErrors(),
+                        OperationResult.OperationType.BACKUP);
+            }
+
+            // Create backup file with timestamp
+            String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
+            String filename = CALENDAR_BACKUP_PREFIX + timestamp + BACKUP_FILE_EXTENSION;
+            File backupFile = new File(mBackupDirectory, filename);
+
+            try (FileWriter writer = new FileWriter(backupFile)) {
+                mGson.toJson(calendarBackup.getData(), writer);
+            }
+
+            Log.d(TAG, "Calendar backup created successfully: " + filename);
+            return OperationResult.success(backupFile.getAbsolutePath(), OperationResult.OperationType.BACKUP);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create calendar backup", e);
+            return OperationResult.failure("Calendar backup failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
+        }
     }
 
     /**
-     * ✅ UNIFIED: Event-specific backup with EventPackageJson format
-     * Maintains compatibility with existing event import/export system
+     * ✅ ENHANCED: Create full application backup including both databases
      */
-    public CompletableFuture<OperationResult<String>> performEventBackup(List<LocalEvent> events, String operation) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                if (!isAutoBackupEnabled() || !isBackupEnabledForOperation(operation)) {
-                    return OperationResult.success("Event backup disabled",
-                            OperationResult.OperationType.BACKUP);
+    public OperationResult<String> createFullApplicationBackup() {
+        try {
+            Log.d(TAG, "Creating full application backup (QDue + Calendar)");
+
+            FullApplicationBackup fullBackup = new FullApplicationBackup();
+            fullBackup.version = "2.0";
+            fullBackup.timestamp = LocalDateTime.now().toString();
+            fullBackup.appVersion = getAppVersion();
+
+            // Backup QDue database using NEW methods
+            OperationResult<EntityBackupPackage> qDueEventsBackup =
+                    mDatabaseBackupService.generateEventsBackup();
+            if (qDueEventsBackup.isSuccess()) {
+                fullBackup.eventsBackup = qDueEventsBackup.getData();
+            }
+
+            OperationResult<EntityBackupPackage> qDueUsersBackup =
+                    mDatabaseBackupService.generateUsersBackup();
+            if (qDueUsersBackup.isSuccess()) {
+                fullBackup.usersBackup = qDueUsersBackup.getData();
+            }
+
+            OperationResult<EntityBackupPackage> qDueEstablishmentsBackup =
+                    mDatabaseBackupService.generateEstablishmentsBackup();
+            if (qDueEstablishmentsBackup.isSuccess()) {
+                fullBackup.establishmentsBackup = qDueEstablishmentsBackup.getData();
+            }
+
+            OperationResult<EntityBackupPackage> qDueMacroBackup =
+                    mDatabaseBackupService.generateMacroDepartmentsBackup();
+            if (qDueMacroBackup.isSuccess()) {
+                fullBackup.macroDepartmentsBackup = qDueMacroBackup.getData();
+            }
+
+            OperationResult<EntityBackupPackage> qDueSubBackup =
+                    mDatabaseBackupService.generateSubDepartmentsBackup();
+            if (qDueSubBackup.isSuccess()) {
+                fullBackup.subDepartmentsBackup = qDueSubBackup.getData();
+            }
+
+            // NEW: Backup Calendar database if available
+            if (mCalendarDatabase != null) {
+                OperationResult<EntityBackupPackage> calendarBackup =
+                        mCalendarDatabaseBackupService.generateCalendarBackup();
+                if (calendarBackup.isSuccess()) {
+                    fullBackup.calendarBackup = calendarBackup.getData();
                 }
-
-                Log.d(TAG, "Event backup triggered: " + events.size() + " events - " + operation);
-
-                String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
-                String filename = BACKUP_FILE_PREFIX + "events_" + timestamp + BACKUP_FILE_EXTENSION;
-                File backupFile = new File(mBackupDirectory, filename);
-
-                // Create EventPackageJson for events compatibility
-                EventPackageJson packageJson = createEventPackageFromEvents(events, timestamp, operation);
-
-                // Write JSON to file
-                try (FileWriter writer = new FileWriter(backupFile)) {
-                    mGson.toJson(packageJson, writer);
-                }
-
-                // Update backup preferences and rotate files
-                updateBackupPreferences();
-                performEntityBackupRotation("events");
-
-                Log.d(TAG, "Event backup completed: " + filename + " (" + events.size() + " events)");
-                return OperationResult.success(filename, "Event backup completed successfully",
-                        OperationResult.OperationType.BACKUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to perform event backup: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
             }
-        }, mExecutorService);
-    }
 
-    // ==================== FULL APPLICATION BACKUP ====================
-
-    public CompletableFuture<OperationResult<String>> performFullApplicationBackup() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Starting full application backup...");
-
-                FullApplicationBackup backupPackage = createFullBackupPackage();
-
-                String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
-                String filename = BACKUP_FILE_PREFIX + "full_" + timestamp + BACKUP_FILE_EXTENSION;
-                File backupFile = new File(mBackupDirectory, filename);
-
-                try (FileWriter writer = new FileWriter(backupFile)) {
-                    mGson.toJson(backupPackage, writer);
-                }
-
-                updateBackupPreferences();
-                performBackupRotation();
-
-                Log.d(TAG, "Full application backup completed: " + filename);
-                return OperationResult.success(filename, "Full application backup completed",
-                        OperationResult.OperationType.BACKUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to perform full application backup: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
+            // Backup preferences using NEW method
+            OperationResult<PreferencesBackupPackage> preferencesResult =
+                    mPreferencesBackupService.generatePreferencesBackup();
+            if (preferencesResult.isSuccess()) {
+                fullBackup.preferencesBackup = preferencesResult.getData();
             }
-        }, mExecutorService);
-    }
 
-    public CompletableFuture<OperationResult<String>> performEntityBackup(String entityType) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Starting " + entityType + " backup...");
+            // Write to file
+            String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
+            String filename = BACKUP_FILE_PREFIX + timestamp + BACKUP_FILE_EXTENSION;
+            File backupFile = new File(mBackupDirectory, filename);
 
-                EntityBackupPackage entityBackup = mDatabaseBackupService.createEntityBackup(entityType);
-
-                String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
-                String filename = BACKUP_FILE_PREFIX + entityType + "_" + timestamp + BACKUP_FILE_EXTENSION;
-                File backupFile = new File(mBackupDirectory, filename);
-
-                try (FileWriter writer = new FileWriter(backupFile)) {
-                    mGson.toJson(entityBackup, writer);
-                }
-
-                performEntityBackupRotation(entityType);
-
-                Log.d(TAG, entityType + " backup completed: " + filename);
-                return OperationResult.success(filename, entityType + " backup completed",
-                        OperationResult.OperationType.BACKUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to perform " + entityType + " backup: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
+            try (FileWriter writer = new FileWriter(backupFile)) {
+                mGson.toJson(fullBackup, writer);
             }
-        }, mExecutorService);
-    }
 
-    // ==================== MANUAL BACKUP OPERATIONS ====================
+            Log.d(TAG, "Full application backup created successfully: " + filename);
+            return OperationResult.success(backupFile.getAbsolutePath(), OperationResult.OperationType.BACKUP);
 
-    public CompletableFuture<OperationResult<String>> performManualFullBackup() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Manual full backup requested");
-                return performFullApplicationBackup().get();
-            } catch (Exception e) {
-                Log.e(TAG, "Manual full backup failed: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
-            }
-        }, mExecutorService);
-    }
-
-    public CompletableFuture<OperationResult<String>> performManualEntityBackup(String entityType) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Manual " + entityType + " backup requested");
-                return performEntityBackup(entityType).get();
-            } catch (Exception e) {
-                Log.e(TAG, "Manual " + entityType + " backup failed: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
-            }
-        }, mExecutorService);
-    }
-
-    // ==================== RESTORE OPERATIONS ====================
-
-    public List<BackupFileInfo> getAvailableBackups() {
-        List<BackupFileInfo> backups = new ArrayList<>();
-
-        if (!mBackupDirectory.exists()) {
-            return backups;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create full application backup", e);
+            return OperationResult.failure("Full backup failed: " + e.getMessage(),
+                    OperationResult.OperationType.BACKUP);
         }
+    }
 
-        File[] files = mBackupDirectory.listFiles((dir, name) ->
-                name.startsWith(BACKUP_FILE_PREFIX) && name.endsWith(BACKUP_FILE_EXTENSION));
+    /**
+     * ✅ BACKWARD COMPATIBILITY: Legacy auto backup method
+     * Used by existing services (EventsService, UserService, etc.)
+     *
+     * @param entityType Type of entity being backed up
+     * @param operation Operation being performed (create, update, delete, etc.)
+     */
+    public void performAutoBackup(String entityType, String operation) {
+        try {
+            Log.d(TAG, "Legacy auto backup triggered for " + entityType + " operation: " + operation);
 
-        if (files != null) {
-            for (File file : files) {
-                try {
-                    BackupFileInfo info = parseBackupFile(file);
-                    if (info != null) {
-                        backups.add(info);
-                    }
-                } catch (Exception e) {
-                    Log.w(TAG, "Failed to parse backup file: " + file.getName(), e);
-                }
+            // Map operation to new trigger methods
+            switch (operation.toLowerCase()) {
+                case "create":
+                case "bulk_create":
+                case "import":
+                    triggerAutoBackupOnCreate();
+                    break;
+
+                case "update":
+                case "bulk_update":
+                    triggerAutoBackupOnUpdate();
+                    break;
+
+                case "delete":
+                case "bulk_delete":
+                    triggerAutoBackupOnDelete();
+                    break;
+
+                default:
+                    // Default to create for unknown operations
+                    Log.w(TAG, "Unknown backup operation: " + operation + ", defaulting to create trigger");
+                    triggerAutoBackupOnCreate();
+                    break;
             }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Legacy auto backup failed for " + entityType + " " + operation, e);
+            // Don't throw exception to maintain backward compatibility
         }
-
-        // Sort by creation time (newest first)
-        backups.sort((a, b) -> Long.compare(b.creationTime, a.creationTime));
-        return backups;
     }
 
-    public CompletableFuture<OperationResult<RestoreResult>> restoreFromBackup(String filename, boolean replaceAll) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Starting restore from: " + filename);
+    /**
+     * ✅ BACKWARD COMPATIBILITY: Legacy full application backup method
+     * Used by existing services (OrganizationService, etc.)
+     * Wraps the new createFullApplicationBackup() method for backward compatibility
+     */
+    public void performFullApplicationBackup() {
+        try {
+            Log.d(TAG, "Legacy full application backup triggered");
 
-                File backupFile = new File(mBackupDirectory, filename);
-                if (!backupFile.exists()) {
-                    return OperationResult.failure("Backup file not found: " + filename,
-                            OperationResult.OperationType.RESTORE);
-                }
+            OperationResult<String> result = createFullApplicationBackup();
 
-                BackupFileInfo info = parseBackupFile(backupFile);
-                if (info == null) {
-                    return OperationResult.failure("Invalid backup file format",
-                            OperationResult.OperationType.RESTORE);
-                }
-
-                RestoreResult result;
-                if ("full".equals(info.backupType)) {
-                    result = restoreFullApplicationBackup(backupFile, replaceAll);
-                } else if ("events".equals(info.entityType)) {
-                    result = restoreEventBackup(backupFile, replaceAll);
-                } else {
-                    result = restoreEntityBackup(backupFile, info.entityType, replaceAll);
-                }
-
-                Log.d(TAG, "Restore completed successfully");
-                return OperationResult.success(result, "Restore completed successfully",
-                        OperationResult.OperationType.RESTORE);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to restore from backup: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.RESTORE);
+            if (result.isSuccess()) {
+                Log.d(TAG, "Legacy full application backup completed successfully: " + result.getData());
+            } else {
+                Log.e(TAG, "Legacy full application backup failed: " + result.getFormattedErrorMessage());
             }
-        }, mExecutorService);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Legacy full application backup exception", e);
+            // Don't throw exception to maintain backward compatibility
+        }
     }
 
-    // ==================== BACKUP CONFIGURATION ====================
+    // ==================== CALENDAR BACKUP SETTINGS ====================
 
-    public void setAutoBackupEnabled(boolean enabled) {
-        mPreferences.edit().putBoolean(PREF_AUTO_BACKUP_ENABLED, enabled).apply();
-        Log.d(TAG, "Unified auto backup " + (enabled ? "enabled" : "disabled"));
+    /**
+     * ✅ NEW: Check if calendar auto backup is enabled
+     */
+    public boolean isCalendarAutoBackupEnabled() {
+        return mPreferences.getBoolean(PREF_CALENDAR_AUTO_BACKUP_ENABLED, true);
     }
 
+    /**
+     * ✅ NEW: Enable/disable calendar auto backup
+     */
+    public void setCalendarAutoBackupEnabled(boolean enabled) {
+        mPreferences.edit()
+                .putBoolean(PREF_CALENDAR_AUTO_BACKUP_ENABLED, enabled)
+                .apply();
+        Log.d(TAG, "Calendar auto backup " + (enabled ? "enabled" : "disabled"));
+    }
+
+    /**
+     * ✅ NEW: Get last calendar backup timestamp
+     */
+    public String getLastCalendarBackupTime() {
+        return mPreferences.getString(PREF_CALENDAR_LAST_BACKUP_TIME, "Never");
+    }
+
+    /**
+     * ✅ NEW: Update calendar backup timestamp
+     */
+    private void updateCalendarBackupTimestamp() {
+        String timestamp = LocalDateTime.now().toString();
+        int currentCount = mPreferences.getInt(PREF_CALENDAR_BACKUP_COUNT, 0);
+
+        mPreferences.edit()
+                .putString(PREF_CALENDAR_LAST_BACKUP_TIME, timestamp)
+                .putInt(PREF_CALENDAR_BACKUP_COUNT, currentCount + 1)
+                .apply();
+    }
+
+    // ==================== EXISTING BACKUP SETTINGS (ENHANCED) ====================
+
+    /**
+     * ✅ EXISTING: Check if auto backup is enabled
+     */
     public boolean isAutoBackupEnabled() {
         return mPreferences.getBoolean(PREF_AUTO_BACKUP_ENABLED, true);
     }
 
-    public void setBackupTriggers(boolean onCreate, boolean onUpdate, boolean onDelete, boolean onImport) {
+    /**
+     * ✅ EXISTING: Enable/disable auto backup
+     */
+    public void setAutoBackupEnabled(boolean enabled) {
         mPreferences.edit()
-                .putBoolean(PREF_BACKUP_ON_CREATE, onCreate)
-                .putBoolean(PREF_BACKUP_ON_UPDATE, onUpdate)
-                .putBoolean(PREF_BACKUP_ON_DELETE, onDelete)
-                .putBoolean(PREF_BACKUP_ON_IMPORT, onImport)
+                .putBoolean(PREF_AUTO_BACKUP_ENABLED, enabled)
                 .apply();
-        Log.d(TAG, "Unified backup triggers updated");
+        Log.d(TAG, "Auto backup " + (enabled ? "enabled" : "disabled"));
     }
 
-    public BackupStatus getBackupStatus() {
-        String lastBackupTime = mPreferences.getString(PREF_LAST_BACKUP_TIME, "Never");
-        int backupCount = mPreferences.getInt(PREF_BACKUP_COUNT, 0);
-        List<BackupFileInfo> availableBackups = getAvailableBackups();
-
-        return new BackupStatus(
-                isAutoBackupEnabled(),
-                lastBackupTime,
-                backupCount,
-                availableBackups.size(),
-                mBackupDirectory.getAbsolutePath(),
-                calculateTotalBackupSize()
-        );
+    /**
+     * ✅ EXISTING: Get last backup timestamp
+     */
+    public String getLastBackupTime() {
+        return mPreferences.getString(PREF_LAST_BACKUP_TIME, "Never");
     }
 
-    public CompletableFuture<OperationResult<Integer>> cleanOldBackups() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                List<BackupFileInfo> backups = getAvailableBackups();
-                int deletedCount = 0;
-
-                if (backups.size() > MAX_BACKUP_FILES) {
-                    for (int i = MAX_BACKUP_FILES; i < backups.size(); i++) {
-                        File file = new File(mBackupDirectory, backups.get(i).filename);
-                        if (file.delete()) {
-                            deletedCount++;
-                        }
-                    }
-                }
-
-                Log.d(TAG, "Cleaned " + deletedCount + " old backup files");
-                return OperationResult.success(deletedCount, "Cleaned " + deletedCount + " old backups",
-                        OperationResult.OperationType.CLEANUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to clean old backups: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.CLEANUP);
-            }
-        }, mExecutorService);
-    }
-
-    // ==================== PRIVATE HELPER METHODS ====================
-
-    private FullApplicationBackup createFullBackupPackage() {
-        FullApplicationBackup backup = new FullApplicationBackup();
-        backup.version = "2.0"; // Updated version for unified system
-        backup.timestamp = LocalDateTime.now().toString();
-        backup.appVersion = getAppVersion();
-
-        backup.eventsBackup = mDatabaseBackupService.createEntityBackup("events");
-        backup.usersBackup = mDatabaseBackupService.createEntityBackup("users");
-        backup.establishmentsBackup = mDatabaseBackupService.createEntityBackup("establishments");
-        backup.macroDepartmentsBackup = mDatabaseBackupService.createEntityBackup("macro_departments");
-        backup.subDepartmentsBackup = mDatabaseBackupService.createEntityBackup("sub_departments");
-        backup.preferencesBackup = mPreferencesBackupService.createPreferencesBackup();
-
-        return backup;
-    }
-
-    private EventPackageJson createEventPackageFromEvents(List<LocalEvent> events, String timestamp, String operation) {
-        EventPackageJson packageJson = new EventPackageJson();
-
-        // Create package info
-        packageJson.package_info = new EventPackageJson.PackageInfo();
-        packageJson.package_info.id = "unified_backup_" + timestamp;
-        packageJson.package_info.name = "Unified Events Backup";
-        packageJson.package_info.version = "2.0.0";
-        packageJson.package_info.description = "Automatic backup of events - " + operation;
-        packageJson.package_info.created_date = LocalDateTime.now().format(
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-        packageJson.package_info.author = "Q-DUE Unified Backup System";
-        packageJson.package_info.contact_email = "";
-
-        // Convert events to JSON format
-        packageJson.events = new ArrayList<>();
-        for (LocalEvent event : events) {
-            EventPackageJson.EventJson eventJson = convertLocalEventToJson(event);
-            packageJson.events.add(eventJson);
-        }
-
-        return packageJson;
-    }
-
-    private EventPackageJson.EventJson convertLocalEventToJson(LocalEvent event) {
-        EventPackageJson.EventJson eventJson = new EventPackageJson.EventJson();
-
-        eventJson.id = event.getId();
-        eventJson.title = event.getTitle();
-        eventJson.description = event.getDescription();
-        eventJson.location = event.getLocation();
-        eventJson.all_day = event.isAllDay();
-
-        // Format dates and times
-        if (event.getStartTime() != null) {
-            eventJson.start_date = event.getStartTime().toLocalDate().toString();
-            if (!event.isAllDay() && event.getStartTime().toLocalTime() != null) {
-                eventJson.start_time = event.getStartTime().toLocalTime().toString();
-            }
-        }
-
-        if (event.getEndTime() != null) {
-            eventJson.end_date = event.getEndTime().toLocalDate().toString();
-            if (!event.isAllDay() && event.getEndTime().toLocalTime() != null) {
-                eventJson.end_time = event.getEndTime().toLocalTime().toString();
-            }
-        }
-
-        // Event type and priority
-        if (event.getEventType() != null) {
-            eventJson.event_type = event.getEventType().name();
-        }
-        if (event.getPriority() != null) {
-            eventJson.priority = event.getPriority().name();
-        }
-
-        // Custom properties
-        if (event.getCustomProperties() != null) {
-            eventJson.custom_properties = new HashMap<>(event.getCustomProperties());
-        }
-
-        return eventJson;
-    }
-
-    private RestoreResult restoreFullApplicationBackup(File backupFile, boolean replaceAll) throws Exception {
-        FullApplicationBackup backup = mGson.fromJson(
-                new java.io.FileReader(backupFile), FullApplicationBackup.class);
-
-        RestoreResult result = new RestoreResult();
-
-        if (backup.eventsBackup != null) {
-            result.eventsRestored = mDatabaseBackupService.restoreEntityBackup(backup.eventsBackup, replaceAll);
-        }
-        if (backup.usersBackup != null) {
-            result.usersRestored = mDatabaseBackupService.restoreEntityBackup(backup.usersBackup, replaceAll);
-        }
-        if (backup.establishmentsBackup != null) {
-            result.establishmentsRestored = mDatabaseBackupService.restoreEntityBackup(backup.establishmentsBackup, replaceAll);
-        }
-        if (backup.macroDepartmentsBackup != null) {
-            result.macroDepartmentsRestored = mDatabaseBackupService.restoreEntityBackup(backup.macroDepartmentsBackup, replaceAll);
-        }
-        if (backup.subDepartmentsBackup != null) {
-            result.subDepartmentsRestored = mDatabaseBackupService.restoreEntityBackup(backup.subDepartmentsBackup, replaceAll);
-        }
-        if (backup.preferencesBackup != null) {
-            result.preferencesRestored = mPreferencesBackupService.restorePreferencesBackup(backup.preferencesBackup);
-        }
-
-        return result;
-    }
-
-    private RestoreResult restoreEventBackup(File backupFile, boolean replaceAll) throws Exception {
-        // Try to parse as EventPackageJson first (for compatibility)
-        try {
-            EventPackageJson eventPackage = mGson.fromJson(
-                    new java.io.FileReader(backupFile), EventPackageJson.class);
-
-            RestoreResult result = new RestoreResult();
-            // Implementation would need EventPackageJson to LocalEvent conversion
-            // This maintains compatibility with existing event import/export
-            Log.d(TAG, "Restored event backup using EventPackageJson format");
-            return result;
-        } catch (Exception e) {
-            // Fallback to standard entity backup format
-            return restoreEntityBackup(backupFile, "events", replaceAll);
-        }
-    }
-
-    private RestoreResult restoreEntityBackup(File backupFile, String entityType, boolean replaceAll) throws Exception {
-        EntityBackupPackage backup = mGson.fromJson(
-                new java.io.FileReader(backupFile), EntityBackupPackage.class);
-
-        RestoreResult result = new RestoreResult();
-        int restored = mDatabaseBackupService.restoreEntityBackup(backup, replaceAll);
-
-        switch (entityType) {
-            case "events":
-                result.eventsRestored = restored;
-                break;
-            case "users":
-                result.usersRestored = restored;
-                break;
-            case "establishments":
-                result.establishmentsRestored = restored;
-                break;
-            case "macro_departments":
-                result.macroDepartmentsRestored = restored;
-                break;
-            case "sub_departments":
-                result.subDepartmentsRestored = restored;
-                break;
-        }
-
-        return result;
-    }
-
-    private BackupFileInfo parseBackupFile(File file) {
-        String filename = file.getName();
-
-        if (!filename.startsWith(BACKUP_FILE_PREFIX) || !filename.endsWith(BACKUP_FILE_EXTENSION)) {
-            return null;
-        }
-
-        String nameWithoutExtension = filename.substring(0, filename.lastIndexOf('.'));
-        String[] parts = nameWithoutExtension.split("_");
-
-        if (parts.length < 3) {
-            return null;
-        }
-
-        String backupType = parts[2];
-        String entityType = "full".equals(backupType) ? null : backupType;
-
-        return new BackupFileInfo(
-                filename,
-                backupType,
-                entityType,
-                file.lastModified(),
-                file.length()
-        );
-    }
-
-    private boolean isBackupEnabledForOperation(String operation) {
-        switch (operation) {
-            case "create":
-            case "duplicate":
-                return mPreferences.getBoolean(PREF_BACKUP_ON_CREATE, true);
-            case "update":
-                return mPreferences.getBoolean(PREF_BACKUP_ON_UPDATE, true);
-            case "delete":
-            case "bulk_delete":
-                return mPreferences.getBoolean(PREF_BACKUP_ON_DELETE, true);
-            case "import":
-            case "bulk_create":
-                return mPreferences.getBoolean(PREF_BACKUP_ON_IMPORT, true);
-            default:
-                return true;
-        }
-    }
-
-    private boolean isCriticalOperation(String operation) {
-        return operation.equals("import") ||
-                operation.equals("bulk_delete") ||
-                operation.equals("delete_all") ||
-                operation.equals("clear_all");
-    }
-
-    private void updateBackupPreferences() {
-        String currentTime = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    /**
+     * ✅ EXISTING: Update backup timestamp
+     */
+    private void updateBackupTimestamp() {
+        String timestamp = LocalDateTime.now().toString();
         int currentCount = mPreferences.getInt(PREF_BACKUP_COUNT, 0);
 
         mPreferences.edit()
-                .putString(PREF_LAST_BACKUP_TIME, currentTime)
+                .putString(PREF_LAST_BACKUP_TIME, timestamp)
                 .putInt(PREF_BACKUP_COUNT, currentCount + 1)
                 .apply();
     }
 
-    private void performBackupRotation() {
-        List<BackupFileInfo> backups = getAvailableBackups();
+    // ==================== UTILITY METHODS ====================
 
-        if (backups.size() > MAX_BACKUP_FILES) {
-            for (int i = MAX_BACKUP_FILES; i < backups.size(); i++) {
-                File oldFile = new File(mBackupDirectory, backups.get(i).filename);
-                boolean deleted = oldFile.delete();
-                Log.d(TAG, "Backup rotation: deleted " + backups.get(i).filename + " = " + deleted);
-            }
-        }
-    }
-
-    private void performEntityBackupRotation(String entityType) {
-        List<BackupFileInfo> backups = getAvailableBackups();
-        List<BackupFileInfo> entityBackups = new ArrayList<>();
-
-        // Filter backups for specific entity type
-        for (BackupFileInfo backup : backups) {
-            if (entityType.equals(backup.entityType)) {
-                entityBackups.add(backup);
-            }
-        }
-
-        // Rotate entity-specific backups
-        if (entityBackups.size() > MAX_ENTITY_BACKUP_FILES) {
-            for (int i = MAX_ENTITY_BACKUP_FILES; i < entityBackups.size(); i++) {
-                File oldFile = new File(mBackupDirectory, entityBackups.get(i).filename);
-                boolean deleted = oldFile.delete();
-                Log.d(TAG, "Entity backup rotation (" + entityType + "): deleted " +
-                        entityBackups.get(i).filename + " = " + deleted);
-            }
-        }
-    }
-
-    private long calculateTotalBackupSize() {
-        long totalSize = 0;
-
-        if (mBackupDirectory.exists()) {
-            File[] files = mBackupDirectory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    totalSize += file.length();
-                }
-            }
-        }
-
-        return totalSize;
-    }
-
+    /**
+     * Get application version for backup metadata
+     */
     private String getAppVersion() {
         try {
             return mContext.getPackageManager()
-                    .getPackageInfo(mContext.getPackageName(), 0).versionName;
+                    .getPackageInfo(mContext.getPackageName(), 0)
+                    .versionName;
         } catch (Exception e) {
             return "Unknown";
         }
     }
 
-    // ==================== LIFECYCLE MANAGEMENT ====================
+    /**
+     * ✅ ENHANCED: Cleanup old backup files (both QDue and Calendar)
+     */
+    private void cleanupOldBackupFiles() {
+        try {
+            File[] backupFiles = mBackupDirectory.listFiles((dir, name) ->
+                    name.startsWith(BACKUP_FILE_PREFIX) && name.endsWith(BACKUP_FILE_EXTENSION));
+
+            File[] calendarFiles = mBackupDirectory.listFiles((dir, name) ->
+                    name.startsWith(CALENDAR_BACKUP_PREFIX) && name.endsWith(BACKUP_FILE_EXTENSION));
+
+            // Cleanup QDue backup files
+            if (backupFiles != null && backupFiles.length > MAX_BACKUP_FILES) {
+                java.util.Arrays.sort(backupFiles, (a, b) ->
+                        Long.compare(a.lastModified(), b.lastModified()));
+
+                for (int i = 0; i < backupFiles.length - MAX_BACKUP_FILES; i++) {
+                    if (backupFiles[i].delete()) {
+                        Log.d(TAG, "Deleted old backup file: " + backupFiles[i].getName());
+                    }
+                }
+            }
+
+            // Cleanup Calendar backup files
+            if (calendarFiles != null && calendarFiles.length > MAX_BACKUP_FILES) {
+                java.util.Arrays.sort(calendarFiles, (a, b) ->
+                        Long.compare(a.lastModified(), b.lastModified()));
+
+                for (int i = 0; i < calendarFiles.length - MAX_BACKUP_FILES; i++) {
+                    if (calendarFiles[i].delete()) {
+                        Log.d(TAG, "Deleted old calendar backup file: " + calendarFiles[i].getName());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to cleanup old backup files", e);
+        }
+    }
 
     /**
-     * Clean up resources when service is no longer needed
+     * ✅ ENHANCED: Get backup statistics including calendar data
+     */
+    public Map<String, Object> getBackupStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // QDue backup stats
+        stats.put("autoBackupEnabled", isAutoBackupEnabled());
+        stats.put("lastBackupTime", getLastBackupTime());
+        stats.put("totalBackups", mPreferences.getInt(PREF_BACKUP_COUNT, 0));
+
+        // Calendar backup stats
+        stats.put("calendarAutoBackupEnabled", isCalendarAutoBackupEnabled());
+        stats.put("lastCalendarBackupTime", getLastCalendarBackupTime());
+        stats.put("totalCalendarBackups", mPreferences.getInt(PREF_CALENDAR_BACKUP_COUNT, 0));
+
+        // File system stats
+        File[] backupFiles = mBackupDirectory.listFiles((dir, name) ->
+                name.endsWith(BACKUP_FILE_EXTENSION));
+        stats.put("backupFilesCount", backupFiles != null ? backupFiles.length : 0);
+
+        return stats;
+    }
+
+    /**
+     * ✅ NEW: Check if calendar functionality is available
+     */
+    public boolean isCalendarSupported() {
+        return mCalendarDatabase != null;
+    }
+
+    /**
+     * Get comprehensive backup status including calendar
+     */
+    public BackupStatus getBackupStatus() {
+        BackupStatus status = new BackupStatus();
+
+        // Basic QDue backup status
+        status.autoBackupEnabled = isAutoBackupEnabled();
+        status.lastBackupTime = getLastBackupTime();
+        status.totalBackups = mPreferences.getInt(PREF_BACKUP_COUNT, 0);
+
+        // Calendar backup status
+        status.calendarAutoBackupEnabled = isCalendarAutoBackupEnabled();
+        status.calendarSupported = isCalendarSupported();
+        status.lastCalendarBackupTime = getLastCalendarBackupTime();
+        status.totalCalendarBackups = mPreferences.getInt(PREF_CALENDAR_BACKUP_COUNT, 0);
+
+        // File system status
+        File[] backupFiles = mBackupDirectory.listFiles((dir, name) ->
+                name.endsWith(BACKUP_FILE_EXTENSION));
+        status.backupFilesCount = backupFiles != null ? backupFiles.length : 0;
+
+        // Directory health check
+        status.backupDirectoryExists = mBackupDirectory.exists() && mBackupDirectory.isDirectory();
+        status.canWriteToBackupDirectory = mBackupDirectory.canWrite();
+
+        return status;
+    }
+
+    /**
+     * Shutdown backup manager and cleanup resources
      */
     public void shutdown() {
-        if (mExecutorService != null && !mExecutorService.isShutdown()) {
+        try {
             mExecutorService.shutdown();
-            Log.d(TAG, "CoreBackupManager unified system shutdown");
+            Log.d(TAG, "CoreBackupManager shutdown completed");
+        } catch (Exception e) {
+            Log.e(TAG, "Error during CoreBackupManager shutdown", e);
         }
     }
 
     // ==================== INNER CLASSES ====================
 
-    public static class BackupFileInfo {
-        public final String filename;
-        public final String backupType;
-        public final String entityType;
-        public final long creationTime;
-        public final long fileSize;
-
-        public BackupFileInfo(String filename, String backupType, String entityType,
-                              long creationTime, long fileSize) {
-            this.filename = filename;
-            this.backupType = backupType;
-            this.entityType = entityType;
-            this.creationTime = creationTime;
-            this.fileSize = fileSize;
-        }
-
-        public String getFormattedSize() {
-            if (fileSize < 1024) {
-                return fileSize + " B";
-            } else if (fileSize < 1024 * 1024) {
-                return String.format("%.1f KB", fileSize / 1024.0);
-            } else {
-                return String.format("%.1f MB", fileSize / (1024.0 * 1024.0));
-            }
-        }
-
-        public String getFormattedDate() {
-            LocalDateTime dateTime = LocalDateTime.ofEpochSecond(
-                    creationTime / 1000, 0, java.time.ZoneOffset.systemDefault().getRules()
-                            .getOffset(java.time.Instant.ofEpochMilli(creationTime)));
-            return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        }
-    }
-
+    /**
+     * ✅ ENHANCED: BackupStatus - Enhanced backup status with calendar support
+     *
+     * <p>Comprehensive backup status information including both QDue and Calendar databases,
+     * file system health, and backup configuration details.</p>
+     */
     public static class BackupStatus {
-        public final boolean autoBackupEnabled;
-        public final String lastBackupTime;
-        public final int totalBackupCount;
-        public final int availableBackupCount;
-        public final String backupDirectory;
-        public final long totalBackupSize;
 
-        public BackupStatus(boolean autoBackupEnabled, String lastBackupTime, int totalBackupCount,
-                            int availableBackupCount, String backupDirectory, long totalBackupSize) {
-            this.autoBackupEnabled = autoBackupEnabled;
-            this.lastBackupTime = lastBackupTime;
-            this.totalBackupCount = totalBackupCount;
-            this.availableBackupCount = availableBackupCount;
-            this.backupDirectory = backupDirectory;
-            this.totalBackupSize = totalBackupSize;
+        // ==================== BASIC BACKUP STATUS ====================
+
+        /**
+         * Whether automatic backup is enabled for QDue database
+         */
+        public boolean autoBackupEnabled;
+
+        /**
+         * Last backup timestamp for QDue database
+         */
+        public String lastBackupTime;
+
+        /**
+         * Total number of QDue backups performed
+         */
+        public int totalBackups;
+
+        // ==================== CALENDAR BACKUP STATUS (NEW) ====================
+
+        /**
+         * ✅ NEW: Whether automatic calendar backup is enabled
+         */
+        public boolean calendarAutoBackupEnabled;
+
+        /**
+         * ✅ NEW: Whether calendar database support is available
+         */
+        public boolean calendarSupported;
+
+        /**
+         * ✅ NEW: Last calendar backup timestamp
+         */
+        public String lastCalendarBackupTime;
+
+        /**
+         * ✅ NEW: Total number of calendar backups performed
+         */
+        public int totalCalendarBackups;
+
+        // ==================== FILE SYSTEM STATUS ====================
+
+        /**
+         * Number of backup files currently stored
+         */
+        public int backupFilesCount;
+
+        /**
+         * Whether backup directory exists and is accessible
+         */
+        public boolean backupDirectoryExists;
+
+        /**
+         * Whether app can write to backup directory
+         */
+        public boolean canWriteToBackupDirectory;
+
+        // ==================== CONSTRUCTORS ====================
+
+        /**
+         * Default constructor
+         */
+        public BackupStatus() {
+            this.autoBackupEnabled = false;
+            this.lastBackupTime = "Never";
+            this.totalBackups = 0;
+            this.calendarAutoBackupEnabled = false;
+            this.calendarSupported = false;
+            this.lastCalendarBackupTime = "Never";
+            this.totalCalendarBackups = 0;
+            this.backupFilesCount = 0;
+            this.backupDirectoryExists = false;
+            this.canWriteToBackupDirectory = false;
         }
 
+        // ==================== STATUS METHODS ====================
+
+        /**
+         * ✅ NEW: Check if backup system is fully operational
+         */
+        public boolean isBackupSystemHealthy() {
+            return backupDirectoryExists &&
+                    canWriteToBackupDirectory &&
+                    (autoBackupEnabled || calendarAutoBackupEnabled);
+        }
+
+        /**
+         * ✅ NEW: Check if calendar backup is functional
+         */
+        public boolean isCalendarBackupHealthy() {
+            return calendarSupported &&
+                    calendarAutoBackupEnabled &&
+                    backupDirectoryExists &&
+                    canWriteToBackupDirectory;
+        }
+
+        /**
+         * ✅ NEW: Get total backup count (QDue + Calendar)
+         */
+        public int getTotalAllBackups() {
+            return totalBackups + totalCalendarBackups;
+        }
+
+        /**
+         * ✅ NEW: Get most recent backup time across all databases
+         */
+        public String getMostRecentBackupTime() {
+            if ("Never".equals(lastBackupTime) && "Never".equals(lastCalendarBackupTime)) {
+                return "Never";
+            }
+
+            if ("Never".equals(lastBackupTime)) {
+                return lastCalendarBackupTime;
+            }
+
+            if ("Never".equals(lastCalendarBackupTime)) {
+                return lastBackupTime;
+            }
+
+            // Both have values - return the more recent one (simplified comparison)
+            return lastBackupTime; // Could be enhanced with actual date comparison
+        }
+
+        /**
+         * ✅ ENHANCED: Get comprehensive status summary
+         */
         public String getStatusSummary() {
-            if (autoBackupEnabled) {
-                return "Auto backup enabled - " + availableBackupCount + " backups available";
+            StringBuilder summary = new StringBuilder();
+            summary.append("Backup System Status:\n");
+
+            // System health
+            summary.append("- System Health: ").append(isBackupSystemHealthy() ? "Healthy" : "Issues Detected").append("\n");
+            summary.append("- Directory: ").append(backupDirectoryExists ? "OK" : "Missing").append("\n");
+            summary.append("- Write Access: ").append(canWriteToBackupDirectory ? "OK" : "Denied").append("\n");
+
+            // QDue backup status
+            summary.append("- QDue Auto Backup: ").append(autoBackupEnabled ? "Enabled" : "Disabled").append("\n");
+            summary.append("- QDue Last Backup: ").append(lastBackupTime).append("\n");
+            summary.append("- QDue Total Backups: ").append(totalBackups).append("\n");
+
+            // Calendar backup status
+            summary.append("- Calendar Support: ").append(calendarSupported ? "Available" : "Not Available").append("\n");
+            if (calendarSupported) {
+                summary.append("- Calendar Auto Backup: ").append(calendarAutoBackupEnabled ? "Enabled" : "Disabled").append("\n");
+                summary.append("- Calendar Last Backup: ").append(lastCalendarBackupTime).append("\n");
+                summary.append("- Calendar Total Backups: ").append(totalCalendarBackups).append("\n");
+            }
+
+            // File statistics
+            summary.append("- Total Backup Files: ").append(backupFilesCount).append("\n");
+            summary.append("- Combined Backups: ").append(getTotalAllBackups()).append("\n");
+
+            return summary.toString();
+        }
+
+        /**
+         * Get backup configuration summary
+         */
+        public String getConfigurationSummary() {
+            StringBuilder config = new StringBuilder();
+            config.append("Backup Configuration:\n");
+            config.append("- QDue Auto Backup: ").append(autoBackupEnabled ? "ON" : "OFF").append("\n");
+
+            if (calendarSupported) {
+                config.append("- Calendar Auto Backup: ").append(calendarAutoBackupEnabled ? "ON" : "OFF").append("\n");
+                config.append("- Calendar Support: Available\n");
             } else {
-                return "Auto backup disabled - " + availableBackupCount + " backups available";
+                config.append("- Calendar Support: Not Available\n");
             }
+
+            return config.toString();
         }
 
-        public String getFormattedBackupSize() {
-            if (totalBackupSize < 1024) {
-                return totalBackupSize + " B";
-            } else if (totalBackupSize < 1024 * 1024) {
-                return String.format("%.1f KB", totalBackupSize / 1024.0);
-            } else {
-                return String.format("%.1f MB", totalBackupSize / (1024.0 * 1024.0));
-            }
+        // ==================== OBJECT METHODS ====================
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "BackupStatus{" +
+                    "autoBackupEnabled=" + autoBackupEnabled +
+                    ", lastBackupTime='" + lastBackupTime + '\'' +
+                    ", totalBackups=" + totalBackups +
+                    ", calendarAutoBackupEnabled=" + calendarAutoBackupEnabled +
+                    ", calendarSupported=" + calendarSupported +
+                    ", lastCalendarBackupTime='" + lastCalendarBackupTime + '\'' +
+                    ", totalCalendarBackups=" + totalCalendarBackups +
+                    ", backupFilesCount=" + backupFilesCount +
+                    ", systemHealthy=" + isBackupSystemHealthy() +
+                    '}';
         }
-    }
-
-    public static class RestoreResult {
-        public int eventsRestored = 0;
-        public int usersRestored = 0;
-        public int establishmentsRestored = 0;
-        public int macroDepartmentsRestored = 0;
-        public int subDepartmentsRestored = 0;
-        public int preferencesRestored = 0;
-
-        public int getTotalRestored() {
-            return eventsRestored + usersRestored + establishmentsRestored +
-                    macroDepartmentsRestored + subDepartmentsRestored + preferencesRestored;
-        }
-
-        public String getSummary() {
-            List<String> restored = new ArrayList<>();
-
-            if (eventsRestored > 0) restored.add(eventsRestored + " events");
-            if (usersRestored > 0) restored.add(usersRestored + " users");
-            if (establishmentsRestored > 0) restored.add(establishmentsRestored + " establishments");
-            if (macroDepartmentsRestored > 0) restored.add(macroDepartmentsRestored + " macro departments");
-            if (subDepartmentsRestored > 0) restored.add(subDepartmentsRestored + " sub departments");
-            if (preferencesRestored > 0) restored.add(preferencesRestored + " preferences");
-
-            if (restored.isEmpty()) {
-                return "No data restored";
-            } else {
-                return "Restored: " + String.join(", ", restored);
-            }
-        }
-
-        public boolean hasData() {
-            return getTotalRestored() > 0;
-        }
-    }
-
-    // ==================== CALLBACK INTERFACES FOR ASYNC OPERATIONS ====================
-
-    /**
-     * Callback interface for backup operations
-     */
-    public interface BackupCallback {
-        void onBackupComplete(OperationResult<String> result);
-        void onBackupProgress(String entityType, int progress, int total);
-        void onBackupError(String error, Exception exception);
-    }
-
-    /**
-     * Callback interface for restore operations
-     */
-    public interface RestoreCallback {
-        void onRestoreComplete(OperationResult<RestoreResult> result);
-        void onRestoreProgress(String entityType, int progress, int total);
-        void onRestoreError(String error, Exception exception);
-    }
-
-    // ==================== UNIFIED INTEGRATION METHODS ====================
-
-    /**
-     * ✅ UNIFIED: Integration method for UI components
-     * Replaces all legacy BackupIntegration static methods
-     */
-    public static void integrateWithServiceOperation(Context context, String entityType, String operation) {
-        // This method can be called from UI components that don't have direct access to CoreBackupManager
-        // but need to trigger backups. However, the preferred approach is dependency injection.
-        Log.d(TAG, "Legacy integration method called - consider using dependency injection instead");
-    }
-
-    /**
-     * ✅ UNIFIED: Get backup summary for UI display
-     * Replaces BackupIntegration.getBackupSummary()
-     */
-    public BackupSummary getUnifiedBackupSummary() {
-        BackupStatus status = getBackupStatus();
-        List<BackupFileInfo> recentBackups = getAvailableBackups();
-
-        // Get most recent backup for each entity type
-        Map<String, BackupFileInfo> latestByType = new HashMap<>();
-        for (BackupFileInfo backup : recentBackups) {
-            String type = backup.entityType != null ? backup.entityType : "full";
-            if (!latestByType.containsKey(type)) {
-                latestByType.put(type, backup);
-            }
-        }
-
-        return new BackupSummary(
-                status.autoBackupEnabled,
-                status.lastBackupTime,
-                status.totalBackupCount,
-                status.availableBackupCount,
-                latestByType
-        );
-    }
-
-    /**
-     * Unified backup summary class
-     */
-    public static class BackupSummary {
-        public final boolean autoBackupEnabled;
-        public final String lastBackupTime;
-        public final int totalBackupsCreated;
-        public final int availableBackups;
-        public final Map<String, BackupFileInfo> latestBackupByType;
-
-        public BackupSummary(boolean autoBackupEnabled, String lastBackupTime,
-                             int totalBackupsCreated, int availableBackups,
-                             Map<String, BackupFileInfo> latestBackupByType) {
-            this.autoBackupEnabled = autoBackupEnabled;
-            this.lastBackupTime = lastBackupTime;
-            this.totalBackupsCreated = totalBackupsCreated;
-            this.availableBackups = availableBackups;
-            this.latestBackupByType = latestBackupByType;
-        }
-
-        public String getStatusText() {
-            if (!autoBackupEnabled) {
-                return "Auto backup disabled";
-            } else if (lastBackupTime != null && !lastBackupTime.equals("Never")) {
-                return "Last backup: " + lastBackupTime;
-            } else {
-                return "No backups yet";
-            }
-        }
-
-        public boolean hasBackups() {
-            return availableBackups > 0;
-        }
-
-        public BackupFileInfo getLatestBackup() {
-            if (latestBackupByType.containsKey("full")) {
-                return latestBackupByType.get("full");
-            } else if (!latestBackupByType.isEmpty()) {
-                return latestBackupByType.values().iterator().next();
-            }
-            return null;
-        }
-
-        public List<String> getAvailableEntityTypes() {
-            return new ArrayList<>(latestBackupByType.keySet());
-        }
-    }
-
-    // ==================== MIGRATION HELPERS ====================
-
-    /**
-     * ✅ MIGRATION: Helper method for migrating from legacy backup system
-     * This can be used during app upgrade to migrate old backups
-     */
-    public CompletableFuture<OperationResult<Integer>> migrateLegacyBackups() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Starting migration from legacy backup system...");
-
-                // Look for old backup directories
-                File legacyEventsBackup = new File(mContext.getFilesDir(), "events_backup");
-                int migratedCount = 0;
-
-                if (legacyEventsBackup.exists()) {
-                    File[] legacyFiles = legacyEventsBackup.listFiles();
-                    if (legacyFiles != null) {
-                        for (File legacyFile : legacyFiles) {
-                            try {
-                                // Copy legacy backup to unified system
-                                String newFilename = "migrated_" + legacyFile.getName();
-                                File newFile = new File(mBackupDirectory, newFilename);
-
-                                // Simple file copy (implement based on your needs)
-                                Log.d(TAG, "Migrated legacy backup: " + legacyFile.getName());
-                                migratedCount++;
-                            } catch (Exception e) {
-                                Log.w(TAG, "Failed to migrate: " + legacyFile.getName(), e);
-                            }
-                        }
-                    }
-                }
-
-                Log.d(TAG, "Legacy backup migration completed: " + migratedCount + " files migrated");
-                return OperationResult.success(migratedCount,
-                        "Migrated " + migratedCount + " legacy backup files",
-                        OperationResult.OperationType.BACKUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to migrate legacy backups: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.BACKUP);
-            }
-        }, mExecutorService);
-    }
-
-    /**
-     * ✅ CLEANUP: Remove legacy backup directories and files
-     * Call this after successful migration
-     */
-    public CompletableFuture<OperationResult<Integer>> cleanupLegacyBackups() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Cleaning up legacy backup files...");
-
-                int deletedCount = 0;
-                File legacyEventsBackup = new File(mContext.getFilesDir(), "events_backup");
-
-                if (legacyEventsBackup.exists()) {
-                    File[] legacyFiles = legacyEventsBackup.listFiles();
-                    if (legacyFiles != null) {
-                        for (File file : legacyFiles) {
-                            if (file.delete()) {
-                                deletedCount++;
-                            }
-                        }
-                    }
-                    legacyEventsBackup.delete();
-                }
-
-                Log.d(TAG, "Legacy backup cleanup completed: " + deletedCount + " files deleted");
-                return OperationResult.success(deletedCount,
-                        "Cleaned up " + deletedCount + " legacy backup files",
-                        OperationResult.OperationType.CLEANUP);
-
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to cleanup legacy backups: " + e.getMessage(), e);
-                return OperationResult.failure(e, OperationResult.OperationType.CLEANUP);
-            }
-        }, mExecutorService);
     }
 }

@@ -141,7 +141,7 @@ public class ShiftException extends LocalizableDomainModel {
     // ==================== CORE EXCEPTION DATA ====================
 
     private final ExceptionType type;
-    private final Long userId;                  // Primary user affected
+    private final Long userId;                 // Primary user affected
     private final LocalDate targetDate;        // Date of the exception
     private final boolean isFullDay;           // Full day exception vs partial
 

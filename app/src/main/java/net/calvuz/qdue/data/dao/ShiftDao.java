@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author QDue Development Team
  * @version 1.0.0 - Clean Architecture Implementation
- * @since Database Version 7
+ * @since Clean architecture
  */
 @Dao
 public interface ShiftDao {

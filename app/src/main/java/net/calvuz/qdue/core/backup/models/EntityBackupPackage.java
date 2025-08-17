@@ -4,16 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * STEP 1: Core Backup System Models
- * <p>
- * Provides data structures for the unified backup system that handles
- * all entities in the QDue application, extending beyond just events.
- */
-
-// ==================== ENTITY BACKUP PACKAGE ====================
-
-/**
  * Generic backup package for any database entity
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Initial Implementation
+ * @since Clean architecture
  */
 public class EntityBackupPackage {
     public String entityType;
@@ -25,7 +20,7 @@ public class EntityBackupPackage {
     public List<?> entities;
 
     // Entity-specific metadata
-    public Map<String, Object> entityMetadata;
+    public Map<String, Object> metadata;
 
     public EntityBackupPackage() {}
 

@@ -18,6 +18,10 @@ import java.util.List;
  *
  * <p>Optimized for user schedule generation, team roster management, and assignment
  * conflict resolution. Includes specialized queries for multi-user scheduling scenarios.</p>
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Initial Implementation
+ * @since Clean architecture
  */
 @Dao
 public interface UserScheduleAssignmentDao {
@@ -251,6 +255,44 @@ public interface UserScheduleAssignmentDao {
     AND active = 1
     """)
     int getActiveAssignmentCountForTeam(@NonNull String teamId);
+
+
+    /**
+     * Get ALL user schedule assignments for complete backup
+     * Essential for full database backup operations
+     */
+    @Query("SELECT * FROM user_schedule_assignments ORDER BY start_date DESC, created_at DESC")
+    @NonNull
+    List<UserScheduleAssignmentEntity> getAllUserScheduleAssignments();
+
+    /**
+     * Get assignments in date range for backup and reporting
+     * Useful for selective backup operations
+     *
+     * @param startDate Start date for date range
+     * @param endDate End date for date range
+     */
+    @Query("SELECT * FROM user_schedule_assignments WHERE " +
+            "(start_date <= :endDate) AND " +
+            "(end_date IS NULL OR end_date >= :startDate) " +
+            "ORDER BY start_date, created_at")
+    @NonNull
+    List<UserScheduleAssignmentEntity> getAssignmentsInDateRange(@NonNull String startDate, @NonNull String endDate);
+
+    /**
+     * Get all assignments with status filter for backup operations
+     *
+     * @param active Status filter (true for active, false for inactive)
+     */
+    @Query("SELECT * FROM user_schedule_assignments WHERE active = :active ORDER BY start_date DESC")
+    @NonNull
+    List<UserScheduleAssignmentEntity> getAllAssignmentsByStatus(boolean active);
+
+    /**
+     * Get total count of all assignments (for backup statistics)
+     */
+    @Query("SELECT COUNT(*) FROM user_schedule_assignments")
+    int getTotalAssignmentCount();
 
     // ==================== STATISTICS QUERIES ====================
 

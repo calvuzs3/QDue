@@ -5,26 +5,27 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.core.common.i18n.LocaleManager;
-import net.calvuz.qdue.core.common.i18n.impl.DomainLocalizerImpl;
-import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
-import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
+import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
+import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
+import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
+import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
+import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
+import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -33,50 +34,57 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * CalendarServiceImpl - Implementation of CalendarService following QDue Architecture
+ * CalendarServiceImpl - Clean Architecture Application Service Implementation
  *
- * <p>Production implementation of CalendarService that follows the QDue ServiceProvider
- * pattern with dependency injection, using clean domain models with localization support.</p>
+ * <p>Application Service that orchestrates domain use cases and repositories through
+ * CalendarServiceProvider dependency injection. Acts as a facade for calendar domain
+ * operations, providing business-level APIs while delegating to domain layer components.</p>
  *
- * <h3>QDue Architecture Compliance:</h3>
+ * <h3>Clean Architecture Position:</h3>
  * <ul>
- *   <li><strong>Dependency Injection</strong>: Constructor injection like other services</li>
- *   <li><strong>OperationResult Pattern</strong>: Consistent error handling throughout</li>
- *   <li><strong>Async Operations</strong>: CompletableFuture for all database operations</li>
- *   <li><strong>Domain Models</strong>: Uses clean calendar domain models</li>
- *   <li><strong>Localization Support</strong>: LocaleManager and DomainLocalizer integration</li>
+ *   <li><strong>Layer</strong>: Application Service (between UI and Domain)</li>
+ *   <li><strong>Responsibility</strong>: Business workflow orchestration</li>
+ *   <li><strong>Dependencies</strong>: Domain layer (via CalendarServiceProvider)</li>
+ *   <li><strong>Clients</strong>: UI layer (via ServiceProvider.getCalendarService())</li>
  * </ul>
  *
- * <h3>Performance Features:</h3>
+ * <h3>Architecture Benefits:</h3>
  * <ul>
- *   <li><strong>Multi-Level Caching</strong>: In-memory cache with TTL</li>
- *   <li><strong>Thread Pool</strong>: Dedicated executor for calendar operations</li>
- *   <li><strong>Batch Operations</strong>: Optimized for date range queries</li>
- *   <li><strong>Lazy Loading</strong>: Load data only when needed</li>
+ *   <li><strong>Clean Separation</strong>: UI doesn't know about domain repositories</li>
+ *   <li><strong>Business Logic</strong>: Orchestrates complex multi-repository operations</li>
+ *   <li><strong>Stable Interface</strong>: UI-friendly API that hides domain complexity</li>
+ *   <li><strong>Transaction Boundaries</strong>: Coordinates multi-step business operations</li>
+ * </ul>
+ *
+ * <h3>Dependency Flow:</h3>
+ * <pre>
+ * UI Layer → CalendarService → CalendarServiceProvider → Domain Repositories/Use Cases
+ * </pre>
+ *
+ * <h3>Multi-Team Support:</h3>
+ * <ul>
+ *   <li><strong>WorkScheduleEvent</strong>: Fully supports List&lt;Team&gt; assignments</li>
+ *   <li><strong>Team Coordination</strong>: Handles complex team scheduling scenarios</li>
+ *   <li><strong>User Relevance</strong>: Correctly calculates user relevance across multiple teams</li>
  * </ul>
  *
  * @author QDue Development Team
- * @version 2.0.0 - Simplified Domain Model Implementation
- * @since Clean Architecture Phase 2
+ * @version 3.0.0 - Clean Architecture Application Service with Multi-Team Support
+ * @since Clean Architecture Phase 3
  */
 public class CalendarServiceImpl implements CalendarService {
 
     private static final String TAG = "CalendarServiceImpl";
 
-    // ==================== DEPENDENCIES (INJECTED) ====================
+    // ==================== DEPENDENCIES (CLEAN ARCHITECTURE) ====================
 
     private final Context mContext;
-    private final QDueDatabase mDatabase;
-    private final CoreBackupManager mBackupManager;
-    private final LocaleManager mLocaleManager;
-    private final DomainLocalizer mDomainLocalizer;
+    private final CalendarServiceProvider mCalendarServiceProvider;
 
     // ==================== THREADING AND PERFORMANCE ====================
 
     private final ExecutorService mExecutorService;
-    private final Map<String, WorkScheduleDay> mScheduleCache;
-    private final Map<String, Team> mTeamCache;
-    private final Map<String, Shift> mShiftCache;
+    private final Map<String, Object> mCache;
 
     // ==================== STATE MANAGEMENT ====================
 
@@ -85,21 +93,20 @@ public class CalendarServiceImpl implements CalendarService {
     // ==================== CONSTRUCTOR FOR DEPENDENCY INJECTION ====================
 
     /**
-     * Constructor for dependency injection via ServiceProvider.
+     * Constructor for clean architecture dependency injection.
      *
-     * @param context Application context
-     * @param database QDue database instance
-     * @param backupManager Core backup manager instance
+     * <p>Receives CalendarServiceProvider which provides access to all domain layer
+     * components (repositories, engines, use cases) following clean architecture
+     * dependency inversion principle.</p>
+     *
+     * @param context Application context for system resources
+     * @param calendarServiceProvider Domain layer dependency provider
      */
     public CalendarServiceImpl(@NonNull Context context,
-                               @NonNull QDueDatabase database,
-                               @NonNull CoreBackupManager backupManager) {
+                               @NonNull CalendarServiceProvider calendarServiceProvider) {
 
         this.mContext = context.getApplicationContext();
-        this.mDatabase = database;
-        this.mBackupManager = backupManager;
-        this.mLocaleManager = new LocaleManager(context);
-        this.mDomainLocalizer = new DomainLocalizerImpl(mContext, mLocaleManager).scope( "calendar");
+        this.mCalendarServiceProvider = calendarServiceProvider;
 
         // Initialize performance infrastructure
         this.mExecutorService = Executors.newFixedThreadPool(4, r -> {
@@ -108,11 +115,9 @@ public class CalendarServiceImpl implements CalendarService {
             return thread;
         });
 
-        this.mScheduleCache = new ConcurrentHashMap<>();
-        this.mTeamCache = new ConcurrentHashMap<>();
-        this.mShiftCache = new ConcurrentHashMap<>();
+        this.mCache = new ConcurrentHashMap<>();
 
-        Log.i(TAG, "CalendarServiceImpl created with dependency injection");
+        Log.i(TAG, "CalendarServiceImpl created with CalendarServiceProvider DI");
     }
 
     // ==================== SERVICE LIFECYCLE ====================
@@ -127,22 +132,27 @@ public class CalendarServiceImpl implements CalendarService {
         try {
             Log.d(TAG, "Initializing CalendarService...");
 
-            // Pre-load common data for performance
-            preloadTeamData();
-            preloadShiftTemplates();
+            // Initialize CalendarServiceProvider
+            mCalendarServiceProvider.initializeCalendarServices();
+
+            // Verify domain services are ready
+            if (!mCalendarServiceProvider.areCalendarServicesReady()) {
+                throw new RuntimeException("CalendarServiceProvider initialization failed");
+            }
 
             mIsInitialized = true;
-            Log.i(TAG, "CalendarService initialized successfully");
+            Log.i(TAG, "CalendarService initialized successfully with domain layer integration");
 
         } catch (Exception e) {
             Log.e(TAG, "Error initializing CalendarService", e);
             mIsInitialized = false;
+            throw new RuntimeException("CalendarService initialization failed", e);
         }
     }
 
     @Override
     public boolean isReady() {
-        return mIsInitialized && mDatabase != null && mDomainLocalizer != null;
+        return mIsInitialized && mCalendarServiceProvider.areCalendarServicesReady();
     }
 
     @Override
@@ -154,6 +164,9 @@ public class CalendarServiceImpl implements CalendarService {
         if (mExecutorService != null && !mExecutorService.isShutdown()) {
             mExecutorService.shutdown();
         }
+
+        // Cleanup domain services
+        mCalendarServiceProvider.shutdownCalendarServices();
 
         mIsInitialized = false;
         Log.d(TAG, "CalendarService cleanup completed");
@@ -177,25 +190,33 @@ public class CalendarServiceImpl implements CalendarService {
 
                 // Check cache first
                 String cacheKey = generateUserCacheKey(userId, date);
-                WorkScheduleDay cachedResult = mScheduleCache.get(cacheKey);
-                if (cachedResult != null) {
+                Object cachedResult = mCache.get(cacheKey);
+                if (cachedResult instanceof WorkScheduleDay) {
                     Log.d(TAG, "Cache hit for user schedule: " + cacheKey);
-                    return OperationResult.success(cachedResult, OperationResult.OperationType.READ);
+                    return OperationResult.success((WorkScheduleDay) cachedResult, OperationResult.OperationType.READ);
                 }
 
-                // For now, create a basic schedule based on QuattroDue pattern
-                // This will be enhanced with actual database logic later
-                WorkScheduleDay schedule = generateBasicScheduleForUser(userId, date);
+                // Use GenerateUserScheduleUseCase for complex user schedule logic
+                GenerateUserScheduleUseCase generateUserScheduleUseCase =
+                        mCalendarServiceProvider.getGenerateUserScheduleUseCase();
 
-                // Cache the result
-                mScheduleCache.put(cacheKey, schedule);
+                // Generate schedule using domain use case
+                OperationResult<WorkScheduleDay> result = generateUserScheduleUseCase
+                        .executeForDate( userId, date ).join(); // .generateUserScheduleForDate(userId, date).join();
 
-                Log.d(TAG, "Generated user schedule with " + schedule.getShifts().size() + " shifts");
-                return OperationResult.success(schedule, OperationResult.OperationType.READ);
+                if (result.isSuccess() && result.getData() != null) {
+                    // Cache the result
+                    mCache.put(cacheKey, result.getData());
+                    Log.d(TAG, "Generated user schedule with " +
+                            result.getData().getShifts().size() + " shifts using domain use case");
+                }
+
+                return result;
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting user schedule for " + userId + " on " + date, e);
-                return OperationResult.failure(e, OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get user schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -215,22 +236,25 @@ public class CalendarServiceImpl implements CalendarService {
                 Log.d(TAG, "Getting user schedule range for userId: " + userId +
                         ", dates: " + startDate + " to " + endDate);
 
-                Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
+                // Use GenerateUserScheduleUseCase for date range operations
+                GenerateUserScheduleUseCase generateUserScheduleUseCase =
+                        mCalendarServiceProvider.getGenerateUserScheduleUseCase();
 
-                // Process each date in the range
-                LocalDate currentDate = startDate;
-                while (!currentDate.isAfter(endDate)) {
-                    WorkScheduleDay schedule = generateBasicScheduleForUser(userId, currentDate);
-                    scheduleMap.put(currentDate, schedule);
-                    currentDate = currentDate.plusDays(1);
+                OperationResult<Map<LocalDate, WorkScheduleDay>> result = generateUserScheduleUseCase
+                        .executeForDateRange( userId, startDate, endDate ).join();
+                        //.generateUserScheduleForDateRange(userId, startDate, endDate).join();
+
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Generated user schedule range with " +
+                            result.getData().size() + " days using domain use case");
                 }
 
-                Log.d(TAG, "Generated user schedule range with " + scheduleMap.size() + " days");
-                return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting user schedule range", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting user schedule range for " + userId, e);
+                return OperationResult.failure("Failed to get user schedule range: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -260,15 +284,32 @@ public class CalendarServiceImpl implements CalendarService {
 
                 Log.d(TAG, "Getting team schedule for date: " + date + ", teamId: " + teamId);
 
-                // For now, create a basic team schedule
-                WorkScheduleDay schedule = generateBasicTeamScheduleForDate(date, teamId);
+                // Use GenerateTeamScheduleUseCase for team coordination logic
+                GenerateTeamScheduleUseCase generateTeamScheduleUseCase =
+                        mCalendarServiceProvider.getGenerateTeamScheduleUseCase();
 
-                Log.d(TAG, "Generated team schedule with " + schedule.getShifts().size() + " shifts");
-                return OperationResult.success(schedule, OperationResult.OperationType.READ);
+                OperationResult<WorkScheduleDay> result;
+                if (teamId != null) {
+                    result = generateTeamScheduleUseCase
+                            .executeForDate( date, Integer.valueOf( teamId )).join();
+                            //.generateTeamScheduleForDate(teamId, date).join();
+                } else {
+                    result = generateTeamScheduleUseCase
+                            .executeForDate( date, null ).join();
+                            //.generateAllTeamsScheduleForDate(date).join();
+                }
+
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Generated team schedule with " +
+                            result.getData().getShifts().size() + " shifts using domain use case");
+                }
+
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team schedule", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting team schedule for " + teamId + " on " + date, e);
+                return OperationResult.failure("Failed to get team schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -287,28 +328,27 @@ public class CalendarServiceImpl implements CalendarService {
                             OperationResult.OperationType.READ);
                 }
 
-                List<WorkScheduleEvent> events = new ArrayList<>();
+                Log.d(TAG, "Getting calendar events for user: " + userId +
+                        ", dates: " + startDate + " to " + endDate);
 
-                // Convert schedule days to calendar events
-                LocalDate currentDate = startDate;
-                while (!currentDate.isAfter(endDate)) {
-                    WorkScheduleDay schedule = generateBasicScheduleForUser(userId, currentDate);
+                // Use WorkScheduleRepository to generate events with multi-team support
+                WorkScheduleRepository workScheduleRepository =
+                        mCalendarServiceProvider.getWorkScheduleRepository();
 
-                    // Convert shifts to events
-                    for (WorkScheduleShift shift : schedule.getShifts()) {
-                        WorkScheduleEvent event = createEventFromShift(shift, currentDate, userId);
-                        events.add(event);
-                    }
+                OperationResult<List<WorkScheduleEvent>> result = workScheduleRepository
+                        .generateWorkScheduleEvents(startDate, endDate, userId).join();
 
-                    currentDate = currentDate.plusDays(1);
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Generated " + result.getData().size() +
+                            " calendar events for user using WorkScheduleRepository");
                 }
 
-                Log.d(TAG, "Generated " + events.size() + " calendar events for user " + userId);
-                return OperationResult.success(events, OperationResult.OperationType.READ);
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting calendar events for user", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting calendar events for user " + userId, e);
+                return OperationResult.failure("Failed to get calendar events: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -325,28 +365,34 @@ public class CalendarServiceImpl implements CalendarService {
                             OperationResult.OperationType.READ);
                 }
 
-                List<WorkScheduleEvent> events = new ArrayList<>();
+                Log.d(TAG, "Getting calendar events for team: " + teamId +
+                        ", dates: " + startDate + " to " + endDate);
 
-                // Convert team schedules to calendar events
-                LocalDate currentDate = startDate;
-                while (!currentDate.isAfter(endDate)) {
-                    WorkScheduleDay schedule = generateBasicTeamScheduleForDate(currentDate, teamId);
+                // Use GenerateTeamScheduleUseCase and convert to events
+                GenerateTeamScheduleUseCase generateTeamScheduleUseCase =
+                        mCalendarServiceProvider.getGenerateTeamScheduleUseCase();
 
-                    // Convert shifts to events
-                    for (WorkScheduleShift shift : schedule.getShifts()) {
-                        WorkScheduleEvent event = createEventFromShift(shift, currentDate, null);
-                        events.add(event);
-                    }
+                OperationResult<Map<LocalDate, WorkScheduleDay>> scheduleResult =
+                        generateTeamScheduleUseCase.executeForDateRange( startDate, endDate, Integer.valueOf( teamId ) ).join();
+                        //.generateTeamScheduleForDateRange(teamId, startDate, endDate).join();
 
-                    currentDate = currentDate.plusDays(1);
+                if (!scheduleResult.isSuccess()) {
+                    return OperationResult.failure("Failed to generate team schedule: " +
+                            scheduleResult.getErrorMessage(), OperationResult.OperationType.READ);
                 }
 
-                Log.d(TAG, "Generated " + events.size() + " calendar events for team " + teamId);
+                // Convert schedules to events
+                List<WorkScheduleEvent> events = convertSchedulesToEvents(scheduleResult.getData(), null);
+
+                Log.d(TAG, "Generated " + events.size() +
+                        " calendar events for team using domain use case");
+
                 return OperationResult.success(events, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting calendar events for team", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting calendar events for team " + teamId, e);
+                return OperationResult.failure("Failed to get team calendar events: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -363,15 +409,19 @@ public class CalendarServiceImpl implements CalendarService {
                             OperationResult.OperationType.READ);
                 }
 
-                // For now, return standard QuattroDue teams
-                List<Team> teams = createStandardQuattroDueTeams();
+                // Use TeamRepository for team management
+                TeamRepository teamRepository = mCalendarServiceProvider.getTeamRepository();
 
-                Log.d(TAG, "Retrieved " + teams.size() + " teams");
+                // TeamRepository.getAllActiveTeams() returns CompletableFuture<List<Team>>
+                List<Team> teams = teamRepository.getAllActiveTeams().join();
+
+                Log.d(TAG, "Retrieved " + teams.size() + " teams using TeamRepository");
                 return OperationResult.success(teams, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting all teams", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get teams: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -387,15 +437,21 @@ public class CalendarServiceImpl implements CalendarService {
                 }
 
                 // Check cache first
-                Team cachedTeam = mTeamCache.get(teamId);
-                if (cachedTeam != null) {
-                    return OperationResult.success(cachedTeam, OperationResult.OperationType.READ);
+                String cacheKey = "team_" + teamId;
+                Object cachedTeam = mCache.get(cacheKey);
+                if (cachedTeam instanceof Team) {
+                    return OperationResult.success((Team) cachedTeam, OperationResult.OperationType.READ);
                 }
 
-                // Create team from ID
-                Team team = createTeamFromId(teamId);
+                // Use TeamRepository
+                TeamRepository teamRepository = mCalendarServiceProvider.getTeamRepository();
+
+                // TeamRepository.getTeamById() returns CompletableFuture<Team>
+                Team team = teamRepository.getTeamById(teamId).join();
+
                 if (team != null) {
-                    mTeamCache.put(teamId, team);
+                    mCache.put(cacheKey, team);
+                    Log.d(TAG, "Retrieved team " + teamId + " using TeamRepository");
                     return OperationResult.success(team, OperationResult.OperationType.READ);
                 } else {
                     return OperationResult.success(null, OperationResult.OperationType.READ);
@@ -403,7 +459,8 @@ public class CalendarServiceImpl implements CalendarService {
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting team by ID: " + teamId, e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get team: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -413,15 +470,37 @@ public class CalendarServiceImpl implements CalendarService {
     public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId, @NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // For now, simple logic to assign team based on user ID
-                String teamId = calculateTeamForUser(userId, date);
-                Team team = createTeamFromId(teamId);
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready",
+                            OperationResult.OperationType.READ);
+                }
 
+                // Use UserScheduleAssignmentRepository to get user's team assignment
+                UserScheduleAssignmentRepository assignmentRepository =
+                        mCalendarServiceProvider.getUserScheduleAssignmentRepository();
+
+                // Get active assignment for user on date
+                OperationResult<UserScheduleAssignment> assignmentResult =
+                        assignmentRepository.getActiveAssignmentForUser(userId, date).join();
+
+                if (!assignmentResult.isSuccess() || assignmentResult.getData() == null) {
+                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                }
+
+                // Get team by ID from assignment
+                UserScheduleAssignment assignment = assignmentResult.getData();
+                String teamId = assignment.getTeamId();
+
+                TeamRepository teamRepository = mCalendarServiceProvider.getTeamRepository();
+                Team team = teamRepository.getTeamById(teamId).join();
+
+                Log.d(TAG, "Retrieved team " + teamId + " for user " + userId + " on " + date);
                 return OperationResult.success(team, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team for user: " + userId, e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting team for user: " + userId + " on " + date, e);
+                return OperationResult.failure("Failed to get team for user: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -438,15 +517,19 @@ public class CalendarServiceImpl implements CalendarService {
                             OperationResult.OperationType.READ);
                 }
 
-                // For now, return standard shift templates
-                List<Shift> shifts = createStandardShiftTemplates();
+                // Use ShiftRepository for shift template management
+                ShiftRepository shiftRepository = mCalendarServiceProvider.getShiftRepository();
 
-                Log.d(TAG, "Retrieved " + shifts.size() + " shift templates");
+                // ShiftRepository.getAllShifts() returns CompletableFuture<List<Shift>>
+                List<Shift> shifts = shiftRepository.getAllShifts().join();
+
+                Log.d(TAG, "Retrieved " + shifts.size() + " shift templates using ShiftRepository");
                 return OperationResult.success(shifts, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting all shift templates", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get shift templates: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -462,15 +545,21 @@ public class CalendarServiceImpl implements CalendarService {
                 }
 
                 // Check cache first
-                Shift cachedShift = mShiftCache.get(shiftId);
-                if (cachedShift != null) {
-                    return OperationResult.success(cachedShift, OperationResult.OperationType.READ);
+                String cacheKey = "shift_" + shiftId;
+                Object cachedShift = mCache.get(cacheKey);
+                if (cachedShift instanceof Shift) {
+                    return OperationResult.success((Shift) cachedShift, OperationResult.OperationType.READ);
                 }
 
-                // Create shift from ID
-                Shift shift = createShiftFromId(shiftId);
+                // Use ShiftRepository
+                ShiftRepository shiftRepository = mCalendarServiceProvider.getShiftRepository();
+
+                // ShiftRepository.getShiftById() returns CompletableFuture<Shift>
+                Shift shift = shiftRepository.getShiftById(shiftId).join();
+
                 if (shift != null) {
-                    mShiftCache.put(shiftId, shift);
+                    mCache.put(cacheKey, shift);
+                    Log.d(TAG, "Retrieved shift template " + shiftId + " using ShiftRepository");
                     return OperationResult.success(shift, OperationResult.OperationType.READ);
                 } else {
                     return OperationResult.success(null, OperationResult.OperationType.READ);
@@ -478,7 +567,8 @@ public class CalendarServiceImpl implements CalendarService {
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting shift template by ID: " + shiftId, e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get shift template: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -492,22 +582,29 @@ public class CalendarServiceImpl implements CalendarService {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // For now, create a basic assignment
-                String teamId = calculateTeamForUser(userId, date);
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready",
+                            OperationResult.OperationType.READ);
+                }
 
-                UserScheduleAssignment assignment = UserScheduleAssignment.builder()
-                        .userId(userId)
-                        .teamId(teamId)
-                        .recurrenceRuleId("standard_quattrodue")
-                        .startDate(date)
-                        .localizer(mDomainLocalizer.scope("assignments"))
-                        .build();
+                // Use UserScheduleAssignmentRepository
+                UserScheduleAssignmentRepository assignmentRepository =
+                        mCalendarServiceProvider.getUserScheduleAssignmentRepository();
 
-                return OperationResult.success(assignment, OperationResult.OperationType.READ);
+                // UserScheduleAssignmentRepository returns OperationResult<UserScheduleAssignment>
+                OperationResult<UserScheduleAssignment> result =
+                        assignmentRepository.getActiveAssignmentForUser(userId, date).join();
+
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Retrieved user assignment for " + userId + " on " + date);
+                }
+
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting user assignment", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting user assignment for " + userId + " on " + date, e);
+                return OperationResult.failure("Failed to get user assignment: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -517,17 +614,38 @@ public class CalendarServiceImpl implements CalendarService {
     public CompletableFuture<OperationResult<List<Long>>> getActiveUsers() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // For now, return a basic list
-                List<Long> activeUsers = new ArrayList<>();
-                for (long i = 1; i <= 10; i++) {
-                    activeUsers.add(i);
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready",
+                            OperationResult.OperationType.READ);
                 }
 
+                // Use UserScheduleAssignmentRepository to get users with active assignments
+                UserScheduleAssignmentRepository assignmentRepository =
+                        mCalendarServiceProvider.getUserScheduleAssignmentRepository();
+
+                // Get active assignments and extract user IDs
+                OperationResult<List<UserScheduleAssignment>> assignmentsResult =
+                        assignmentRepository.getActiveAssignmentsForDate(LocalDate.now()).join();
+
+                if (!assignmentsResult.isSuccess()) {
+                    return OperationResult.failure("Failed to get active assignments: " +
+                            assignmentsResult.getErrorMessage(), OperationResult.OperationType.READ);
+                }
+
+                List<Long> activeUsers = new ArrayList<>();
+                for (UserScheduleAssignment assignment : assignmentsResult.getData()) {
+                    if (!activeUsers.contains(assignment.getUserId())) {
+                        activeUsers.add(assignment.getUserId());
+                    }
+                }
+
+                Log.d(TAG, "Retrieved " + activeUsers.size() + " active users");
                 return OperationResult.success(activeUsers, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting active users", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Failed to get active users: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -541,13 +659,30 @@ public class CalendarServiceImpl implements CalendarService {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // For now, return empty list
-                List<ShiftException> exceptions = new ArrayList<>();
-                return OperationResult.success(exceptions, OperationResult.OperationType.READ);
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready",
+                            OperationResult.OperationType.READ);
+                }
+
+                // Use ShiftExceptionRepository
+                ShiftExceptionRepository exceptionRepository =
+                        mCalendarServiceProvider.getShiftExceptionRepository();
+
+                // ShiftExceptionRepository returns OperationResult<List<ShiftException>>
+                OperationResult<List<ShiftException>> result =
+                        exceptionRepository.getEffectiveExceptionsForUserOnDate(userId, date).join();
+
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Retrieved " + result.getData().size() +
+                            " shift exceptions for user " + userId + " on " + date);
+                }
+
+                return result;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting shift exceptions", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting shift exceptions for user " + userId + " on " + date, e);
+                return OperationResult.failure("Failed to get shift exceptions: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -559,13 +694,32 @@ public class CalendarServiceImpl implements CalendarService {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // For now, just return the exception as created
-                Log.d(TAG, "Created shift exception: " + shiftException.getId());
-                return OperationResult.success(shiftException, OperationResult.OperationType.CREATE);
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready",
+                            OperationResult.OperationType.CREATE);
+                }
+
+                // Use ShiftExceptionRepository
+                ShiftExceptionRepository exceptionRepository =
+                        mCalendarServiceProvider.getShiftExceptionRepository();
+
+                // ShiftExceptionRepository returns OperationResult<ShiftException>
+                OperationResult<ShiftException> result =
+                        exceptionRepository.saveShiftException(shiftException).join();
+
+                if (result.isSuccess()) {
+                    Log.d(TAG, "Created shift exception: " + shiftException.getId());
+
+                    // Clear relevant cache entries
+                    clearCacheForUser(shiftException.getUserId(), shiftException.getTargetDate());
+                }
+
+                return result;
 
             } catch (Exception e) {
                 Log.e(TAG, "Error creating shift exception", e);
-                return OperationResult.failure(e.getMessage(), OperationResult.OperationType.CREATE);
+                return OperationResult.failure("Failed to create shift exception: " + e.getMessage(),
+                        OperationResult.OperationType.CREATE);
             }
         }, mExecutorService);
     }
@@ -574,20 +728,23 @@ public class CalendarServiceImpl implements CalendarService {
 
     @Override
     public void clearScheduleCache() {
-        mScheduleCache.clear();
-        mTeamCache.clear();
-        mShiftCache.clear();
+        mCache.clear();
         Log.d(TAG, "All caches cleared");
     }
 
     @Override
     public void clearCacheForDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        mScheduleCache.entrySet().removeIf(entry -> {
+        mCache.entrySet().removeIf(entry -> {
             String key = entry.getKey();
             try {
-                String dateStr = extractDateFromCacheKey(key);
-                LocalDate keyDate = LocalDate.parse(dateStr);
-                return !keyDate.isBefore(startDate) && !keyDate.isAfter(endDate);
+                if (key.contains("_")) {
+                    String[] parts = key.split("_");
+                    if (parts.length >= 3) {
+                        LocalDate keyDate = LocalDate.parse(parts[2]);
+                        return !keyDate.isBefore(startDate) && !keyDate.isAfter(endDate);
+                    }
+                }
+                return false;
             } catch (Exception e) {
                 return false;
             }
@@ -598,36 +755,6 @@ public class CalendarServiceImpl implements CalendarService {
     // ==================== PRIVATE HELPER METHODS ====================
 
     /**
-     * Pre-load team data for performance.
-     */
-    private void preloadTeamData() {
-        try {
-            List<Team> teams = createStandardQuattroDueTeams();
-            for (Team team : teams) {
-                mTeamCache.put(team.getId(), team);
-            }
-            Log.d(TAG, "Preloaded " + teams.size() + " teams");
-        } catch (Exception e) {
-            Log.w(TAG, "Error preloading team data", e);
-        }
-    }
-
-    /**
-     * Pre-load shift templates for performance.
-     */
-    private void preloadShiftTemplates() {
-        try {
-            List<Shift> shifts = createStandardShiftTemplates();
-            for (Shift shift : shifts) {
-                mShiftCache.put(shift.getId(), shift);
-            }
-            Log.d(TAG, "Preloaded " + shifts.size() + " shift templates");
-        } catch (Exception e) {
-            Log.w(TAG, "Error preloading shift templates", e);
-        }
-    }
-
-    /**
      * Generate cache key for user schedule.
      */
     private String generateUserCacheKey(@NonNull Long userId, @NonNull LocalDate date) {
@@ -635,168 +762,54 @@ public class CalendarServiceImpl implements CalendarService {
     }
 
     /**
-     * Extract date from cache key.
+     * Clear cache entries for specific user and date.
      */
-    private String extractDateFromCacheKey(@NonNull String cacheKey) {
-        String[] parts = cacheKey.split("_");
-        return parts.length >= 3 ? parts[2] : "";
+    private void clearCacheForUser(@NonNull Long userId, @NonNull LocalDate date) {
+        String userCacheKey = generateUserCacheKey(userId, date);
+        mCache.remove(userCacheKey);
+        Log.v(TAG, "Cleared cache for user " + userId + " on " + date);
     }
 
     /**
-     * Generate basic schedule for user (placeholder implementation).
+     * Convert schedule map to WorkScheduleEvent list with multi-team support.
      */
-    private WorkScheduleDay generateBasicScheduleForUser(@NonNull Long userId, @NonNull LocalDate date) {
-        WorkScheduleDay.Builder builder = WorkScheduleDay.builder(date)
-                .localizer(mDomainLocalizer.scope("days"));
+    private List<WorkScheduleEvent> convertSchedulesToEvents(
+            @NonNull Map<LocalDate, WorkScheduleDay> schedules, @Nullable Long userId) {
 
-        // Simple logic: assign shift based on day of week and user ID
-        int dayOfWeek = date.getDayOfWeek().getValue();
-        long userMod = userId % 3;
+        List<WorkScheduleEvent> events = new ArrayList<>();
 
-        if (dayOfWeek <= 5) { // Weekdays
-            if (userMod == 0) {
-                // Morning shift
-                Shift morningShift = createShiftFromId("morning");
-                WorkScheduleShift workShift = WorkScheduleShift.builder()
-                        .shift(morningShift)
-                        .startTime(morningShift.getStartTime())
-                        .endTime(morningShift.getEndTime())
-                        .addTeam(calculateTeamForUser(userId, date))
-                        .localizer(mDomainLocalizer.scope("shifts"))
+        for (Map.Entry<LocalDate, WorkScheduleDay> entry : schedules.entrySet()) {
+            LocalDate date = entry.getKey();
+            WorkScheduleDay schedule = entry.getValue();
+
+            for (net.calvuz.qdue.domain.calendar.models.WorkScheduleShift shift : schedule.getShifts()) {
+                // Create WorkScheduleEvent with multi-team support
+                WorkScheduleEvent event = WorkScheduleEvent.builder(date)
+                        .setShift(shift.getShift())
+                        .setTeams(shift.getTeams()) // Multi-team support
+                        .setUserId(userId)
+                        .setTiming(shift.getStartTime(), shift.getEndTime())
+                        .setDescription(shift.getDescription())
+                        .setEventType(WorkScheduleEvent.EventType.SHIFT_EVENT)
                         .build();
-                builder.addShift(workShift);
-            } else if (userMod == 1) {
-                // Afternoon shift
-                Shift afternoonShift = createShiftFromId("afternoon");
-                WorkScheduleShift workShift = WorkScheduleShift.builder()
-                        .shift(afternoonShift)
-                        .startTime(afternoonShift.getStartTime())
-                        .endTime(afternoonShift.getEndTime())
-                        .addTeam(calculateTeamForUser(userId, date))
-                        .localizer(mDomainLocalizer.scope("shifts"))
-                        .build();
-                builder.addShift(workShift);
+
+                events.add(event);
             }
-            // userMod == 2 gets rest day
         }
 
-        return builder.build();
+        return events;
     }
 
-    /**
-     * Generate basic team schedule for date (placeholder implementation).
-     */
-    private WorkScheduleDay generateBasicTeamScheduleForDate(@NonNull LocalDate date, @Nullable String teamId) {
-        WorkScheduleDay.Builder builder = WorkScheduleDay.builder(date)
-                .localizer(mDomainLocalizer.scope("days"));
-
-        // Add all three shifts for team schedule
-        List<Shift> shifts = createStandardShiftTemplates();
-        Team team = teamId != null ? createTeamFromId(teamId) : createTeamFromId("A");
-
-        for (Shift shift : shifts) {
-            WorkScheduleShift workShift = WorkScheduleShift.builder()
-                    .shift(shift)
-                    .startTime(shift.getStartTime())
-                    .endTime(shift.getEndTime())
-                    .addTeam(team)
-                    .localizer(mDomainLocalizer.scope("shifts"))
-                    .build();
-            builder.addShift(workShift);
-        }
-
-        return builder.build();
-    }
+    // ==================== PUBLIC ACCESS FOR CONTEXT ====================
 
     /**
-     * Create WorkScheduleEvent from WorkScheduleShift.
+     * Get context for external integrations.
+     * Used by CalendarServiceProviderImpl for infrastructure access.
+     *
+     * @return Application context
      */
-    private WorkScheduleEvent createEventFromShift(@NonNull WorkScheduleShift shift,
-                                                   @NonNull LocalDate date,
-                                                   @Nullable Long userId) {
-        return WorkScheduleEvent.builder(date)
-                .setWorkScheduleShift(shift)
-                .setShift(shift.getShift())
-                .setTeam(shift.getTeams().isEmpty() ? null : shift.getTeams().get(0))
-                .setTiming(shift.getStartTime(), shift.getEndTime())
-                .setUserId(userId)
-                .localizer(mDomainLocalizer.scope("events"))
-                .build();
-    }
-
-    /**
-     * Create standard QuattroDue teams.
-     */
-    private List<Team> createStandardQuattroDueTeams() {
-        List<Team> teams = new ArrayList<>();
-        String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-
-        for (String name : teamNames) {
-            Team team = Team.builder(name)
-                    .displayName("Team " + name)
-                    .teamType(Team.TeamType.QUATTRODUE)
-                    .description("QuattroDue team " + name)
-                    .localizer(mDomainLocalizer.scope("teams"))
-                    .build();
-            teams.add(team);
-        }
-
-        return teams;
-    }
-
-    /**
-     * Create standard shift templates.
-     */
-    private List<Shift> createStandardShiftTemplates() {
-        List<Shift> shifts = new ArrayList<>();
-
-        shifts.add(Shift.createMorningShift(mDomainLocalizer.scope("shifts")));
-        shifts.add(Shift.createAfternoonShift(mDomainLocalizer.scope("shifts")));
-        shifts.add(Shift.createNightShift(mDomainLocalizer.scope("shifts")));
-
-        return shifts;
-    }
-
-    /**
-     * Create team from ID.
-     */
-    @Nullable
-    private Team createTeamFromId(@NonNull String teamId) {
-        if (teamId.matches("[A-I]")) {
-            return Team.builder(teamId)
-                    .displayName("Team " + teamId)
-                    .teamType(Team.TeamType.QUATTRODUE)
-                    .description("QuattroDue team " + teamId)
-                    .localizer(mDomainLocalizer.scope("teams"))
-                    .build();
-        }
-        return null;
-    }
-
-    /**
-     * Create shift from ID.
-     */
-    @Nullable
-    private Shift createShiftFromId(@NonNull String shiftId) {
-        switch (shiftId.toLowerCase()) {
-            case "morning":
-                return Shift.createMorningShift(mDomainLocalizer.scope("shifts"));
-            case "afternoon":
-                return Shift.createAfternoonShift(mDomainLocalizer.scope("shifts"));
-            case "night":
-                return Shift.createNightShift(mDomainLocalizer.scope("shifts"));
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * Calculate team for user based on simple algorithm.
-     */
-    private String calculateTeamForUser(@NonNull Long userId, @NonNull LocalDate date) {
-        // Simple algorithm: cycle through teams A-I based on user ID
-        String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-        int teamIndex = (int) (userId % teamNames.length);
-        return teamNames[teamIndex];
+    @NonNull
+    public Context getContext() {
+        return mContext;
     }
 }

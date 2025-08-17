@@ -10,22 +10,27 @@ import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * WorkScheduleEvent - Domain model for volatile work schedule events.
+ * WorkScheduleEvent - Domain model for volatile work schedule events with multi-team support.
  *
  * <p>This is a clean architecture domain model representing a single work schedule event
  * generated from pattern calculations. These events are volatile (not persisted) and
- * generated on-demand for calendar display and integration with full localization support.</p>
+ * generated on-demand for calendar display and integration with full localization support.
+ * Now supports multiple teams for complex schedule patterns.</p>
  *
  * <h3>Key Features:</h3>
  * <ul>
  *   <li><strong>Volatile</strong>: Generated on-demand, not stored in database</li>
  *   <li><strong>Pattern-Based</strong>: Derived from work schedule pattern calculations</li>
  *   <li><strong>Calendar Integration</strong>: Designed for seamless calendar display</li>
- *   <li><strong>Team-Specific</strong>: Contains team assignment and shift information</li>
+ *   <li><strong>Multi-Team Support</strong>: Contains multiple team assignments per event</li>
  *   <li><strong>Domain Model</strong>: No external dependencies, pure business model</li>
  *   <li><strong>Immutable Design</strong>: Thread-safe and predictable state</li>
  *   <li><strong>Localization Support</strong>: Full i18n support for all display text</li>
@@ -39,6 +44,14 @@ import java.util.UUID;
  *   <li><strong>SPECIAL_EVENT</strong>: Special or custom event</li>
  * </ul>
  *
+ * <h3>Multi-Team Support:</h3>
+ * <ul>
+ *   <li><strong>4-2 Pattern</strong>: Typically 2 teams per event</li>
+ *   <li><strong>3-2 Pattern</strong>: Can have different team configurations</li>
+ *   <li><strong>Custom Patterns</strong>: Flexible team assignment support</li>
+ *   <li><strong>User Relevance</strong>: User is relevant if in ANY assigned team</li>
+ * </ul>
+ *
  * <h3>Integration Points:</h3>
  * <ul>
  *   <li>WorkScheduleRepository generates these events for date ranges</li>
@@ -50,10 +63,11 @@ import java.util.UUID;
  * <h3>Usage Examples:</h3>
  * <pre>
  * {@code
- * // Create localized work schedule event
+ * // Create multi-team work schedule event
+ * List<Team> teams = Arrays.asList(teamA, teamB);
  * WorkScheduleEvent event = WorkScheduleEvent.builder(LocalDate.now())
  *     .setWorkScheduleShift(morningShift)
- *     .setTeam(teamA)
+ *     .setTeams(teams)
  *     .setShift(morningShiftType)
  *     .setUserId(123L)
  *     .setEventType(EventType.SHIFT_EVENT)
@@ -62,12 +76,12 @@ import java.util.UUID;
  *
  * // Get localized display
  * String displayName = event.getLocalizedDisplayName();
- * String summary = event.getLocalizedSummary();
+ * String teamSummary = event.getLocalizedTeamAssignments();
  * }
  * </pre>
  *
  * @author QDue Development Team
- * @version 2.0.0 - Localization Implementation
+ * @version 2.1.0 - Multi-Team Support Implementation
  * @since Clean Architecture Phase 2
  */
 public class WorkScheduleEvent extends LocalizableDomainModel {
@@ -117,7 +131,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     // ==================== IDENTIFICATION ====================
 
     private final String id;                           // Unique ID for this event instance
-    private final String sourceId;                     // Source identifier (pattern + date + shift)
+    private final String sourceId;                     // Source identifier (pattern + date + shifts + teams)
 
     // ==================== TEMPORAL INFORMATION ====================
 
@@ -129,7 +143,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     // ==================== WORK SCHEDULE DATA ====================
 
     private final WorkScheduleShift workScheduleShift;            // Associated shift from Day calculation
-    private final Team team;                          // Team assigned to this shift
+    private final List<Team> teams;                  // Teams assigned to this shift (immutable)
     private final Shift shift;                        // Type of shift (Morning, Afternoon, Night)
     private final EventType eventType;               // Type of event
 
@@ -166,7 +180,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
         // Identification
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
-        this.sourceId = generateSourceId(builder.date, builder.team, builder.shift, builder.dayInCycle);
+        this.sourceId = generateSourceId(builder.date, builder.teams, builder.shift, builder.dayInCycle);
 
         // Temporal information
         this.date = Objects.requireNonNull(builder.date, "Date cannot be null");
@@ -176,7 +190,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
         // Work schedule data
         this.workScheduleShift = builder.workScheduleShift;
-        this.team = builder.team;
+        this.teams = builder.teams != null ?
+                Collections.unmodifiableList(new ArrayList<>(builder.teams)) :
+                Collections.emptyList();
         this.shift = builder.shift;
         this.eventType = builder.eventType != null ? builder.eventType : EventType.SHIFT_EVENT;
 
@@ -187,7 +203,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
         // User context
         this.userId = builder.userId;
-        this.isUserRelevant = calculateUserRelevance(builder.userId, this.team);
+        this.isUserRelevant = calculateUserRelevance(builder.userId, this.teams);
 
         // Pattern metadata
         this.dayInCycle = builder.dayInCycle;
@@ -209,7 +225,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     @Nullable public LocalTime getEndTime() { return endTime; }
     public boolean crossesMidnight() { return crossesMidnight; }
     @Nullable public WorkScheduleShift getWorkScheduleShift() { return workScheduleShift; }
-    @Nullable public Team getTeam() { return team; }
+    @NonNull public List<Team> getTeams() { return teams; }
     @Nullable public Shift getShift() { return shift; }
     @NonNull public EventType getEventType() { return eventType; }
     @NonNull public String getTitle() { return title; }
@@ -223,6 +239,74 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     public long getGeneratedTimestamp() { return generatedTimestamp; }
     @Nullable public String getGeneratedBy() { return generatedBy; }
     public boolean isVolatile() { return isVolatile; }
+
+    // ==================== TEAM-RELATED GETTERS ====================
+
+    /**
+     * Get the primary team (first in the list).
+     * Useful for backward compatibility or when you need a single team reference.
+     *
+     * @return Primary team, null if no teams assigned
+     */
+    @Nullable
+    public Team getPrimaryTeam() {
+        return teams.isEmpty() ? null : teams.get(0);
+    }
+
+    /**
+     * Get count of assigned teams.
+     *
+     * @return Number of teams assigned to this event
+     */
+    public int getTeamCount() {
+        return teams.size();
+    }
+
+    /**
+     * Get team names as a list.
+     *
+     * @return List of team names
+     */
+    @NonNull
+    public List<String> getTeamNames() {
+        return teams.stream()
+                .map(Team::getName)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get team names as comma-separated string.
+     *
+     * @return Comma-separated team names (e.g., "Team A, Team B")
+     */
+    @NonNull
+    public String getTeamNamesString() {
+        return teams.stream()
+                .map(Team::getName)
+                .collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Check if specific team is assigned to this event.
+     *
+     * @param team Team to check
+     * @return true if team is assigned
+     */
+    public boolean hasTeam(@NonNull Team team) {
+        return teams.contains(team);
+    }
+
+    /**
+     * Check if user is assigned to any of the teams.
+     *
+     * @param userId User ID to check
+     * @return true if user is in any assigned team
+     */
+    public boolean isUserInTeams(long userId) {
+        // This would need integration with user service to check team membership
+        // For now, using simple logic based on current user context
+        return isUserRelevant && this.userId != null && this.userId == userId;
+    }
 
     // ==================== COMPUTED PROPERTIES ====================
 
@@ -279,12 +363,21 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     }
 
     /**
-     * Check if this event has team assignment.
+     * Check if this event has team assignments.
      *
-     * @return true if team is assigned
+     * @return true if one or more teams are assigned
      */
-    public boolean hasTeamAssignment() {
-        return team != null;
+    public boolean hasTeamAssignments() {
+        return !teams.isEmpty();
+    }
+
+    /**
+     * Check if this event has multiple team assignments.
+     *
+     * @return true if more than one team is assigned
+     */
+    public boolean hasMultipleTeams() {
+        return teams.size() > 1;
     }
 
     /**
@@ -445,20 +538,37 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     }
 
     /**
-     * Get localized team assignment description.
+     * Get localized team assignments description.
      *
-     * @return Localized team assignment
+     * @return Localized team assignments
      */
     @NonNull
-    public String getLocalizedTeamAssignment() {
-        if (!hasTeamAssignment()) {
-            return localize("team.no_assignment", "No team assignment", "No team assignment");
+    public String getLocalizedTeamAssignments() {
+        if (!hasTeamAssignments()) {
+            return localize("teams.no_assignment", "No team assignment", "No team assignment");
         }
 
-        String teamLabel = localize("team.label", "Team", "Team");
-        String teamName = team.hasLocalizationSupport() ? team.getDisplayName() : team.getName();
+        if (teams.size() == 1) {
+            String teamLabel = localize("teams.single_label", "Team", "Team");
+            Team team = teams.get(0);
+            String teamName = team.hasLocalizationSupport() ? team.getDisplayName() : team.getName();
+            return teamLabel + ": " + teamName;
+        } else {
+            String teamsLabel = localize("teams.multiple_label", "Teams", "Teams");
+            List<String> teamNames = teams.stream()
+                    .map(team -> team.hasLocalizationSupport() ? team.getDisplayName() : team.getName())
+                    .collect(Collectors.toList());
 
-        return teamLabel + ": " + teamName;
+            String separator = localize("format.list_separator", ", ", ", ");
+            String lastSeparator = localize("format.list_last_separator", " and ", " and ");
+
+            if (teamNames.size() == 2) {
+                return teamsLabel + ": " + teamNames.get(0) + lastSeparator + teamNames.get(1);
+            } else {
+                String joined = String.join(separator, teamNames.subList(0, teamNames.size() - 1));
+                return teamsLabel + ": " + joined + lastSeparator + teamNames.get(teamNames.size() - 1);
+            }
+        }
     }
 
     /**
@@ -473,13 +583,19 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         // Event name and time
         summary.append(getLocalizedDisplayName());
 
-        // Team assignment if available
-        if (hasTeamAssignment()) {
+        // Team assignments if available
+        if (hasTeamAssignments()) {
             String separator = localize("format.summary_separator", " - ", " - ");
             summary.append(separator);
 
-            String teamName = team.hasLocalizationSupport() ? team.getDisplayName() : team.getName();
-            summary.append(teamName);
+            if (teams.size() == 1) {
+                Team team = teams.get(0);
+                String teamName = team.hasLocalizationSupport() ? team.getDisplayName() : team.getName();
+                summary.append(teamName);
+            } else {
+                String teamCount = localize("format.team_count", "{0} teams", "{0} teams", teams.size());
+                summary.append(teamCount);
+            }
         }
 
         // Event type if not standard shift
@@ -509,9 +625,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
             summary.append(durationLabel).append(": ").append(getLocalizedDuration()).append("\n");
         }
 
-        // Team assignment detail
-        if (hasTeamAssignment()) {
-            summary.append(getLocalizedTeamAssignment()).append("\n");
+        // Team assignments detail
+        if (hasTeamAssignments()) {
+            summary.append(getLocalizedTeamAssignments()).append("\n");
         }
 
         // Pattern information
@@ -549,9 +665,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
             card.append(durationLabel).append(": ").append(getLocalizedDuration()).append("\n");
         }
 
-        // Team
-        if (hasTeamAssignment()) {
-            card.append(getLocalizedTeamAssignment()).append("\n");
+        // Teams
+        if (hasTeamAssignments()) {
+            card.append(getLocalizedTeamAssignments()).append("\n");
         }
 
         // Pattern
@@ -590,7 +706,27 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     // ==================== FACTORY METHODS ====================
 
     /**
-     * Create a shift event with localization support.
+     * Create a shift event with multiple teams and localization support.
+     *
+     * @param date Event date
+     * @param shift Work shift
+     * @param teams List of team assignments
+     * @param localizer Optional domain localizer for i18n
+     * @return Shift event
+     */
+    @NonNull
+    public static WorkScheduleEvent createShiftEvent(@NonNull LocalDate date, @NonNull Shift shift,
+                                                     @NonNull List<Team> teams, @Nullable DomainLocalizer localizer) {
+        return builder(date)
+                .setShift(shift)
+                .setTeams(teams)
+                .setEventType(EventType.SHIFT_EVENT)
+                .localizer(localizer)
+                .build();
+    }
+
+    /**
+     * Create a shift event with single team and localization support.
      *
      * @param date Event date
      * @param shift Work shift
@@ -601,12 +737,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     @NonNull
     public static WorkScheduleEvent createShiftEvent(@NonNull LocalDate date, @NonNull Shift shift,
                                                      @NonNull Team team, @Nullable DomainLocalizer localizer) {
-        return builder(date)
-                .setShift(shift)
-                .setTeam(team)
-                .setEventType(EventType.SHIFT_EVENT)
-                .localizer(localizer)
-                .build();
+        return createShiftEvent(date, shift, Collections.singletonList(team), localizer);
     }
 
     /**
@@ -677,8 +808,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         private final LocalDate date;
         private LocalTime startTime;
         private LocalTime endTime;
+        private boolean crossesMidnight;
         private WorkScheduleShift workScheduleShift;
-        private Team team;
+        private List<Team> teams;
         private Shift shift;
         private EventType eventType;
         private String title;
@@ -693,6 +825,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
         private Builder(@NonNull LocalDate date) {
             this.date = Objects.requireNonNull(date, "Date cannot be null");
+            this.teams = new ArrayList<>();
         }
 
         private Builder(@NonNull WorkScheduleEvent existingEvent) {
@@ -700,8 +833,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
             this.date = existingEvent.date;
             this.startTime = existingEvent.startTime;
             this.endTime = existingEvent.endTime;
+            this.crossesMidnight = existingEvent.crossesMidnight;
             this.workScheduleShift = existingEvent.workScheduleShift;
-            this.team = existingEvent.team;
+            this.teams = new ArrayList<>(existingEvent.teams);
             this.shift = existingEvent.shift;
             this.eventType = existingEvent.eventType;
             this.title = existingEvent.title;
@@ -723,8 +857,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
             this.id = source.id;
             this.startTime = source.startTime;
             this.endTime = source.endTime;
+            this.crossesMidnight = source.crossesMidnight;
             this.workScheduleShift = source.workScheduleShift;
-            this.team = source.team;
+            this.teams = new ArrayList<>(source.teams);
             this.shift = source.shift;
             this.eventType = source.eventType;
             this.title = source.title;
@@ -742,8 +877,6 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
         @NonNull public Builder setId(@Nullable String id) { this.id = id; return this; }
         @NonNull public Builder setWorkScheduleShift(@Nullable WorkScheduleShift shift) { this.workScheduleShift = shift; return this; }
-        @NonNull public Builder setTeam(@Nullable Team team) { this.team = team; return this; }
-        @NonNull public Builder setShift(@Nullable Shift shift) { this.shift = shift; return this; }
         @NonNull public Builder setEventType(@Nullable EventType eventType) { this.eventType = eventType; return this; }
         @NonNull public Builder setUserId(@Nullable Long userId) { this.userId = userId; return this; }
         @NonNull public Builder setTitle(@Nullable String title) { this.title = title; return this; }
@@ -753,6 +886,74 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         @NonNull public Builder setDaysFromSchemeStart(long daysFromSchemeStart) { this.daysFromSchemeStart = daysFromSchemeStart; return this; }
         @NonNull public Builder setPatternName(@Nullable String patternName) { this.patternName = patternName; return this; }
         @NonNull public Builder setGeneratedBy(@Nullable String generatedBy) { this.generatedBy = generatedBy; return this; }
+
+        /**
+         * Set the shift and automatically extract timing information.
+         *
+         * @param shift Work shift
+         * @return Builder instance for chaining
+         */
+        @NonNull public Builder setShift(@Nullable Shift shift) {
+            this.shift = shift;
+            if (shift != null) {
+                setTiming(shift.getStartTime(), shift.getEndTime());
+            }
+            return this;
+        }
+
+        /**
+         * Set teams list (replaces existing teams).
+         *
+         * @param teams List of teams to assign
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder setTeams(@Nullable List<Team> teams) {
+            this.teams.clear();
+            if (teams != null) {
+                this.teams.addAll(teams);
+            }
+            return this;
+        }
+
+        /**
+         * Add a single team to the assignments.
+         *
+         * @param team Team to add
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder addTeam(@NonNull Team team) {
+            if (!this.teams.contains(team)) {
+                this.teams.add(team);
+            }
+            return this;
+        }
+
+        /**
+         * Add multiple teams to the assignments.
+         *
+         * @param teams Teams to add
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder addTeams(@NonNull List<Team> teams) {
+            for (Team team : teams) {
+                addTeam(team);
+            }
+            return this;
+        }
+
+        /**
+         * Clear all team assignments.
+         *
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder clearTeams() {
+            this.teams.clear();
+            return this;
+        }
 
         /**
          * Set timing information.
@@ -765,6 +966,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         public Builder setTiming(@Nullable LocalTime startTime, @Nullable LocalTime endTime) {
             this.startTime = startTime;
             this.endTime = endTime;
+            if (startTime != null && endTime != null) {
+                this.crossesMidnight = calculateCrossesMidnight(startTime, endTime);
+            }
             return this;
         }
 
@@ -792,13 +996,19 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
      * Generate source ID for tracking and deduplication.
      */
     @NonNull
-    private static String generateSourceId(@NonNull LocalDate date, @Nullable Team team,
+    private static String generateSourceId(@NonNull LocalDate date, @Nullable List<Team> teams,
                                            @Nullable Shift shift, int dayInCycle) {
         StringBuilder sourceBuilder = new StringBuilder();
         sourceBuilder.append("WE_").append(date.toString());
 
-        if (team != null) {
-            sourceBuilder.append("_").append(team.getName());
+        if (teams != null && !teams.isEmpty()) {
+            sourceBuilder.append("_T[");
+            String teamNames = teams.stream()
+                    .map(Team::getName)
+                    .sorted()
+                    .collect(Collectors.joining(","));
+            sourceBuilder.append(teamNames);
+            sourceBuilder.append("]");
         }
 
         if (shift != null) {
@@ -818,11 +1028,13 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     }
 
     /**
-     * Calculate user relevance based on team assignment and user context.
+     * Calculate user relevance based on team assignments and user context.
+     * User is relevant if they are in ANY of the assigned teams.
      */
-    private static boolean calculateUserRelevance(@Nullable Long userId, @Nullable Team team) {
+    private static boolean calculateUserRelevance(@Nullable Long userId, @NonNull List<Team> teams) {
         // Simple logic - can be enhanced with user service integration
-        return userId != null && team != null;
+        // User is relevant if userId is provided and there are team assignments
+        return userId != null && !teams.isEmpty();
     }
 
     /**
@@ -852,9 +1064,13 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
             }
         }
 
-        if (hasTeamAssignment()) {
+        if (hasTeamAssignments()) {
             if (desc.length() > 0) desc.append("\n");
-            desc.append("Team: ").append(team.getName());
+            if (teams.size() == 1) {
+                desc.append("Team: ").append(teams.get(0).getName());
+            } else {
+                desc.append("Teams: ").append(getTeamNamesString());
+            }
         }
 
         return desc.toString();
@@ -887,14 +1103,14 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         WorkScheduleEvent that = (WorkScheduleEvent) obj;
         return Objects.equals(sourceId, that.sourceId) ||
                 (Objects.equals(date, that.date) &&
-                        Objects.equals(team, that.team) &&
+                        Objects.equals(teams, that.teams) &&
                         Objects.equals(shift, that.shift) &&
                         dayInCycle == that.dayInCycle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sourceId, date, team, shift, dayInCycle);
+        return Objects.hash(sourceId, date, teams, shift, dayInCycle);
     }
 
     @Override
@@ -904,7 +1120,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
                 "id='" + id + '\'' +
                 ", date=" + date +
                 ", title='" + title + '\'' +
-                ", team=" + (team != null ? team.getName() : "null") +
+                ", teams=" + getTeamNamesString() +
                 ", shift=" + (shift != null ? shift.getName() : "null") +
                 ", eventType=" + eventType +
                 ", startTime=" + startTime +
@@ -929,7 +1145,8 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
                 ", endTime=" + endTime +
                 ", crossesMidnight=" + crossesMidnight +
                 ", workScheduleShift=" + workScheduleShift +
-                ", team=" + team +
+                ", teams=" + teams +
+                ", teamCount=" + getTeamCount() +
                 ", shift=" + shift +
                 ", eventType=" + eventType +
                 ", title='" + title + '\'' +

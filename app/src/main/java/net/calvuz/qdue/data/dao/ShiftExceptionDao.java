@@ -18,6 +18,10 @@ import java.util.List;
  *
  * <p>Highly optimized for user schedule queries, approval workflows, and conflict resolution.
  * Includes specialized methods for different exception types and business scenarios.</p>
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Initial Implementation
+ * @since Clean architecture
  */
 @Dao
 public interface ShiftExceptionDao {
@@ -165,6 +169,31 @@ public interface ShiftExceptionDao {
 
     @Query("UPDATE shift_exceptions SET active = 0, updated_at = :timestamp WHERE id = :exceptionId")
     int deactivateException(@NonNull String exceptionId, long timestamp);
+
+    // ==================== BACKUP OPERATIONS ====================
+
+    /**
+     * Get ALL shift exceptions for complete backup
+     * Essential for full database backup operations
+     */
+    @Query("SELECT * FROM shift_exceptions ORDER BY target_date DESC, created_at DESC")
+    @NonNull
+    List<ShiftExceptionEntity> getAllShiftExceptions();
+
+    /**
+     * Get all shift exceptions with status filter for backup operations
+     *
+     * @param active Status filter (true for active, false for inactive)
+     */
+    @Query("SELECT * FROM shift_exceptions WHERE active = :active ORDER BY target_date DESC")
+    @NonNull
+    List<ShiftExceptionEntity> getAllShiftExceptionsByStatus(boolean active);
+
+    /**
+     * Get total count of all shift exceptions (for backup statistics)
+     */
+    @Query("SELECT COUNT(*) FROM shift_exceptions")
+    int getTotalShiftExceptionCount();
 
     // ==================== STATISTICS QUERIES ====================
 

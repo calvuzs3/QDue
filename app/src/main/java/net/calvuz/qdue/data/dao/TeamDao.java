@@ -39,8 +39,8 @@ import java.util.List;
  * </ul>
  *
  * @author QDue Development Team
- * @version 1.0.0 - Initial Implementation
- * @since Database Version 6
+ * @version 2.0.0 - Initial Implementation
+ * @since Clean architecture
  */
 @Dao
 public interface TeamDao {
@@ -265,6 +265,7 @@ public interface TeamDao {
     @Query("SELECT COUNT(*) FROM teams")
     int getTeamCount();
 
+
     /**
      * Count active teams.
      *
@@ -316,6 +317,17 @@ public interface TeamDao {
      */
     @Query("SELECT COALESCE(MAX(sort_order), 0) FROM teams")
     int getMaxSortOrder();
+
+
+    /**
+     * Get teams by status for backup operations
+     *
+     * @param active Status to filter by
+     * @return List of teams with specified status
+     */
+    @Query("SELECT * FROM teams WHERE active = :active ORDER BY name")
+    @NonNull
+    List<TeamEntity> getTeamsByStatus(boolean active);
 
     /**
      * Get teams created after specific timestamp.

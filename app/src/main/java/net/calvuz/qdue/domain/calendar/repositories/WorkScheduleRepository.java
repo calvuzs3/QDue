@@ -191,7 +191,7 @@ public interface WorkScheduleRepository {
      * @return CompletableFuture with operation result
      */
     @NonNull
-    CompletableFuture<OperationResult<Void>> deleteShift(@NonNull String shiftId);
+    CompletableFuture<OperationResult<Object>> deleteShift(@NonNull String shiftId);
 
     /**
      * Get work schedule shifts for specific date.

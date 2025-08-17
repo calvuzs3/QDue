@@ -5,19 +5,20 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.core.common.i18n.LocaleManager;
-import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
+import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
+import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
+import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Shift;
+import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
-import net.calvuz.qdue.quattrodue.QuattroDue;
-import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -26,428 +27,109 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * WorkScheduleRepositoryImpl - Bridge Implementation using QuattroDue Engine
+ * WorkScheduleRepositoryImpl - Complete Implementation with Multi-Team Support
  *
- * <p>This implementation uses the proven QuattroDue calculation engine as a bridge
- * while exposing clean architecture domain models. This approach ensures:</p>
+ * <p>Complete implementation of WorkScheduleRepository interface that orchestrates domain engines
+ * and specialized repositories through CalendarServiceProvider dependency injection. Implements
+ * all methods from the interface with proper error handling, localization support, and multi-team
+ * WorkScheduleEvent generation.</p>
+ *
+ * <h3>Implementation Strategy:</h3>
  * <ul>
- *   <li><strong>Reliable Calculations</strong>: Uses the tested QuattroDue algorithm</li>
- *   <li><strong>Clean Architecture</strong>: Exposes domain models (Team, Shift, WorkScheduleDay)</li>
- *   <li><strong>Zero Risk Migration</strong>: No breaking changes to existing logic</li>
- *   <li><strong>Performance Optimization</strong>: Caching and async operations</li>
- *   <li><strong>Future Flexibility</strong>: Easy to replace bridge with native implementation</li>
+ *   <li><strong>Complete Interface</strong>: Implements ALL methods from WorkScheduleRepository</li>
+ *   <li><strong>Multi-Team Support</strong>: Generates WorkScheduleEvents with multiple teams</li>
+ *   <li><strong>Repository Coordination</strong>: Uses specialized repositories for specific operations</li>
+ *   <li><strong>Domain Engine Integration</strong>: Coordinates calculation engines for schedule generation</li>
+ *   <li><strong>Fixed Dependencies</strong>: Uses CalendarServiceProvider for proper DI</li>
  * </ul>
  *
- * <h3>Bridge Pattern Benefits:</h3>
+ * <h3>Multi-Team Architecture:</h3>
  * <ul>
- *   <li>Maintains compatibility with existing QuattroDue logic</li>
- *   <li>Provides clean domain model interface for new code</li>
- *   <li>Allows gradual migration to pure clean architecture</li>
- *   <li>Reduces risk of calculation errors during refactoring</li>
+ *   <li><strong>QuattroDue 4-2 Pattern</strong>: Typically 2 teams per shift</li>
+ *   <li><strong>QuattroDue 3-2 Pattern</strong>: Different team configurations</li>
+ *   <li><strong>Custom Patterns</strong>: Flexible team assignment support</li>
+ *   <li><strong>User Relevance</strong>: User relevant if in ANY assigned team</li>
  * </ul>
  *
  * @author QDue Development Team
- * @version 2.1.0 - Bridge Implementation
- * @since Clean Architecture Implementation
+ * @version 3.2.0 - Multi-Team Support with Fixed Dependencies
+ * @since Clean Architecture Phase 3
  */
 public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     private static final String TAG = "WorkScheduleRepositoryImpl";
 
-    // ==================== DEPENDENCIES ====================
+    // ==================== CORE DEPENDENCIES ====================
 
     private final Context mContext;
-    private final QDueDatabase mDatabase;
-    private final CoreBackupManager mBackupManager;
+    private final CalendarServiceProvider mCalendarServiceProvider;
     private final ExecutorService mExecutorService;
-    private final LocaleManager mLocaleManager;
-
-    // ==================== QUATTRODUE BRIDGE ====================
-
-    private final QuattroDue mQuattroDue;
 
     // ==================== CACHING ====================
 
-    private final Map<LocalDate, WorkScheduleDay> mScheduleCache = new ConcurrentHashMap<>();
-    private final Map<String, Team> mTeamCache = new ConcurrentHashMap<>();
-    private final Map<String, Shift> mShiftCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, WorkScheduleDay> mScheduleCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> mConfigCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, LocalDate> mSchemeCache = new ConcurrentHashMap<>();
 
-    // ==================== TEAM MAPPING ====================
-
-    // Map HalfTeam names to domain Team objects
-    private final Map<String, Team> mHalfTeamToTeamMap = new ConcurrentHashMap<>();
-    private List<Team> mAllTeams;
-    private List<Shift> mAllShifts;
-
-    // ==================== STATE ====================
-
-    private boolean mServiceReady = false;
+    // Cache configuration
+    private static final int MAX_CACHE_SIZE = 10000;
+    private static final long CACHE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
     // ==================== CONSTRUCTOR ====================
 
     /**
-     * Constructor for dependency injection with QuattroDue bridge.
+     * Constructor with CalendarServiceProvider dependency injection.
      *
      * @param context Application context
-     * @param database QDue database instance
-     * @param backupManager Core backup manager instance
+     * @param calendarServiceProvider CalendarServiceProvider for domain repository access
      */
-    public WorkScheduleRepositoryImpl(Context context, QDueDatabase database, CoreBackupManager backupManager) {
+    public WorkScheduleRepositoryImpl(@NonNull Context context,
+                                      @NonNull CalendarServiceProvider calendarServiceProvider) {
         this.mContext = context.getApplicationContext();
-        this.mDatabase = database;
-        this.mBackupManager = backupManager;
-        this.mExecutorService = Executors.newFixedThreadPool(4);
-        this.mLocaleManager = new LocaleManager(mContext);
+        this.mCalendarServiceProvider = calendarServiceProvider;
+        this.mExecutorService = Executors.newCachedThreadPool();
 
-        // Initialize QuattroDue bridge
-        this.mQuattroDue = QuattroDue.getInstance(mContext);
-
-        // Initialize mappings
-        initializeBridgeMappings();
-
-        Log.d(TAG, "WorkScheduleRepositoryImpl initialized with QuattroDue bridge");
+        Log.i(TAG, "WorkScheduleRepositoryImpl initialized with CalendarServiceProvider DI");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager.
-     */
-    public WorkScheduleRepositoryImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
+    // ==================== SCHEDULE GENERATION ====================
 
-    // ==================== BRIDGE INITIALIZATION ====================
-
-    /**
-     * Initialize mappings between QuattroDue models and domain models.
-     */
-    private void initializeBridgeMappings() {
-        try {
-            // Initialize team mappings
-            initializeTeamMappings();
-
-            // Initialize shift mappings
-            initializeShiftMappings();
-
-            mServiceReady = true;
-            Log.d(TAG, "Bridge mappings initialized successfully");
-
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize bridge mappings", e);
-            mServiceReady = false;
-        }
-    }
-
-    /**
-     * Create mappings between HalfTeam and domain Team objects.
-     */
-    private void initializeTeamMappings() {
-        mAllTeams = new ArrayList<>();
-        String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-
-        for (String teamName : teamNames) {
-            // Create domain Team object
-            Team domainTeam = Team.builder(teamName)
-                    .name(teamName)
-                    .displayName(mLocaleManager.getTeamDisplayName(teamName))
-                    .description(mLocaleManager.getTeamDescriptionTemplate() + " " + teamName)
-                    .active(true)
-                    .build();
-
-            // Add to collections
-            mAllTeams.add(domainTeam);
-            mHalfTeamToTeamMap.put(teamName, domainTeam);
-            mTeamCache.put(teamName, domainTeam);
-            mTeamCache.put(domainTeam.getId(), domainTeam);
-        }
-
-        Log.d(TAG, "Initialized " + mAllTeams.size() + " team mappings");
-    }
-
-    /**
-     * Create mappings for shift types.
-     */
-    private void initializeShiftMappings() {
-        mAllShifts = new ArrayList<>();
-
-        // Create domain Shift objects with localized names
-        Shift morningShift = Shift.builder(mLocaleManager.getShiftName("MORNING"))
-                .setShiftType(Shift.ShiftType.CYCLE_42)
-                .setStartTime(6, 0)
-                .setEndTime(14, 0)
-                .setColorHex("#4CAF50")
-                .setDescription(mLocaleManager.getShiftDescription("MORNING"))
-                .setHasBreakTime(true)
-                .setBreakTimeDuration(30)
-                .build();
-
-        Shift afternoonShift = Shift.builder(mLocaleManager.getShiftName("AFTERNOON"))
-                .setShiftType(Shift.ShiftType.CYCLE_42)
-                .setStartTime(14, 0)
-                .setEndTime(22, 0)
-                .setColorHex("#FF9800")
-                .setDescription(mLocaleManager.getShiftDescription("AFTERNOON"))
-                .setHasBreakTime(true)
-                .setBreakTimeDuration(30)
-                .build();
-
-        Shift nightShift = Shift.builder(mLocaleManager.getShiftName("NIGHT"))
-                .setShiftType(Shift.ShiftType.CYCLE_42)
-                .setStartTime(22, 0)
-                .setEndTime(6, 0)
-                .setColorHex("#3F51B5")
-                .setDescription(mLocaleManager.getShiftDescription("NIGHT"))
-                .setHasBreakTime(true)
-                .setBreakTimeDuration(45)
-                .build();
-
-        mAllShifts.add(morningShift);
-        mAllShifts.add(afternoonShift);
-        mAllShifts.add(nightShift);
-
-        // Cache shifts
-        for (Shift shift : mAllShifts) {
-            mShiftCache.put(shift.getId(), shift);
-            mShiftCache.put(shift.getName(), shift);
-        }
-
-        Log.d(TAG, "Initialized " + mAllShifts.size() + " shift mappings");
-    }
-
-    // ==================== BRIDGE CONVERSION METHODS ====================
-
-
-    /**
-     * Enhanced conversion method with comprehensive error handling.
-     *
-     * @param quattroduDay QuattroDue Day object
-     * @return Domain WorkScheduleDay object, never null
-     */
-    private WorkScheduleDay convertDayToWorkScheduleDayRobust(Day quattroduDay) {
-        // Pre-validation
-        if (quattroduDay == null) {
-            Log.w(TAG, "Attempted to convert null QuattroDue Day");
-            return createFallbackWorkScheduleDay(LocalDate.now(), "Null input day");
-        }
-
-        LocalDate date = quattroduDay.getLocalDate();
-        if (date == null) {
-            Log.e(TAG, "QuattroDue Day has null date");
-            return createFallbackWorkScheduleDay(LocalDate.now(), "Null date in input");
-        }
-
-        // Validate mappings
-        if (!validateShiftMappings()) {
-            return createFallbackWorkScheduleDay(date, "Invalid shift mappings");
-        }
-
-        try {
-            return convertDayToWorkScheduleDay(quattroduDay);
-
-        } catch (IllegalStateException e) {
-            if (e.getMessage() != null && e.getMessage().contains("Shift template must be set")) {
-                Log.e(TAG, "❌ Shift template validation failed - this should be fixed now", e);
-                return createFallbackWorkScheduleDay(date, "Shift template validation failed");
-            }
-            throw e; // Re-throw other state exceptions
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Unexpected error in day conversion for " + date, e);
-            return createFallbackWorkScheduleDay(date, "Unexpected conversion error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Convert QuattroDue Day to domain WorkScheduleDay.
-     *
-     * <p>Converts legacy QuattroDue Day objects to clean architecture domain models.
-     * Maps shifts, teams, and timing information while preserving business logic.</p>
-     *
-     * @param quattroduDay QuattroDue Day object
-     * @return Domain WorkScheduleDay object
-     */
-    private WorkScheduleDay convertDayToWorkScheduleDay(Day quattroduDay) {
-        try {
-            if (quattroduDay == null) {
-                Log.w(TAG, "Attempted to convert null QuattroDue Day");
-                return null;
-            }
-
-            WorkScheduleDay.Builder builder = WorkScheduleDay.builder(quattroduDay.getLocalDate());
-
-            // Convert each shift from QuattroDue to domain model
-            List<net.calvuz.qdue.quattrodue.models.Shift> quattroduShifts = quattroduDay.getShifts();
-
-            for (int i = 0; i < quattroduShifts.size() && i < mAllShifts.size(); i++) {
-                net.calvuz.qdue.quattrodue.models.Shift quattroduShift = quattroduShifts.get(i);
-                Shift domainShiftTemplate = mAllShifts.get(i);
-
-                try {
-                    // Create WorkScheduleShift with proper shift template
-                    WorkScheduleShift.Builder shiftBuilder = WorkScheduleShift.builder()
-                            .shift(domainShiftTemplate)                    // ✅ FIX: Set shift template
-                            .startTime(domainShiftTemplate.getStartTime())
-                            .endTime(domainShiftTemplate.getEndTime())
-                            .description(domainShiftTemplate.getDescription());
-
-                    // Add teams from QuattroDue shift
-                    Set<HalfTeam> halfTeams = quattroduShift.getHalfTeams();
-                    int teamsAdded = 0;
-
-                    for (HalfTeam halfTeam : halfTeams) {
-                        Team domainTeam = mHalfTeamToTeamMap.get(halfTeam.getName());
-                        if (domainTeam != null) {
-                            shiftBuilder.addTeam(domainTeam);
-                            teamsAdded++;
-                        } else {
-                            Log.w(TAG, "Could not map HalfTeam to domain Team: " + halfTeam.getName());
-                        }
-                    }
-
-                    // Build and add the shift to the day
-                    WorkScheduleShift workScheduleShift = shiftBuilder.build();
-                    builder.addShift(workScheduleShift);
-
-                    Log.v(TAG, "Converted shift " + i + " (" + domainShiftTemplate.getName() +
-                            ") with " + teamsAdded + " teams");
-
-                } catch (Exception shiftException) {
-                    Log.e(TAG, "Failed to convert shift " + i + " for date " +
-                            quattroduDay.getLocalDate(), shiftException);
-                    // Continue with other shifts rather than failing entire day
-                }
-            }
-
-            // Add off-work teams
-            List<String> allTeamNames = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I");
-            int offWorkTeamsAdded = 0;
-
-            for (String teamName : allTeamNames) {
-                boolean isWorking = quattroduShifts.stream()
-                        .flatMap(shift -> shift.getHalfTeams().stream())
-                        .anyMatch(halfTeam -> halfTeam.getName().equals(teamName));
-
-                if (!isWorking) {
-                    Team offTeam = mHalfTeamToTeamMap.get(teamName);
-                    if (offTeam != null) {
-                        builder.addOffWorkTeam(offTeam);
-                        offWorkTeamsAdded++;
-                    }
-                }
-            }
-
-            WorkScheduleDay result = builder.build();
-
-            Log.d(TAG, "✅ Converted QuattroDue Day for " + quattroduDay.getLocalDate() +
-                    " - Shifts: " + result.getShifts().size() +
-                    ", Off-work teams: " + offWorkTeamsAdded);
-
-            return result;
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Error converting QuattroDue Day to WorkScheduleDay for date " +
-                    (quattroduDay != null ? quattroduDay.getLocalDate() : "null"), e);
-
-            // Return empty day rather than null to prevent downstream failures
-            if (quattroduDay != null) {
-                return WorkScheduleDay.builder(quattroduDay.getLocalDate()).build();
-            }
-            return null;
-        }
-    }
-
-    /**
-     * Convert HalfTeam to domain Team.
-     *
-     * @param halfTeam QuattroDue HalfTeam
-     * @return Domain Team object
-     */
-    private Team convertHalfTeamToTeam(HalfTeam halfTeam) {
-        if (halfTeam == null) {
-            return null;
-        }
-        return mHalfTeamToTeamMap.get(halfTeam.getName());
-    }
-
-
-    /**
-     * Create a fallback WorkScheduleDay when conversion fails.
-     * Provides a minimal valid day structure to prevent downstream failures.
-     *
-     * @param date Date for the fallback day
-     * @param reason Reason for fallback creation
-     * @return Minimal WorkScheduleDay
-     */
-    private WorkScheduleDay createFallbackWorkScheduleDay(@NonNull LocalDate date, @NonNull String reason) {
-        Log.w(TAG, "⚠️ Creating fallback WorkScheduleDay for " + date + " - Reason: " + reason);
-
-        try {
-            WorkScheduleDay.Builder builder = WorkScheduleDay.builder(date);
-
-            // Add all teams as off-work for fallback scenario
-            List<String> allTeamNames = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I");
-            for (String teamName : allTeamNames) {
-                Team team = mHalfTeamToTeamMap.get(teamName);
-                if (team != null) {
-                    builder.addOffWorkTeam(team);
-                }
-            }
-
-            return builder.build();
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to create fallback WorkScheduleDay", e);
-            // Last resort: return empty day
-            return WorkScheduleDay.builder(date).build();
-        }
-    }
-
-    // ==================== SCHEDULE GENERATION (BRIDGE METHODS) ====================
-
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<WorkScheduleDay>> getWorkScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting work schedule for date: " + date + " (using QuattroDue bridge)");
+                Log.d(TAG, "Generating work schedule for date: " + date + ", user: " + userId);
 
                 // Check cache first
-                WorkScheduleDay cachedDay = mScheduleCache.get(date);
-                if (cachedDay != null) {
-                    Log.d(TAG, "✅ Cache hit for date: " + date);
-                    return OperationResult.success(cachedDay, OperationResult.OperationType.READ);
+                String cacheKey = buildCacheKey(date, userId);
+                WorkScheduleDay cachedSchedule = mScheduleCache.get(cacheKey);
+                if (cachedSchedule != null) {
+                    Log.v(TAG, "Returning cached schedule for " + cacheKey);
+                    return OperationResult.success(cachedSchedule, OperationResult.OperationType.READ);
                 }
 
-                // Use QuattroDue to calculate the day
-                Day quattroduDay = mQuattroDue.getDayByDate(date);
-                if (quattroduDay == null) {
-                    Log.w(TAG, "QuattroDue returned null for date: " + date);
-                    return OperationResult.failure("No schedule available for date", OperationResult.OperationType.READ);
-                }
-
-                // Convert to domain model
-                WorkScheduleDay workScheduleDay = convertDayToWorkScheduleDay(quattroduDay);
+                // Generate schedule using domain engines
+                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
 
                 // Cache the result
-                if (workScheduleDay != null) {
-                    mScheduleCache.put(date, workScheduleDay);
-                }
+                mScheduleCache.put(cacheKey, schedule);
 
-                Log.d(TAG, "✅ Successfully calculated work schedule for: " + date +
-                        " (shifts: " + (workScheduleDay != null ? workScheduleDay.getShiftCount() : 0) + ")");
+                Log.d(TAG, "Successfully generated schedule for " + date + " with " +
+                        schedule.getShifts().size() + " shifts");
 
-                return OperationResult.success(workScheduleDay, OperationResult.OperationType.READ);
+                return OperationResult.success(schedule, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Failed to get work schedule for date " + date + ": " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e(TAG, "Error generating work schedule for date: " + date, e);
+                return OperationResult.failure("Failed to generate schedule for " + date + ": " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -459,746 +141,876 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting work schedule for date range: " + startDate + " to " + endDate +
-                        " (userId: " + userId + ", using QuattroDue bridge)");
+                Log.d(TAG, "Generating work schedule for date range: " + startDate + " to " + endDate);
 
-                // Validate date range
-                if (startDate.isAfter(endDate)) {
-                    return OperationResult.failure("Start date cannot be after end date",
-                            OperationResult.OperationType.VALIDATION);
+                Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
+
+                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                    WorkScheduleDay daySchedule = generateScheduleForDate(date, userId);
+                    scheduleMap.put(date, daySchedule);
                 }
 
-                // Check for reasonable date range (business rule)
-                long daysDifference = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
-                if (daysDifference > 365) {
-                    return OperationResult.failure("Date range cannot exceed 365 days",
-                            OperationResult.OperationType.VALIDATION);
-                }
-
-                // Validate shift mappings before processing
-                if (!validateShiftMappings()) {
-                    return OperationResult.failure("Shift mappings not properly initialized",
-                            OperationResult.OperationType.SYSTEM);
-                }
-
-                // ✅ CORRECT: Use existing QuattroDue methods
-                Map<LocalDate, WorkScheduleDay> scheduleMap = new ConcurrentHashMap<>();
-                LocalDate currentDate = startDate;
-
-                int totalDays = 0;
-                int successfulDays = 0;
-                int fallbackDays = 0;
-
-                while (!currentDate.isAfter(endDate)) {
-                    totalDays++;
-
-                    try {
-                        // Use QuattroDue bridge method for each day
-                        Day quattroduDay = mQuattroDue.getDayByDate(currentDate);
-
-                        if (quattroduDay != null) {
-                            WorkScheduleDay workScheduleDay = convertDayToWorkScheduleDay(quattroduDay);
-
-                            if (workScheduleDay != null) {
-                                scheduleMap.put(currentDate, workScheduleDay);
-                                mScheduleCache.put(currentDate, workScheduleDay); // Cache each day
-                                successfulDays++;
-                            } else {
-                                // Create fallback day
-                                WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
-                                        "Conversion returned null");
-                                scheduleMap.put(currentDate, fallbackDay);
-                                fallbackDays++;
-                            }
-                        } else {
-                            // QuattroDue returned null for this date
-                            WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
-                                    "QuattroDue returned null day");
-                            scheduleMap.put(currentDate, fallbackDay);
-                            fallbackDays++;
-                            Log.w(TAG, "QuattroDue returned null for date: " + currentDate);
-                        }
-
-                    } catch (IllegalStateException e) {
-                        if (e.getMessage() != null && e.getMessage().contains("Shift template must be set")) {
-                            Log.e(TAG, "❌ Shift template error for " + currentDate + " - using fallback", e);
-
-                            WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
-                                    "Shift template validation failed");
-                            scheduleMap.put(currentDate, fallbackDay);
-                            fallbackDays++;
-                        } else {
-                            throw e; // Re-throw other state exceptions
-                        }
-
-                    } catch (Exception e) {
-                        Log.e(TAG, "❌ Error converting day " + currentDate + " - using fallback", e);
-
-                        WorkScheduleDay fallbackDay = createFallbackWorkScheduleDay(currentDate,
-                                "Conversion error: " + e.getMessage());
-                        scheduleMap.put(currentDate, fallbackDay);
-                        fallbackDays++;
-                    }
-
-                    currentDate = currentDate.plusDays(1);
-                }
-
-                // Log conversion statistics
-                logConversionStats(totalDays, successfulDays, fallbackDays);
-
-                Log.d(TAG, "✅ Successfully processed work schedule for " + scheduleMap.size() +
-                        " days in range " + startDate + " to " + endDate);
-
+                Log.d(TAG, "Successfully generated schedule for " + scheduleMap.size() + " days");
                 return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                Log.e(TAG, "❌ Failed to get work schedule for date range: " +
-                        startDate + " to " + endDate, e);
-                return OperationResult.failure("Failed to get work schedule: " + e.getMessage(),
+                Log.e(TAG, "Error generating work schedule for date range", e);
+                return OperationResult.failure("Failed to generate date range schedule: " + e.getMessage(),
                         OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForMonth(
             @NonNull YearMonth month, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting work schedule for month: " + month + " (using QuattroDue bridge)");
 
-                // Use QuattroDue's optimized month calculation
-                LocalDate firstDayOfMonth = month.atDay(1);
-                List<Day> quattroduDays = mQuattroDue.getShiftsForMonth(firstDayOfMonth);
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
 
-                Map<LocalDate, WorkScheduleDay> scheduleMap = new ConcurrentHashMap<>();
-
-                for (Day quattroduDay : quattroduDays) {
-                    WorkScheduleDay workScheduleDay = convertDayToWorkScheduleDay(quattroduDay);
-                    if (workScheduleDay != null) {
-                        scheduleMap.put(quattroduDay.getLocalDate(), workScheduleDay);
-                        mScheduleCache.put(quattroduDay.getLocalDate(), workScheduleDay);
-                    }
-                }
-
-                Log.d(TAG, "✅ Successfully retrieved schedule for month " + month + " (" + scheduleMap.size() + " days)");
-                return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
-
-            } catch (Exception e) {
-                String error = "Failed to get work schedule for month " + month + ": " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
+        return getWorkScheduleForDateRange(startDate, endDate, userId);
     }
 
-    // ==================== PATTERN CALCULATIONS (BRIDGE) ====================
-
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Integer>> getDayInCycle(@NonNull LocalDate date) {
+    @NonNull
+    public CompletableFuture<OperationResult<List<WorkScheduleEvent>>> generateWorkScheduleEvents(
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
+
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // Use QuattroDue's proven calculation
-                int dayInCycle = mQuattroDue.getDayInCycle(date);
-                if (dayInCycle >= 0) {
-                    return OperationResult.success(dayInCycle, OperationResult.OperationType.READ);
-                } else {
-                    return OperationResult.failure("Failed to calculate day in cycle", OperationResult.OperationType.READ);
-                }
-            } catch (Exception e) {
-                String error = "Error calculating day in cycle: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
+                Log.d(TAG, "Generating work schedule events from " + startDate + " to " + endDate);
 
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Long>> getDaysFromSchemeStart(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                LocalDate schemeStartDate = mQuattroDue.getSchemeDate();
-                if (schemeStartDate == null) {
-                    return OperationResult.failure("Scheme start date not configured", OperationResult.OperationType.READ);
+                List<WorkScheduleEvent> events = new ArrayList<>();
+
+                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                    WorkScheduleDay daySchedule = generateScheduleForDate(date, userId);
+                    List<WorkScheduleEvent> dayEvents = convertScheduleDayToMultiTeamEvents(daySchedule, userId);
+                    events.addAll(dayEvents);
                 }
 
-                long days = java.time.temporal.ChronoUnit.DAYS.between(schemeStartDate, date);
-                return OperationResult.success(days, OperationResult.OperationType.READ);
+                Log.d(TAG, "Generated " + events.size() + " work schedule events with multi-team support");
+                return OperationResult.success(events, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Error calculating days from scheme start: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> isWorkingDay(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Use QuattroDue's proven method
-                boolean hasWorkSchedule = mQuattroDue.hasWorkScheduleOnDate(date);
-                return OperationResult.success(hasWorkSchedule, OperationResult.OperationType.READ);
-
-            } catch (Exception e) {
-                String error = "Error checking if working day: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> isWorkingDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Get the day from QuattroDue
-                Day quattroduDay = mQuattroDue.getDayByDate(date);
-                if (quattroduDay == null) {
-                    return OperationResult.failure("Failed to get day information", OperationResult.OperationType.READ);
-                }
-
-                // Check if team is working on this day
-                boolean isWorking = quattroduDay.getShifts().stream()
-                        .flatMap(shift -> shift.getHalfTeams().stream())
-                        .anyMatch(halfTeam -> halfTeam.getName().equals(team.getName()));
-
-                return OperationResult.success(isWorking, OperationResult.OperationType.READ);
-
-            } catch (Exception e) {
-                String error = "Error checking if working day for team: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> isRestDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                OperationResult<Boolean> workingResult = isWorkingDayForTeam(date, team).join();
-                if (workingResult.isSuccess()) {
-                    boolean isRest = !workingResult.getData();
-                    return OperationResult.success(isRest, OperationResult.OperationType.READ);
-                } else {
-                    return workingResult;
-                }
-            } catch (Exception e) {
-                String error = "Error checking if rest day for team: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e(TAG, "Error generating work schedule events", e);
+                return OperationResult.failure("Failed to generate events: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
 
     // ==================== TEAM MANAGEMENT ====================
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getAllTeams() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return OperationResult.success(new ArrayList<>(mAllTeams), OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get all teams: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
+        return mCalendarServiceProvider.getTeamRepository().getAllActiveTeams()
+                .thenApply(teams -> OperationResult.success(teams, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error getting all teams", throwable);
+                    return OperationResult.failure("Failed to get teams: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
     }
 
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Team>> findTeamByName(@NonNull String teamName) {
+    @NonNull
+    public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Team team = mTeamCache.get(teamName);
-                return OperationResult.success(team, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to find team by name: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Team>> findTeamById(@NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Team team = mTeamCache.get(teamId);
-                return OperationResult.success(team, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to find team by ID: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<List<Team>>> createStandardTeams() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return OperationResult.success(new ArrayList<>(mAllTeams), OperationResult.OperationType.CREATE);
-            } catch (Exception e) {
-                String error = "Failed to create standard teams: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.CREATE);
-            }
-        }, mExecutorService);
-    }
-
-    // ==================== SHIFT MANAGEMENT ====================
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<List<Shift>>> getAllShifts() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return OperationResult.success(new ArrayList<>(mAllShifts), OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get all shifts: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Shift>> getShiftById(@NonNull String shiftId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Shift shift = mShiftCache.get(shiftId);
-                return OperationResult.success(shift, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get shift by ID: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Shift>> getShiftByName(@NonNull String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Shift shift = mShiftCache.get(name);
-                return OperationResult.success(shift, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get shift by name: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    // ==================== CONFIGURATION MANAGEMENT ====================
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<LocalDate>> getSchemeStartDate() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                LocalDate schemeDate = mQuattroDue.getSchemeDate();
-                return OperationResult.success(schemeDate, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get scheme start date: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Void>> updateSchemeStartDate(@NonNull LocalDate newStartDate) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Updating scheme start date to: " + newStartDate);
-
-                // Update QuattroDue's scheme date
-                mQuattroDue.setSchemeDate(mContext, newStartDate);
-
-                // Clear cache since calculations will change
-                mScheduleCache.clear();
-
-                Log.d(TAG, "✅ Successfully updated scheme start date");
-                return OperationResult.success("Scheme start date updated", OperationResult.OperationType.UPDATE);
-
-            } catch (Exception e) {
-                String error = "Failed to update scheme start date: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.UPDATE);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Map<String, Object>>> getScheduleConfiguration() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Get configuration from QuattroDue
-                Map<String, Object> config = mQuattroDue.getCycleInfo();
-                return OperationResult.success(config, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to get schedule configuration: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Void>> updateScheduleConfiguration(@NonNull Map<String, Object> configuration) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Clear cache when configuration changes
-                mScheduleCache.clear();
-                return OperationResult.success("Configuration updated", OperationResult.OperationType.UPDATE);
-            } catch (Exception e) {
-                String error = "Failed to update configuration: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.UPDATE);
-            }
-        }, mExecutorService);
-    }
-
-    // ==================== VALIDATION ====================
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> isRepositoryReady() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                boolean ready = mServiceReady && mQuattroDue != null;
-                return OperationResult.success(ready, OperationResult.OperationType.READ);
-            } catch (Exception e) {
-                String error = "Failed to check repository readiness: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Map<String, Object>>> validateConfiguration() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Map<String, Object> validationResults = new HashMap<>();
-
-                // Validate QuattroDue readiness
-                validationResults.put("quattrodue_ready", mQuattroDue != null);
-                validationResults.put("service_ready", mServiceReady);
-                validationResults.put("teams_mapped", mAllTeams != null && mAllTeams.size() == 9);
-                validationResults.put("shifts_mapped", mAllShifts != null && mAllShifts.size() == 3);
-                validationResults.put("cache_size", mScheduleCache.size());
-                validationResults.put("database_connected", mDatabase != null);
-
-                // Get QuattroDue validation info
-                if (mQuattroDue != null) {
-                    Map<String, Object> quattroduInfo = mQuattroDue.getCycleInfo();
-                    validationResults.putAll(quattroduInfo);
+                // Get user's current assignment
+                UserScheduleAssignment assignment = getUserAssignmentForDate(LocalDate.now(), userId);
+                if (assignment == null) {
+                    return OperationResult.success(null, OperationResult.OperationType.READ);
                 }
 
-                return OperationResult.success(validationResults, OperationResult.OperationType.VALIDATION);
+                // Get team by ID from assignment
+                String teamId = assignment.getTeamId();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(teamId).join();
+
+                return OperationResult.success(team, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Failed to validate configuration: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.VALIDATION);
+                Log.e(TAG, "Error getting team for user " + userId, e);
+                return OperationResult.failure("Failed to get team for user: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
 
-    /**
-     * Validate shift mappings initialization.
-     * Ensures that all required mappings are properly initialized before conversion.
-     *
-     * @return true if mappings are valid
-     */
-    private boolean validateShiftMappings() {
-        if (mAllShifts == null || mAllShifts.isEmpty()) {
-            Log.e(TAG, "❌ Shift mappings not initialized - mAllShifts is empty");
-            return false;
-        }
-
-        if (mHalfTeamToTeamMap == null || mHalfTeamToTeamMap.isEmpty()) {
-            Log.e(TAG, "❌ Team mappings not initialized - mHalfTeamToTeamMap is empty");
-            return false;
-        }
-
-        // Validate each shift has required properties
-        for (int i = 0; i < mAllShifts.size(); i++) {
-            Shift shift = mAllShifts.get(i);
-            if (shift == null) {
-                Log.e(TAG, "❌ Null shift found at index " + i);
-                return false;
-            }
-
-            if (shift.getStartTime() == null || shift.getEndTime() == null) {
-                Log.e(TAG, "❌ Shift " + shift.getName() + " has null start/end time");
-                return false;
-            }
-        }
-
-        Log.d(TAG, "✅ Shift mappings validation passed - " +
-                mAllShifts.size() + " shifts, " +
-                mHalfTeamToTeamMap.size() + " team mappings");
-
-        return true;
-    }
-
-    // ==================== DATA MANAGEMENT ====================
-
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Void>> clearCache() {
+    @NonNull
+    public CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull Long userId, @NonNull Team team) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                mScheduleCache.clear();
-                Log.d(TAG, "✅ Successfully cleared cache");
-                return OperationResult.success("Cache cleared", OperationResult.OperationType.DELETE);
-            } catch (Exception e) {
-                String error = "Failed to clear cache: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.DELETE);
-            }
-        }, mExecutorService);
-    }
+                // Create new assignment for user
+                UserScheduleAssignment assignment = UserScheduleAssignment.createPermanentAssignment(
+                        userId,
+                        team.getId().toString(),
+                        getDefaultRecurrenceRuleId(),
+                        LocalDate.now()
+                );
 
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Void>> refreshWorkScheduleData() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                // Clear cache
-                clearCache().join();
+                // Save assignment
+                CompletableFuture<OperationResult<UserScheduleAssignment>> saveResult =
+                        mCalendarServiceProvider.getUserScheduleAssignmentRepository()
+                                .saveUserScheduleAssignment(assignment);
 
-                // Refresh QuattroDue
-                mQuattroDue.refresh(mContext);
+                OperationResult<UserScheduleAssignment> result = saveResult.join();
 
-                // Reinitialize bridge mappings
-                initializeBridgeMappings();
-
-                Log.d(TAG, "✅ Successfully refreshed work schedule data");
-                return OperationResult.success("Work schedule data refreshed", OperationResult.OperationType.REFRESH);
-
-            } catch (Exception e) {
-                String error = "Failed to refresh work schedule data: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.REFRESH);
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Map<String, Object>>> getServiceStatus() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Map<String, Object> status = new HashMap<>();
-                status.put("service_ready", mServiceReady);
-                status.put("cache_size", mScheduleCache.size());
-                status.put("quattrodue_bridge", mQuattroDue != null);
-                status.put("teams_count", mAllTeams != null ? mAllTeams.size() : 0);
-                status.put("shifts_count", mAllShifts != null ? mAllShifts.size() : 0);
-
-                if (mQuattroDue != null) {
-                    status.put("scheme_start_date", mQuattroDue.getSchemeDate() != null ? mQuattroDue.getSchemeDate().toString() : null);
-                    status.putAll(mQuattroDue.getCycleInfo());
+                if (result.isSuccess()) {
+                    return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+                } else {
+                    return OperationResult.failure("Failed to save assignment: " + result.getErrorMessage(),
+                            OperationResult.OperationType.UPDATE);
                 }
 
-                return OperationResult.success(status, OperationResult.OperationType.READ);
             } catch (Exception e) {
-                String error = "Failed to get service status: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e(TAG, "Error setting team for user " + userId, e);
+                return OperationResult.failure("Failed to set team: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE);
             }
         }, mExecutorService);
     }
 
-    // ==================== ADDITIONAL BRIDGE METHODS ====================
-
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getTeamsWorkingOnDate(@NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // Use QuattroDue to get the day
-                Day quattroduDay = mQuattroDue.getDayByDate(date);
-                if (quattroduDay == null) {
-                    return OperationResult.success(new ArrayList<>(), OperationResult.OperationType.READ);
-                }
-
+                WorkScheduleDay schedule = generateScheduleForDate(date, null);
                 List<Team> workingTeams = new ArrayList<>();
 
-                // Convert HalfTeams to domain Teams
-                quattroduDay.getShifts().stream()
-                        .flatMap(shift -> shift.getHalfTeams().stream())
-                        .forEach(halfTeam -> {
-                            Team domainTeam = convertHalfTeamToTeam(halfTeam);
-                            if (domainTeam != null && !workingTeams.contains(domainTeam)) {
-                                workingTeams.add(domainTeam);
-                            }
-                        });
+                for (WorkScheduleShift shift : schedule.getShifts()) {
+                    workingTeams.addAll(shift.getTeams());
+                }
 
                 return OperationResult.success(workingTeams, OperationResult.OperationType.READ);
+
             } catch (Exception e) {
-                String error = "Failed to get teams working on date: " + e.getMessage();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting teams working on date " + date, e);
+                return OperationResult.failure("Failed to get working teams: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
 
-    // ==================== PLACEHOLDER IMPLEMENTATIONS ====================
-    // These methods maintain the interface contract but are not yet fully implemented
+    // ==================== SHIFT TYPE MANAGEMENT ====================
 
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<List<WorkScheduleEvent>>> generateWorkScheduleEvents(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement using QuattroDue bridge
-            return OperationResult.success(new ArrayList<>(), OperationResult.OperationType.READ);
-        }, mExecutorService);
+    @NonNull
+    public CompletableFuture<OperationResult<List<Shift>>> getAllShifts() {
+        return mCalendarServiceProvider.getShiftRepository().getAllShifts()
+                .thenApply(shifts -> OperationResult.success(shifts, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error getting all shifts", throwable);
+                    return OperationResult.failure("Failed to get shifts: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
     }
 
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement user team lookup from database
-            return OperationResult.success(null, OperationResult.OperationType.READ);
-        }, mExecutorService);
+    @NonNull
+    public CompletableFuture<OperationResult<Shift>> getShiftById(@NonNull String shiftId) {
+        return mCalendarServiceProvider.getShiftRepository().getShiftById(shiftId)
+                .thenApply(shift -> OperationResult.success(shift, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error getting shift by ID " + shiftId, throwable);
+                    return OperationResult.failure("Failed to get shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
     }
 
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull Long userId, @NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement user team assignment to database
-            return OperationResult.success("Team assigned", OperationResult.OperationType.UPDATE);
-        }, mExecutorService);
+    @NonNull
+    public CompletableFuture<OperationResult<Shift>> getShiftByName(@NonNull String name) {
+        return mCalendarServiceProvider.getShiftRepository().getShiftByName(name)
+                .thenApply(shift -> OperationResult.success(shift, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error getting shift by name " + name, throwable);
+                    return OperationResult.failure("Failed to get shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<Shift>> saveShift(@NonNull Shift shift) {
-        return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement shift persistence to database
-            return OperationResult.success(shift, OperationResult.OperationType.CREATE);
-        }, mExecutorService);
+        return mCalendarServiceProvider.getShiftRepository().saveShift(shift)
+                .thenApply(savedShift -> OperationResult.success(savedShift, OperationResult.OperationType.CREATE))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error saving shift", throwable);
+                    return OperationResult.failure("Failed to save shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.CREATE);
+                });
     }
 
-    @NonNull
     @Override
-    public CompletableFuture<OperationResult<Void>> deleteShift(@NonNull String shiftId) {
-        return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement shift deletion from database
-            return OperationResult.success("Shift deleted", OperationResult.OperationType.DELETE);
-        }, mExecutorService);
+    @NonNull
+    public CompletableFuture<OperationResult<Object>> deleteShift(@NonNull String shiftId) {
+        return mCalendarServiceProvider.getShiftRepository().deleteShift(shiftId)
+                .thenApply(success -> {
+                    if (success) {
+                        return OperationResult.success(null, OperationResult.OperationType.DELETE);
+                    } else {
+                        return OperationResult.failure("Failed to delete shift", OperationResult.OperationType.DELETE);
+                    }
+                })
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error deleting shift " + shiftId, throwable);
+                    return OperationResult.failure("Failed to delete shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.DELETE);
+                });
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<List<WorkScheduleShift>>> getShiftsForDate(@NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement getting WorkScheduleShifts for specific date
-            return OperationResult.success(new ArrayList<>(), OperationResult.OperationType.READ);
+            try {
+                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+                return OperationResult.success(schedule.getShifts(), OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting shifts for date " + date, e);
+                return OperationResult.failure("Failed to get shifts: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
         }, mExecutorService);
     }
 
-    @NonNull
+    // ==================== SCHEDULE CONFIGURATION ====================
+
     @Override
+    @NonNull
+    public CompletableFuture<OperationResult<LocalDate>> getSchemeStartDate() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Check cache first
+                LocalDate cached = mSchemeCache.get("scheme_start_date");
+                if (cached != null) {
+                    return OperationResult.success(cached, OperationResult.OperationType.READ);
+                }
+
+                // Default scheme start date for QuattroDue
+                LocalDate schemeStart = LocalDate.of(2024, 1, 1);
+                mSchemeCache.put("scheme_start_date", schemeStart);
+
+                return OperationResult.success(schemeStart, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting scheme start date", e);
+                return OperationResult.failure("Failed to get scheme start date: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Void>> updateSchemeStartDate(@NonNull LocalDate newStartDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                mSchemeCache.put("scheme_start_date", newStartDate);
+                // Clear schedule cache since all calculations will change
+                mScheduleCache.clear();
+
+                return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating scheme start date", e);
+                return OperationResult.failure("Failed to update scheme start date: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Map<String, Object>>> getScheduleConfiguration() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Map<String, Object> config = new HashMap<>();
+                config.put("pattern_type", "QUATTRODUE");
+                config.put("cycle_length", 18);
+                config.put("work_days", 4);
+                config.put("rest_days", 2);
+                config.put("teams_count", 9);
+                config.put("shifts_per_day", 3);
+                config.put("teams_per_shift", 2); // NEW: Multi-team support
+
+                return OperationResult.success(config, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting schedule configuration", e);
+                return OperationResult.failure("Failed to get configuration: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Void>> updateScheduleConfiguration(@NonNull Map<String, Object> configuration) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Store configuration
+                mConfigCache.putAll(configuration);
+
+                // Clear schedule cache since configuration changed
+                mScheduleCache.clear();
+
+                return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating schedule configuration", e);
+                return OperationResult.failure("Failed to update configuration: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE);
+            }
+        }, mExecutorService);
+    }
+
+    // ==================== PATTERN CALCULATIONS ====================
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Integer>> getDayInCycle(@NonNull LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                LocalDate schemeStart = getSchemeStartDate().join().getData();
+                if (schemeStart == null) schemeStart = LocalDate.of(2024, 1, 1);
+
+                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
+                int dayInCycle = (int) (daysSinceStart % 18); // 18-day QuattroDue cycle
+
+                return OperationResult.success(dayInCycle, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error calculating day in cycle", e);
+                return OperationResult.failure("Failed to calculate day in cycle: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Long>> getDaysFromSchemeStart(@NonNull LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                LocalDate schemeStart = getSchemeStartDate().join().getData();
+                if (schemeStart == null) schemeStart = LocalDate.of(2024, 1, 1);
+
+                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
+
+                return OperationResult.success(daysSinceStart, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error calculating days from scheme start", e);
+                return OperationResult.failure("Failed to calculate days: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Boolean>> isWorkingDay(@NonNull LocalDate date) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+                boolean hasWorkingShifts = !schedule.getShifts().isEmpty();
+
+                return OperationResult.success(hasWorkingShifts, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking if working day", e);
+                return OperationResult.failure("Failed to check working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Boolean>> isWorkingDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+
+                for (WorkScheduleShift shift : schedule.getShifts()) {
+                    if (shift.getTeams().contains(team)) {
+                        return OperationResult.success(true, OperationResult.OperationType.READ);
+                    }
+                }
+
+                return OperationResult.success(false, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking if working day for team", e);
+                return OperationResult.failure("Failed to check team working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Boolean>> isRestDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
+        return isWorkingDayForTeam(date, team)
+                .thenApply(result -> {
+                    if (result.isSuccess()) {
+                        boolean isWorking = result.getData();
+                        return OperationResult.success(!isWorking, OperationResult.OperationType.READ);
+                    } else {
+                        return result;
+                    }
+                });
+    }
+
+    // ==================== CALENDAR INTEGRATION ====================
+
+    @Override
+    @NonNull
     public CompletableFuture<OperationResult<Boolean>> hasWorkSchedule(@Nullable WorkScheduleDay day) {
-        return CompletableFuture.supplyAsync(() ->
-                OperationResult.success(day != null && day.hasShifts(), OperationResult.OperationType.READ), mExecutorService);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                boolean hasSchedule = day != null && !day.getShifts().isEmpty();
+                return OperationResult.success(hasSchedule, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking if has work schedule", e);
+                return OperationResult.failure("Failed to check schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() ->
-                OperationResult.success("#2196F3", OperationResult.OperationType.READ), mExecutorService);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
+
+                if (schedule.getShifts().isEmpty()) {
+                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                }
+
+                // Default work schedule color
+                String color = "#2196F3"; // Blue
+
+                return OperationResult.success(color, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting work schedule color", e);
+                return OperationResult.failure("Failed to get color: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
     }
 
-    @NonNull
     @Override
+    @NonNull
     public CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() ->
-                OperationResult.success("Work schedule for " + date, OperationResult.OperationType.READ), mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<LocalDate>> getNextWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
         return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement using QuattroDue bridge
-            return OperationResult.success(null, OperationResult.OperationType.READ);
+            try {
+                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
+
+                if (schedule.getShifts().isEmpty()) {
+                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                }
+
+                StringBuilder summary = new StringBuilder();
+                for (WorkScheduleShift shift : schedule.getShifts()) {
+                    if (summary.length() > 0) summary.append(", ");
+                    summary.append(shift.getShift().getName());
+
+                    // NEW: Include team count in summary
+                    int teamCount = shift.getTeams().size();
+                    if (teamCount > 1) {
+                        summary.append(" (").append(teamCount).append(" teams)");
+                    }
+                }
+
+                return OperationResult.success(summary.toString(), OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting work schedule summary", e);
+                return OperationResult.failure("Failed to get summary: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
         }, mExecutorService);
     }
 
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<LocalDate>> getPreviousWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
+    // ==================== STUB IMPLEMENTATIONS FOR COMPLETENESS ====================
+
+    @Override @NonNull public CompletableFuture<OperationResult<Void>> refreshWorkScheduleData() {
         return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement using QuattroDue bridge
-            return OperationResult.success(null, OperationResult.OperationType.READ);
+            mScheduleCache.clear();
+            mConfigCache.clear();
+            mSchemeCache.clear();
+            return OperationResult.success(null, OperationResult.OperationType.UPDATE);
         }, mExecutorService);
     }
 
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getWorkingDaysCount(@NonNull Team team,
-                                                                           @NonNull LocalDate startDate,
-                                                                           @NonNull LocalDate endDate) {
+    @Override @NonNull public CompletableFuture<OperationResult<Void>> clearCache() {
+        return refreshWorkScheduleData();
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Map<String, Object>>> getServiceStatus() {
         return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement using QuattroDue bridge
-            return OperationResult.success(0, OperationResult.OperationType.READ);
+            Map<String, Object> status = new HashMap<>();
+            status.put("cache_size", mScheduleCache.size());
+            status.put("ready", true);
+            status.put("calendar_services_ready", mCalendarServiceProvider.areCalendarServicesReady());
+            return OperationResult.success(status, OperationResult.OperationType.READ);
         }, mExecutorService);
     }
 
-    @NonNull
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getRestDaysCount(@NonNull Team team,
-                                                                        @NonNull LocalDate startDate,
-                                                                        @NonNull LocalDate endDate) {
+    @Override @NonNull public CompletableFuture<OperationResult<Map<String, Object>>> validateConfiguration() {
         return CompletableFuture.supplyAsync(() -> {
-            // TODO: Implement using QuattroDue bridge
-            return OperationResult.success(0, OperationResult.OperationType.READ);
+            Map<String, Object> validation = new HashMap<>();
+            validation.put("valid", true);
+            validation.put("errors", new ArrayList<>());
+            return OperationResult.success(validation, OperationResult.OperationType.READ);
         }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Boolean>> isRepositoryReady() {
+        return CompletableFuture.supplyAsync(() -> {
+            boolean ready = mCalendarServiceProvider.areCalendarServicesReady();
+            return OperationResult.success(ready, OperationResult.OperationType.READ);
+        }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Team>> findTeamByName(@NonNull String teamName) {
+        return mCalendarServiceProvider.getTeamRepository().getTeamByName(teamName)
+                .thenApply(team -> OperationResult.success(team, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error finding team by name " + teamName, throwable);
+                    return OperationResult.failure("Team not found: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Team>> findTeamById(@NonNull String teamId) {
+        return mCalendarServiceProvider.getTeamRepository().getTeamById(teamId)
+                .thenApply(team -> OperationResult.success(team, OperationResult.OperationType.READ))
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error finding team by ID " + teamId, throwable);
+                    return OperationResult.failure("Team not found: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ);
+                });
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<List<Team>>> createStandardTeams() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                List<Team> standardTeams = new ArrayList<>();
+
+                // Create standard QuattroDue teams A through I
+                String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+                for (int i = 0; i < teamNames.length; i++) {
+                    Team team = Team.builder(String.valueOf((long) (i + 1)))
+                            .name("Team " + teamNames[i])
+                            .displayName("Team " + teamNames[i])
+                            .description("QuattroDue Team " + teamNames[i])
+                            .active(true)
+                            .build();
+
+                    // Save each team using repository
+                    Team savedTeam = mCalendarServiceProvider.getTeamRepository().saveTeam(team).join();
+                    if (savedTeam != null) {
+                        standardTeams.add(savedTeam);
+                    }
+                }
+
+                return OperationResult.success(standardTeams, OperationResult.OperationType.CREATE);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating standard teams", e);
+                return OperationResult.failure("Failed to create standard teams: " + e.getMessage(),
+                        OperationResult.OperationType.CREATE);
+            }
+        }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<LocalDate>> getNextWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                for (int i = 1; i <= 30; i++) { // Check next 30 days
+                    LocalDate checkDate = fromDate.plusDays(i);
+                    if (isWorkingDayForTeam(checkDate, team).join().getData()) {
+                        return OperationResult.success(checkDate, OperationResult.OperationType.READ);
+                    }
+                }
+                return OperationResult.success(null, OperationResult.OperationType.READ);
+            } catch (Exception e) {
+                return OperationResult.failure("Error finding next working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<LocalDate>> getPreviousWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                for (int i = 1; i <= 30; i++) { // Check previous 30 days
+                    LocalDate checkDate = fromDate.minusDays(i);
+                    if (isWorkingDayForTeam(checkDate, team).join().getData()) {
+                        return OperationResult.success(checkDate, OperationResult.OperationType.READ);
+                    }
+                }
+                return OperationResult.success(null, OperationResult.OperationType.READ);
+            } catch (Exception e) {
+                return OperationResult.failure("Error finding previous working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Integer>> getWorkingDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                int count = 0;
+                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                    if (isWorkingDayForTeam(date, team).join().getData()) {
+                        count++;
+                    }
+                }
+                return OperationResult.success(count, OperationResult.OperationType.READ);
+            } catch (Exception e) {
+                return OperationResult.failure("Error counting working days: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    @Override @NonNull public CompletableFuture<OperationResult<Integer>> getRestDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                long totalDays = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+                int workingDays = getWorkingDaysCount(team, startDate, endDate).join().getData();
+                int restDays = (int) totalDays - workingDays;
+                return OperationResult.success(restDays, OperationResult.OperationType.READ);
+            } catch (Exception e) {
+                return OperationResult.failure("Error counting rest days: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    private String buildCacheKey(@NonNull LocalDate date, @Nullable Long userId) {
+        return "schedule_" + date + "_" + (userId != null ? userId : "default");
+    }
+
+    private WorkScheduleDay generateScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
+        try {
+            // Get user assignment
+            UserScheduleAssignment assignment = getUserAssignmentForDate(date, userId);
+            if (assignment == null) {
+                Log.w(TAG, "No user assignment found for date " + date + ", creating default assignment");
+                assignment = createDefaultQuattroDueAssignment(date, userId);
+            }
+
+            // Get domain engines from CalendarServiceProvider
+            SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
+
+            // Generate base schedule
+            WorkScheduleDay baseSchedule = generateBaseScheduleFromAssignment(date, assignment);
+
+            // Apply exceptions if user specified
+            if (userId != null) {
+                baseSchedule = applyShiftExceptionsToSchedule(baseSchedule, userId);
+            }
+
+            return baseSchedule;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error generating schedule for date " + date, e);
+            return WorkScheduleDay.builder(date).build();
+        }
+    }
+
+    @Nullable
+    private UserScheduleAssignment getUserAssignmentForDate(@NonNull LocalDate date, @Nullable Long userId) {
+        if (userId == null) return null;
+
+        try {
+            CompletableFuture<OperationResult<UserScheduleAssignment>> futureResult =
+                    mCalendarServiceProvider.getUserScheduleAssignmentRepository()
+                            .getActiveAssignmentForUser(userId, date);
+
+            OperationResult<UserScheduleAssignment> result = futureResult.join();
+
+            if (result.isSuccess()) {
+                return result.getData();
+            } else {
+                Log.w(TAG, "Failed to get user assignment: " + result.getErrorMessage());
+                return null;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting user assignment", e);
+            return null;
+        }
+    }
+
+    @NonNull
+    private UserScheduleAssignment createDefaultQuattroDueAssignment(@NonNull LocalDate date, @Nullable Long userId) {
+        return UserScheduleAssignment.createPermanentAssignment(
+                userId != null ? userId : 1L,
+                "1", // Default team ID
+                getDefaultRecurrenceRuleId(),
+                date
+        );
+    }
+
+    @NonNull
+    private String getDefaultRecurrenceRuleId() {
+        try {
+            List<RecurrenceRule> rules = mCalendarServiceProvider.getRecurrenceRuleRepository()
+                    .getRecurrenceRulesByFrequency(RecurrenceRule.Frequency.QUATTRODUE_CYCLE).join();
+
+            if (rules != null && !rules.isEmpty()) {
+                return rules.get(0).getId();
+            }
+
+            return "default-quattrodue-rule";
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting default recurrence rule", e);
+            return "default-quattrodue-rule";
+        }
+    }
+
+    @NonNull
+    private WorkScheduleDay generateBaseScheduleFromAssignment(@NonNull LocalDate date, @NonNull UserScheduleAssignment assignment) {
+        try {
+            // Get recurrence rule by ID from assignment
+            String recurrenceRuleId = assignment.getRecurrenceRuleId();
+            RecurrenceRule rule = mCalendarServiceProvider.getRecurrenceRuleRepository()
+                    .getRecurrenceRuleById(recurrenceRuleId).join();
+
+            if (rule == null) {
+                Log.w(TAG, "Recurrence rule not found: " + recurrenceRuleId);
+                return WorkScheduleDay.builder(date).build();
+            }
+
+            // Use RecurrenceCalculator to generate schedule
+            RecurrenceCalculator calculator = mCalendarServiceProvider.getRecurrenceCalculator();
+            return calculator.generateScheduleForDate(date, rule, assignment);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error generating base schedule", e);
+            return WorkScheduleDay.builder(date).build();
+        }
+    }
+
+    @NonNull
+    private WorkScheduleDay applyShiftExceptionsToSchedule(@NonNull WorkScheduleDay baseSchedule, @NonNull Long userId) {
+        try {
+            LocalDate date = baseSchedule.getDate();
+
+            // Get exceptions for user and date
+            CompletableFuture<OperationResult<List<ShiftException>>> futureExceptions =
+                    mCalendarServiceProvider.getShiftExceptionRepository()
+                            .getEffectiveExceptionsForUserOnDate(userId, date);
+
+            OperationResult<List<ShiftException>> exceptionsResult = futureExceptions.join();
+            List<ShiftException> exceptions = exceptionsResult.getData();
+
+            if (exceptions == null || exceptions.isEmpty()) {
+                return baseSchedule;
+            }
+
+            // Build user-team mappings
+            Map<Long, Team> userTeamMappings = buildUserTeamMappings(userId, date);
+
+            // Apply exceptions using ExceptionResolver
+            ExceptionResolver resolver = mCalendarServiceProvider.getExceptionResolver();
+            return resolver.applyExceptions(baseSchedule, exceptions, userTeamMappings, new HashMap<>());
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error applying shift exceptions", e);
+            return baseSchedule;
+        }
+    }
+
+    @NonNull
+    private Map<Long, Team> buildUserTeamMappings(@NonNull Long userId, @NonNull LocalDate date) {
+        Map<Long, Team> mappings = new HashMap<>();
+
+        try {
+            UserScheduleAssignment assignment = getUserAssignmentForDate(date, userId);
+            if (assignment != null) {
+                String teamId = assignment.getTeamId();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(teamId).join();
+                if (team != null) {
+                    mappings.put(userId, team);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error building user-team mappings", e);
+        }
+
+        return mappings;
     }
 
     /**
-     * Debug method to log conversion statistics.
-     * Useful for monitoring conversion success rates and identifying issues.
+     * NEW: Convert WorkScheduleDay to multi-team WorkScheduleEvents.
      */
-    private void logConversionStats(int totalDays, int successfulDays, int fallbackDays) {
-        if (totalDays > 0) {
-            double successRate = (double) successfulDays / totalDays * 100;
-            Log.i(TAG, String.format("Conversion Stats - Total: %d, Success: %d (%.1f%%), Fallbacks: %d",
-                    totalDays, successfulDays, successRate, fallbackDays));
+    @NonNull
+    private List<WorkScheduleEvent> convertScheduleDayToMultiTeamEvents(@NonNull WorkScheduleDay scheduleDay, @Nullable Long userId) {
+        List<WorkScheduleEvent> events = new ArrayList<>();
 
-            if (fallbackDays > 0) {
-                Log.w(TAG, "⚠️ " + fallbackDays + " days required fallback conversion - check data quality");
+        for (WorkScheduleShift shift : scheduleDay.getShifts()) {
+            // Create WorkScheduleEvent with multiple teams support
+            WorkScheduleEvent event = WorkScheduleEvent.builder(scheduleDay.getDate())
+                    .setShift(shift.getShift())
+                    .setTeams(shift.getTeams()) // Multi-team support
+                    .setUserId(userId)
+                    .setDescription(shift.getDescription())
+                    .setDayInCycle(calculateDayInCycle(scheduleDay.getDate()))
+                    .setPatternName("QuattroDue 4-2")
+                    .setGeneratedBy("WorkScheduleRepositoryImpl")
+                    .build();
+
+            events.add(event);
+        }
+
+        return events;
+    }
+
+    /**
+     * Calculate day in cycle for WorkScheduleEvent metadata.
+     */
+    private int calculateDayInCycle(@NonNull LocalDate date) {
+        try {
+            return getDayInCycle(date).join().getData();
+        } catch (Exception e) {
+            Log.w(TAG, "Error calculating day in cycle for " + date, e);
+            return 0;
+        }
+    }
+
+    // ==================== LIFECYCLE MANAGEMENT ====================
+
+    public void cleanup() {
+        try {
+            mScheduleCache.clear();
+            mConfigCache.clear();
+            mSchemeCache.clear();
+
+            if (mExecutorService != null && !mExecutorService.isShutdown()) {
+                mExecutorService.shutdown();
             }
+
+            Log.d(TAG, "WorkScheduleRepositoryImpl cleanup completed");
+        } catch (Exception e) {
+            Log.e(TAG, "Error during cleanup", e);
         }
     }
 }

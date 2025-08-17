@@ -8,6 +8,7 @@ import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Team - Domain model representing a work team in the schedule system.
@@ -558,6 +559,14 @@ public class Team extends LocalizableDomainModel {
 
     /**
      * Create a builder for constructing Team instances.
+     */
+    @NonNull
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Create a builder for constructing Team instances.
      *
      * @param id Team ID (required)
      * @return Builder instance
@@ -599,6 +608,11 @@ public class Team extends LocalizableDomainModel {
         private String description = "";
         private TeamType teamType;
         private boolean active = true;
+
+        private Builder() {
+            this.id = UUID.randomUUID().toString();
+            this.name = this.id; // Default name to ID
+        }
 
         private Builder(@NonNull String id) {
             this.id = Objects.requireNonNull(id, "Team ID cannot be null").trim();

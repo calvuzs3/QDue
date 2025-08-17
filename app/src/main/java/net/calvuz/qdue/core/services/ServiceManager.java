@@ -198,27 +198,30 @@ public class ServiceManager {
      * ✅ REFACTORED: Application-wide backup with OperationResult
      */
     public CompletableFuture<OperationResult<String>> triggerApplicationWideBackup() {
-        Log.d(TAG, "Triggering application-wide backup...");
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Triggering enhanced application-wide backup...");
 
-        if (mCoreBackupManager != null) {
-            return mCoreBackupManager.performFullApplicationBackup()
-                    .thenApply(result -> {
-                        if (result.isSuccess()) {
-                            Log.d(TAG, "Application-wide backup completed successfully");
-                        } else {
-                            Log.e(TAG, "Application-wide backup failed: " + result.getFormattedErrorMessage());
-                        }
-                        return result;
-                    })
-                    .exceptionally(throwable -> {
-                        Log.e(TAG, "Application-wide backup exception", throwable);
-                        return OperationResult.failure("Backup failed: " + throwable.getMessage(), OperationResult.OperationType.BACKUP);
-                    });
-        } else {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Backup manager not initialized", OperationResult.OperationType.BACKUP)
-            );
-        }
+                if (mCoreBackupManager != null) {
+                    OperationResult<String> result = mCoreBackupManager.createFullApplicationBackup();
+
+                    if (result.isSuccess()) {
+                        Log.d(TAG, "Enhanced application-wide backup completed successfully: " + result.getData());
+                    } else {
+                        Log.e(TAG, "Enhanced application-wide backup failed: " + result.getFormattedErrorMessage());
+                    }
+                    return result;
+                } else {
+                    Log.e(TAG, "Enhanced backup manager not initialized");
+                    return OperationResult.failure("Enhanced backup manager not initialized",
+                            OperationResult.OperationType.BACKUP);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Enhanced application-wide backup exception", e);
+                return OperationResult.failure("Enhanced backup failed: " + e.getMessage(),
+                        OperationResult.OperationType.BACKUP);
+            }
+        });
     }
 
     /**

@@ -5,13 +5,13 @@ import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 
 /**
  * Dependency injection interface for service providers
  */
 public interface ServiceProvider {
-
 
     /**
      * Get CalendarService instance for work schedule and calendar operations.
@@ -53,6 +53,39 @@ public interface ServiceProvider {
      */
     CoreBackupManager getCoreBackupManager();
 
+    /**
+     * Get CalendarServiceProvider for domain-specific calendar services.
+     *
+     * <p>Provides access to specialized calendar domain services including:</p>
+     * <ul>
+     *   <li><strong>Domain Repositories</strong>: TeamRepository, ShiftRepository, etc.</li>
+     *   <li><strong>Domain Engines</strong>: RecurrenceCalculator, ExceptionResolver, SchedulingEngine</li>
+     *   <li><strong>Use Cases</strong>: GenerateUserScheduleUseCase, GenerateTeamScheduleUseCase, etc.</li>
+     * </ul>
+     *
+     * <p>This provider is used internally by CalendarService and WorkScheduleRepository
+     * for complex calendar operations that require multiple specialized repositories.</p>
+     *
+     * @return CalendarServiceProvider instance with all domain services
+     * @throws RuntimeException if calendar services initialization fails
+     */
+    CalendarServiceProvider getCalendarServiceProvider();
+
+
+    /**
+     * Get WorkScheduleRepository instance.
+     *
+     * <p>High-level repository for work schedule operations that orchestrates
+     * multiple domain repositories through CalendarServiceProvider. This is
+     * the primary interface for work schedule generation and management.</p>
+     *
+     * <p><strong>Note:</strong> This method delegates to CalendarServiceProvider
+     * for proper dependency injection and avoids creating WorkScheduleRepository
+     * with wrong dependencies.</p>
+     *
+     * @return WorkScheduleRepository instance from CalendarServiceProvider
+     * @throws RuntimeException if WorkScheduleRepository cannot be created
+     */
     WorkScheduleRepository getWorkScheduleService();
 
     /**
