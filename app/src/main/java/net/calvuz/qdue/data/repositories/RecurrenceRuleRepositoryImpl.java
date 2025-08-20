@@ -526,8 +526,8 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
      */
     private void createStandardWeekdaysRule() {
         try {
-            String weekdaysName = mLocaleManager.getRecurrenceRuleName(mContext, "WEEKDAYS");
-            String weekdaysDesc = mLocaleManager.getRecurrenceRuleDescription(mContext, "WEEKDAYS");
+            String weekdaysName = LocaleManager.getRecurrenceRuleName(mContext, "WEEKDAYS");
+            String weekdaysDesc = LocaleManager.getRecurrenceRuleDescription(mContext, "WEEKDAYS");
 
             List<DayOfWeek> weekdays = List.of(
                     DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
@@ -626,6 +626,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
             return activeRules > 0;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "RecurrenceRuleStatistics{" +

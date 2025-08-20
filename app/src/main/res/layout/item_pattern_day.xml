@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_pattern_day.xml
+    Layout for individual pattern day items in the schedule pattern creation.
+
+    Features:
+    - Day number display
+    - Shift information or rest day indicator
+    - Edit and remove controls
+    - Visual distinction between work and rest days
+    - Material Design 3 styling
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container_pattern_day_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical">
+
+    <!-- Day Number Circle -->
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="16dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_day_number_circle" />
+
+        <TextView
+            android:id="@+id/tv_day_number"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?attr/colorOnPrimary"
+            android:textStyle="bold"
+            tools:text="1" />
+
+    </FrameLayout>
+
+    <!-- Content Area -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginEnd="12dp">
+
+        <!-- Work Day Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Shift Type Icon -->
+            <ImageView
+                android:id="@+id/iv_shift_type_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/content_desc_shift_type_icon"
+                tools:src="@drawable/ic_rounded_wb_sunny_24"
+                tools:visibility="visible" />
+
+            <!-- Shift Name -->
+            <TextView
+                android:id="@+id/tv_shift_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Morning Shift"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- Shift Timing -->
+        <TextView
+            android:id="@+id/tv_shift_timing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="06:00 - 14:00"
+            tools:visibility="visible" />
+
+        <!-- Rest Day Indicator -->
+        <TextView
+            android:id="@+id/tv_rest_day_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textStyle="italic"
+            android:drawableStart="@drawable/ic_rounded_hotel_24"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            tools:text="@string/pattern_day_rest"
+            tools:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Edit Button -->
+        <ImageButton
+            android:id="@+id/btn_edit_pattern_day"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_rounded_edit_24"
+            android:contentDescription="@string/content_desc_edit_pattern_day"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+        <!-- Remove Button -->
+        <ImageButton
+            android:id="@+id/btn_remove_pattern_day"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_rounded_close_24"
+            android:contentDescription="@string/content_desc_remove_pattern_day"
+            app:tint="?attr/colorError" />
+
+    </LinearLayout>
+
+    <!-- Divider Line (Hidden for last item) -->
+    <View
+        android:id="@+id/divider_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="?attr/colorOutlineVariant"
+        android:layout_gravity="bottom" />
+
+</LinearLayout>

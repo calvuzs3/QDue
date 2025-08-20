@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    strings_schedule_pattern.xml
+    Internationalization strings for user schedule pattern creation feature.
+
+    Scope: schedule_pattern
+    Feature: User Work Schedule Pattern Creation
+    Language: Italian (IT)
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+   ==================== ACTIVITY TITLES ====================
+   -->
+    <string name="title_create_schedule_pattern">Crea Schema Lavoro</string>
+    <string name="title_edit_schedule_pattern">Modifica Schema Lavoro</string>
+
+    <!--
+    ==================== LABELS AND HEADERS ====================
+    -->
+    <string name="label_pattern_start_date">Data di Inizio Schema</string>
+    <string name="label_pattern_length">Lunghezza Schema</string>
+    <string name="label_available_shifts">Turni Disponibili</string>
+    <string name="label_pattern_days">Giorni del Schema</string>
+
+    <!--
+    ==================== DESCRIPTIONS ====================
+    -->
+    <string name="description_select_shifts_to_add">Seleziona i turni da aggiungere al tuo schema di lavoro</string>
+    <string name="description_pattern_days_explanation">Il tuo schema si ripeterà ciclicamente a partire dalla data di inizio</string>
+
+    <!--
+    ==================== PLACEHOLDERS ====================
+    -->
+    <string name="placeholder_select_date">Seleziona una data</string>
+    <string name="placeholder_no_pattern_days">Nessun giorno aggiunto</string>
+
+    <!--
+    ==================== PATTERN INFORMATION ====================
+    -->
+    <string name="pattern_length_days">%d giorni</string>
+    <string name="pattern_day_number">Giorno %d</string>
+    <string name="pattern_day_rest">Riposo</string>
+    <string name="pattern_day_work">Lavoro</string>
+
+    <!--
+    ==================== SHIFT TYPES ====================
+    -->
+    <string name="shift_type_morning">Mattina</string>
+    <string name="shift_type_afternoon">Pomeriggio</string>
+    <string name="shift_type_night">Notte</string>
+    <string name="shift_type_rest">Riposo</string>
+    <string name="shift_type_unknown">Turno Sconosciuto</string>
+
+    <!--
+    ==================== MESSAGES ====================
+    -->
+    <string name="message_no_pattern_days">Il tuo schema è vuoto</string>
+    <string name="message_add_pattern_days_hint">Aggiungi giorni al tuo schema usando i turni disponibili sopra</string>
+    <string name="message_pattern_cleared">Schema cancellato</string>
+    <string name="message_pattern_saved">Schema salvato con successo</string>
+
+    <!--
+    ==================== ERROR MESSAGES ====================
+    -->
+    <string name="error_dependencies_not_ready">Errore: dipendenze non pronte</string>
+    <string name="error_no_shifts_available">Nessun turno disponibile</string>
+    <string name="error_loading_shifts">Errore nel caricamento dei turni</string>
+    <string name="error_invalid_start_date">Data di inizio non valida</string>
+    <string name="error_empty_pattern">Lo schema non può essere vuoto</string>
+    <string name="error_saving_pattern">Errore nel salvataggio dello schema</string>
+
+    <!--
+    ==================== DIALOGS ====================
+    -->
+    <string name="dialog_clear_pattern_title">Cancella Schema</string>
+    <string name="dialog_clear_pattern_message">Sei sicuro di voler cancellare tutto lo schema? Questa azione non può essere annullata.</string>
+
+    <string name="dialog_help_title">Aiuto</string>
+    <string name="dialog_help_schedule_pattern_message" tools:ignore="Typos">Crea il tuo schema di lavoro personalizzato:\n\n1. Seleziona la data di inizio\n2. Aggiungi i giorni nella sequenza desiderata\n3. Scegli i turni o i giorni di riposo\n4. Lo schema si ripeterà ciclicamente\n\nPuoi modificare lo schema in qualsiasi momento.</string>
+
+    <string name="dialog_edit_pattern_day_title">Modifica Giorno %d</string>
+
+    <!--
+    ==================== CONTENT DESCRIPTIONS ====================
+    -->
+    <string name="content_desc_pattern_icon">Icona schema lavoro</string>
+    <string name="content_desc_empty_pattern">Schema vuoto</string>
+    <string name="content_desc_add_pattern_day">Aggiungi giorno al schema</string>
+    <string name="content_desc_remove_pattern_day">Rimuovi giorno dal schema</string>
+    <string name="content_desc_edit_pattern_day">Modifica giorno del schema</string>
+
+    <!--
+    ==================== MENU ITEMS ====================
+    -->
+    <string name="menu_clear_pattern">Cancella Schema</string>
+    <string name="menu_help">Aiuto</string>
+
+    <!--
+    ==================== VALIDATION MESSAGES ====================
+    -->
+    <string name="validation_start_date_required">Seleziona una data di inizio</string>
+    <string name="validation_pattern_empty">Aggiungi almeno un giorno al schema</string>
+    <string name="validation_start_date_past">La data di inizio non può essere nel passato</string>
+
+    <!--
+    ==================== SHIFT SELECTION ====================
+    -->
+    <string name="shift_selection_rest_day">Giorno di Riposo</string>
+    <string name="shift_selection_work_day">Giorno Lavorativo</string>
+    <string name="shift_selection_choose_shift">Scegli Turno</string>
+
+    <!--
+    ==================== PATTERN PREVIEW ====================
+    -->
+    <string name="preview_title">Anteprima Schema</string>
+    <string name="preview_description">Ecco come apparirà il tuo schema nei prossimi giorni:</string>
+    <string name="preview_cycle_info">Schema di %d giorni che si ripete</string>
+
+    <!--
+    ==================== ADDITIONAL STRINGS FOR ADAPTERS ====================
+    -->
+    <string name="shift_timing_not_specified">Orario non specificato</string>
+    <string name="shift_timing_flexible">Orario flessibile</string>
+    <string name="shift_start_time_format">dalle %s</string>
+    <string name="shift_selection_rest_day_description">Nessun turno</string>
+
+    <!-- Content Descriptions for Adapters -->
+    <string name="content_desc_shift_type_icon">Icona tipo turno</string>
+    <string name="content_desc_shift_icon">Icona turno</string>
+    <string name="content_desc_rest_day_icon">Icona giorno di riposo</string>
+    <string name="content_desc_pattern_day_rest">Giorno %d - Riposo</string>
+    <string name="content_desc_pattern_day_work">Giorno %d - %s</string>
+    <string name="content_desc_select_shift">Seleziona turno %s, orario %s</string>
+    <string name="content_desc_select_rest_day">Seleziona giorno di riposo</string>
+
+    <!--
+    ==================== MENU RESOURCES ====================
+    -->
+    <string name="menu_action_clear_pattern">Cancella Schema</string>
+    <string name="menu_action_help">Aiuto</string>
+
+</resources>

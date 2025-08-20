@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    menu_schedule_pattern_creation.xml
+    Menu for user schedule pattern creation activity.
+
+    Features:
+    - Clear pattern action
+    - Help action
+    - Material Design 3 icons
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Clear Pattern -->
+    <item
+        android:id="@+id/action_clear_pattern"
+        android:title="@string/menu_action_clear_pattern"
+        android:icon="@drawable/ic_rounded_clear_all_24"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="100" />
+
+    <!-- Help -->
+    <item
+        android:id="@+id/action_help"
+        android:title="@string/menu_action_help"
+        android:icon="@drawable/ic_rounded_help_24"
+        app:showAsAction="never"
+        android:orderInCategory="200" />
+
+</menu>

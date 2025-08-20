@@ -361,9 +361,17 @@ public class RecurrenceRule extends LocalizableDomainModel {
             return false;
         }
 
-        // QuattroDue cycle logic would go here
-        // For now, simple modulo check
-        return daysBetween % cycleLength < (workDays != null ? workDays : 28);
+        // Calculate position in 18-day cycle (1-based)
+        int cyclePosition = (int) ((daysBetween % cycleLength) );
+        if (cyclePosition < 0) {
+            cyclePosition += cycleLength;
+        }
+
+        // QuattroDue 4-2 pattern: work days 1-4, 7-10, 13-16
+        return (cyclePosition >= 0 && cyclePosition <= 3) ||   // Work period 1
+                (cyclePosition >= 6 && cyclePosition <= 9) ||  // Work period 2
+                (cyclePosition >= 12 && cyclePosition <= 15);   // Work period 3
+        // Rest periods: 4-5, 10-11, 16-17 return FALSE
     }
 
     // ==================== DISPLAY METHODS ====================

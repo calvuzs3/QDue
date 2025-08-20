@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    colors_schedule_pattern.xml
+    Color resources for user schedule pattern creation feature.
+
+    Defines colors for different shift types and UI elements
+    following Material Design 3 color system.
+-->
+<resources>
+
+    <!--
+    ==================== SHIFT TYPE COLORS ====================
+    -->
+
+    <!-- Morning Shift Colors -->
+    <color name="shift_morning_color">#FFA726</color>
+    <color name="shift_morning_icon_color">#FF8F00</color>
+    <color name="shift_morning_accent_color">#FFB74D</color>
+    <color name="shift_morning_stroke_color">#FFB74D</color>
+
+    <!-- Afternoon Shift Colors -->
+    <color name="shift_afternoon_color">#FF7043</color>
+    <color name="shift_afternoon_icon_color">#E64A19</color>
+    <color name="shift_afternoon_accent_color">#FF8A65</color>
+    <color name="shift_afternoon_stroke_color">#FF8A65</color>
+
+    <!-- Night Shift Colors -->
+    <color name="shift_night_color">#5C6BC0</color>
+    <color name="shift_night_icon_color">#3F51B5</color>
+    <color name="shift_night_accent_color">#7986CB</color>
+    <color name="shift_night_stroke_color">#7986CB</color>
+
+    <!-- Default/Generic Shift Colors -->
+    <color name="shift_default_color">#66BB6A</color>
+    <color name="shift_default_icon_color">#4CAF50</color>
+    <color name="shift_default_accent_color">#81C784</color>
+    <color name="shift_default_stroke_color">#81C784</color>
+
+    <!--
+    ==================== REST DAY COLORS ====================
+    -->
+
+    <color name="rest_day_background">#F3E5F5</color>
+    <color name="rest_day_icon_color">#9C27B0</color>
+    <color name="rest_day_stroke_color">#CE93D8</color>
+    <color name="rest_day_text_color">#7B1FA2</color>
+    <color name="rest_day_text_secondary_color">#9C27B0</color>
+
+    <!--
+    ==================== PATTERN DAY COLORS ====================
+    -->
+
+    <!-- Work Day Colors -->
+    <color name="text_work_day">#1A1A1A</color>
+    <color name="text_work_day_primary">#2E2E2E</color>
+    <color name="text_work_day_secondary">#757575</color>
+    <color name="work_day_background">#FAFAFA</color>
+    <color name="work_day_border">#E0E0E0</color>
+
+    <!-- Rest Day Colors -->
+    <color name="text_rest_day">#7B1FA2</color>
+    <color name="text_rest_day_secondary">#9C27B0</color>
+    <color name="rest_day_item_background">#F8F5F9</color>
+    <color name="rest_day_border">#E1BEE7</color>
+
+</resources>

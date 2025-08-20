@@ -19,6 +19,7 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
+import net.calvuz.qdue.quattrodue.Preferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -390,19 +392,30 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 // Check cache first
                 LocalDate cached = mSchemeCache.get("scheme_start_date");
                 if (cached != null) {
+                    Log.v(TAG, "Returning cached scheme start date: " + cached);
                     return OperationResult.success(cached, OperationResult.OperationType.READ);
                 }
 
-                // Default scheme start date for QuattroDue
-                LocalDate schemeStart = LocalDate.of(2024, 1, 1);
+                // ✅ FIX: Read from preferences like the old QuattroDue system
+                // Use QUATTRODUE
+                LocalDate schemeStart = Preferences.getSchemeStartDate(mContext);
+                Log.d(TAG, "Read scheme start date from preferences: " + schemeStart);
+
+                // Cache the result
                 mSchemeCache.put("scheme_start_date", schemeStart);
 
                 return OperationResult.success(schemeStart, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                Log.e(TAG, "Error getting scheme start date", e);
-                return OperationResult.failure("Failed to get scheme start date: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting scheme start date from preferences", e);
+
+                // ✅ FALLBACK: Use hardcoded default as last resort
+                // Use HARDCODED
+                LocalDate fallbackDate = LocalDate.of(2018, 11, 7); // Default QuattroDue date
+                Log.w(TAG, "Using fallback scheme start date: " + fallbackDate);
+
+                mSchemeCache.put("scheme_start_date", fallbackDate);
+                return OperationResult.success(fallbackDate, OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -412,11 +425,18 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<Void>> updateSchemeStartDate(@NonNull LocalDate newStartDate) {
         return CompletableFuture.supplyAsync(() -> {
             try {
+                Log.d(TAG, "Updating scheme start date to: " + newStartDate);
+
+                // ✅ FIX: Save to preferences AND cache
+                Preferences.setSchemeStartDate(mContext, newStartDate);
                 mSchemeCache.put("scheme_start_date", newStartDate);
+
                 // Clear schedule cache since all calculations will change
                 mScheduleCache.clear();
+                Log.d(TAG, "Schedule cache cleared after scheme date update");
 
-                return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+                return OperationResult.success("Updating scheme start date to: " + newStartDate,
+                        OperationResult.OperationType.UPDATE);
 
             } catch (Exception e) {
                 Log.e(TAG, "Error updating scheme start date", e);
@@ -479,10 +499,15 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 LocalDate schemeStart = getSchemeStartDate().join().getData();
-                if (schemeStart == null) schemeStart = LocalDate.of(2024, 1, 1);
+                if (schemeStart == null)
+                    throw new RuntimeException("No Scheme StartDate");
 
+                // TODO: remove hardcode 18 day cycle length
                 long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
                 int dayInCycle = (int) (daysSinceStart % 18); // 18-day QuattroDue cycle
+
+                Log.v(TAG, "Day in cycle calculation: " + date + " = day " + dayInCycle +
+                        " (scheme start: " + schemeStart + ", days since: " + daysSinceStart + ")");
 
                 return OperationResult.success(dayInCycle, OperationResult.OperationType.READ);
 
@@ -500,14 +525,18 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 LocalDate schemeStart = getSchemeStartDate().join().getData();
-                if (schemeStart == null) schemeStart = LocalDate.of(2024, 1, 1);
+                if (schemeStart == null)
+                    throw new RuntimeException("No Scheme StartDate");
 
                 long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
+
+                Log.v(TAG, "Days from scheme start: " + date + " = " + daysSinceStart +
+                        " days (scheme start: " + schemeStart + ")");
 
                 return OperationResult.success(daysSinceStart, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                Log.e(TAG, "Error calculating days from scheme start", e);
+                Log.e(TAG, "Error calculating days from scheme start for date: " + date, e);
                 return OperationResult.failure("Failed to calculate days: " + e.getMessage(),
                         OperationResult.OperationType.READ);
             }
@@ -861,12 +890,43 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @NonNull
     private UserScheduleAssignment createDefaultQuattroDueAssignment(@NonNull LocalDate date, @Nullable Long userId) {
-        return UserScheduleAssignment.createPermanentAssignment(
-                userId != null ? userId : 1L,
-                "1", // Default team ID
-                getDefaultRecurrenceRuleId(),
-                date
-        );
+        try {
+            // ✅ FIX: Usa la data schema come startDate invece della data richiesta
+            LocalDate schemeStartDate = getSchemeStartDate().join().getData();
+            if (schemeStartDate == null)
+                throw new RuntimeException("No Scheme StartDate");
+
+            Log.d(TAG, "Creating default assignment with scheme start date: " + schemeStartDate +
+                    " for requested date: " + date);
+
+            return UserScheduleAssignment.createPermanentAssignment(
+                    userId != null ? userId : 1L,
+                    "A", // Team A invece di "1"
+                    getDefaultRecurrenceRuleId(),
+                    schemeStartDate  // ✅ USA SCHEME START DATE (passato) invece di date (futuro)
+            );
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create default assignment with scheme date, using fallback", e);
+
+            // ✅ FALLBACK: Crea assignment con status PENDING se validation fallisce
+            return UserScheduleAssignment.builder( )
+                    .userId(userId != null ? userId : 1L)
+                    .teamId("A")
+                    .recurrenceRuleId(getDefaultRecurrenceRuleId())
+                    .startDate(LocalDate.now().minusDays(1)) // Ieri (passato garantito)
+                    .status(UserScheduleAssignment.Status.PENDING) // ✅ PENDING invece di ACTIVE
+                    .priority(UserScheduleAssignment.Priority.NORMAL)
+                    .title("Assegnazione predefinita QuattroDue")
+                    .description("Assegnazione automatica per Team A")
+                    .build();
+        }
+//        return UserScheduleAssignment.createPermanentAssignment(
+//                userId != null ? userId : 1L,
+//                "1", // Default team ID
+//                getDefaultRecurrenceRuleId(),
+//                date
+//        );
     }
 
     @NonNull

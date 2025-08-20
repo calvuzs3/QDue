@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dimens_schedule_pattern.xml
+    Dimension resources for user schedule pattern creation feature.
+
+    Defines spacing, sizes and measurements following
+    Material Design 3 specifications.
+-->
+<resources>
+
+    <!--
+    ==================== CARD DIMENSIONS ====================
+    -->
+
+    <!-- Shift Selection Cards -->
+    <dimen name="shift_card_width">140dp</dimen>
+    <dimen name="shift_card_height">120dp</dimen>
+    <dimen name="shift_card_margin">8dp</dimen>
+    <dimen name="shift_card_padding">12dp</dimen>
+    <dimen name="shift_card_corner_radius">12dp</dimen>
+    <dimen name="shift_card_elevation">2dp</dimen>
+    <dimen name="shift_card_stroke_width">1dp</dimen>
+
+    <!-- Rest Day Cards -->
+    <dimen name="rest_card_stroke_width">2dp</dimen>
+
+    <!--
+    ==================== PATTERN DAY ITEM DIMENSIONS ====================
+    -->
+
+    <!-- Day Number Circle -->
+    <dimen name="day_number_circle_size">48dp</dimen>
+    <dimen name="day_number_circle_margin_end">16dp</dimen>
+
+    <!-- Pattern Item Layout -->
+    <dimen name="pattern_item_padding">16dp</dimen>
+    <dimen name="pattern_item_content_margin_end">12dp</dimen>
+    <dimen name="pattern_item_divider_margin_top">16dp</dimen>
+    <dimen name="pattern_item_divider_height">1dp</dimen>
+
+    <!-- Action Buttons -->
+    <dimen name="action_button_size">40dp</dimen>
+    <dimen name="action_button_margin_end">4dp</dimen>
+
+    <!--
+    ==================== ICON DIMENSIONS ====================
+    -->
+
+    <!-- Shift Icons -->
+    <dimen name="shift_icon_size">32dp</dimen>
+    <dimen name="shift_icon_margin_bottom">8dp</dimen>
+    <dimen name="shift_type_icon_size">24dp</dimen>
+    <dimen name="shift_type_icon_margin_end">8dp</dimen>
+
+    <!-- Color Indicator -->
+    <dimen name="color_indicator_height">3dp</dimen>
+
+    <!--
+    ==================== SPACING DIMENSIONS ====================
+    -->
+
+    <!-- Card Spacing -->
+    <dimen name="card_margin_bottom">16dp</dimen>
+
+    <!-- Content Spacing -->
+    <dimen name="section_spacing">16dp</dimen>
+    <dimen name="item_spacing">8dp</dimen>
+    <dimen name="text_spacing">4dp</dimen>
+
+    <!--
+    ==================== TEXT DIMENSIONS ====================
+    -->
+
+    <!-- Shift Card Text -->
+    <dimen name="shift_name_margin_bottom">4dp</dimen>
+    <dimen name="shift_timing_margin_bottom">8dp</dimen>
+
+    <!-- Pattern Item Text -->
+    <dimen name="shift_timing_margin_top">2dp</dimen>
+
+
+
+</resources>

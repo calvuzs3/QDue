@@ -97,7 +97,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     /**
      * Private constructor for singleton pattern.
      */
-    private ServiceProviderImpl(Context context) {
+    public ServiceProviderImpl(Context context) {
         mContext = context.getApplicationContext();
         Log.d(TAG, "ServiceProvider created with CalendarServiceProvider integration");
     }

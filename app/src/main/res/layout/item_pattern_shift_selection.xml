@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_shift_selection.xml
+    Layout for individual shift selection cards in horizontal RecyclerView.
+
+    Features:
+    - Compact card design for horizontal scrolling
+    - Shift icon with type-specific colors
+    - Shift name and timing information
+    - Color indicator for shift type
+    - Material Design 3 card styling
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_shift_selection"
+    android:layout_width="140dp"
+    android:layout_height="120dp"
+    android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardElevation="2dp"
+    app:cardCornerRadius="12dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:cardBackgroundColor="?attr/colorSurface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:gravity="center">
+
+        <!-- Shift Icon -->
+        <ImageView
+            android:id="@+id/iv_shift_icon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginBottom="8dp"
+            android:contentDescription="@string/content_desc_shift_icon"
+            tools:src="@drawable/ic_wb_sunny_24"
+            tools:tint="@color/shift_morning_icon_color" />
+
+        <!-- Shift Name -->
+        <TextView
+            android:id="@+id/tv_shift_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_marginBottom="4dp"
+            tools:text="Morning" />
+
+        <!-- Shift Timing -->
+        <TextView
+            android:id="@+id/tv_shift_timing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:gravity="center"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_marginBottom="8dp"
+            tools:text="06:00-14:00" />
+
+        <!-- Color Indicator Bar -->
+        <View
+            android:id="@+id/view_shift_color_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom"
+            tools:background="@color/shift_morning_accent_color" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

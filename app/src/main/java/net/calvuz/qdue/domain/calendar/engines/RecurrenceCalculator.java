@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
+import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,10 +103,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      * @param localizer DomainLocalizer for i18n support (can be null)
      */
     public RecurrenceCalculator(@Nullable DomainLocalizer localizer) {
-        super(localizer, LOCALIZATION_SCOPE);
+        super( localizer, LOCALIZATION_SCOPE );
         this.mGson = new Gson();
         this.mPatternCache = new HashMap<>();
-        logDebug("RecurrenceCalculator initialized as pure algorithm");
+        logDebug( "RecurrenceCalculator initialized as pure algorithm" );
     }
 
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
@@ -118,7 +120,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     @Override
     @NonNull
     public RecurrenceCalculator withLocalizer(@NonNull DomainLocalizer localizer) {
-        return new RecurrenceCalculator(localizer);
+        return new RecurrenceCalculator( localizer );
     }
 
     // ==================== CORE CALCULATION METHODS ====================
@@ -126,9 +128,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     /**
      * Generate complete work schedule for a date based on recurrence rule and assignment.
      *
-     * @param date Target date for schedule generation
+     * @param date           Target date for schedule generation
      * @param recurrenceRule Recurrence rule domain model
-     * @param assignment User schedule assignment domain model
+     * @param assignment     User schedule assignment domain model
      * @return WorkScheduleDay with all shifts for the date
      */
     @NonNull
@@ -136,38 +138,37 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                                    @NonNull RecurrenceRule recurrenceRule,
                                                    @NonNull UserScheduleAssignment assignment) {
         try {
-            logDebug("Generating schedule for date: " + date + ", rule: " + recurrenceRule.getId());
+            logDebug( "Generating schedule for date: " + date + ", rule: " + recurrenceRule.getId() );
 
-            WorkScheduleDay.Builder scheduleBuilder = WorkScheduleDay.builder(date);
+            WorkScheduleDay.Builder scheduleBuilder = WorkScheduleDay.builder( date );
 
             // Calculate shifts for this date
-            List<Shift> shifts = calculateShiftsForDate(date, recurrenceRule, assignment);
+            List<Shift> shifts = calculateShiftsForDate( date, recurrenceRule, assignment );
 
             // Add each shift to the schedule
             for (Shift shift : shifts) {
-                WorkScheduleShift workScheduleShift = createWorkScheduleShift(shift, assignment);
+                WorkScheduleShift workScheduleShift = createWorkScheduleShift( shift, assignment );
                 if (workScheduleShift != null) {
-                    scheduleBuilder.addShift(workScheduleShift);
+                    scheduleBuilder.addShift( workScheduleShift );
                 }
             }
 
             WorkScheduleDay schedule = scheduleBuilder.build();
-            logDebug("Generated schedule with " + schedule.getShifts().size() + " shifts");
+            logDebug( "Generated schedule with " + schedule.getShifts().size() + " shifts" );
 
             return schedule;
-
         } catch (Exception e) {
-            logError("Error generating schedule for date: " + date, e);
-            return WorkScheduleDay.builder(date).build(); // Return empty schedule on error
+            logError( "Error generating schedule for date: " + date, e );
+            return WorkScheduleDay.builder( date ).build(); // Return empty schedule on error
         }
     }
 
     /**
      * Calculate shifts for specific date based on recurrence rule and user assignment.
      *
-     * @param date Target date for calculation
+     * @param date           Target date for calculation
      * @param recurrenceRule Recurrence rule domain model
-     * @param assignment User schedule assignment domain model
+     * @param assignment     User schedule assignment domain model
      * @return List of Shift objects for the date
      */
     @NonNull
@@ -175,35 +176,34 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                               @NonNull RecurrenceRule recurrenceRule,
                                               @NonNull UserScheduleAssignment assignment) {
         try {
-            logDebug("Calculating shifts for date: " + date + ", rule: " + recurrenceRule.getId());
+            logDebug( "Calculating shifts for date: " + date + ", rule: " + recurrenceRule.getId() );
 
             // Parse recurrence pattern from domain model
-            RecurrencePattern pattern = parseRecurrencePattern(recurrenceRule);
+            RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
 
             // Get team offset from assignment (or 0 if not available)
-            int teamOffset = getTeamOffsetFromAssignment(assignment);
+            int teamOffset = getTeamOffsetFromAssignment( assignment );
 
             // Calculate cycle position for the date
-            int cyclePosition = calculateCyclePosition(date, assignment.getStartDate(),
-                    pattern, teamOffset);
+            int cyclePosition = calculateCyclePosition( date, assignment.getStartDate(),
+                    pattern, teamOffset );
 
             // Get shift assignments for this cycle position
-            List<ShiftAssignment> shiftAssignments = getShiftAssignmentsForCycleDay(pattern, cyclePosition);
+            List<ShiftAssignment> shiftAssignments = getShiftAssignmentsForCycleDay( pattern, cyclePosition );
 
             // Convert to Shift domain objects
             List<Shift> shifts = new ArrayList<>();
             for (ShiftAssignment shiftAssignment : shiftAssignments) {
-                Shift shift = createShiftFromAssignment(shiftAssignment, date);
+                Shift shift = createShiftFromAssignment( shiftAssignment, date );
                 if (shift != null) {
-                    shifts.add(shift);
+                    shifts.add( shift );
                 }
             }
 
-            logDebug("Generated " + shifts.size() + " shifts for date: " + date);
+            logDebug( "Generated " + shifts.size() + " shifts for date: " + date );
             return shifts;
-
         } catch (Exception e) {
-            logError("Error calculating shifts for date: " + date, e);
+            logError( "Error calculating shifts for date: " + date, e );
             return new ArrayList<>(); // Return empty list on error
         }
     }
@@ -211,10 +211,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     /**
      * Calculate shifts for date range with batch optimization.
      *
-     * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
+     * @param startDate      Start date (inclusive)
+     * @param endDate        End date (inclusive)
      * @param recurrenceRule Recurrence rule domain model
-     * @param assignment User schedule assignment domain model
+     * @param assignment     User schedule assignment domain model
      * @return Map of dates to List of Shift objects
      */
     @NonNull
@@ -226,24 +226,23 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         Map<LocalDate, List<Shift>> shiftsMap = new HashMap<>();
 
         try {
-            logDebug("Calculating shifts for date range: " + startDate + " to " + endDate);
+            logDebug( "Calculating shifts for date range: " + startDate + " to " + endDate );
 
             // Parse pattern once for efficiency
-            RecurrencePattern pattern = parseRecurrencePattern(recurrenceRule);
-            int teamOffset = getTeamOffsetFromAssignment(assignment);
+            RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
+            int teamOffset = getTeamOffsetFromAssignment( assignment );
 
             // Process each date in range
             LocalDate currentDate = startDate;
-            while (!currentDate.isAfter(endDate)) {
-                List<Shift> shifts = calculateShiftsForDate(currentDate, recurrenceRule, assignment);
-                shiftsMap.put(currentDate, shifts);
-                currentDate = currentDate.plusDays(1);
+            while (!currentDate.isAfter( endDate )) {
+                List<Shift> shifts = calculateShiftsForDate( currentDate, recurrenceRule, assignment );
+                shiftsMap.put( currentDate, shifts );
+                currentDate = currentDate.plusDays( 1 );
             }
 
-            logDebug("Generated shifts for " + shiftsMap.size() + " dates");
-
+            logDebug( "Generated shifts for " + shiftsMap.size() + " dates" );
         } catch (Exception e) {
-            logError("Error calculating shifts for date range", e);
+            logError( "Error calculating shifts for date range", e );
         }
 
         return shiftsMap;
@@ -258,9 +257,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     @NonNull
     public ValidationResult validateRecurrenceRule(@NonNull RecurrenceRule recurrenceRule) {
         try {
-            logDebug("Validating recurrence rule: " + recurrenceRule.getId());
+            logDebug( "Validating recurrence rule: " + recurrenceRule.getId() );
 
-            RecurrencePattern pattern = parseRecurrencePattern(recurrenceRule);
+            RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
 
             // Basic validation checks
             ValidationResult result = new ValidationResult();
@@ -269,32 +268,31 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             // Check cycle length
             if (pattern.cycleLength <= 0 || pattern.cycleLength > 365) {
                 result.isValid = false;
-                result.errorMessage = localize("validation.invalid_cycle_length",
-                        "Invalid cycle length: " + pattern.cycleLength);
+                result.errorMessage = localize( "validation.invalid_cycle_length",
+                        "Invalid cycle length: " + pattern.cycleLength );
                 return result;
             }
 
             // Check shift sequence coverage
-            if (!validateShiftSequenceCoverage(pattern)) {
+            if (!validateShiftSequenceCoverage( pattern )) {
                 result.isValid = false;
-                result.errorMessage = localize("validation.incomplete_shift_coverage",
-                        "Shift sequence does not cover all cycle days");
+                result.errorMessage = localize( "validation.incomplete_shift_coverage",
+                        "Shift sequence does not cover all cycle days" );
                 return result;
             }
 
             // Check for gaps or overlaps
-            ValidationIssues issues = checkForGapsAndOverlaps(pattern);
+            ValidationIssues issues = checkForGapsAndOverlaps( pattern );
             if (issues.hasIssues()) {
                 result.isValid = false;
                 result.errorMessage = issues.getDescription();
                 return result;
             }
 
-            logDebug("Recurrence rule validation passed");
+            logDebug( "Recurrence rule validation passed" );
             return result;
-
         } catch (Exception e) {
-            logError("Error validating recurrence rule", e);
+            logError( "Error validating recurrence rule", e );
             ValidationResult result = new ValidationResult();
             result.isValid = false;
             result.errorMessage = "Validation error: " + e.getMessage();
@@ -308,7 +306,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         String cacheKey = recurrenceRule.getId();
 
         // Check cache first
-        RecurrencePattern cachedPattern = mPatternCache.get(cacheKey);
+        RecurrencePattern cachedPattern = mPatternCache.get( cacheKey );
         if (cachedPattern != null) {
             return cachedPattern;
         }
@@ -323,18 +321,17 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             pattern.isContinuous = false; // Could be derived from frequency type
 
             // Create shift sequence based on frequency
-            pattern.shiftSequence = createShiftSequenceFromRule(recurrenceRule);
+            pattern.shiftSequence = createShiftSequenceFromRule( recurrenceRule );
 
             // Cache the parsed pattern
-            mPatternCache.put(cacheKey, pattern);
+            mPatternCache.put( cacheKey, pattern );
 
-            logDebug("Parsed recurrence pattern: " + pattern.frequency +
-                    ", cycle: " + pattern.cycleLength);
+            logDebug( "Parsed recurrence pattern: " + pattern.frequency +
+                    ", cycle: " + pattern.cycleLength );
 
             return pattern;
-
         } catch (Exception e) {
-            logError("Error parsing recurrence pattern", e);
+            logError( "Error parsing recurrence pattern", e );
             return createDefaultPattern();
         }
     }
@@ -351,10 +348,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 sequences = createDailySequence();
                 break;
             case WEEKLY:
-                sequences = createWeeklySequence(recurrenceRule.getByDay());
+                sequences = createWeeklySequence( recurrenceRule.getByDay() );
                 break;
             case MONTHLY:
-                sequences = createMonthlySequence(recurrenceRule);
+                sequences = createMonthlySequence( recurrenceRule );
                 break;
             default:
                 sequences = createDailySequence(); // Fallback
@@ -367,46 +364,92 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     private List<ShiftSequence> createQuattroDueSequence() {
         List<ShiftSequence> sequences = new ArrayList<>();
 
-        // Standard 18-day QuattroDue cycle
-        ShiftSequence morningSeq = new ShiftSequence();
-        morningSeq.shiftType = "morning";
-        morningSeq.days = List.of(1, 2, 3, 4);
-        morningSeq.startTime = "06:00";
-        morningSeq.endTime = "14:00";
-        morningSeq.duration = 480;
-        sequences.add(morningSeq);
+        // QuattroDue 4-2 Pattern: 18-day cycle
+        // Work periods: 1-4, 7-10, 13-16
 
-        ShiftSequence restSeq1 = new ShiftSequence();
-        restSeq1.shiftType = "rest";
-        restSeq1.days = List.of(5, 6);
-        sequences.add(restSeq1);
+        // WORK PERIOD 1: Days 1-4 (Morning shift)
+        ShiftSequence work1 = new ShiftSequence();
+        work1.shiftType = "morning";
+        work1.days = Arrays.asList( 0, 1, 2, 3 );
+        work1.startTime = LocalTime.of( 5, 0 ).toString();
+        work1.endTime = LocalTime.of( 13, 0 ).toString();
+        work1.duration = 8 * 60;
+        sequences.add( work1 );
 
-        ShiftSequence afternoonSeq = new ShiftSequence();
-        afternoonSeq.shiftType = "afternoon";
-        afternoonSeq.days = List.of(7, 8, 9, 10);
-        afternoonSeq.startTime = "14:00";
-        afternoonSeq.endTime = "22:00";
-        afternoonSeq.duration = 480;
-        sequences.add(afternoonSeq);
+        ShiftSequence rest1 = new ShiftSequence();
+        rest1.shiftType = "rest";
+        rest1.days = Arrays.asList( 4, 5 );
+        sequences.add( rest1 );
 
-        ShiftSequence restSeq2 = new ShiftSequence();
-        restSeq2.shiftType = "rest";
-        restSeq2.days = List.of(11, 12);
-        sequences.add(restSeq2);
+        // WORK PERIOD 2: Days 7-10 (Night shift)
+        ShiftSequence work2 = new ShiftSequence();
+        work2.shiftType = "night";
+        work2.days = Arrays.asList( 6, 7, 8, 9 );
+        work2.startTime = LocalTime.of( 21, 0 ).toString();
+        work2.endTime = LocalTime.of( 5, 0 ).toString();
+        work2.duration = 8 * 60;
+        sequences.add( work2 );
 
-        ShiftSequence nightSeq = new ShiftSequence();
-        nightSeq.shiftType = "night";
-        nightSeq.days = List.of(13, 14, 15, 16);
-        nightSeq.startTime = "22:00";
-        nightSeq.endTime = "06:00";
-        nightSeq.duration = 480;
-        sequences.add(nightSeq);
+        ShiftSequence rest2 = new ShiftSequence();
+        rest2.shiftType = "rest";
+        rest2.days = List.of( 10, 11 );
+        sequences.add( rest2 );
 
-        ShiftSequence restSeq3 = new ShiftSequence();
-        restSeq3.shiftType = "rest";
-        restSeq3.days = List.of(17, 18);
-        sequences.add(restSeq3);
+        // WORK PERIOD 3: Days 13-16 (Afternoon shift)
+        ShiftSequence work3 = new ShiftSequence();
+        work3.shiftType = "afternoon";
+        work3.days = Arrays.asList( 12, 13, 14, 15 );
+        work3.startTime = LocalTime.of( 13, 0 ).toString();
+        work3.endTime = LocalTime.of( 21, 0 ).toString();
+        work3.duration = 8 * 60;
+        sequences.add( work3 );
 
+        ShiftSequence rest3 = new ShiftSequence();
+        rest3.shiftType = "rest";
+        rest3.days = List.of( 16, 17 );
+        sequences.add( rest3 );
+
+//        // Standard 18-day QuattroDue cycle
+//        ShiftSequence morningSeq = new ShiftSequence();
+//        morningSeq.shiftType = "morning";
+//        morningSeq.days = List.of(1, 2, 3, 4);
+//        morningSeq.startTime = "06:00";
+//        morningSeq.endTime = "14:00";
+//        morningSeq.duration = 480;
+//        sequences.add(morningSeq);
+//
+//        ShiftSequence restSeq1 = new ShiftSequence();
+//        restSeq1.shiftType = "rest";
+//        restSeq1.days = List.of(5, 6);
+//        sequences.add(restSeq1);
+//
+//        ShiftSequence afternoonSeq = new ShiftSequence();
+//        afternoonSeq.shiftType = "afternoon";
+//        afternoonSeq.days = List.of(7, 8, 9, 10);
+//        afternoonSeq.startTime = "14:00";
+//        afternoonSeq.endTime = "22:00";
+//        afternoonSeq.duration = 480;
+//        sequences.add(afternoonSeq);
+//
+//        ShiftSequence restSeq2 = new ShiftSequence();
+//        restSeq2.shiftType = "rest";
+//        restSeq2.days = List.of(11, 12);
+//        sequences.add(restSeq2);
+//
+//        ShiftSequence nightSeq = new ShiftSequence();
+//        nightSeq.shiftType = "night";
+//        nightSeq.days = List.of(13, 14, 15, 16);
+//        nightSeq.startTime = "22:00";
+//        nightSeq.endTime = "06:00";
+//        nightSeq.duration = 480;
+//        sequences.add(nightSeq);
+//
+//        ShiftSequence restSeq3 = new ShiftSequence();
+//        restSeq3.shiftType = "rest";
+//        restSeq3.days = List.of(17, 18);
+//        sequences.add(restSeq3);
+
+        logDebug( "Created QuattroDue sequence with " + sequences.size() + " work periods" );
         return sequences;
     }
 
@@ -415,11 +458,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 
         ShiftSequence dailySeq = new ShiftSequence();
         dailySeq.shiftType = "morning";
-        dailySeq.days = List.of(1);
+        dailySeq.days = List.of( 1 );
         dailySeq.startTime = "08:00";
-        dailySeq.endTime = "16:00";
-        dailySeq.duration = 480;
-        sequences.add(dailySeq);
+        dailySeq.endTime = "17:00";
+        dailySeq.duration = 8;
+        sequences.add( dailySeq );
 
         return sequences;
     }
@@ -432,13 +475,13 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             weeklySeq.shiftType = "morning";
             // Convert day names to day numbers (simplified)
             weeklySeq.days = byDay.stream()
-                    .map(this::dayOfWeekToNumber)
-                    .filter(day -> day > 0)
-                    .collect(Collectors.toList());
+                    .map( this::dayOfWeekToNumber )
+                    .filter( day -> day > 0 )
+                    .collect( Collectors.toList() );
             weeklySeq.startTime = "08:00";
-            weeklySeq.endTime = "16:00";
-            weeklySeq.duration = 480;
-            sequences.add(weeklySeq);
+            weeklySeq.endTime = "17:00";
+            weeklySeq.duration = 8;
+            sequences.add( weeklySeq );
         }
 
         return sequences;
@@ -450,25 +493,33 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         // Simple monthly pattern - work on specific day of month
         ShiftSequence monthlySeq = new ShiftSequence();
         monthlySeq.shiftType = "morning";
-        monthlySeq.days = List.of(1); // First day of cycle
+        monthlySeq.days = List.of( 1 ); // First day of cycle
         monthlySeq.startTime = "08:00";
-        monthlySeq.endTime = "16:00";
-        monthlySeq.duration = 480;
-        sequences.add(monthlySeq);
+        monthlySeq.endTime = "17:00";
+        monthlySeq.duration = 8;
+        sequences.add( monthlySeq );
 
         return sequences;
     }
 
     private int dayOfWeekToNumber(DayOfWeek dayOfWeek) {
         switch (dayOfWeek) {
-            case MONDAY: return 1;
-            case TUESDAY: return 2;
-            case WEDNESDAY: return 3;
-            case THURSDAY: return 4;
-            case FRIDAY: return 5;
-            case SATURDAY: return 6;
-            case SUNDAY: return 7;
-            default: return 1;
+            case MONDAY:
+                return 1;
+            case TUESDAY:
+                return 2;
+            case WEDNESDAY:
+                return 3;
+            case THURSDAY:
+                return 4;
+            case FRIDAY:
+                return 5;
+            case SATURDAY:
+                return 6;
+            case SUNDAY:
+                return 7;
+            default:
+                return 1;
         }
     }
 
@@ -477,7 +528,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     private int calculateCyclePosition(@NonNull LocalDate date, @NonNull LocalDate startDate,
                                        @NonNull RecurrencePattern pattern, int teamOffset) {
 
-        long daysSinceStart = ChronoUnit.DAYS.between(startDate, date);
+        long daysSinceStart = ChronoUnit.DAYS.between( startDate, date );
 
         // Apply team offset (for multi-team coordination)
         daysSinceStart += teamOffset;
@@ -490,8 +541,8 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             cyclePosition += pattern.cycleLength;
         }
 
-        logVerbose("Cycle position for " + date + ": " + cyclePosition +
-                " (days since start: " + daysSinceStart + ", offset: " + teamOffset + ")");
+        logVerbose( "Cycle position for " + date + ": " + cyclePosition +
+                " (days since start: " + daysSinceStart + ", offset: " + teamOffset + ")" );
 
         return cyclePosition;
     }
@@ -501,7 +552,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         List<ShiftAssignment> assignments = new ArrayList<>();
 
         for (ShiftSequence sequence : pattern.shiftSequence) {
-            if (sequence.days.contains(cycleDay)) {
+            if (sequence.days.contains( cycleDay )) {
                 ShiftAssignment assignment = new ShiftAssignment();
                 assignment.shiftType = sequence.shiftType;
                 assignment.startTime = sequence.startTime;
@@ -509,7 +560,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 assignment.duration = sequence.duration;
                 assignment.cycleDay = cycleDay;
 
-                assignments.add(assignment);
+                assignments.add( assignment );
             }
         }
 
@@ -521,50 +572,60 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     private WorkScheduleShift createWorkScheduleShift(@NonNull Shift shift,
                                                       @NonNull UserScheduleAssignment assignment) {
         try {
-            return WorkScheduleShift.builder()
-                    .shift(shift)
-                    .startTime(shift.getStartTime())
-                    .endTime(shift.getEndTime())
+            WorkScheduleShift.Builder builder = WorkScheduleShift.builder()
+                    .shift( shift )
+                    .startTime( shift.getStartTime() )
+                    .endTime( shift.getEndTime() )
+                    .description( "QuattroDue shift for team " + assignment.getTeamId() );
+
+            // CRITICAL: Add user's team to the shift
+            Team userTeam = Team.builder( assignment.getTeamId() )
+                    .name( assignment.getTeamName() != null ?
+                            assignment.getTeamName() : assignment.getTeamId() )
                     .build();
+
+            builder.addTeam( userTeam );
+            logDebug( "Added team " + userTeam.getName() + " to shift " + shift.getName() );
+
+            return builder.build();
         } catch (Exception e) {
-            logError("Error creating WorkScheduleShift", e);
+            logError( "Error creating WorkScheduleShift", e );
             return null;
         }
     }
 
     private Shift createShiftFromAssignment(@NonNull ShiftAssignment assignment, @NonNull LocalDate date) {
-        if ("rest".equals(assignment.shiftType)) {
+        if ("rest".equals( assignment.shiftType )) {
             return null; // No shift for rest days
         }
 
         try {
             // Parse timing information
-            LocalTime startTime = parseTime(assignment.startTime);
-            LocalTime endTime = parseTime(assignment.endTime);
+            LocalTime startTime = parseTime( assignment.startTime );
+            LocalTime endTime = parseTime( assignment.endTime );
 
             // Create Shift domain object
             return Shift.builder( assignment.shiftType )
-                    .setStartTime(startTime)
-                    .setEndTime(endTime)
-                    .setBreakTimeDuration( Duration.ZERO)
+                    .setStartTime( startTime )
+                    .setEndTime( endTime )
+                    .setBreakTimeDuration( Duration.ZERO )
                     .build();
-
         } catch (Exception e) {
-            logError("Error creating shift from assignment", e);
+            logError( "Error creating shift from assignment", e );
             return null;
         }
     }
 
     private LocalTime parseTime(String timeString) {
         if (timeString == null || timeString.trim().isEmpty()) {
-            return LocalTime.of(8, 0); // Default time
+            return LocalTime.of( 8, 0 ); // Default time
         }
 
         try {
-            return LocalTime.parse(timeString);
+            return LocalTime.parse( timeString );
         } catch (Exception e) {
-            logWarning("Error parsing time: " + timeString + ", using default");
-            return LocalTime.of(8, 0);
+            logWarning( "Error parsing time: " + timeString + ", using default" );
+            return LocalTime.of( 8, 0 );
         }
     }
 
@@ -585,10 +646,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             // In practice, this would be a proper field or calculated value
             String teamId = assignment.getTeamId();
             if (teamId != null) {
-                return Math.abs(teamId.hashCode()) % 6; // 0-5 days offset
+                return Math.abs( teamId.hashCode() ) % 6; // 0-5 days offset
             }
         } catch (Exception e) {
-            logWarning("Error calculating team offset, using 0");
+            logWarning( "Error calculating team offset, using 0" );
         }
         return 0;
     }
@@ -609,7 +670,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         // Check if all days are covered
         for (int i = 1; i <= pattern.cycleLength; i++) {
             if (!covered[i]) {
-                logWarning("Cycle day " + i + " is not covered by any shift sequence");
+                logWarning( "Cycle day " + i + " is not covered by any shift sequence" );
                 return false;
             }
         }
@@ -625,7 +686,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         // Build map of day assignments
         for (ShiftSequence sequence : pattern.shiftSequence) {
             for (int day : sequence.days) {
-                dayAssignments.computeIfAbsent(day, k -> new ArrayList<>()).add(sequence.shiftType);
+                dayAssignments.computeIfAbsent( day, k -> new ArrayList<>() ).add( sequence.shiftType );
             }
         }
 
@@ -635,11 +696,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             List<String> assignments = entry.getValue();
 
             long workingAssignments = assignments.stream()
-                    .filter(type -> !"rest".equals(type))
+                    .filter( type -> !"rest".equals( type ) )
                     .count();
 
             if (workingAssignments > 1) {
-                issues.addOverlap(day, assignments);
+                issues.addOverlap( day, assignments );
             }
         }
 
@@ -663,7 +724,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      */
     public void clearPatternCache() {
         mPatternCache.clear();
-        logDebug("Pattern cache cleared");
+        logDebug( "Pattern cache cleared" );
     }
 
     /**
@@ -672,8 +733,8 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      * @param ruleId Recurrence rule ID
      */
     public void clearPatternCache(@NonNull String ruleId) {
-        mPatternCache.remove(ruleId);
-        logDebug("Pattern cache cleared for rule: " + ruleId);
+        mPatternCache.remove( ruleId );
+        logDebug( "Pattern cache cleared for rule: " + ruleId );
     }
 
     // ==================== FACTORY METHODS ====================
@@ -683,7 +744,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      */
     @NonNull
     public static RecurrenceCalculator create() {
-        return new RecurrenceCalculator(null);
+        return new RecurrenceCalculator( null );
     }
 
     /**
@@ -691,7 +752,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      */
     @NonNull
     public static RecurrenceCalculator create(@NonNull DomainLocalizer localizer) {
-        return new RecurrenceCalculator(localizer);
+        return new RecurrenceCalculator( localizer );
     }
 
     // ==================== INNER CLASSES ====================
@@ -732,11 +793,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         private final List<String> gaps = new ArrayList<>();
 
         public void addOverlap(int day, List<String> assignments) {
-            overlaps.add("Day " + day + ": " + String.join(", ", assignments));
+            overlaps.add( "Day " + day + ": " + String.join( ", ", assignments ) );
         }
 
         public void addGap(int day) {
-            gaps.add("Day " + day + ": no assignment");
+            gaps.add( "Day " + day + ": no assignment" );
         }
 
         public boolean hasIssues() {
@@ -746,11 +807,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         public String getDescription() {
             StringBuilder sb = new StringBuilder();
             if (!overlaps.isEmpty()) {
-                sb.append("Overlaps: ").append(String.join("; ", overlaps));
+                sb.append( "Overlaps: " ).append( String.join( "; ", overlaps ) );
             }
             if (!gaps.isEmpty()) {
-                if (sb.length() > 0) sb.append(". ");
-                sb.append("Gaps: ").append(String.join("; ", gaps));
+                if (sb.length() > 0) sb.append( ". " );
+                sb.append( "Gaps: " ).append( String.join( "; ", gaps ) );
             }
             return sb.toString();
         }

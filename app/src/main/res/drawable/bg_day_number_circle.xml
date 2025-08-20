@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bg_day_number_circle.xml
+    Background drawable for day number circle in pattern items.
+
+    Features:
+    - Perfect circle shape
+    - Primary color background
+    - Used for day numbering in pattern
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <solid android:color="?attr/colorPrimary" />
+
+    <size
+        android:width="48dp"
+        android:height="48dp" />
+
+</shape>

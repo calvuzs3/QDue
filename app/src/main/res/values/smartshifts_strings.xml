@@ -14,12 +14,6 @@
     <string name="nav_contacts">Contatti</string>
     <string name="nav_settings">Impostazioni</string>
 
-    <!-- ===== SHIFT TYPES ===== -->
-    <string name="shift_type_morning">Mattina</string>
-    <string name="shift_type_afternoon">Pomeriggio</string>
-    <string name="shift_type_night">Notte</string>
-    <string name="shift_type_rest">Riposo</string>
-
     <!-- ===== SHIFT PATTERNS ===== -->
     <string name="pattern_continuous_4_2_name">Ciclo Continuo 4–2</string>
     <string name="pattern_continuous_4_2_desc">4 mattine, 2 riposi, 4 notti, 2 riposi, 4 pomeriggi, 2 riposi</string>
@@ -563,6 +557,8 @@
     <string name="common_yesterday">ieri</string>
 
     <!--    FINE NUOVO SISTEMA-->
+
+
 
 
 

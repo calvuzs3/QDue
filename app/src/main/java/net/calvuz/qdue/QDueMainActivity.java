@@ -23,6 +23,16 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
+import net.calvuz.qdue.diagnosis.DiagnosticTestRunner;
+import net.calvuz.qdue.diagnosis.FixedQDSchemeAnalysis;
+import net.calvuz.qdue.diagnosis.PatternAnalysisTest;
+import net.calvuz.qdue.diagnosis.QuattroDueImplementationFix;
+import net.calvuz.qdue.diagnosis.QuattroDuePatternDiagnostics;
+import net.calvuz.qdue.diagnosis.QuattroDuePatternVerification;
+import net.calvuz.qdue.diagnosis.TeamAssignmentDiagnostics;
+import net.calvuz.qdue.diagnosis.TestWorkDay;
+import net.calvuz.qdue.diagnosis.UIDataFlowTest;
+import net.calvuz.qdue.diagnosis.WorkScheduleDiagnosticTestSuite;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
@@ -642,12 +652,12 @@ public class QDueMainActivity extends BaseActivity {
                     fragment.onEventsChanged( changeType, eventCount );
                     activeCount++;
                     Log.d( TAG, MessageFormat.format( "Refreshed active fragment: {0}",
-                             fragment.getFragmentDescription() ) );
+                            fragment.getFragmentDescription() ) );
                 } else {
                     // Fragment is inactive - will refresh when visible
                     inactiveCount++;
                     Log.d( TAG, MessageFormat.format( "Skipped inactive fragment: {0}",
-                             fragment.getFragmentDescription() ) );
+                            fragment.getFragmentDescription() ) );
                 }
             } catch (Exception e) {
                 errorCount++;
@@ -715,7 +725,7 @@ public class QDueMainActivity extends BaseActivity {
             for (Fragment fragment : allFragments) {
                 if (fragment.getChildFragmentManager() != null) {
                     List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
-                    Log.d( TAG, MessageFormat.format(  "Checking {0} child fragments of {1}",
+                    Log.d( TAG, MessageFormat.format( "Checking {0} child fragments of {1}",
                             childFragments.size(), fragment.getClass().getSimpleName() ) );
 
                     for (Fragment childFragment : childFragments) {
@@ -764,7 +774,7 @@ public class QDueMainActivity extends BaseActivity {
                 fragment.onForceEventsRefresh();
                 successCount++;
                 Log.d( TAG, MessageFormat.format( "Force refreshed fragment: {0}",
-                         fragment.getFragmentDescription() ) );
+                        fragment.getFragmentDescription() ) );
             } catch (Exception e) {
                 errorCount++;
                 Log.e( TAG, MessageFormat.format( "Error force refreshing fragment: {0}",
@@ -1085,7 +1095,7 @@ public class QDueMainActivity extends BaseActivity {
                 return binding.getRoot()
                         .findViewById( R.id.appbar );
             } catch (Exception e) {
-                Log.e(TAG, "AppBar not in binding, try activity findViewById");
+                Log.e( TAG, "AppBar not in binding, try activity findViewById" );
             }
         }
 
@@ -1103,7 +1113,7 @@ public class QDueMainActivity extends BaseActivity {
                 return binding.getRoot()
                         .findViewById( R.id.toolbar );
             } catch (Exception e) {
-                Log.e(TAG, "Toolbar not in binding, try activity findViewById");
+                Log.e( TAG, "Toolbar not in binding, try activity findViewById" );
             }
         }
 
@@ -1136,7 +1146,28 @@ public class QDueMainActivity extends BaseActivity {
             boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
             boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
 
-//            if (shouldShowMenu && !hasExtendedDrawer) {
+            WorkScheduleDiagnosticTestSuite.addDebugMenuOption( this, menu );
+
+            PatternAnalysisTest.addDebugMenuOption( this, menu );
+
+            UIDataFlowTest.addDebugMenuOption( this, menu );
+
+            DiagnosticTestRunner.addDebugMenuOption( this, menu );
+
+            QuattroDuePatternDiagnostics.addDebugMenuOption( this, menu );
+
+            FixedQDSchemeAnalysis.addDebugMenuOption( this, menu );
+
+            TeamAssignmentDiagnostics.addDebugMenuOption(this, menu);
+
+            QuattroDuePatternVerification.addDebugMenuOption(this, menu);
+
+            QuattroDueImplementationFix.addDebugMenuOption( this, menu );
+
+            TestWorkDay.addDebugMenuOption( this, menu );
+
+
+
             if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer
                 getMenuInflater().inflate( R.menu.menu_main, menu );
@@ -1166,15 +1197,6 @@ public class QDueMainActivity extends BaseActivity {
                 toggleSidebar();
                 return true;
             }
-/*
-            // Handle home/up button (menu button)
-            if (id == android.R.id.home) {
-                Log.d(TAG, mTAG + "UserProfile selected");
-                if (navController != null) {
-                    navController.navigate(R.id.nav_user_profile);
-                }
-                return true;
-            }*/
 
             // Handle other menu items
             if (id == R.id.action_settings) {

@@ -158,9 +158,14 @@ dependencies {
     implementation libs.activity
     implementation libs.colorpickerview
     //implementation libs.material3
+
+
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+
+    testImplementation libs.mockito.core
+    androidTestImplementation libs.mockito.mockito.android
 
     // Material 3 (Material Design 3)
     implementation libs.com.google.android.material.material

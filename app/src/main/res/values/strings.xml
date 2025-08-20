@@ -500,6 +500,13 @@
     <string name="action_disable">Disabilita</string>
     <string name="action_preview">Anteprima</string>
     <string name="action_restore">Ripristina</string>
+    <string name="action_select_date">Seleziona Data</string>
+    <string name="action_add_pattern_day">Aggiungi Giorno</string>
+    <string name="action_save_pattern">Salva Schema</string>
+    <string name="action_clear">Cancella</string>
+    <string name="action_edit">Modifica</string>
+    <string name="action_remove">Rimuovi</string>
+
     <string name="today">Oggi</string>
     <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
@@ -1178,13 +1185,13 @@
     <string name="text_all_events_cleared">Tutti gli eventi sono stati cancellati</string>
     <string name="text_char_error_deleting_all_events">❌ Errore nel cancellare tutti gli eventi</string>
     <string name="text_error_opening_file_saver">Errore apertura file saver</string>
-    <string name="text_exporting_events_dots">Esportando eventi...</string>
+    <string name="text_exporting_events_dots">Esportando eventi…</string>
     <string name="text_no_events_to_export">Nessun evento da esportare</string>
     <string name="text_error_reading_events_from_db">Errore lettura eventi dal database</string>
     <string name="format_text_exported_0_event_successfully">Esportati {0} eventi con successo</string>
     <string name="text_error_during_export">Errore durante l\'export</string>
     <string name="text_no_event_selected_for_export">Nessun evento selezionato per l\'export</string>
-    <string name="text_exporting_0_selected_events">Esportando {0} eventi selezionati...</string>
+    <string name="text_exporting_0_selected_events">Esportando {0} eventi selezionati…</string>
     <string name="text_error_during_export_of_selected_events">Errore durante l\'export degli eventi selezionati</string>
     <string name="format_text_location_semicolon_0">Luogo: {0}</string>
     <string name="text_date_not_specified">Data non specificata</string>
@@ -1201,11 +1208,11 @@
     <string name="text_import_completed">Import completato</string>
     <string name="text_import_failed">Import fallito</string>
     <string name="format_import_failed_semicolon_0">Import failed: {0}</string>
-    <string name="stringformat_importing_dots_d_d_s">Importing... (%d/%d) %s</string>
-    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi...</string>
-    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo...</string>
+    <string name="stringformat_importing_dots_d_d_s">Importing… (%d/%d) %s</string>
+    <string name="text_validation_passed_importing_events">Validazione superata. Importazione eventi…</string>
+    <string name="text_validation_issues_found_continuing">Validazione con problemi. Continuo…</string>
     <string name="text_importing_events">Importazione Eventi</string>
-    <string name="text_reading_file">Lettura file...</string>
+    <string name="text_reading_file">Lettura file…</string>
     <string name="text_char_error_reading_file_semicolon">"❌ Error reading file: "</string>
     <string name="text_char_unsupported_file_type">"❌ Tipo file non supportato "</string>
     <string name="text_char_error_creating_event_space">❌ Error creating event</string>
