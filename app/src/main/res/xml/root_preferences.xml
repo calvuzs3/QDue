@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Categoria originale QDue -->
-    <PreferenceCategory app:title="@string/settings_header">
+    <PreferenceCategory app:title="@string/settings_title">
 
         <!--Squadra di appartenenza dello user        -->
         <ListPreference
@@ -13,6 +13,15 @@
             app:key="@string/qd_preference_user_team"
             app:title="@string/settings_team_title"
             app:useSimpleSummaryProvider="true" />
+
+        <!-- Preferenza della data inizio schema - USA PREFERENCE STANDARD -->
+        <Preference
+            android:icon="@drawable/ic_rounded_edit_calendar_24"
+            android:key="@string/qd_preference_scheme_start_date"
+            android:singleLine="false"
+            android:summary="@string/settings_scheme_date_summary"
+            android:title="@string/settings_scheme_date_title" />
+
     </PreferenceCategory>
 
     <!-- Categoria Aspetto e Tema -->
@@ -39,17 +48,43 @@
 
     </PreferenceCategory>
 
-    <!-- Categoria per le impostazioni avanzate - VERSIONE SEMPLIFICATA -->
-    <PreferenceCategory app:title="@string/settings_advanced_header">
 
-        <!-- Preferenza della data inizio schema - USA PREFERENCE STANDARD -->
+    <!-- ==================== CALENDAR SECTION ==================== -->
+    <PreferenceCategory
+        android:title="@string/settings_calendar_header">
+
+        <!-- Custom Pattern Preferences -->
         <Preference
-            android:icon="@drawable/ic_rounded_edit_calendar_24"
-            android:key="@string/qd_preference_scheme_start_date"
-            android:singleLine="false"
-            android:summary="@string/settings_scheme_date_summary"
-            android:title="@string/settings_scheme_date_title" />
+            android:key="@string/qd_preference_pattern_custom"
+            android:title="@string/pref_custom_patterns_title"
+            android:summary="@string/pref_custom_patterns_summary"
+            android:icon="@drawable/ic_rounded_schedule_24">
+        </Preference>
+
+        <!-- Existing calendar preferences -->
+<!--        <ListPreference-->
+<!--            android:key="default_view"-->
+<!--            android:title="@string/pref_default_view_title"-->
+<!--            android:summary="@string/pref_default_view_summary"-->
+<!--            android:entries="@array/view_options"-->
+<!--            android:entryValues="@array/view_values"-->
+<!--            android:defaultValue="month"-->
+<!--            android:icon="@drawable/ic_view_24" />-->
+
+<!--        <SwitchPreferenceCompat-->
+<!--            android:key="show_weekends"-->
+<!--            android:title="@string/pref_show_weekends_title"-->
+<!--            android:summary="@string/pref_show_weekends_summary"-->
+<!--            android:defaultValue="true"-->
+<!--            android:icon="@drawable/ic_weekend_24" />-->
+
+<!--        <Preference-->
+<!--            android:key="working_hours"-->
+<!--            android:title="@string/pref_working_hours_title"-->
+<!--            android:summary="@string/pref_working_hours_summary"-->
+<!--            android:icon="@drawable/ic_schedule_24" />-->
 
     </PreferenceCategory>
+
 
 </PreferenceScreen>

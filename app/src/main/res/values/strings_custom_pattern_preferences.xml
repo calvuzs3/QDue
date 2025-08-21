@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    strings_custom_pattern_preferences.xml
+    Strings for Custom Pattern Preferences section.
+
+    Scope: preferences_custom_pattern
+    Feature: Custom Schedule Pattern Management in Settings
+    Language: Italian (IT)
+-->
+<resources>
+
+    <!--
+    ==================== PREFERENCE TITLES ====================
+    -->
+    <string name="pref_custom_patterns_title">Schema Custom</string>
+    <string name="pref_custom_patterns_summary">Gestisci i tuoi schemi di lavoro personalizzati</string>
+
+    <string name="pref_create_new_pattern_title">Crea Nuovo Schema</string>
+    <string name="pref_create_new_pattern_summary">Crea un nuovo schema di lavoro personalizzato</string>
+
+    <string name="pref_existing_patterns_category_title">Schemi Esistenti</string>
+
+    <!--
+    ==================== PATTERN DISPLAY ====================
+    -->
+    <string name="pref_pattern_default_name">Schema Senza Nome</string>
+    <string name="pref_pattern_summary_format">Dal %s • %s</string>
+    <string name="pref_no_patterns_title">Nessuno schema creato</string>
+    <string name="pref_no_patterns_summary">Tocca "Crea Nuovo Schema" per iniziare</string>
+
+    <!--
+    ==================== PATTERN ACTIONS ====================
+    -->
+    <string name="pref_pattern_action_edit">Modifica</string>
+    <string name="pref_pattern_action_duplicate">Duplica</string>
+    <string name="pref_pattern_action_delete">Elimina</string>
+
+    <string name="pref_pattern_duplicate_name_format">%s (Copia)</string>
+
+    <!--
+    ==================== DELETE CONFIRMATION ====================
+    -->
+    <string name="pref_delete_pattern_dialog_title">Elimina Schema</string>
+    <string name="pref_delete_pattern_dialog_message">Sei sicuro di voler eliminare lo schema "%s"?\n\nQuesta azione non può essere annullata.</string>
+
+    <!--
+    ==================== STATUS LABELS ====================
+    -->
+    <string name="pref_pattern_status_active">Attivo</string>
+    <string name="pref_pattern_status_inactive">Inattivo</string>
+    <string name="pref_pattern_status_pending">In Attesa</string>
+    <string name="pref_pattern_status_expired">Scaduto</string>
+
+    <!--
+    ==================== ERROR MESSAGES ====================
+    -->
+    <string name="pref_error_loading_patterns">Errore nel caricamento degli schemi</string>
+    <string name="pref_error_deleting_pattern">Errore nell\'eliminazione dello schema</string>
+    <string name="pref_error_duplicating_pattern">Errore nella duplicazione dello schema</string>
+
+    <!--
+    ==================== SUCCESS MESSAGES ====================
+    -->
+    <string name="pref_pattern_deleted_successfully">Schema eliminato con successo</string>
+    <string name="pref_pattern_duplicated_successfully">Schema duplicato con successo</string>
+
+</resources>

@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -33,24 +35,69 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
     private static final String TAG = "SettingsFragment";
     private static final DateTimeFormatter DISPLAY_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // ==================== FIELDS ====================
+
     private Preference schemeDatePreference;
+    private Preference customPatternsPreference;
     private LocalDate currentSchemeDate;
     private LocalDate backupSchemeDate;
+
+    // ==================== PREFERENCE NAVIGATION ====================
+
+    /**
+     * Interface for communicating navigation requests to the host activity
+     */
+    public interface SettingsNavigationCallback {
+        /**
+         * Navigate to a specific fragment from settings
+         */
+        void navigateToFragment(@NonNull Fragment fragment, @NonNull String title);
+    }
+
+    // ==================== LIFECYCLE ====================
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         // Load the preferences from XML
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
-        // Initialize scheme date preference
+        // Initialize preferences
         initializeSchemeDatePreference();
+        initializeCustomPatternsPreference();
 
-        // Setup view mode preference if it exists
+        // Setup view mode preference
         setupViewModePreference();
-
-        Log.d(TAG, "Preferences created and view mode preference setup completed");
-
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Register as listener for preference changes
+        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
+                .registerOnSharedPreferenceChangeListener(this);
+
+        // Refresh scheme date display
+        loadCurrentSchemeDate();
+        updateSchemeDateSummary();
+
+        // Update QuattroDue
+        Context context = getContext();
+        if (context != null) {
+            QuattroDue.getInstance(context).updatePreferences(context);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Unregister listener to prevent memory leaks
+        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    // ==================== PREFERENCE INITIALIZATION ====================
 
     /**
      * Initialize scheme date preference with click listener
@@ -70,10 +117,61 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
             // Update summary
             updateSchemeDateSummary();
-
-            Log.v(TAG, "Scheme date preference initialized");
         }
     }
+
+    /**
+     * Initialize custom patterns preference with navigation
+     */
+    private void initializeCustomPatternsPreference() {
+        customPatternsPreference = findPreference(getString(R.string.qd_preference_pattern_custom));
+
+        if (customPatternsPreference != null) {
+            customPatternsPreference.setOnPreferenceClickListener(preference -> {
+                navigateToCustomPatterns();
+                return true;
+            });
+        } else {
+            Log.w(TAG, "Custom patterns preference not found in root_preferences.xml");
+        }
+    }
+
+    // ==================== NAVIGATION METHODS ====================
+
+    /**
+     * Navigate to Custom Patterns management screen
+     */
+    private void navigateToCustomPatterns() {
+        try {
+            if (getActivity() instanceof SettingsNavigationCallback) {
+                CustomPatternPreferencesFragment customPatternFragment = new CustomPatternPreferencesFragment();
+
+                String title = getString(R.string.pref_custom_patterns_title);
+                ((SettingsNavigationCallback) getActivity()).navigateToFragment(customPatternFragment, title);
+
+                Log.d(TAG, "Navigating to CustomPatternPreferencesFragment");
+            } else {
+                Log.e(TAG, "Activity does not implement SettingsNavigationCallback");
+                showNavigationError();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error navigating to custom patterns", e);
+            showNavigationError();
+        }
+    }
+
+    /**
+     * Show navigation error to user
+     */
+    private void showNavigationError() {
+        if (getContext() != null) {
+            Toast.makeText(getContext(),
+                    getString(R.string.error_navigation_custom_patterns),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ==================== SCHEME DATE HANDLING ====================
 
     /**
      * Load current scheme date from preferences
@@ -84,8 +182,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
 
         currentSchemeDate = Preferences.getSchemeStartDate(context);
         backupSchemeDate = currentSchemeDate; // Backup for rollback
-
-        Log.v(TAG, "Loaded scheme date: " + currentSchemeDate);
     }
 
     /**
@@ -185,7 +281,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         if (context == null) return;
 
         try {
-            Log.v(TAG, "Applying scheme date change: " + currentSchemeDate + " -> " + newDate);
+            Log.d(TAG, "Applying scheme date change: " + currentSchemeDate + " -> " + newDate);
 
             // Save to preferences
             Preferences.setSchemeStartDate(context, newDate);
@@ -199,7 +295,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
                 // Success
                 updateSchemeDateSummary();
                 Toast.makeText(context, R.string.scheme_date_success, Toast.LENGTH_SHORT).show();
-                Log.v(TAG, "Scheme date successfully updated");
+                Log.d(TAG, "Scheme date successfully updated");
             } else {
                 // Error during regeneration
                 throw new Exception("Schema regeneration failed");
@@ -243,8 +339,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             // Set current value from QDuePreferences
             String currentViewMode = QDuePreferences.getDefaultViewMode(requireContext());
             viewModePref.setValue(currentViewMode);
-
-            Log.d(TAG, "* View mode preference initialized: " + currentViewMode);
         } else {
             Log.w(TAG, "View mode preference not found in XML - check your root_preferences.xml");
         }
@@ -320,6 +414,33 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
+    // ==================== UTILITY METHODS ====================
+
+    /**
+     * Refresh all preference values from storage
+     * Called when returning from sub-screens that might have changed values
+     */
+    public void refreshPreferenceValues() {
+        try {
+            // Refresh view mode
+            ListPreference viewModePref = findPreference(QDue.Settings.QD_KEY_VIEW_MODE);
+            if (viewModePref != null) {
+                String currentViewMode = QDuePreferences.getDefaultViewMode(requireContext());
+                viewModePref.setValue(currentViewMode);
+                Log.d(TAG, "Refreshed view mode preference to: " + currentViewMode);
+            }
+
+            // Refresh scheme date
+            //loadCurrentSchemeDate();
+            //updateSchemeDateSummary();
+
+            // Refresh other preferences as needed...
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error refreshing preference values", e);
+        }
+    }
+
     /**
      * Get display name for view mode
      * Converts internal view mode constants to user-friendly names
@@ -335,60 +456,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
         }
     }
 
-    /**
-     * Refresh preference display values
-     * Call this method if preferences might have been changed externally
-     */
-    public void refreshPreferenceValues() {
-        Log.d(TAG, "Refreshing preference values from current settings");
 
-        try {
-            // Refresh view mode preference
-            ListPreference viewModePref = findPreference(QDue.Settings.QD_KEY_VIEW_MODE);
-            if (viewModePref != null) {
-                String currentViewMode = QDuePreferences.getDefaultViewMode(requireContext());
-                viewModePref.setValue(currentViewMode);
-                Log.d(TAG, "Refreshed view mode preference to: " + currentViewMode);
-            }
 
-            // Refresh other preferences as needed...
 
-        } catch (Exception e) {
-            Log.e(TAG, "Error refreshing preference values", e);
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Register as listener for preference changes
-        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
-                .registerOnSharedPreferenceChangeListener(this);
-
-        Log.d(TAG, "Registered as SharedPreferenceChangeListener");
-
-        // Refresh scheme date display
-        loadCurrentSchemeDate();
-        updateSchemeDateSummary();
-
-        // Update QuattroDue
-        Context context = getContext();
-        if (context != null) {
-            QuattroDue.getInstance(context).updatePreferences(context);
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        // Unregister listener to prevent memory leaks
-        Objects.requireNonNull(getPreferenceScreen().getSharedPreferences())
-                .unregisterOnSharedPreferenceChangeListener(this);
-
-        Log.d(TAG, "Unregistered SharedPreferenceChangeListener");
-    }
 
     // ================================== DEBUG ==================================
 

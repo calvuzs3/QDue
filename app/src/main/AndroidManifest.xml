@@ -66,6 +66,16 @@
                 android:value=".QDueMainActivity" />
         </activity>
 
+        <!-- UserSchedulePatternCreationActivity -->
+        <activity
+            android:name=".ui.features.schedulepattern.UserSchedulePatternCreationActivity"
+            android:exported="false"
+            android:label="@string/pref_custom_patterns_title"
+            android:parentActivityName=".QDueMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".QDueMainActivity" />
+        </activity>
 
         <activity
             android:name=".ui.features.events.presentation.EventsActivity"

@@ -8,6 +8,7 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.data.di.CalendarServiceProviderImpl;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
@@ -81,13 +82,20 @@ public class SchedulePatternModule {
 
         // Get calendar service provider from core service provider
         CalendarService calendarService = serviceProvider.getCalendarService();
-        if (calendarService instanceof CalendarServiceProvider) {
-            this.mCalendarServiceProvider = (CalendarServiceProvider) calendarService;
+        CalendarServiceProvider calSerPro = serviceProvider.getCalendarServiceProvider();
+
+//        if (calendarService instanceof CalendarServiceProvider) {
+//            this.mCalendarServiceProvider = (CalendarServiceProvider) calendarService;
+//        } else {
+//            throw new IllegalStateException("*** CalendarService must implement CalendarServiceProvider");
+//        }
+        if (calSerPro instanceof CalendarServiceProvider) {
+            this.mCalendarServiceProvider = (CalendarServiceProvider) calSerPro;
         } else {
-            throw new IllegalStateException("CalendarService must implement CalendarServiceProvider");
+            throw new IllegalStateException("*** CalendarService must implement CalendarServiceProvider");
         }
 
-        Log.d(TAG, "SchedulePatternModule initialized");
+        Log.i(TAG, "SchedulePatternModule initialized successfully");
     }
 
     // ==================== REPOSITORY PROVIDERS ====================
