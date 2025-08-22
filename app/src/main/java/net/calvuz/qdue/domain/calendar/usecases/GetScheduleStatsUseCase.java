@@ -1,8 +1,6 @@
 package net.calvuz.qdue.domain.calendar.usecases;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logWarning;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,51 +68,50 @@ public class GetScheduleStatsUseCase {
      * Execute use case to generate comprehensive schedule statistics.
      *
      * @param startDate Start of analysis period
-     * @param endDate End of analysis period
-     * @param userId Optional user ID for user-specific stats (null for all users)
+     * @param endDate   End of analysis period
+     * @param userId    Optional user ID for user-specific stats (null for all users)
      * @return CompletableFuture with detailed ScheduleStats
      */
     @NonNull
     public CompletableFuture<OperationResult<ScheduleStats>> executeAnalysis(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                logDebug("Generating schedule statistics for period: " + startDate + " to " + endDate +
-                        (userId != null ? ", userId: " + userId : " (all users)"));
+                Log.d( TAG, "Generating schedule statistics for period: " + startDate + " to " + endDate +
+                        (userId != null ? ", userId: " + userId : " (all users)") );
 
                 // Validate input
-                OperationResult<Void> validation = validateAnalysisInput(startDate, endDate, userId);
+                OperationResult<Void> validation = validateAnalysisInput( startDate, endDate, userId );
                 if (!validation.isSuccess()) {
-                    return OperationResult.failure(validation.getErrorMessage(), OperationResult.OperationType.VALIDATION);
+                    return OperationResult.failure( validation.getErrorMessage(), OperationResult.OperationType.VALIDATION );
                 }
 
                 // Get schedule data for analysis
                 OperationResult<Map<LocalDate, WorkScheduleDay>> scheduleResult =
-                        mWorkScheduleRepository.getWorkScheduleForDateRange(startDate, endDate, userId).join();
+                        mWorkScheduleRepository.getWorkScheduleForDateRange( startDate, endDate, userId ).join();
 
                 if (!scheduleResult.isSuccess()) {
-                    return OperationResult.failure("Failed to get schedule for analysis: " +
-                            scheduleResult.getErrorMessage(), OperationResult.OperationType.VALIDATION);
+                    return OperationResult.failure( "Failed to get schedule for analysis: " +
+                            scheduleResult.getErrorMessage(), OperationResult.OperationType.VALIDATION );
                 }
 
                 Map<LocalDate, WorkScheduleDay> scheduleMap = scheduleResult.getData();
                 if (scheduleMap == null || scheduleMap.isEmpty()) {
-                    return OperationResult.failure("No schedule data available for analysis", OperationResult.OperationType.VALIDATION);
+                    return OperationResult.failure( "No schedule data available for analysis", OperationResult.OperationType.VALIDATION );
                 }
 
                 // Calculate comprehensive statistics
-                ScheduleStats stats = calculateComprehensiveStatistics(scheduleMap, startDate, endDate, userId);
+                ScheduleStats stats = calculateComprehensiveStatistics( scheduleMap, startDate, endDate, userId );
 
-                logDebug("Generated schedule statistics for " + scheduleMap.size() + " days");
+                Log.d( TAG, "Generated schedule statistics for " + scheduleMap.size() + " days" );
 
-                return OperationResult.success(stats, OperationResult.OperationType.VALIDATION);
-
+                return OperationResult.success( stats, OperationResult.OperationType.VALIDATION );
             } catch (Exception e) {
-                logError("Error generating schedule statistics", e);
-                return OperationResult.failure("Failed to generate statistics: " + e.getMessage(), OperationResult.OperationType.VALIDATION);
+                Log.e( TAG, "Error generating schedule statistics", e );
+                return OperationResult.failure( "Failed to generate statistics: " + e.getMessage(), OperationResult.OperationType.VALIDATION );
             }
-        });
+        } );
     }
 
     // ==================== VALIDATION OPERATIONS ====================
@@ -122,8 +119,8 @@ public class GetScheduleStatsUseCase {
     /**
      * Validate proposed schedule changes against business rules.
      *
-     * @param userId User ID for validation context
-     * @param originalDate Original date being modified
+     * @param userId          User ID for validation context
+     * @param originalDate    Original date being modified
      * @param proposedChanges Description of proposed changes
      * @return CompletableFuture with detailed ScheduleValidationResult
      */
@@ -131,10 +128,10 @@ public class GetScheduleStatsUseCase {
     public CompletableFuture<OperationResult<ScheduleValidationResult>> validateScheduleChanges(
             @NonNull Long userId, @NonNull LocalDate originalDate, @NonNull String proposedChanges) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                logDebug("Validating schedule changes for userId: " + userId +
-                        ", date: " + originalDate);
+                Log.d( TAG, "Validating schedule changes for userId: " + userId +
+                        ", date: " + originalDate );
 
                 // Create validation result
                 ScheduleValidationResult result = new ScheduleValidationResult();
@@ -146,47 +143,46 @@ public class GetScheduleStatsUseCase {
                 // Validate input parameters
                 if (proposedChanges == null || proposedChanges.trim().isEmpty()) {
                     result.isValid = false;
-                    result.validationErrors.add("Proposed changes description cannot be empty");
-                    return OperationResult.success(result, OperationResult.OperationType.VALIDATION);
+                    result.validationErrors.add( "Proposed changes description cannot be empty" );
+                    return OperationResult.success( result, OperationResult.OperationType.VALIDATION );
                 }
 
                 // Get current schedule for comparison
                 OperationResult<WorkScheduleDay> currentScheduleResult =
-                        mWorkScheduleRepository.getWorkScheduleForDate(originalDate, userId).join();
+                        mWorkScheduleRepository.getWorkScheduleForDate( originalDate, userId ).join();
 
                 if (!currentScheduleResult.isSuccess()) {
-                    result.warnings.add("Could not retrieve current schedule for validation");
+                    result.warnings.add( "Could not retrieve current schedule for validation" );
                 }
 
                 WorkScheduleDay currentSchedule = currentScheduleResult.getData();
 
                 // Apply business rule validations
-                result = applyBusinessRuleValidations(result, currentSchedule, proposedChanges);
+                result = applyBusinessRuleValidations( result, currentSchedule, proposedChanges );
 
                 // Apply regulatory compliance checks
-                result = applyComplianceValidations(result, userId, originalDate);
+                result = applyComplianceValidations( result, userId, originalDate );
 
                 // Apply temporal validations
-                result = applyTemporalValidations(result, originalDate);
+                result = applyTemporalValidations( result, originalDate );
 
-                logDebug("Schedule validation completed for user " + userId +
-                        ", valid: " + result.isValid);
+                Log.d( TAG, "Schedule validation completed for user " + userId +
+                        ", valid: " + result.isValid );
 
-                return OperationResult.success(result, OperationResult.OperationType.VALIDATION);
-
+                return OperationResult.success( result, OperationResult.OperationType.VALIDATION );
             } catch (Exception e) {
-                logError("Error validating schedule changes", e);
+                Log.e( TAG, "Error validating schedule changes", e );
 
                 ScheduleValidationResult errorResult = new ScheduleValidationResult();
                 errorResult.userId = userId;
                 errorResult.targetDate = originalDate;
                 errorResult.proposedChanges = proposedChanges;
                 errorResult.isValid = false;
-                errorResult.validationErrors.add("Validation error: " + e.getMessage());
+                errorResult.validationErrors.add( "Validation error: " + e.getMessage() );
 
-                return OperationResult.success(errorResult, OperationResult.OperationType.VALIDATION);
+                return OperationResult.success( errorResult, OperationResult.OperationType.VALIDATION );
             }
-        });
+        } );
     }
 
     // ==================== STATISTICS CALCULATION ====================
@@ -225,21 +221,20 @@ public class GetScheduleStatsUseCase {
                 // Calculate working hours for this day
                 double dayHours = 0.0;
                 for (var shift : schedule.getShifts()) {
-                    double shiftHours = calculateShiftDuration(shift);
+                    double shiftHours = calculateShiftDuration( shift );
                     dayHours += shiftHours;
                     stats.totalWorkingHours += shiftHours;
 
                     // Track shift type distribution
                     String shiftType = shift.getShift().getName();
-                    shiftTypeDistribution.merge(shiftType, 1, Integer::sum);
+                    shiftTypeDistribution.merge( shiftType, 1, Integer::sum );
                 }
 
-                dailyHours.add(dayHours);
-                dailyHoursDistribution.put(date.toString(), dayHours);
-
+                dailyHours.add( dayHours );
+                dailyHoursDistribution.put( date.toString(), dayHours );
             } else {
                 stats.restDays++;
-                dailyHours.add(0.0);
+                dailyHours.add( 0.0 );
             }
         }
 
@@ -262,12 +257,12 @@ public class GetScheduleStatsUseCase {
 
         // Calculate additional metrics
         if (!dailyHours.isEmpty()) {
-            stats.maxDailyHours = dailyHours.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-            stats.minDailyHours = dailyHours.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+            stats.maxDailyHours = dailyHours.stream().mapToDouble( Double::doubleValue ).max().orElse( 0.0 );
+            stats.minDailyHours = dailyHours.stream().mapToDouble( Double::doubleValue ).min().orElse( 0.0 );
         }
 
         // Calculate trend analysis
-        calculateTrendAnalysis(stats, scheduleMap);
+        calculateTrendAnalysis( stats, scheduleMap );
 
         return stats;
     }
@@ -276,33 +271,32 @@ public class GetScheduleStatsUseCase {
                                         @NonNull Map<LocalDate, WorkScheduleDay> scheduleMap) {
         try {
             // Simple trend analysis - could be expanded
-            List<LocalDate> sortedDates = new ArrayList<>(scheduleMap.keySet());
-            sortedDates.sort(LocalDate::compareTo);
+            List<LocalDate> sortedDates = new ArrayList<>( scheduleMap.keySet() );
+            sortedDates.sort( LocalDate::compareTo );
 
             if (sortedDates.size() >= 7) {
                 // Compare first week vs last week
-                int weekSize = Math.min(7, sortedDates.size() / 2);
+                int weekSize = Math.min( 7, sortedDates.size() / 2 );
 
                 double firstWeekHours = 0.0;
                 double lastWeekHours = 0.0;
 
                 for (int i = 0; i < weekSize; i++) {
-                    WorkScheduleDay firstWeekDay = scheduleMap.get(sortedDates.get(i));
+                    WorkScheduleDay firstWeekDay = scheduleMap.get( sortedDates.get( i ) );
                     if (firstWeekDay != null) {
-                        firstWeekHours += calculateDayHours(firstWeekDay);
+                        firstWeekHours += calculateDayHours( firstWeekDay );
                     }
 
                     int lastIndex = sortedDates.size() - 1 - i;
-                    WorkScheduleDay lastWeekDay = scheduleMap.get(sortedDates.get(lastIndex));
+                    WorkScheduleDay lastWeekDay = scheduleMap.get( sortedDates.get( lastIndex ) );
                     if (lastWeekDay != null) {
-                        lastWeekHours += calculateDayHours(lastWeekDay);
+                        lastWeekHours += calculateDayHours( lastWeekDay );
                     }
                 }
 
-                stats.trendAnalysis = String.format("First week avg: %.1f hrs, Last week avg: %.1f hrs",
-                        firstWeekHours / weekSize, lastWeekHours / weekSize);
+                stats.trendAnalysis = String.format( "First week avg: %.1f hrs, Last week avg: %.1f hrs",
+                        firstWeekHours / weekSize, lastWeekHours / weekSize );
             }
-
         } catch (Exception e) {
             stats.trendAnalysis = "Trend analysis unavailable";
         }
@@ -310,14 +304,14 @@ public class GetScheduleStatsUseCase {
 
     private double calculateDayHours(@NonNull WorkScheduleDay schedule) {
         return schedule.getShifts().stream()
-                .mapToDouble(this::calculateShiftDuration)
+                .mapToDouble( this::calculateShiftDuration )
                 .sum();
     }
 
     private double calculateShiftDuration(@NonNull net.calvuz.qdue.domain.calendar.models.WorkScheduleShift shift) {
         try {
             // Calculate duration in hours between start and end time
-            long minutes = java.time.Duration.between(shift.getStartTime(), shift.getEndTime()).toMinutes();
+            long minutes = java.time.Duration.between( shift.getStartTime(), shift.getEndTime() ).toMinutes();
 
             // Handle overnight shifts
             if (minutes < 0) {
@@ -326,7 +320,7 @@ public class GetScheduleStatsUseCase {
 
             return minutes / 60.0;
         } catch (Exception e) {
-            logWarning("Error calculating shift duration, using 8 hours default");
+            Log.w( TAG, "Error calculating shift duration, using 8 hours default" );
             return 8.0; // Default fallback
         }
     }
@@ -338,35 +332,34 @@ public class GetScheduleStatsUseCase {
                                                                   @NonNull String proposedChanges) {
         try {
             // Business Rule 1: Check for consecutive working days limit
-            if (proposedChanges.toLowerCase().contains("overtime")) {
-                result.warnings.add("Overtime request requires additional approval");
+            if (proposedChanges.toLowerCase().contains( "overtime" )) {
+                result.warnings.add( "Overtime request requires additional approval" );
             }
 
             // Business Rule 2: Check for minimum rest period
-            if (proposedChanges.toLowerCase().contains("night") &&
-                    proposedChanges.toLowerCase().contains("morning")) {
-                result.validationErrors.add("Insufficient rest period between night and morning shifts");
+            if (proposedChanges.toLowerCase().contains( "night" ) &&
+                    proposedChanges.toLowerCase().contains( "morning" )) {
+                result.validationErrors.add( "Insufficient rest period between night and morning shifts" );
                 result.isValid = false;
             }
 
             // Business Rule 3: Check for weekend work
             if (result.targetDate.getDayOfWeek().getValue() >= 6) { // Saturday or Sunday
-                if (proposedChanges.toLowerCase().contains("extra")) {
-                    result.warnings.add("Weekend overtime may require additional compensation");
+                if (proposedChanges.toLowerCase().contains( "extra" )) {
+                    result.warnings.add( "Weekend overtime may require additional compensation" );
                 }
             }
 
             // Business Rule 4: Check current workload
             if (currentSchedule != null && currentSchedule.hasShifts()) {
-                double currentHours = calculateDayHours(currentSchedule);
-                if (currentHours > 10 && proposedChanges.toLowerCase().contains("add")) {
-                    result.validationErrors.add("Cannot add shifts when daily hours exceed 10");
+                double currentHours = calculateDayHours( currentSchedule );
+                if (currentHours > 10 && proposedChanges.toLowerCase().contains( "add" )) {
+                    result.validationErrors.add( "Cannot add shifts when daily hours exceed 10" );
                     result.isValid = false;
                 }
             }
-
         } catch (Exception e) {
-            result.warnings.add("Business rule validation error: " + e.getMessage());
+            result.warnings.add( "Business rule validation error: " + e.getMessage() );
         }
 
         return result;
@@ -377,26 +370,25 @@ public class GetScheduleStatsUseCase {
                                                                 @NonNull LocalDate targetDate) {
         try {
             // Compliance Rule 1: Future date validation
-            LocalDate maxFutureDate = LocalDate.now().plusMonths(6);
-            if (targetDate.isAfter(maxFutureDate)) {
-                result.validationErrors.add("Cannot modify schedules more than 6 months in advance");
+            LocalDate maxFutureDate = LocalDate.now().plusMonths( 6 );
+            if (targetDate.isAfter( maxFutureDate )) {
+                result.validationErrors.add( "Cannot modify schedules more than 6 months in advance" );
                 result.isValid = false;
             }
 
             // Compliance Rule 2: Past date validation
-            LocalDate minPastDate = LocalDate.now().minusDays(7);
-            if (targetDate.isBefore(minPastDate)) {
-                result.validationErrors.add("Cannot modify schedules more than 7 days in the past");
+            LocalDate minPastDate = LocalDate.now().minusDays( 7 );
+            if (targetDate.isBefore( minPastDate )) {
+                result.validationErrors.add( "Cannot modify schedules more than 7 days in the past" );
                 result.isValid = false;
             }
 
             // Compliance Rule 3: Holiday restrictions
-            if (isHoliday(targetDate)) {
-                result.warnings.add("Schedule change affects a holiday - additional approvals may be required");
+            if (isHoliday( targetDate )) {
+                result.warnings.add( "Schedule change affects a holiday - additional approvals may be required" );
             }
-
         } catch (Exception e) {
-            result.warnings.add("Compliance validation error: " + e.getMessage());
+            result.warnings.add( "Compliance validation error: " + e.getMessage() );
         }
 
         return result;
@@ -408,17 +400,16 @@ public class GetScheduleStatsUseCase {
             LocalDate now = LocalDate.now();
 
             // Temporal Rule 1: Last minute changes
-            if (targetDate.equals(now) || targetDate.equals(now.plusDays(1))) {
-                result.warnings.add("Last minute schedule changes may impact team coordination");
+            if (targetDate.equals( now ) || targetDate.equals( now.plusDays( 1 ) )) {
+                result.warnings.add( "Last minute schedule changes may impact team coordination" );
             }
 
             // Temporal Rule 2: Weekend processing
             if (now.getDayOfWeek().getValue() >= 6) { // Current day is weekend
-                result.warnings.add("Weekend schedule changes may have delayed processing");
+                result.warnings.add( "Weekend schedule changes may have delayed processing" );
             }
-
         } catch (Exception e) {
-            result.warnings.add("Temporal validation error: " + e.getMessage());
+            result.warnings.add( "Temporal validation error: " + e.getMessage() );
         }
 
         return result;
@@ -429,26 +420,26 @@ public class GetScheduleStatsUseCase {
     private OperationResult<Void> validateAnalysisInput(@NonNull LocalDate startDate,
                                                         @NonNull LocalDate endDate,
                                                         @Nullable Long userId) {
-        if (startDate.isAfter(endDate)) {
-            return OperationResult.failure("Start date cannot be after end date", OperationResult.OperationType.VALIDATION);
+        if (startDate.isAfter( endDate )) {
+            return OperationResult.failure( "Start date cannot be after end date", OperationResult.OperationType.VALIDATION );
         }
 
         // Check for reasonable date range
-        long daysDifference = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+        long daysDifference = java.time.temporal.ChronoUnit.DAYS.between( startDate, endDate );
         if (daysDifference > 730) { // 2 years
-            return OperationResult.failure("Analysis period cannot exceed 2 years", OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure( "Analysis period cannot exceed 2 years", OperationResult.OperationType.VALIDATION );
         }
 
         if (daysDifference < 0) {
-            return OperationResult.failure("Invalid date range", OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure( "Invalid date range", OperationResult.OperationType.VALIDATION );
         }
 
         // Validate user ID if provided
         if (userId != null && userId <= 0) {
-            return OperationResult.failure("User ID must be positive", OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure( "User ID must be positive", OperationResult.OperationType.VALIDATION );
         }
 
-        return OperationResult.success("validateAnalysisInput success", OperationResult.OperationType.VALIDATION);
+        return OperationResult.success( "validateAnalysisInput success", OperationResult.OperationType.VALIDATION );
     }
 
     private boolean isHoliday(@NonNull LocalDate date) {
@@ -503,8 +494,8 @@ public class GetScheduleStatsUseCase {
 
         @Override
         public String toString() {
-            return String.format("ScheduleStats{totalDays=%d, workingDays=%d, totalHours=%.1f, avgHours=%.1f}",
-                    totalDays, workingDays, totalWorkingHours, averageHoursPerDay);
+            return String.format( "ScheduleStats{totalDays=%d, workingDays=%d, totalHours=%.1f, avgHours=%.1f}",
+                    totalDays, workingDays, totalWorkingHours, averageHoursPerDay );
         }
     }
 
@@ -537,14 +528,14 @@ public class GetScheduleStatsUseCase {
             }
 
             StringBuilder summary = new StringBuilder();
-            summary.append(isValid ? "VALID" : "INVALID");
+            summary.append( isValid ? "VALID" : "INVALID" );
 
             if (hasErrors()) {
-                summary.append(" (").append(validationErrors.size()).append(" errors)");
+                summary.append( " (" ).append( validationErrors.size() ).append( " errors)" );
             }
 
             if (hasWarnings()) {
-                summary.append(" (").append(warnings.size()).append(" warnings)");
+                summary.append( " (" ).append( warnings.size() ).append( " warnings)" );
             }
 
             return summary.toString();
@@ -552,8 +543,8 @@ public class GetScheduleStatsUseCase {
 
         @Override
         public String toString() {
-            return String.format("ScheduleValidationResult{valid=%s, errors=%d, warnings=%d}",
-                    isValid, validationErrors.size(), warnings.size());
+            return String.format( "ScheduleValidationResult{valid=%s, errors=%d, warnings=%d}",
+                    isValid, validationErrors.size(), warnings.size() );
         }
     }
 }

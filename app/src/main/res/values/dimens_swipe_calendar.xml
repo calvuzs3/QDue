@@ -17,7 +17,7 @@
 
     <!-- Day Cell Stroke -->
     <dimen name="calendar_day_stroke_width">1dp</dimen>                 <!-- Default stroke width -->
-    <dimen name="calendar_day_today_stroke_width">2dp</dimen>           <!-- Today stroke width -->
+    <dimen name="calendar_day_today_stroke_width">3dp</dimen>           <!-- Today stroke width -->
     <dimen name="calendar_day_selected_stroke_width">2dp</dimen>        <!-- Selected day stroke width -->
 
 

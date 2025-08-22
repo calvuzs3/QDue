@@ -1,10 +1,5 @@
 package net.calvuz.qdue.domain.calendar.engines;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logVerbose;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logWarning;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -18,6 +13,7 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -106,7 +102,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         super( localizer, LOCALIZATION_SCOPE );
         this.mGson = new Gson();
         this.mPatternCache = new HashMap<>();
-        logDebug( "RecurrenceCalculator initialized as pure algorithm" );
+        Log.d( TAG, "RecurrenceCalculator initialized as pure algorithm" );
     }
 
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
@@ -138,7 +134,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                                    @NonNull RecurrenceRule recurrenceRule,
                                                    @NonNull UserScheduleAssignment assignment) {
         try {
-            logDebug( "Generating schedule for date: " + date + ", rule: " + recurrenceRule.getId() );
+            Log.d( TAG, "Generating schedule for date: " + date + ", rule: " + recurrenceRule.getId() );
 
             WorkScheduleDay.Builder scheduleBuilder = WorkScheduleDay.builder( date );
 
@@ -154,11 +150,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             }
 
             WorkScheduleDay schedule = scheduleBuilder.build();
-            logDebug( "Generated schedule with " + schedule.getShifts().size() + " shifts" );
+            Log.d( TAG, "Generated schedule with " + schedule.getShifts().size() + " shifts" );
 
             return schedule;
         } catch (Exception e) {
-            logError( "Error generating schedule for date: " + date, e );
+            Log.e( TAG, "Error generating schedule for date: " + date, e );
             return WorkScheduleDay.builder( date ).build(); // Return empty schedule on error
         }
     }
@@ -176,7 +172,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                               @NonNull RecurrenceRule recurrenceRule,
                                               @NonNull UserScheduleAssignment assignment) {
         try {
-            logDebug( "Calculating shifts for date: " + date + ", rule: " + recurrenceRule.getId() );
+            Log.d( TAG, "Calculating shifts for date: " + date + ", rule: " + recurrenceRule.getId() );
 
             // Parse recurrence pattern from domain model
             RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
@@ -200,10 +196,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 }
             }
 
-            logDebug( "Generated " + shifts.size() + " shifts for date: " + date );
+            Log.d( TAG, "Generated " + shifts.size() + " shifts for date: " + date );
             return shifts;
         } catch (Exception e) {
-            logError( "Error calculating shifts for date: " + date, e );
+            Log.e( TAG, "Error calculating shifts for date: " + date, e );
             return new ArrayList<>(); // Return empty list on error
         }
     }
@@ -226,7 +222,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         Map<LocalDate, List<Shift>> shiftsMap = new HashMap<>();
 
         try {
-            logDebug( "Calculating shifts for date range: " + startDate + " to " + endDate );
+            Log.d( TAG, "Calculating shifts for date range: " + startDate + " to " + endDate );
 
             // Parse pattern once for efficiency
             RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
@@ -240,9 +236,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 currentDate = currentDate.plusDays( 1 );
             }
 
-            logDebug( "Generated shifts for " + shiftsMap.size() + " dates" );
+            Log.d( TAG, "Generated shifts for " + shiftsMap.size() + " dates" );
         } catch (Exception e) {
-            logError( "Error calculating shifts for date range", e );
+            Log.e( TAG, "Error calculating shifts for date range", e );
         }
 
         return shiftsMap;
@@ -257,7 +253,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
     @NonNull
     public ValidationResult validateRecurrenceRule(@NonNull RecurrenceRule recurrenceRule) {
         try {
-            logDebug( "Validating recurrence rule: " + recurrenceRule.getId() );
+            Log.d( TAG, "Validating recurrence rule: " + recurrenceRule.getId() );
 
             RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
 
@@ -289,10 +285,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 return result;
             }
 
-            logDebug( "Recurrence rule validation passed" );
+            Log.d( TAG, "Recurrence rule validation passed" );
             return result;
         } catch (Exception e) {
-            logError( "Error validating recurrence rule", e );
+            Log.e( TAG, "Error validating recurrence rule", e );
             ValidationResult result = new ValidationResult();
             result.isValid = false;
             result.errorMessage = "Validation error: " + e.getMessage();
@@ -326,12 +322,12 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             // Cache the parsed pattern
             mPatternCache.put( cacheKey, pattern );
 
-            logDebug( "Parsed recurrence pattern: " + pattern.frequency +
+            Log.d( TAG, "Parsed recurrence pattern: " + pattern.frequency +
                     ", cycle: " + pattern.cycleLength );
 
             return pattern;
         } catch (Exception e) {
-            logError( "Error parsing recurrence pattern", e );
+            Log.e( TAG, "Error parsing recurrence pattern", e );
             return createDefaultPattern();
         }
     }
@@ -449,7 +445,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 //        restSeq3.days = List.of(17, 18);
 //        sequences.add(restSeq3);
 
-        logDebug( "Created QuattroDue sequence with " + sequences.size() + " work periods" );
+        Log.d( TAG, "Created QuattroDue sequence with " + sequences.size() + " work periods" );
         return sequences;
     }
 
@@ -541,7 +537,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             cyclePosition += pattern.cycleLength;
         }
 
-        logVerbose( "Cycle position for " + date + ": " + cyclePosition +
+        Log.v( TAG, "Cycle position for " + date + ": " + cyclePosition +
                 " (days since start: " + daysSinceStart + ", offset: " + teamOffset + ")" );
 
         return cyclePosition;
@@ -585,11 +581,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                     .build();
 
             builder.addTeam( userTeam );
-            logDebug( "Added team " + userTeam.getName() + " to shift " + shift.getName() );
+            Log.d( TAG, "Added team " + userTeam.getName() + " to shift " + shift.getName() );
 
             return builder.build();
         } catch (Exception e) {
-            logError( "Error creating WorkScheduleShift", e );
+            Log.e( TAG, "Error creating WorkScheduleShift", e );
             return null;
         }
     }
@@ -611,7 +607,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                     .setBreakTimeDuration( Duration.ZERO )
                     .build();
         } catch (Exception e) {
-            logError( "Error creating shift from assignment", e );
+            Log.e( TAG, "Error creating shift from assignment", e );
             return null;
         }
     }
@@ -624,7 +620,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         try {
             return LocalTime.parse( timeString );
         } catch (Exception e) {
-            logWarning( "Error parsing time: " + timeString + ", using default" );
+            Log.w( TAG, "Error parsing time: " + timeString + ", using default" );
             return LocalTime.of( 8, 0 );
         }
     }
@@ -649,7 +645,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 return Math.abs( teamId.hashCode() ) % 6; // 0-5 days offset
             }
         } catch (Exception e) {
-            logWarning( "Error calculating team offset, using 0" );
+            Log.w( TAG, "Error calculating team offset, using 0" );
         }
         return 0;
     }
@@ -670,7 +666,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         // Check if all days are covered
         for (int i = 1; i <= pattern.cycleLength; i++) {
             if (!covered[i]) {
-                logWarning( "Cycle day " + i + " is not covered by any shift sequence" );
+                Log.w( TAG, "Cycle day " + i + " is not covered by any shift sequence" );
                 return false;
             }
         }
@@ -724,7 +720,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      */
     public void clearPatternCache() {
         mPatternCache.clear();
-        logDebug( "Pattern cache cleared" );
+        Log.d( TAG, "Pattern cache cleared" );
     }
 
     /**
@@ -734,7 +730,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
      */
     public void clearPatternCache(@NonNull String ruleId) {
         mPatternCache.remove( ruleId );
-        logDebug( "Pattern cache cleared for rule: " + ruleId );
+        Log.d( TAG, "Pattern cache cleared for rule: " + ruleId );
     }
 
     // ==================== FACTORY METHODS ====================

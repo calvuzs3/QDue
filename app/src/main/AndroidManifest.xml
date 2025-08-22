@@ -19,6 +19,47 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
+        <!-- SwipeCalendarActivity - Debug Main Activity -->
+        <activity
+            android:name=".ui.features.swipecalendar.presentation.SwipeCalendarActivity"
+            android:exported="true"
+            android:label="@string/debug_swipe_calendar_title"
+            android:theme="@style/Theme.QDue"
+            android:screenOrientation="portrait">
+
+            <!-- MAIN LAUNCHER INTENT-FILTER (moved from QDueMainActivity) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Support for date navigation from external apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="qdue"
+                    android:host="calendar"
+                    android:pathPrefix="/debug" />
+            </intent-filter>
+
+        </activity>
+
+
+        <!-- MainActivity -->
+        <activity
+            android:name=".QDueMainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.QDue">
+
+            <!-- REMOVE THIS INTENT-FILTER FOR DEBUG MODE: -->
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            -->
+        </activity>
+
 
         <!-- SmartShifts Activities -->
         <activity
@@ -42,18 +83,6 @@
             android:screenOrientation="portrait" />
         <!--        android:theme="@style/Theme.QDue.Welcome"-->
 
-        <!-- MainActivity -->
-        <activity
-            android:name=".QDueMainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.QDue">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
         <!-- SettingsActivity -->
         <activity
@@ -61,6 +90,19 @@
             android:exported="false"
             android:label="@string/menu_title_settings"
             android:parentActivityName=".QDueMainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".QDueMainActivity" />
+        </activity>
+
+        <!-- User Profile Activity -->
+        <activity
+            android:name=".user.ui.UserProfileActivity"
+            android:exported="false"
+            android:label="@string/user_profile"
+            android:parentActivityName=".QDueMainActivity"
+            android:windowSoftInputMode="adjustResize">
+            <!--            android:theme="@style/Theme.QDue"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".QDueMainActivity" />

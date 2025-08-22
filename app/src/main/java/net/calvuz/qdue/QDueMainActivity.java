@@ -1,5 +1,7 @@
 package net.calvuz.qdue;
 
+import static android.view.View.VISIBLE;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -35,8 +37,10 @@ import net.calvuz.qdue.diagnosis.UIDataFlowTest;
 import net.calvuz.qdue.diagnosis.WorkScheduleDiagnosticTestSuite;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
+import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
+import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.features.settings.QDueSettingsActivity;
@@ -44,6 +48,7 @@ import net.calvuz.qdue.ui.core.architecture.base.BaseActivity;
 import net.calvuz.qdue.ui.core.common.enums.NavigationMode;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.user.ui.UserProfileLauncher;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -154,22 +159,6 @@ public class QDueMainActivity extends BaseActivity {
         // Cleanup enhanced data manager
         if (enhancedDataManager != null) {
             enhancedDataManager.shutdown();
-        }
-    }
-
-    /**
-     * Handle extras from WelcomeActivity:
-     */
-    private void handleWelcomeIntent(Intent intent) {
-        if (intent != null && intent.getBooleanExtra( "from_welcome", false )) {
-            String selectedViewMode = intent.getStringExtra( "selected_view_mode" );
-            Log.d( TAG, "Started from WelcomeActivity with view mode: " + selectedViewMode );
-
-            // Optional: Show welcome completion message
-            if (findViewById( android.R.id.content ) != null) {
-                Snackbar.make( findViewById( android.R.id.content ),
-                        "Benvenuto in QDue!", Snackbar.LENGTH_SHORT ).show();
-            }
         }
     }
 
@@ -291,7 +280,6 @@ public class QDueMainActivity extends BaseActivity {
         drawerLayout = binding.drawerLayout;
 
         // Detect available navigation components
-//        bottomNavigation = findViewById(R.id.bottom_navigation);
         navigationRail = findViewById( R.id.navigation_rail );
         drawerNavigation = findViewById( R.id.nav_drawer_secondary );
         sidebarNavigation = findViewById( R.id.sidebar_navigation );
@@ -329,13 +317,6 @@ public class QDueMainActivity extends BaseActivity {
         int smallestScreenWidthDp = config.smallestScreenWidthDp;
         boolean isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE;
 
-        /*if (bottomNavigation != null && drawerLayout != null && !isLandscape) {
-            // Phone portrait with BottomNavigation + DrawerLayout
-            return NavigationMode.PHONE_PORTRAIT;
-        } else if (bottomNavigation != null) {
-            // Fallback phone portrait
-            return NavigationMode.PHONE_PORTRAIT;
-        } else*/
         if (navigationRail != null && drawerLayout != null && !isLandscape) {
             // Tablet portrait with NavigationRail + DrawerLayout
             return NavigationMode.TABLET_PORTRAIT;
@@ -413,7 +394,7 @@ public class QDueMainActivity extends BaseActivity {
                 // Configure AppBar visibility
                 if (appBarLayout != null) {
                     boolean shouldShow = shouldShowAppBar();
-                    appBarLayout.setVisibility( shouldShow ? View.VISIBLE : View.GONE );
+                    appBarLayout.setVisibility( shouldShow ? VISIBLE : View.GONE );
 
                     Log.d( TAG, "AppBar visibility: " + (shouldShow ? "VISIBLE" : "GONE") );
                 }
@@ -669,11 +650,6 @@ public class QDueMainActivity extends BaseActivity {
         Log.d( TAG, MessageFormat.format( "Refresh summary: {0} active, {1} inactive, {2} errors",
                 activeCount, inactiveCount, errorCount ) );
 
-        // Show user feedback
-        if (activeCount > 0) {
-            showSuccessMessage( MessageFormat.format( "Refreshed {0} views", activeCount ) );
-        }
-
         // Force refresh all if no active fragments and change is significant
         if (activeCount == 0 && inactiveCount > 0 && isSignificantChange( changeType, eventCount )) {
             Log.w( TAG, "No active fragments, forcing refresh of all fragments" );
@@ -764,8 +740,6 @@ public class QDueMainActivity extends BaseActivity {
      * Enhanced force refresh with better error handling
      */
     private void forceRefreshAllEventFragments(List<EventsRefreshInterface> eventFragments) {
-        Log.d( TAG, "Force refreshing " + eventFragments.size() + " event fragments" );
-
         int successCount = 0;
         int errorCount = 0;
 
@@ -773,12 +747,8 @@ public class QDueMainActivity extends BaseActivity {
             try {
                 fragment.onForceEventsRefresh();
                 successCount++;
-                Log.d( TAG, MessageFormat.format( "Force refreshed fragment: {0}",
-                        fragment.getFragmentDescription() ) );
             } catch (Exception e) {
                 errorCount++;
-                Log.e( TAG, MessageFormat.format( "Error force refreshing fragment: {0}",
-                        fragment.getFragmentDescription() ), e );
             }
         }
 
@@ -799,7 +769,37 @@ public class QDueMainActivity extends BaseActivity {
             mEventsActivityLauncher.launch( intent );
         } catch (Exception e) {
             Log.e( TAG, "Error opening EventsActivity", e );
-            showSuccessMessage( "Error opening Events" );
+            Library.showError( this, getString( R.string.settings_events_not_available ) );
+        }
+    }
+
+    private void openUserProfileActivity() {
+        Log.d( TAG, "Opening UserProfileActivity" );
+
+        try {
+            if (UserProfileLauncher.isAvailable()) {
+                UserProfileLauncher.launch( this );
+            } else {
+                Library.showError( this, getString( R.string.user_profile_not_available ) );
+            }
+        } catch (Exception e) {
+            Log.e( TAG, "Error opening UserProfileActivity", e );
+            Library.showError( this, getString( R.string.user_profile_not_available ) );
+        }
+    }
+
+    private void openSettingsActivity() {
+        Log.d( TAG, "Opening SettingsActivity" );
+
+        try {
+            if (SettingsLauncher.isAvailable()) {
+                SettingsLauncher.launch( this );
+            } else {
+                Library.showError( this, getString( R.string.settings_not_available ) );
+            }
+        } catch (Exception e) {
+            Log.e( TAG, "Error opening SettingsActivity", e );
+            Library.showError( this, getString( R.string.settings_not_available ) );
         }
     }
 
@@ -808,11 +808,8 @@ public class QDueMainActivity extends BaseActivity {
      */
     @Override
     protected boolean handleNavigationItemSelected(int itemId) {
-        final String mTAG = "handleNavigationItemSelected: ";
-        Log.v( TAG, mTAG + "called." );
-
         if (navController == null) {
-            Log.e( TAG, mTAG + "NavController is null, cannot handle navigation" );
+            Log.e( TAG, "NavController is NULL" );
             return false;
         }
 
@@ -825,28 +822,23 @@ public class QDueMainActivity extends BaseActivity {
             } else if (itemId == R.id.nav_dayslist) {
                 navController.navigate( R.id.nav_dayslist );
                 return true;
+            } else if (itemId == R.id.nav_user_profile) {
+                openUserProfileActivity();
+                return true;
             } else if (itemId == R.id.nav_events) {
-                // Use Intent for settings to maintain existing behavior
-                openEventsActivity();  // Already set for activity result
+                openEventsActivity();
                 return true;
             } else if (itemId == R.id.nav_settings) {
-                // Use Intent for settings to maintain existing behavior
-                Intent settingsIntent = new Intent( this, QDueSettingsActivity.class );
-                startActivity( settingsIntent );
+                openSettingsActivity();
                 return true;
             } else if (itemId == R.id.nav_about) {
                 navController.navigate( R.id.nav_about );
                 return true;
-            } /*else if (itemId == R.id.nav_user_profile) {
-                Log.d(TAG, "nav_user_profile");
-                startActivity(new Intent(this, UserProfileActivity.class));
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            }*/
+            }
 
             return false;
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error during navigation: " + e.getMessage() );
+            Log.e( TAG, "Error during navigation", e );
             return false;
         }
     }
@@ -856,44 +848,31 @@ public class QDueMainActivity extends BaseActivity {
      */
     @Override
     protected boolean handleExtendedDrawerItemSelected(int itemId) {
-        final String mTAG = "handleExtendedDrawerItemSelected: ";
-        Log.v( TAG, mTAG + "called with itemId: " + itemId );
-
+        String message = "Handling extended drawer item ({0})";
         try {
-            /*if (itemId == R.id.nav_user_profile) {
-                Log.d(TAG, mTAG + "UserProfile");
-                Intent userIntent = new Intent(this, UserProfileActivity.class);
-                startActivity(userIntent);
+            if (itemId == R.id.nav_user_profile) {
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_user_profile ) );
+                openUserProfileActivity();
                 return true;
-
-            } else if (itemId == R.id.nav_eventi) {
-                // TODO: Replace with your actual Eventi Activity
-                Intent eventiIntent = new Intent(this, EventiActivity.class);
-                startActivity(eventiIntent);
+            } else if (itemId == R.id.nav_events) {
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_eventi ) );
+                openEventsActivity();
                 return true;
-
-            } else*/
-            if (itemId == R.id.nav_settings) {
-                Log.d( TAG, mTAG + "Settings" );
+            } else if (itemId == R.id.nav_settings) {
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_settings ) );
                 Intent settingsIntent = new Intent( this, QDueSettingsActivity.class );
                 startActivity( settingsIntent );
                 return true;
             } else if (itemId == R.id.nav_about) {
-                Log.d( TAG, mTAG + "About" );
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_header_about ) );
                 if (navController != null) {
                     navController.navigate( R.id.nav_about );
                 }
                 return true;
-            } else if (itemId == R.id.nav_events) {
-                // Use Intent for settings to maintain existing behavior
-                Intent eventsIntent = new Intent( this, EventsActivity.class );
-                startActivity( eventsIntent );
-                return true;
             }
-
             return false;
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error handling extended drawer item: " + e.getMessage() );
+            Log.e( TAG, "Error handling extended drawer item", e );
             return false;
         }
     }
@@ -902,9 +881,6 @@ public class QDueMainActivity extends BaseActivity {
 
     @Override
     public void onFragmentNavigationRequested(int destinationId, Bundle data) {
-        final String mTAG = "onFragmentNavigationRequested: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             if (navController != null) {
                 if (data != null) {
@@ -912,86 +888,71 @@ public class QDueMainActivity extends BaseActivity {
                 } else {
                     navController.navigate( destinationId );
                 }
-                Log.d( TAG, mTAG + " Navigation to: " + destinationId );
+                Log.d( TAG, "Navigation to: " + destinationId );
             } else {
-                Log.e( TAG, mTAG + " NavController is null, cannot navigate" );
+                throw new UnsupportedOperationException( "NavController is NULL" );
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + " Error during navigation: " + e.getMessage() );
+            Log.e( TAG, "Error during navigation", e );
         }
     }
 
     @Override
     public void onFragmentTitleChanged(String title) {
-        final String mTAG = "onFragmentTitleChanged: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle( title );
-                Log.v( TAG, mTAG + "Updated toolbar title to: " + title );
+                Log.v( TAG, "Updated toolbar title to: " + title );
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error updating toolbar title: " + e.getMessage() );
+            Log.e( TAG, "Error updating toolbar title", e );
         }
     }
 
     @Override
     public void onFragmentStatusMessage(String message, boolean isError) {
-        final String mTAG = "onFragmentStatusMessage: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             if (isError) {
-                Toast.makeText( this, message, Toast.LENGTH_LONG ).show();
+                Library.showToast( this, message, Toast.LENGTH_LONG );
             } else {
                 Snackbar.make( binding.getRoot(), message, Snackbar.LENGTH_SHORT ).show();
             }
-            Log.d( TAG, mTAG + "Displayed status message: " + message );
+            Log.d( TAG, "Displayed status message: " + message );
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error showing status message: " + e.getMessage() );
+            Log.e( TAG, "Error showing status message", e );
         }
     }
 
     @Override
     public void onFragmentMenuChanged(int menuId) {
-        final String mTAG = "onFragmentMenuChanged: ";
-        Log.v( TAG, mTAG + "called." );
-
         // Invalidate options menu to trigger onCreateOptionsMenu with new menu
         try {
             invalidateOptionsMenu();
-            Log.d( TAG, mTAG + "Invalidated options menu for menuId: " + menuId );
+            Log.d( TAG, "Invalidated options menu for menuId: " + menuId );
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error changing fragment menu: " + e.getMessage() );
+            Log.e( TAG, "Error changing fragment menu", e );
         }
     }
 
     @Override
     public void onFragmentToolbarVisibilityChanged(boolean visible) {
-        final String mTAG = "onFragmentToolbarVisibilityChanged: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             com.google.android.material.appbar.AppBarLayout appBarLayout = getAppBarLayout();
 
             if (appBarLayout != null && shouldShowAppBar()) {
-                appBarLayout.setVisibility( visible ? View.VISIBLE : View.GONE );
-                Log.d( TAG, mTAG + "Set toolbar visibility: " + visible );
+                appBarLayout.setVisibility( visible ? VISIBLE : View.GONE );
+                Log.d( TAG, "Set toolbar visibility: " + visible );
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error changing toolbar visibility: " + e.getMessage() );
+            Log.e( TAG, "Error changing toolbar visibility", e );
         }
     }
 
     @Override
     public void onFragmentOperationComplete(String operationType, boolean success, Bundle
             resultData) {
-        final String mTAG = "onFragmentOperationComplete: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
-            Log.d( TAG, mTAG + "Operation completed: " + operationType + ", success: " + success );
+            Log.d( TAG, "Operation completed: " + operationType + ", success: " + success );
 
             switch (operationType) {
                 case "data_refresh":
@@ -1011,15 +972,12 @@ public class QDueMainActivity extends BaseActivity {
                     break;
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error handling operation completion: " + e.getMessage() );
+            Log.e( TAG, "Error handling operation completion", e );
         }
     }
 
     @Override
     public void onFragmentCustomAction(String action, Bundle data) {
-        final String mTAG = "onFragmentCustomAction: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             switch (action) {
                 case "update_toolbar_title":
@@ -1042,11 +1000,11 @@ public class QDueMainActivity extends BaseActivity {
                     break;
 
                 default:
-                    Log.d( TAG, mTAG + "Unhandled custom action: " + action );
+                    Log.d( TAG, "Unhandled custom action: " + action );
                     break;
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error handling custom action '" + action + "': " + e.getMessage() );
+            Log.e( TAG, "Error handling custom action '" + action + "': " + e.getMessage() );
         }
     }
 
@@ -1054,19 +1012,16 @@ public class QDueMainActivity extends BaseActivity {
      * Show/hide loading indicator for long operations.
      */
     private void showLoadingIndicator(boolean show) {
-        // Implementation depends on your loading indicator setup
-        // This could be a progress bar in the binding, or a custom loading overlay
-        final String mTAG = "showLoadingIndicator: ";
-        Log.v( TAG, mTAG + "called." );
+        Log.v( TAG, "Showing Loading Indicator" );
 
         try {
             // Example implementation - adjust based on your actual UI
             View loadingOverlay = findViewById( R.id.loading_overlay );
             if (loadingOverlay != null) {
-                loadingOverlay.setVisibility( show ? View.VISIBLE : View.GONE );
+                loadingOverlay.setVisibility( show ? VISIBLE : View.GONE );
             }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error controlling loading indicator: " + e.getMessage() );
+            Log.e( TAG, "Error controlling loading indicator: " + e.getMessage() );
         }
     }
 
@@ -1076,10 +1031,9 @@ public class QDueMainActivity extends BaseActivity {
     private void handleFabVisibility(boolean visible) {
         // Implementation depends on whether activity has its own FABs to coordinate
         // For now, this is mainly handled by individual fragments
-        final String mTAG = "handleFabVisibility: ";
-        Log.v( TAG, mTAG + "called." );
 
-        Log.d( TAG, mTAG + "FAB visibility coordination: " + visible );
+        fabGoToToday.setVisibility( visible ? View.VISIBLE : View.GONE );
+        Log.d( TAG, MessageFormat.format( "Handled FAB visibility ({0})", visible ) );
     }
 
     // ==================== 1. FIX BINDING APPBAR ====================
@@ -1140,8 +1094,6 @@ public class QDueMainActivity extends BaseActivity {
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        final String mTAG = "onCreateOptionsMenu: ";
-
         try {
             boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
             boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
@@ -1158,56 +1110,53 @@ public class QDueMainActivity extends BaseActivity {
 
             FixedQDSchemeAnalysis.addDebugMenuOption( this, menu );
 
-            TeamAssignmentDiagnostics.addDebugMenuOption(this, menu);
+            TeamAssignmentDiagnostics.addDebugMenuOption( this, menu );
 
-            QuattroDuePatternVerification.addDebugMenuOption(this, menu);
+            QuattroDuePatternVerification.addDebugMenuOption( this, menu );
 
             QuattroDueImplementationFix.addDebugMenuOption( this, menu );
 
             TestWorkDay.addDebugMenuOption( this, menu );
 
-
-
             if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer
                 getMenuInflater().inflate( R.menu.menu_main, menu );
-                Log.d( TAG, mTAG + "Menu created for mode without drawer" );
+                Log.d( TAG, "Menu created for mode without drawer" );
                 return true;
             }
 
             // No menu when drawer is available (drawer replaces toolbar menu)
-            Log.d( TAG, mTAG + "Menu not created - drawer handles extended options" );
+            Log.d( TAG, "Menu not created - drawer handles extended options" );
             return super.onCreateOptionsMenu( menu );
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error creating menu: " + e.getMessage() );
+            Log.e( TAG, "Error creating menu", e );
             return super.onCreateOptionsMenu( menu );
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        final String mTAG = "onOptionsItemSelected: ";
+        final String message = "Options Item Selected ({0}) ";
 
         try {
             int id = item.getItemId();
 
             // Handle home/up button (menu button)
             if (id == android.R.id.home) {
-                Log.d( TAG, mTAG + "Home selected" );
+                Log.d( TAG, MessageFormat.format( message, "Home" ) );
                 toggleSidebar();
                 return true;
             }
 
             // Handle other menu items
             if (id == R.id.action_settings) {
-                Log.d( TAG, mTAG + "Settings selected" );
-                Intent settingsIntent = new Intent( this, QDueSettingsActivity.class );
-                startActivity( settingsIntent );
+                Log.d( TAG, MessageFormat.format( message, "Settings" ) );
+                openSettingsActivity();
                 return true;
             }
 
             if (id == R.id.action_about) {
-                Log.d( TAG, mTAG + "About selected" );
+                Log.d( TAG, MessageFormat.format( message, "About" ) );
                 if (navController != null) {
                     navController.navigate( R.id.nav_about );
                 }
@@ -1215,15 +1164,18 @@ public class QDueMainActivity extends BaseActivity {
             }
 
             if (id == R.id.action_smart_shifts) {
-                if (SmartShiftsLauncher.isSmartShiftsAvailable()) {
+                Log.d( TAG, MessageFormat.format( message, "SmartShifts" ) );
+
+                if (SmartShiftsLauncher.isAvailable()) {
                     SmartShiftsLauncher.launch( this );
-                } else {
-                    // Show error or setup dialog
-                    Toast.makeText( this, R.string.smartshifts_not_available, Toast.LENGTH_SHORT ).show();
                 }
             }
+
+            if (id == R.id.action_user_profile) {
+                openUserProfileActivity();
+            }
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error handling menu selection: " + e.getMessage() );
+            Log.e( TAG, "Error handling menu selection", e );
         }
 
         return super.onOptionsItemSelected( item );
@@ -1233,9 +1185,6 @@ public class QDueMainActivity extends BaseActivity {
      * Drawer toggle
      */
     private void toggleSidebar() {
-        final String mTAG = "toggleSidebar: ";
-        Log.v( TAG, mTAG + "called." );
-
         try {
             if (drawerLayout != null && drawerNavigation != null) {
                 // CORREZIONE: Apri/chiudi effettivamente il drawer
@@ -1247,32 +1196,10 @@ public class QDueMainActivity extends BaseActivity {
                 return;
             }
 
-            // Fallback se non c'è drawer
-            showPortraitMenu();
+            // Without Drawer
+            throw new UnsupportedOperationException( "Error toggling sidebar" );
         } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error toggling sidebar: " + e.getMessage() );
-        }
-    }
-
-    /**
-     * Show alternative menu for portrait mode
-     */
-    private void showPortraitMenu() {
-        final String mTAG = "showPortraitMenu: ";
-
-        try {
-            // Opzione 1: Mostra messaggio informativo
-            onFragmentStatusMessage( "Use bottom navigation to switch views", false );
-
-            // Opzione 2: Naviga direttamente ai settings (se preferisci)
-            // Intent settingsIntent = new Intent(this, QDueSettingsActivity.class);
-            // startActivity(settingsIntent);
-
-            // Opzione 3: Mostra dialogo con opzioni rapide (se implementi in futuro)
-            // showQuickOptionsDialog();
-
-        } catch (Exception e) {
-            Log.e( TAG, mTAG + "Error showing portrait menu: " + e.getMessage() );
+            Log.e( TAG, "Error toggling sidebar", e );
         }
     }
 
@@ -1290,81 +1217,5 @@ public class QDueMainActivity extends BaseActivity {
      */
     public FloatingActionButton getFabGoToToday() {
         return fabGoToToday;
-    }
-
-    /**
-     * Show success message to user
-     */
-    private void showSuccessMessage(String message) {
-        try {
-            Toast.makeText( this, message, Toast.LENGTH_SHORT ).show();
-        } catch (Exception e) {
-            Log.e( TAG, "Error showing success message", e );
-        }
-    }
-
-    // ==================== DEBUG METHODS ====================
-
-    /**
-     * Debug method to check events refresh system
-     */
-    public void debugEventsRefreshSystem() {
-        Log.d( TAG, "=== EVENTS REFRESH SYSTEM DEBUG ===" );
-        Log.d( TAG, "Registered fragments: " + mRegisteredEventsFragments.size() );
-
-        synchronized (mRegisteredEventsFragments) {
-            for (EventsRefreshInterface fragment : mRegisteredEventsFragments) {
-                Log.d( TAG, "  - " + fragment.getFragmentDescription() +
-                        " (Active: " + fragment.isFragmentActive() + ")" );
-            }
-        }
-
-        List<EventsRefreshInterface> discovered = getEventsRefreshFragmentsByDiscovery();
-        Log.d( TAG, "Discovered fragments: " + discovered.size() );
-
-        for (EventsRefreshInterface fragment : discovered) {
-            Log.d( TAG, "  - " + fragment.getFragmentDescription() +
-                    " (Active: " + fragment.isFragmentActive() + ")" );
-        }
-
-        Log.d( TAG, "=== END DEBUG ===" );
-    }
-
-    /**
-     * Debug method to log current navigation and preference state
-     * Call this in onCreate or onResume for debugging
-     */
-    private void logNavigationAndPreferenceState() {
-        if (!QDue.Debug.DEBUG_ACTIVITY) return;
-
-        Log.d( TAG, "=== Navigation & Preference State Debug ===" );
-
-        if (navController != null && navController.getCurrentDestination() != null) {
-            int currentDestId = navController.getCurrentDestination().getId();
-            Log.d( TAG, "Current navigation destination: " + currentDestId );
-            Log.d( TAG, "Target destination: " + currentDestination );
-        } else {
-            Log.d( TAG, "NavController or current destination is null" );
-        }
-
-        // Log all preferences
-        QDuePreferences.logAllPreferences( this );
-
-        Log.d( TAG, "=== End Navigation & Preference Debug ===" );
-    }
-
-    private void debugCurrentState() {
-        if (!QDue.Debug.DEBUG_ACTIVITY) return;
-
-        Log.d( TAG, "=== DEBUG: Current App State ===" );
-        Log.d( TAG, "Welcome completed: " + QDuePreferences.isWelcomeCompleted( this ) );
-        Log.d( TAG, "Current view mode: " + QDuePreferences.getDefaultViewMode( this ) );
-        Log.d( TAG, "Should show welcome: " + QDuePreferences.shouldShowWelcome( this ) );
-
-        if (navController != null && navController.getCurrentDestination() != null) {
-            Log.d( TAG, "Current navigation: " + navController.getCurrentDestination().getId() );
-        }
-
-        Log.d( TAG, "=== END DEBUG ===" );
     }
 }

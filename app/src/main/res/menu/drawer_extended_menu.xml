@@ -6,17 +6,17 @@
     tools:showIn="navigation_view">
 
     <!-- ACCOUNT GROUP -->
-<!--    <group
+    <group
         android:id="@+id/group_account"
         android:checkableBehavior="none">
 
         <item
             android:id="@+id/nav_user_profile"
-            android:icon="@drawable/ic_person"
-            android:title="User"
-            android:contentDescription="User" />
+            android:icon="@drawable/ic_rounded_person_24"
+            android:title="@string/nav_user_profile"
+            android:contentDescription="@string/nav_user_profile" />
 
-    </group>-->
+    </group>
 
     <!-- CONTENT GROUP -->
     <group

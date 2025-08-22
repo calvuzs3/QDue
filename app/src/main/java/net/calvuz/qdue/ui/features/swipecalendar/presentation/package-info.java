@@ -1,515 +1,156 @@
 /**
-* SwipeCalendar Integration Guide and Usage Examples
-*
-* This document provides comprehensive examples for integrating the SwipeCalendarFragment
-* into existing QDue activities and implementing proper dependency injection.
-  */
-
-/**
-* ==================== BASIC INTEGRATION EXAMPLE ====================
-*
-* Example Activity that hosts SwipeCalendarFragment with proper DI setup:
-  */
-
-/*
+ * SwipeCalendar Presentation Layer - UI Components and Activities
+ *
+ * <p>This package contains the presentation layer components for the SwipeCalendar feature,
+ * implementing a google-calendar-like month-to-month navigation with finite range boundaries.
+ * All components follow clean architecture principles with full dependency injection support
+ * and comprehensive internationalization.</p>
+ *
+ * <h3>Architecture Overview:</h3>
+ * <ul>
+ *   <li><strong>Clean Architecture</strong>: Strict separation between UI, domain, and data layers</li>
+ *   <li><strong>Dependency Injection</strong>: Injectable interface implementation throughout</li>
+ *   <li><strong>Internationalization</strong>: LocaleManager integration for multi-language support</li>
+ *   <li><strong>Material Design</strong>: Google Material Design 3 components and patterns</li>
+ * </ul>
+ *
+ * <h3>Core Components:</h3>
+ *
+ * <h4>{@link net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarFragment}</h4>
+ * <ul>
+ *   <li><strong>Main Fragment</strong>: Core calendar implementation with ViewPager2</li>
+ *   <li><strong>Finite Range</strong>: January 1900 to December 2100 (2400 months)</li>
+ *   <li><strong>State Management</strong>: Persistent position across sessions</li>
+ *   <li><strong>Event Integration</strong>: Full EventsService and WorkScheduleRepository support</li>
+ *   <li><strong>Navigation Controls</strong>: Previous/Next month, "Go to Today" functionality</li>
+ * </ul>
+ *
+ * <h4>{@link net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarActivity}</h4>
+ * <ul>
+ *   <li><strong>Debug Container</strong>: Simplified hosting activity for development</li>
+ *   <li><strong>Isolation Testing</strong>: Clean environment without QDueMainActivity complexity</li>
+ *   <li><strong>Dependency Injection</strong>: Full ServiceProvider integration</li>
+ *   <li><strong>Locale Support</strong>: Dynamic language switching capabilities</li>
+ *   <li><strong>Intent Parameters</strong>: Support for initial date and user ID configuration</li>
+ * </ul>
+ *
+ * <h3>Dependency Injection Pattern:</h3>
+ * <pre>
+ * // All presentation components implement Injectable:
+ * public class SwipeCalendarActivity extends AppCompatActivity implements Injectable {
+ *
+ *     private ServiceProvider mServiceProvider;
+ *     private LocaleManager mLocaleManager;
+ *
+ *     {@literal @}Override
+ *     public void inject(ServiceProvider serviceProvider) {
+ *         mServiceProvider = serviceProvider;
+ *         mLocaleManager = new LocaleManager(getApplicationContext());
+ *     }
+ *
+ *     {@literal @}Override
+ *     public boolean areDependenciesReady() {
+ *         return mServiceProvider != null && mServiceProvider.areServicesReady();
+ *     }
+ * }
+ * </pre>
+ *
+ * <h3>Internationalization Integration:</h3>
+ * <pre>
+ * // LocaleManager usage for string localization:
+ * private String getLocalizedString(String key, String fallback) {
+ *     return mLocaleManager.getLocalizedString(this, key, fallback);
+ * }
+ *
+ * // Example usage:
+ * String title = getLocalizedString("swipe_calendar_title", "Calendar");
+ * String todayButton = getLocalizedString("button_go_to_today", "Today");
+ * </pre>
+ *
+ * <h3>Navigation and State Management:</h3>
+ * <ul>
+ *   <li><strong>ViewPager2 Navigation</strong>: Smooth horizontal swipe between months</li>
+ *   <li><strong>Position Mapping</strong>: Adapter position ↔ YearMonth conversion</li>
+ *   <li><strong>Range Boundaries</strong>: Automatic swipe blocking at 1900/2100 limits</li>
+ *   <li><strong>State Persistence</strong>: SharedPreferences integration for last position</li>
+ *   <li><strong>Animation Support</strong>: Hardware-accelerated transitions</li>
+ * </ul>
+ *
+ * <h3>Integration with Core Services:</h3>
+ * <ul>
+ *   <li><strong>EventsService</strong>: Event data retrieval and management</li>
+ *   <li><strong>UserService</strong>: User context and preferences</li>
+ *   <li><strong>WorkScheduleRepository</strong>: Work schedule and shift information</li>
+ *   <li><strong>SwipeCalendarModule</strong>: Feature-specific dependency injection</li>
+ * </ul>
+ *
+ * <h3>Development and Debug Features:</h3>
+ * <ul>
+ *   <li><strong>SwipeCalendarActivity</strong>: Isolated testing environment</li>
+ *   <li><strong>Debug Logging</strong>: Comprehensive log messages with TAG classification</li>
+ *   <li><strong>Parameter Support</strong>: Initial date and user configuration via Intent</li>
+ *   <li><strong>Error Handling</strong>: Graceful degradation and error reporting</li>
+ * </ul>
+ *
+ * <h3>Usage Examples:</h3>
+ *
+ * <h4>Basic Fragment Integration:</h4>
+ * <pre>
+ * // In any Activity with ServiceProvider:
+ * SwipeCalendarFragment fragment = SwipeCalendarFragment.newInstance(null, null);
+ * getSupportFragmentManager()
+ *     .beginTransaction()
+ *     .replace(R.id.container, fragment)
+ *     .commit();
+ * </pre>
+ *
+ * <h4>Debug Activity Launch:</h4>
+ * <pre>
+ * // Launch for debugging with specific date:
+ * Intent intent = SwipeCalendarActivity.createIntent(context, LocalDate.now());
+ * startActivity(intent);
+ *
+ * // Launch with user context:
+ * Intent intent = SwipeCalendarActivity.createIntent(context, null, userId);
+ * startActivity(intent);
+ * </pre>
+ *
+ * <h4>Navigation Integration:</h4>
+ * <pre>
+ * // Add to mobile_navigation.xml:
+ * &lt;fragment
+ *     android:id="@+id/nav_swipe_calendar"
+ *     android:name="net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarFragment"
+ *     android:label="@string/menu_swipe_calendar" /&gt;
+ * </pre>
+ *
+ * <h3>String Resources Required:</h3>
+ * <ul>
+ *   <li><strong>debug_swipe_calendar_title</strong>: Activity title for debug mode</li>
+ *   <li><strong>debug_loading_calendar</strong>: Loading message</li>
+ *   <li><strong>debug_info_title</strong>: Debug panel title</li>
+ *   <li><strong>debug_close</strong>: Close button text</li>
+ *   <li><strong>debug_mode_active</strong>: Debug status message</li>
+ *   <li><strong>navigation_back</strong>: Back button content description</li>
+ * </ul>
+ *
+ * <h3>Drawable Resources Required:</h3>
+ * <ul>
+ *   <li><strong>ic_bug_report_24</strong>: Debug icon for info panel</li>
+ *   <li><strong>ic_debug_24</strong>: Debug status icon</li>
+ * </ul>
+ *
+ * <h3>Best Practices:</h3>
+ * <ul>
+ *   <li><strong>Dependency Injection</strong>: Always inject dependencies through constructor or ServiceProvider</li>
+ *   <li><strong>Error Handling</strong>: Use comprehensive try-catch blocks with meaningful log messages</li>
+ *   <li><strong>Internationalization</strong>: Never hardcode strings - use LocaleManager for all text</li>
+ *   <li><strong>State Management</strong>: Handle configuration changes and process death gracefully</li>
+ *   <li><strong>Performance</strong>: Use ViewPager2 offscreen page limit and optimize fragment lifecycle</li>
+ * </ul>
+ *
+ * @author QDue Development Team
+ * @version 1.0.0 - SwipeCalendar Presentation Layer
+ * @since SwipeCalendar Feature Implementation
+ */
 package net.calvuz.qdue.ui.features.swipecalendar.presentation;
-
-import android.os.Bundle;
-import android.view.MenuItem;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-
-import net.calvuz.qdue.R;
-import net.calvuz.qdue.core.infrastructure.di.Injectable;
-import net.calvuz.qdue.core.infrastructure.di.ServiceProvider;
-import net.calvuz.qdue.core.infrastructure.di.ServiceProviderImpl;
-import net.calvuz.qdue.ui.core.common.utils.Log;
-
-import java.time.LocalDate;
-
-public class SwipeCalendarActivity extends AppCompatActivity implements Injectable {
-
-    private static final String TAG = "SwipeCalendarActivity";
-    
-    // Arguments for launching activity
-    public static final String EXTRA_INITIAL_DATE = "initial_date";
-    public static final String EXTRA_USER_ID = "user_id";
-    
-    private ServiceProvider mServiceProvider;
-    private SwipeCalendarFragment mCalendarFragment;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_swipe_calendar);
-        
-        // Initialize dependency injection
-        initializeDependencyInjection();
-        
-        // Setup fragment
-        setupCalendarFragment(savedInstanceState);
-        
-        // Configure toolbar
-        setupToolbar();
-    }
-
-    private void initializeDependencyInjection() {
-        mServiceProvider = ServiceProviderImpl.getInstance(getApplicationContext());
-        Log.d(TAG, "Dependency injection initialized");
-    }
-
-    private void setupCalendarFragment(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            // Parse intent extras
-            LocalDate initialDate = null;
-            Long userId = null;
-            
-            String dateStr = getIntent().getStringExtra(EXTRA_INITIAL_DATE);
-            if (dateStr != null) {
-                try {
-                    initialDate = LocalDate.parse(dateStr);
-                } catch (Exception e) {
-                    Log.w(TAG, "Invalid initial date: " + dateStr);
-                }
-            }
-            
-            if (getIntent().hasExtra(EXTRA_USER_ID)) {
-                userId = getIntent().getLongExtra(EXTRA_USER_ID, -1);
-                if (userId == -1) userId = null;
-            }
-            
-            // Create fragment
-            mCalendarFragment = SwipeCalendarFragment.newInstance(initialDate, userId);
-            
-            // Add to container
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.calendar_container, mCalendarFragment)
-                    .commit();
-                    
-            Log.d(TAG, "SwipeCalendarFragment added to activity");
-        } else {
-            // Restore fragment reference
-            mCalendarFragment = (SwipeCalendarFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.calendar_container);
-        }
-    }
-
-    private void setupToolbar() {
-        setSupportActionBar(findViewById(R.id.toolbar));
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.calendar_swipe_view_title);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    @NonNull
-    public ServiceProvider getServiceProvider() {
-        return mServiceProvider;
-    }
-
-    // Public methods for external navigation
-    public void navigateToDate(@NonNull LocalDate date) {
-        if (mCalendarFragment != null) {
-            mCalendarFragment.navigateToMonth(YearMonth.from(date), true);
-        }
-    }
-}
-*/
-
-/**
-* ==================== FRAGMENT CONTAINER LAYOUT ====================
-  */
-
-/*
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/activity_swipe_calendar.xml -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical">
-
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.Material3.Light" />
-
-    <!-- Fragment Container -->
-    <FrameLayout
-        android:id="@+id/calendar_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-</LinearLayout>
-*/
-
-/**
-* ==================== INTEGRATION WITH EXISTING NAVIGATION ====================
-*
-* Example of integrating SwipeCalendarFragment into existing MainActivity:
-  */
-
-/*
-// In MainActivity.java - add to navigation menu
-
-private void setupBottomNavigation() {
-BottomNavigationView navigation = findViewById(R.id.bottom_navigation);
-
-    navigation.setOnNavigationItemSelectedListener(item -> {
-        Fragment selectedFragment = null;
-        
-        switch (item.getItemId()) {
-            case R.id.nav_calendar_infinite:
-                selectedFragment = CalendarViewFragment.newInstance();
-                break;
-                
-            case R.id.nav_calendar_swipe:
-                // New swipe calendar option
-                selectedFragment = SwipeCalendarFragment.newInstance(null, getCurrentUserId());
-                break;
-                
-            case R.id.nav_dayslist:
-                selectedFragment = DayslistViewFragment.newInstance();
-                break;
-                
-            case R.id.nav_events:
-                selectedFragment = EventsFragment.newInstance();
-                break;
-        }
-        
-        if (selectedFragment != null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.main_container, selectedFragment)
-                    .commit();
-            return true;
-        }
-        
-        return false;
-    });
-}
-*/
-
-/**
-* ==================== PROGRAMMATIC NAVIGATION EXAMPLES ====================
-  */
-
-/*
-// Navigate to specific date from external code
-public void openCalendarAtDate(LocalDate targetDate) {
-SwipeCalendarFragment fragment = SwipeCalendarFragment.newInstance(targetDate, getCurrentUserId());
-
-    getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.container, fragment)
-            .addToBackStack("calendar")
-            .commit();
-}
-
-// Navigate to today with animation
-public void openCalendarToday() {
-SwipeCalendarFragment fragment = SwipeCalendarFragment.newInstance(null, getCurrentUserId());
-
-    getSupportFragmentManager()
-            .beginTransaction()
-            .setCustomAnimations(
-                R.anim.slide_in_right,
-                R.anim.slide_out_left,
-                R.anim.slide_in_left,
-                R.anim.slide_out_right
-            )
-            .replace(R.id.container, fragment)
-            .addToBackStack("calendar")
-            .commit();
-}
-
-// Navigate from event detail to calendar
-public void openCalendarForEvent(LocalEvent event) {
-LocalDate eventDate = event.getDate();
-openCalendarAtDate(eventDate);
-}
-*/
-
-/**
-* ==================== PREFERENCE INTEGRATION ====================
-*
-* Add to settings to allow users to choose between calendar views:
-  */
-
-/*
-// In SettingsFragment.java
-
-private void setupCalendarViewPreference() {
-ListPreference calendarViewPref = findPreference("calendar_view_type");
-
-    if (calendarViewPref != null) {
-        calendarViewPref.setEntries(new CharSequence[]{
-                "Vista calendario infinita",
-                "Vista calendario mensile",
-                "Vista lista giorni"
-        });
-        
-        calendarViewPref.setEntryValues(new CharSequence[]{
-                "infinite",
-                "swipe",
-                "dayslist"
-        });
-        
-        calendarViewPref.setOnPreferenceChangeListener((preference, newValue) -> {
-            String viewType = (String) newValue;
-            
-            // Save preference and update UI
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-            prefs.edit().putString("default_calendar_view", viewType).apply();
-            
-            // Show restart hint if needed
-            if (getActivity() instanceof QDueMainActivity) {
-                ((QDueMainActivity) getActivity()).refreshCalendarView();
-            }
-            
-            return true;
-        });
-    }
-}
-*/
-
-/**
-* ==================== EVENT HANDLING EXAMPLES ====================
-  */
-
-/*
-// Custom event listener implementation
-public class CalendarEventHandler implements SwipeCalendarFragment.OnCalendarInteractionListener {
-
-    private final Context mContext;
-    private final FragmentManager mFragmentManager;
-    
-    public CalendarEventHandler(Context context, FragmentManager fragmentManager) {
-        this.mContext = context;
-        this.mFragmentManager = fragmentManager;
-    }
-    
-    @Override
-    public void onDayClick(LocalDate date, Day day, List<LocalEvent> events) {
-        if (events.isEmpty()) {
-            // No events - show quick event creation
-            QuickEventDialog dialog = QuickEventDialog.newInstance(date);
-            dialog.show(mFragmentManager, "quick_event");
-        } else {
-            // Has events - show events for day
-            EventsForDayDialog dialog = EventsForDayDialog.newInstance(date, events);
-            dialog.show(mFragmentManager, "events_for_day");
-        }
-    }
-    
-    @Override
-    public void onDayLongClick(LocalDate date, Day day, View view) {
-        // Show context menu with options
-        PopupMenu popup = new PopupMenu(mContext, view);
-        popup.getMenuInflater().inflate(R.menu.calendar_day_context_menu, popup.getMenu());
-        
-        popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.action_create_event:
-                    openEventCreation(date);
-                    return true;
-                case R.id.action_view_day_detail:
-                    openDayDetail(date);
-                    return true;
-                case R.id.action_copy_date:
-                    copyDateToClipboard(date);
-                    return true;
-            }
-            return false;
-        });
-        
-        popup.show();
-    }
-    
-    private void openEventCreation(LocalDate date) {
-        Intent intent = new Intent(mContext, EventsActivity.class);
-        intent.putExtra(EventsActivity.EXTRA_CREATE_EVENT_DATE, date.toString());
-        mContext.startActivity(intent);
-    }
-    
-    private void openDayDetail(LocalDate date) {
-        DayDetailDialog dialog = DayDetailDialog.newInstance(date);
-        dialog.show(mFragmentManager, "day_detail");
-    }
-    
-    private void copyDateToClipboard(LocalDate date) {
-        ClipboardManager clipboard = (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("Date", date.toString());
-        clipboard.setPrimaryClip(clip);
-        
-        Toast.makeText(mContext, "Data copiata negli appunti", Toast.LENGTH_SHORT).show();
-    }
-}
-*/
-
-/**
-* ==================== STATE MANAGEMENT EXAMPLES ====================
-  */
-
-/*
-// Custom state management for complex scenarios
-public class CalendarStateController {
-
-    private final SwipeCalendarStateManager mStateManager;
-    private final SharedPreferences mPreferences;
-    
-    public CalendarStateController(Context context) {
-        this.mStateManager = new SwipeCalendarStateManager(context);
-        this.mPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-    }
-    
-    // Save additional state beyond just position
-    public void saveExtendedState(YearMonth currentMonth, String viewMode, boolean isSelectionMode) {
-        mPreferences.edit()
-                .putString("calendar_current_month", currentMonth.toString())
-                .putString("calendar_view_mode", viewMode)
-                .putBoolean("calendar_selection_mode", isSelectionMode)
-                .apply();
-    }
-    
-    // Restore extended state
-    public CalendarState restoreExtendedState() {
-        String monthStr = mPreferences.getString("calendar_current_month", null);
-        String viewMode = mPreferences.getString("calendar_view_mode", "normal");
-        boolean isSelectionMode = mPreferences.getBoolean("calendar_selection_mode", false);
-        
-        YearMonth month = null;
-        if (monthStr != null) {
-            try {
-                month = YearMonth.parse(monthStr);
-            } catch (Exception e) {
-                month = YearMonth.now();
-            }
-        }
-        
-        return new CalendarState(month, viewMode, isSelectionMode);
-    }
-    
-    // Clear all state
-    public void resetState() {
-        mStateManager.clearState();
-        mPreferences.edit()
-                .remove("calendar_current_month")
-                .remove("calendar_view_mode")
-                .remove("calendar_selection_mode")
-                .apply();
-    }
-    
-    public static class CalendarState {
-        public final YearMonth month;
-        public final String viewMode;
-        public final boolean isSelectionMode;
-        
-        public CalendarState(YearMonth month, String viewMode, boolean isSelectionMode) {
-            this.month = month;
-            this.viewMode = viewMode;
-            this.isSelectionMode = isSelectionMode;
-        }
-    }
-}
-*/
-
-/**
-* ==================== TESTING EXAMPLES ====================
-  */
-
-/*
-// Unit test example for SwipeCalendarModule
-@Test
-public void testSwipeCalendarModuleDependencyInjection() {
-// Arrange
-Context context = ApplicationProvider.getApplicationContext();
-EventsService mockEventsService = mock(EventsService.class);
-UserService mockUserService = mock(UserService.class);
-WorkScheduleRepository mockWorkScheduleService = mock(WorkScheduleRepository.class);
-
-    // Act
-    SwipeCalendarModule module = new SwipeCalendarModule(
-            context, mockEventsService, mockUserService, mockWorkScheduleService);
-    
-    // Assert
-    assertTrue(module.areDependenciesReady());
-    assertNotNull(module.provideStateManager());
-    assertNotNull(module.providePagerAdapter());
-}
-
-// Instrumentation test example for fragment
-@Test
-public void testSwipeCalendarFragmentCreation() {
-// Arrange
-LocalDate testDate = LocalDate.of(2024, 1, 15);
-Long testUserId = 123L;
-
-    // Act
-    SwipeCalendarFragment fragment = SwipeCalendarFragment.newInstance(testDate, testUserId);
-    
-    // Assert
-    assertNotNull(fragment);
-    Bundle args = fragment.getArguments();
-    assertNotNull(args);
-    assertEquals(testDate.toString(), args.getString(SwipeCalendarFragment.ARG_INITIAL_DATE));
-    assertEquals(testUserId.longValue(), args.getLong(SwipeCalendarFragment.ARG_USER_ID));
-}
-*/
-
-/**
-* ==================== IMPLEMENTATION NOTES ====================
-*
-* Key Points for Successful Integration:
-*
-* 1. DEPENDENCY INJECTION:
-*    - Always ensure hosting Activity implements Injectable
-*    - Use ServiceProvider pattern consistently
-*    - Initialize modules in onCreate() before fragment setup
-*
-* 2. STATE MANAGEMENT:
-*    - Handle onPause() for proper state persistence
-*    - Clear state appropriately in onDestroy()
-*    - Consider user preferences for initial position
-*
-* 3. PERFORMANCE:
-*    - ViewPager2 manages memory automatically
-*    - Data loading is asynchronous and cached
-*    - Use proper lifecycle management to prevent leaks
-*
-* 4. ACCESSIBILITY:
-*    - All UI components have proper content descriptions
-*    - Touch targets meet minimum size requirements
-*    - Support for high contrast and large text
-*
-* 5. ERROR HANDLING:
-*    - Graceful degradation on data loading failures
-*    - User-friendly error messages with retry options
-*    - Proper logging for debugging
-*
-* 6. INTEGRATION WITH EXISTING FEATURES:
-*    - Reuses existing event and work schedule services
-*    - Compatible with existing EventsActivity for detail views
-*    - Follows established UI patterns and Material Design
-       */
-
-package net.calvuz.qdue.ui.features.swipecalendar.presentation;
-

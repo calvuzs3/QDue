@@ -1,9 +1,5 @@
 package net.calvuz.qdue.domain.calendar.engines;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logWarning;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -15,6 +11,7 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -61,6 +58,7 @@ import java.util.Map;
  */
 public class SchedulingEngine extends LocalizableDomainModel {
 
+    private static final String TAG = "SchedulingEngine";
     private static final String LOCALIZATION_SCOPE = "scheduling";
 
     // Coordinated domain engines
@@ -73,16 +71,16 @@ public class SchedulingEngine extends LocalizableDomainModel {
      * Constructor for creating scheduling engine with coordinated domain engines.
      *
      * @param recurrenceCalculator RecurrenceCalculator for base schedule generation
-     * @param exceptionResolver ExceptionResolver for exception application
-     * @param localizer DomainLocalizer for i18n support (can be null)
+     * @param exceptionResolver    ExceptionResolver for exception application
+     * @param localizer            DomainLocalizer for i18n support (can be null)
      */
     public SchedulingEngine(@NonNull RecurrenceCalculator recurrenceCalculator,
                             @NonNull ExceptionResolver exceptionResolver,
                             @Nullable DomainLocalizer localizer) {
-        super(localizer, LOCALIZATION_SCOPE);
+        super( localizer, LOCALIZATION_SCOPE );
         this.mRecurrenceCalculator = recurrenceCalculator;
         this.mExceptionResolver = exceptionResolver;
-        logDebug("SchedulingEngine initialized with coordinated engines");
+        Log.d( TAG, "SchedulingEngine initialized with coordinated engines" );
     }
 
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
@@ -97,8 +95,8 @@ public class SchedulingEngine extends LocalizableDomainModel {
     @NonNull
     public SchedulingEngine withLocalizer(@NonNull DomainLocalizer localizer) {
         return new SchedulingEngine(
-                mRecurrenceCalculator.withLocalizer(localizer),
-                mExceptionResolver.withLocalizer(localizer),
+                mRecurrenceCalculator.withLocalizer( localizer ),
+                mExceptionResolver.withLocalizer( localizer ),
                 localizer
         );
     }
@@ -111,11 +109,11 @@ public class SchedulingEngine extends LocalizableDomainModel {
      * <p>Orchestrates the complete scheduling process from recurrence calculation
      * through exception resolution to produce the final work schedule.</p>
      *
-     * @param date Target date for schedule generation
-     * @param assignment User schedule assignment
-     * @param recurrenceRule Recurrence rule for base schedule
-     * @param exceptions List of exceptions to apply
-     * @param userTeamMappings Map of userId to Team for team lookups
+     * @param date              Target date for schedule generation
+     * @param assignment        User schedule assignment
+     * @param recurrenceRule    Recurrence rule for base schedule
+     * @param exceptions        List of exceptions to apply
+     * @param userTeamMappings  Map of userId to Team for team lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Complete WorkScheduleDay with all shifts and exceptions applied
      */
@@ -127,28 +125,27 @@ public class SchedulingEngine extends LocalizableDomainModel {
                                                     @NonNull Map<Long, Team> userTeamMappings,
                                                     @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
-            logDebug("Generating complete schedule for date: " + date +
-                    ", user: " + assignment.getUserId());
+            Log.d( TAG, "Generating complete schedule for date: " + date +
+                    ", user: " + assignment.getUserId() );
 
             // Step 1: Generate base schedule from recurrence rules
             WorkScheduleDay baseSchedule = mRecurrenceCalculator.generateScheduleForDate(
-                    date, recurrenceRule, assignment);
+                    date, recurrenceRule, assignment );
 
             // Step 2: Apply exceptions to base schedule
             WorkScheduleDay scheduleWithExceptions = mExceptionResolver.applyExceptions(
-                    baseSchedule, exceptions, userTeamMappings, replacementShifts);
+                    baseSchedule, exceptions, userTeamMappings, replacementShifts );
 
             // Step 3: Validate and optimize final schedule
-            WorkScheduleDay finalSchedule = validateAndOptimizeSchedule(scheduleWithExceptions);
+            WorkScheduleDay finalSchedule = validateAndOptimizeSchedule( scheduleWithExceptions );
 
-            logDebug("Successfully generated complete schedule with " +
-                    finalSchedule.getShifts().size() + " shifts");
+            Log.d( TAG, "Successfully generated complete schedule with " +
+                    finalSchedule.getShifts().size() + " shifts" );
 
             return finalSchedule;
-
         } catch (Exception e) {
-            logError("Error generating complete schedule for date: " + date, e);
-            return createEmptySchedule(date);
+            Log.e( TAG, "Error generating complete schedule for date: " + date, e );
+            return createEmptySchedule( date );
         }
     }
 
@@ -157,12 +154,12 @@ public class SchedulingEngine extends LocalizableDomainModel {
      *
      * <p>Batch processing for multiple dates with optimized performance.</p>
      *
-     * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
-     * @param assignment User schedule assignment
-     * @param recurrenceRule Recurrence rule for base schedule
-     * @param exceptions List of exceptions to apply across range
-     * @param userTeamMappings Map of userId to Team for team lookups
+     * @param startDate         Start date (inclusive)
+     * @param endDate           End date (inclusive)
+     * @param assignment        User schedule assignment
+     * @param recurrenceRule    Recurrence rule for base schedule
+     * @param exceptions        List of exceptions to apply across range
+     * @param userTeamMappings  Map of userId to Team for team lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Map of dates to complete WorkScheduleDay objects
      */
@@ -178,37 +175,36 @@ public class SchedulingEngine extends LocalizableDomainModel {
         Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
 
         try {
-            logDebug("Generating complete schedule range: " + startDate + " to " + endDate);
+            Log.d( TAG, "Generating complete schedule range: " + startDate + " to " + endDate );
 
             // Batch generate base schedules for efficiency
             Map<LocalDate, List<net.calvuz.qdue.domain.calendar.models.Shift>> baseShifts =
-                    mRecurrenceCalculator.calculateShiftsForDateRange(startDate, endDate, recurrenceRule, assignment);
+                    mRecurrenceCalculator.calculateShiftsForDateRange( startDate, endDate, recurrenceRule, assignment );
 
             // Process each date
             LocalDate currentDate = startDate;
-            while (!currentDate.isAfter(endDate)) {
+            while (!currentDate.isAfter( endDate )) {
 
                 // Create base schedule for this date
-                WorkScheduleDay baseSchedule = createScheduleFromShifts(currentDate,
-                        baseShifts.getOrDefault(currentDate, new ArrayList<>()));
+                WorkScheduleDay baseSchedule = createScheduleFromShifts( currentDate,
+                        baseShifts.getOrDefault( currentDate, new ArrayList<>() ) );
 
                 // Filter exceptions for this date
-                List<ShiftException> dateExceptions = filterExceptionsForDate(exceptions, currentDate);
+                List<ShiftException> dateExceptions = filterExceptionsForDate( exceptions, currentDate );
 
                 // Apply exceptions
                 WorkScheduleDay finalSchedule = mExceptionResolver.applyExceptions(
-                        baseSchedule, dateExceptions, userTeamMappings, replacementShifts);
+                        baseSchedule, dateExceptions, userTeamMappings, replacementShifts );
 
                 // Validate and add to map
-                scheduleMap.put(currentDate, validateAndOptimizeSchedule(finalSchedule));
+                scheduleMap.put( currentDate, validateAndOptimizeSchedule( finalSchedule ) );
 
-                currentDate = currentDate.plusDays(1);
+                currentDate = currentDate.plusDays( 1 );
             }
 
-            logDebug("Successfully generated schedule range with " + scheduleMap.size() + " days");
-
+            Log.d( TAG, "Successfully generated schedule range with " + scheduleMap.size() + " days" );
         } catch (Exception e) {
-            logError("Error generating schedule range", e);
+            Log.e( TAG, "Error generating schedule range", e );
         }
 
         return scheduleMap;
@@ -219,11 +215,11 @@ public class SchedulingEngine extends LocalizableDomainModel {
      *
      * <p>Combines individual user schedules into a comprehensive team schedule.</p>
      *
-     * @param date Target date
-     * @param assignments List of user assignments for the team
-     * @param recurrenceRules Map of ruleId to RecurrenceRule
-     * @param exceptions List of exceptions across all users
-     * @param userTeamMappings Map of userId to Team
+     * @param date              Target date
+     * @param assignments       List of user assignments for the team
+     * @param recurrenceRules   Map of ruleId to RecurrenceRule
+     * @param exceptions        List of exceptions across all users
+     * @param userTeamMappings  Map of userId to Team
      * @param replacementShifts Map of shiftId to WorkScheduleShift
      * @return Combined team WorkScheduleDay
      */
@@ -235,26 +231,26 @@ public class SchedulingEngine extends LocalizableDomainModel {
                                                 @NonNull Map<Long, Team> userTeamMappings,
                                                 @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
-            logDebug("Generating team schedule for date: " + date +
-                    ", assignments: " + assignments.size());
+            Log.d( TAG, "Generating team schedule for date: " + date +
+                    ", assignments: " + assignments.size() );
 
-            WorkScheduleDay.Builder teamScheduleBuilder = WorkScheduleDay.builder(date);
+            WorkScheduleDay.Builder teamScheduleBuilder = WorkScheduleDay.builder( date );
 
             // Generate schedule for each user assignment
             for (UserScheduleAssignment assignment : assignments) {
-                RecurrenceRule rule = recurrenceRules.get(assignment.getRecurrenceRuleId());
+                RecurrenceRule rule = recurrenceRules.get( assignment.getRecurrenceRuleId() );
 
                 if (rule != null) {
                     // Filter exceptions for this user
-                    List<ShiftException> userExceptions = filterExceptionsForUser(exceptions, assignment.getUserId());
+                    List<ShiftException> userExceptions = filterExceptionsForUser( exceptions, assignment.getUserId() );
 
                     // Generate complete schedule for this user
                     WorkScheduleDay userSchedule = generateCompleteSchedule(
-                            date, assignment, rule, userExceptions, userTeamMappings, replacementShifts);
+                            date, assignment, rule, userExceptions, userTeamMappings, replacementShifts );
 
                     // Add user's shifts to team schedule
                     for (WorkScheduleShift shift : userSchedule.getShifts()) {
-                        teamScheduleBuilder.addShift(shift);
+                        teamScheduleBuilder.addShift( shift );
                     }
                 }
             }
@@ -262,16 +258,15 @@ public class SchedulingEngine extends LocalizableDomainModel {
             WorkScheduleDay teamSchedule = teamScheduleBuilder.build();
 
             // Validate team schedule for conflicts
-            validateTeamScheduleConsistency(teamSchedule);
+            validateTeamScheduleConsistency( teamSchedule );
 
-            logDebug("Successfully generated team schedule with " +
-                    teamSchedule.getShifts().size() + " total shifts");
+            Log.d( TAG, "Successfully generated team schedule with " +
+                    teamSchedule.getShifts().size() + " total shifts" );
 
             return teamSchedule;
-
         } catch (Exception e) {
-            logError("Error generating team schedule for date: " + date, e);
-            return createEmptySchedule(date);
+            Log.e( TAG, "Error generating team schedule for date: " + date, e );
+            return createEmptySchedule( date );
         }
     }
 
@@ -287,15 +282,14 @@ public class SchedulingEngine extends LocalizableDomainModel {
     private WorkScheduleDay validateAndOptimizeSchedule(@NonNull WorkScheduleDay schedule) {
         try {
             // Basic validation
-            validateScheduleConsistency(schedule);
+            validateScheduleConsistency( schedule );
 
             // Apply optimizations
-            WorkScheduleDay optimizedSchedule = applyScheduleOptimizations(schedule);
+            WorkScheduleDay optimizedSchedule = applyScheduleOptimizations( schedule );
 
             return optimizedSchedule;
-
         } catch (Exception e) {
-            logWarning("Schedule validation/optimization failed, returning original");
+            Log.w( TAG, "Schedule validation/optimization failed, returning original" );
             return schedule;
         }
     }
@@ -303,14 +297,14 @@ public class SchedulingEngine extends LocalizableDomainModel {
     private void validateScheduleConsistency(@NonNull WorkScheduleDay schedule) {
         for (WorkScheduleShift shift : schedule.getShifts()) {
             // Check basic shift validity
-            if (shift.getStartTime().isAfter(shift.getEndTime()) && !isOvernightShift(shift)) {
-                logWarning("Invalid shift timing detected: " + shift.getStartTime() +
-                        " to " + shift.getEndTime());
+            if (shift.getStartTime().isAfter( shift.getEndTime() ) && !isOvernightShift( shift )) {
+                Log.w( TAG, "Invalid shift timing detected: " + shift.getStartTime() +
+                        " to " + shift.getEndTime() );
             }
 
             // Check team assignments
             if (shift.getTeams().isEmpty()) {
-                logWarning("Shift with no team assignments detected");
+                Log.w( TAG, "Shift with no team assignments detected" );
             }
         }
     }
@@ -321,7 +315,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
 
         for (WorkScheduleShift shift : teamSchedule.getShifts()) {
             String shiftType = shift.getShift().getName();
-            shiftsByType.computeIfAbsent(shiftType, k -> new ArrayList<>()).add(shift);
+            shiftsByType.computeIfAbsent( shiftType, k -> new ArrayList<>() ).add( shift );
         }
 
         // Validate coverage requirements
@@ -329,10 +323,10 @@ public class SchedulingEngine extends LocalizableDomainModel {
             String shiftType = entry.getKey();
             List<WorkScheduleShift> shifts = entry.getValue();
 
-            if (shifts.size() < getMinimumCoverageForShiftType(shiftType)) {
-                logWarning("Insufficient coverage for shift type: " + shiftType +
+            if (shifts.size() < getMinimumCoverageForShiftType( shiftType )) {
+                Log.w( TAG, "Insufficient coverage for shift type: " + shiftType +
                         " (have: " + shifts.size() + ", need: " +
-                        getMinimumCoverageForShiftType(shiftType) + ")");
+                        getMinimumCoverageForShiftType( shiftType ) + ")" );
             }
         }
     }
@@ -350,20 +344,20 @@ public class SchedulingEngine extends LocalizableDomainModel {
     // ==================== HELPER METHODS ====================
 
     private WorkScheduleDay createEmptySchedule(@NonNull LocalDate date) {
-        return WorkScheduleDay.builder(date).build();
+        return WorkScheduleDay.builder( date ).build();
     }
 
     private WorkScheduleDay createScheduleFromShifts(@NonNull LocalDate date,
                                                      @NonNull List<net.calvuz.qdue.domain.calendar.models.Shift> shifts) {
-        WorkScheduleDay.Builder builder = WorkScheduleDay.builder(date);
+        WorkScheduleDay.Builder builder = WorkScheduleDay.builder( date );
 
         for (net.calvuz.qdue.domain.calendar.models.Shift shift : shifts) {
             WorkScheduleShift workScheduleShift = WorkScheduleShift.builder()
-                    .shift(shift)
-                    .startTime(shift.getStartTime())
-                    .endTime(shift.getEndTime())
+                    .shift( shift )
+                    .startTime( shift.getStartTime() )
+                    .endTime( shift.getEndTime() )
                     .build();
-            builder.addShift(workScheduleShift);
+            builder.addShift( workScheduleShift );
         }
 
         return builder.build();
@@ -372,19 +366,19 @@ public class SchedulingEngine extends LocalizableDomainModel {
     private List<ShiftException> filterExceptionsForDate(@NonNull List<ShiftException> exceptions,
                                                          @NonNull LocalDate date) {
         return exceptions.stream()
-                .filter(exception -> exception.appliesTo(date))
-                .collect(java.util.stream.Collectors.toList());
+                .filter( exception -> exception.appliesTo( date ) )
+                .collect( java.util.stream.Collectors.toList() );
     }
 
     private List<ShiftException> filterExceptionsForUser(@NonNull List<ShiftException> exceptions,
                                                          @NonNull Long userId) {
         return exceptions.stream()
-                .filter(exception -> userId.equals(exception.getUserId()))
-                .collect(java.util.stream.Collectors.toList());
+                .filter( exception -> userId.equals( exception.getUserId() ) )
+                .collect( java.util.stream.Collectors.toList() );
     }
 
     private boolean isOvernightShift(@NonNull WorkScheduleShift shift) {
-        return shift.getStartTime().isAfter(shift.getEndTime());
+        return shift.getStartTime().isAfter( shift.getEndTime() );
     }
 
     private int getMinimumCoverageForShiftType(@NonNull String shiftType) {
@@ -409,10 +403,10 @@ public class SchedulingEngine extends LocalizableDomainModel {
         int shiftCount = schedule.getShifts().size();
 
         if (shiftCount == 0) {
-            return localize("status.no_shifts", "No shifts scheduled", String.valueOf(shiftCount));
+            return localize( "status.no_shifts", "No shifts scheduled", String.valueOf( shiftCount ) );
         } else {
-            return localize("status.shifts_generated",
-                    "Generated " + shiftCount + " shifts", String.valueOf(shiftCount));
+            return localize( "status.shifts_generated",
+                    "Generated " + shiftCount + " shifts", String.valueOf( shiftCount ) );
         }
     }
 
@@ -423,13 +417,13 @@ public class SchedulingEngine extends LocalizableDomainModel {
     public String getValidationStatus(@NonNull WorkScheduleDay schedule) {
         // Simple validation check
         boolean hasInvalidShifts = schedule.getShifts().stream()
-                .anyMatch(shift -> shift.getStartTime().isAfter(shift.getEndTime()) &&
-                        !isOvernightShift(shift));
+                .anyMatch( shift -> shift.getStartTime().isAfter( shift.getEndTime() ) &&
+                        !isOvernightShift( shift ) );
 
         if (hasInvalidShifts) {
-            return localize("validation.has_errors", "Schedule has validation errors");
+            return localize( "validation.has_errors", "Schedule has validation errors" );
         } else {
-            return localize("validation.passed", "Schedule validation passed");
+            return localize( "validation.passed", "Schedule validation passed" );
         }
     }
 
@@ -441,7 +435,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
     @NonNull
     public static SchedulingEngine create(@NonNull RecurrenceCalculator recurrenceCalculator,
                                           @NonNull ExceptionResolver exceptionResolver) {
-        return new SchedulingEngine(recurrenceCalculator, exceptionResolver, null);
+        return new SchedulingEngine( recurrenceCalculator, exceptionResolver, null );
     }
 
     /**
@@ -451,6 +445,6 @@ public class SchedulingEngine extends LocalizableDomainModel {
     public static SchedulingEngine create(@NonNull RecurrenceCalculator recurrenceCalculator,
                                           @NonNull ExceptionResolver exceptionResolver,
                                           @NonNull DomainLocalizer localizer) {
-        return new SchedulingEngine(recurrenceCalculator, exceptionResolver, localizer);
+        return new SchedulingEngine( recurrenceCalculator, exceptionResolver, localizer );
     }
 }

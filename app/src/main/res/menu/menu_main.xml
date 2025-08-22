@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_user_profile"
+        android:contentDescription="@string/nav_user_profile"
+        android:icon="@drawable/ic_rounded_person_24"
+        android:title="@string/nav_user_profile"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_settings"
         android:contentDescription="@string/menu_title_settings"
         android:icon="@drawable/ic_rounded_settings_24"

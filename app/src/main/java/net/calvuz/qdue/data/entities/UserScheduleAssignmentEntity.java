@@ -308,7 +308,6 @@ public class UserScheduleAssignmentEntity {
                 .recurrenceRuleId(this.recurrenceRuleId)
                 .startDate(LocalDate.parse(this.startDate))
                 .priority(UserScheduleAssignment.Priority.valueOf(this.priority))
-                .status(UserScheduleAssignment.Status.valueOf(this.status))
                 .active(this.active)
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt);

@@ -128,21 +128,24 @@ public class ServiceProviderImpl implements ServiceProvider {
             }
 
             try {
-                Log.d(TAG, "Initializing services with CalendarServiceProvider integration...");
+                Log.i(TAG, "== Initializing services with CalendarServiceProvider integration...");
 
-                // Initialize database first
+                // Initialize database
                 mDatabase = QDueDatabase.getInstance(mContext);
+                Log.i(TAG, "Database initialized successfully");
+
+                // Initialize calendar database
                 mCalendarDatabase = CalendarDatabase.getInstance( mContext );
+                Log.i(TAG, "CalendarDatabase initialized successfully");
 
                 // Services will be lazy-initialized when first accessed
                 // This ensures proper dependency order
                 mServicesInitialized = true;
 
-                Log.i(TAG, "✅ Services initialization completed");
+                Log.i(TAG, "== Services initialization completed");
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error initializing services: " + e.getMessage(), e);
                 mServicesInitialized = false;
-                throw new RuntimeException("Service initialization failed", e);
+                Log.e(TAG, "Error initializing services", e);
             }
         }
     }
@@ -164,49 +167,52 @@ public class ServiceProviderImpl implements ServiceProvider {
                 if (mCalendarService != null) {
                     mCalendarService.cleanup();
                     mCalendarService = null;
-                    Log.d(TAG, "CalendarService shutdown");
+                    Log.i(TAG, "CalendarService shutdown");
                 }
 
                 // 2. CalendarServiceProvider (domain services)
                 if (mCalendarServiceProvider != null) {
                     mCalendarServiceProvider.shutdownCalendarServices();
                     mCalendarServiceProvider = null;
-                    Log.d(TAG, "CalendarServiceProvider shutdown");
+                    Log.i(TAG, "CalendarServiceProvider shutdown");
                 }
 
                 // 3. Core services
                 if (mCoreBackupManager != null) {
                     mCoreBackupManager = null;
-                    Log.d(TAG, "CoreBackupManager shutdown");
+                    Log.i(TAG, "CoreBackupManager shutdown");
                 }
 
                 if (mOrganizationService != null) {
                     mOrganizationService = null;
-                    Log.d(TAG, "OrganizationService shutdown");
+                    Log.i(TAG, "OrganizationService shutdown");
                 }
 
                 if (mUserService != null) {
                     mUserService = null;
-                    Log.d(TAG, "UserService shutdown");
+                    Log.i(TAG, "UserService shutdown");
                 }
 
                 if (mEventsService != null) {
                     mEventsService = null;
-                    Log.d(TAG, "EventsService shutdown");
+                    Log.i(TAG, "EventsService shutdown");
                 }
 
                 mServicesShutdown = true;
-                Log.i(TAG, "✅ Services shutdown completed");
+                Log.i(TAG, "== Services shutdown completed");
 
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error during service shutdown: " + e.getMessage(), e);
+                Log.e(TAG, "Error during service shutdown", e);
             }
         }
     }
 
     @Override
     public boolean areServicesReady() {
-        return mServicesInitialized && !mServicesShutdown && mDatabase != null;
+        return mServicesInitialized &&
+                !mServicesShutdown &&
+                mDatabase != null &&
+                mCalendarDatabase != null;
     }
 
     // ==================== CALENDAR SERVICES ====================

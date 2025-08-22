@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    strings_swipe_calendar_debug.xml - Internationalization Resources
+
+    String resources for SwipeCalendarActivity debug mode following LocaleManager patterns.
+    These strings support the internationalization architecture using core.common.i18n.LocaleManager.
+
+    Instructions:
+    1. Add these strings to res/values/strings.xml (or create separate debug strings file)
+    2. Create localized versions in res/values-en/, res/values-de/, etc. as needed
+    3. Use LocaleManager.getLocalizedString() to access these in code
+
+    Note: All comments are in English for internationalization compliance.
+-->
+<resources>
+    <!--
+
+        &lt;!&ndash; SwipeCalendarActivity Debug Mode Strings &ndash;&gt;
+
+        &lt;!&ndash; Activity and UI Labels &ndash;&gt;
+        <string name="debug_swipe_calendar_title">Swipe Calendar Debug</string>
+        <string name="debug_loading_calendar">Loading calendar…</string>
+        <string name="debug_info_title">Debug Information</string>
+        <string name="debug_close">Close</string>
+        <string name="debug_mode_active">Debug Mode Active</string>
+
+        &lt;!&ndash; Navigation and Actions &ndash;&gt;
+        <string name="navigation_back">Back</string>
+        <string name="debug_navigate_to_date">Navigate to Date</string>
+        <string name="debug_refresh_fragment">Refresh Fragment</string>
+        <string name="debug_show_info">Show Debug Info</string>
+        <string name="debug_hide_info">Hide Debug Info</string>
+
+        &lt;!&ndash; Status Messages &ndash;&gt;
+        <string name="debug_status_ready">READY</string>
+        <string name="debug_status_loading">LOADING</string>
+        <string name="debug_status_error">ERROR</string>
+        <string name="debug_dependencies_ok">Dependencies OK</string>
+        <string name="debug_dependencies_error">Dependencies Error</string>
+        <string name="debug_fragment_ready">Fragment Ready</string>
+        <string name="debug_fragment_not_ready">Fragment Not Ready</string>
+
+        &lt;!&ndash; Error Messages &ndash;&gt;
+        <string name="debug_error_dependency_injection">Dependency injection failed</string>
+        <string name="debug_error_fragment_setup">Fragment setup failed</string>
+        <string name="debug_error_locale_config">Locale configuration failed</string>
+        <string name="debug_error_intent_parsing">Intent parsing failed</string>
+
+        &lt;!&ndash; Debug Panel Information &ndash;&gt;
+        <string name="debug_info_fragment_class">Fragment: %1$s</string>
+        <string name="debug_info_fragment_state">State: %1$s</string>
+        <string name="debug_info_dependencies">Dependencies: %1$s</string>
+        <string name="debug_info_locale">Locale: %1$s</string>
+        <string name="debug_info_initial_date">Initial Date: %1$s</string>
+        <string name="debug_info_user_id">User ID: %1$s</string>
+
+        &lt;!&ndash; Success/Confirmation Messages &ndash;&gt;
+        <string name="debug_activity_initialized">Debug activity initialized successfully</string>
+        <string name="debug_fragment_loaded">SwipeCalendarFragment loaded</string>
+        <string name="debug_navigation_successful">Navigation completed</string>
+
+        &lt;!&ndash; Content Descriptions for Accessibility &ndash;&gt;
+        <string name="debug_icon_description">Debug mode indicator</string>
+        <string name="debug_info_icon_description">Debug information panel</string>
+        <string name="debug_close_button_description">Close debug panel</string>
+
+        &lt;!&ndash; Menu Items (if debug menu is added) &ndash;&gt;
+        <string name="debug_menu_show_logs">Show Logs</string>
+        <string name="debug_menu_clear_logs">Clear Logs</string>
+        <string name="debug_menu_export_state">Export State</string>
+        <string name="debug_menu_reset_fragment">Reset Fragment</string>
+
+        &lt;!&ndash; Toast Messages &ndash;&gt;
+        <string name="debug_toast_fragment_refreshed">Fragment refreshed</string>
+        <string name="debug_toast_navigation_failed">Navigation failed</string>
+        <string name="debug_toast_state_exported">Debug state exported</string>
+
+    </resources>
+    -->
+
+    <!--
+        ITALIAN TRANSLATIONS (res/values-it/strings.xml additions):
+        -->
+
+    <string name="debug_swipe_calendar_title">Calendario Swipe</string>
+    <string name="debug_loading_calendar">Caricamento calendario…</string>
+    <string name="debug_info_title">Informazioni Debug</string>
+    <string name="debug_close">Chiudi</string>
+    <string name="debug_mode_active">Modalità Debug Attiva</string>
+    <string name="navigation_back">Indietro</string>
+    <string name="debug_navigate_to_date">Naviga alla Data</string>
+    <string name="debug_refresh_fragment">Aggiorna Fragment</string>
+    <string name="debug_show_info">Mostra Info Debug</string>
+    <string name="debug_hide_info">Nascondi Info Debug</string>
+    <string name="debug_status_ready">PRONTO</string>
+    <string name="debug_status_loading">CARICAMENTO</string>
+    <string name="debug_status_error">ERRORE</string>
+    <string name="debug_dependencies_ok">Dipendenze OK</string>
+    <string name="debug_dependencies_error">Errore Dipendenze</string>
+    <string name="debug_fragment_ready">Fragment Pronto</string>
+    <string name="debug_fragment_not_ready">Fragment Non Pronto</string>
+
+    <!-- Error messages in Italian -->
+    <string name="debug_error_dependency_injection">Iniezione dipendenze fallita</string>
+    <string name="debug_error_fragment_setup">Setup fragment fallito</string>
+    <string name="debug_error_locale_config">Configurazione locale fallita</string>
+    <string name="debug_error_intent_parsing">Parsing intent fallito</string>
+
+    <!-- Debug info in Italian -->
+    <string name="debug_info_fragment_class">Fragment: %1$s</string>
+    <string name="debug_info_fragment_state">Stato: %1$s</string>
+    <string name="debug_info_dependencies">Dipendenze: %1$s</string>
+    <string name="debug_info_locale">Locale: %1$s</string>
+    <string name="debug_info_initial_date">Data Iniziale: %1$s</string>
+    <string name="debug_info_user_id">ID Utente: %1$s</string>
+
+    <!-- Success messages in Italian -->
+    <string name="debug_activity_initialized">Activity debug inizializzata con successo</string>
+    <string name="debug_fragment_loaded">SwipeCalendarFragment caricato</string>
+    <string name="debug_navigation_successful">Navigazione completata</string>
+
+    <!-- Accessibility in Italian -->
+    <string name="debug_icon_description">Indicatore modalità debug</string>
+    <string name="debug_info_icon_description">Pannello informazioni debug</string>
+    <string name="debug_close_button_description">Chiudi pannello debug</string>
+
+    <!-- Menu items in Italian -->
+    <string name="debug_menu_show_logs">Mostra Log</string>
+    <string name="debug_menu_clear_logs">Cancella Log</string>
+    <string name="debug_menu_export_state">Esporta Stato</string>
+    <string name="debug_menu_reset_fragment">Reset Fragment</string>
+
+    <!-- Toast messages in Italian -->
+    <string name="debug_toast_fragment_refreshed">Fragment aggiornato</string>
+    <string name="debug_toast_navigation_failed">Navigazione fallita</string>
+    <string name="debug_toast_state_exported">Stato debug esportato</string>
+
+</resources>
+
+    <!--
+        USAGE WITH LOCALEMANAGER:
+
+        In SwipeCalendarActivity.java:
+
+        // Get localized string with fallback
+        private String getLocalizedString(String key, String fallback) {
+            if (mLocaleManager != null) {
+                return mLocaleManager.getLocalizedString(this, key, fallback);
+            }
+            return fallback;
+        }
+
+        // Example usage:
+        String title = getLocalizedString("debug_swipe_calendar_title", "Swipe Calendar Debug");
+        String loading = getLocalizedString("debug_loading_calendar", "Loading calendar...");
+
+        // For formatted strings:
+        String fragmentInfo = String.format(
+            getLocalizedString("debug_info_fragment_class", "Fragment: %1$s"),
+            "SwipeCalendarFragment"
+        );
+    -->

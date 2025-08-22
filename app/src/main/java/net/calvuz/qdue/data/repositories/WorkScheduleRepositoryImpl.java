@@ -19,6 +19,7 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.quattrodue.Preferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -88,7 +89,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     /**
      * Constructor with CalendarServiceProvider dependency injection.
      *
-     * @param context Application context
+     * @param context                 Application context
      * @param calendarServiceProvider CalendarServiceProvider for domain repository access
      */
     public WorkScheduleRepositoryImpl(@NonNull Context context,
@@ -97,7 +98,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         this.mCalendarServiceProvider = calendarServiceProvider;
         this.mExecutorService = Executors.newCachedThreadPool();
 
-        Log.i(TAG, "WorkScheduleRepositoryImpl initialized with CalendarServiceProvider DI");
+        Log.i( TAG, "WorkScheduleRepositoryImpl initialized with CalendarServiceProvider DI" );
     }
 
     // ==================== SCHEDULE GENERATION ====================
@@ -105,35 +106,34 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<WorkScheduleDay>> getWorkScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Generating work schedule for date: " + date + ", user: " + userId);
+                Log.d( TAG, "Generating work schedule for date: " + date + ", user: " + userId );
 
                 // Check cache first
-                String cacheKey = buildCacheKey(date, userId);
-                WorkScheduleDay cachedSchedule = mScheduleCache.get(cacheKey);
+                String cacheKey = buildCacheKey( date, userId );
+                WorkScheduleDay cachedSchedule = mScheduleCache.get( cacheKey );
                 if (cachedSchedule != null) {
-                    Log.v(TAG, "Returning cached schedule for " + cacheKey);
-                    return OperationResult.success(cachedSchedule, OperationResult.OperationType.READ);
+                    Log.v( TAG, "Returning cached schedule for " + cacheKey );
+                    return OperationResult.success( cachedSchedule, OperationResult.OperationType.READ );
                 }
 
                 // Generate schedule using domain engines
-                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
+                WorkScheduleDay schedule = generateScheduleForDate( date, userId );
 
                 // Cache the result
-                mScheduleCache.put(cacheKey, schedule);
+                mScheduleCache.put( cacheKey, schedule );
 
-                Log.d(TAG, "Successfully generated schedule for " + date + " with " +
-                        schedule.getShifts().size() + " shifts");
+                Log.d( TAG, "Successfully generated schedule for " + date + " with " +
+                        schedule.getShifts().size() + " shifts" );
 
-                return OperationResult.success(schedule, OperationResult.OperationType.READ);
-
+                return OperationResult.success( schedule, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error generating work schedule for date: " + date, e);
-                return OperationResult.failure("Failed to generate schedule for " + date + ": " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error generating work schedule for date: " + date, e );
+                return OperationResult.failure( "Failed to generate schedule for " + date + ": " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
@@ -141,26 +141,25 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForDateRange(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Generating work schedule for date range: " + startDate + " to " + endDate);
+                Log.d( TAG, "Generating work schedule for date range: " + startDate + " to " + endDate );
 
                 Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
 
-                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-                    WorkScheduleDay daySchedule = generateScheduleForDate(date, userId);
-                    scheduleMap.put(date, daySchedule);
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
+                    WorkScheduleDay daySchedule = generateScheduleForDate( date, userId );
+                    scheduleMap.put( date, daySchedule );
                 }
 
-                Log.d(TAG, "Successfully generated schedule for " + scheduleMap.size() + " days");
-                return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Successfully generated schedule for " + scheduleMap.size() + " days" );
+                return OperationResult.success( scheduleMap, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error generating work schedule for date range", e);
-                return OperationResult.failure("Failed to generate date range schedule: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error generating work schedule for date range", e );
+                return OperationResult.failure( "Failed to generate date range schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
@@ -168,10 +167,10 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForMonth(
             @NonNull YearMonth month, @Nullable Long userId) {
 
-        LocalDate startDate = month.atDay(1);
+        LocalDate startDate = month.atDay( 1 );
         LocalDate endDate = month.atEndOfMonth();
 
-        return getWorkScheduleForDateRange(startDate, endDate, userId);
+        return getWorkScheduleForDateRange( startDate, endDate, userId );
     }
 
     @Override
@@ -179,27 +178,26 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<List<WorkScheduleEvent>>> generateWorkScheduleEvents(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Generating work schedule events from " + startDate + " to " + endDate);
+                Log.d( TAG, "Generating work schedule events from " + startDate + " to " + endDate );
 
                 List<WorkScheduleEvent> events = new ArrayList<>();
 
-                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-                    WorkScheduleDay daySchedule = generateScheduleForDate(date, userId);
-                    List<WorkScheduleEvent> dayEvents = convertScheduleDayToMultiTeamEvents(daySchedule, userId);
-                    events.addAll(dayEvents);
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
+                    WorkScheduleDay daySchedule = generateScheduleForDate( date, userId );
+                    List<WorkScheduleEvent> dayEvents = convertScheduleDayToMultiTeamEvents( daySchedule, userId );
+                    events.addAll( dayEvents );
                 }
 
-                Log.d(TAG, "Generated " + events.size() + " work schedule events with multi-team support");
-                return OperationResult.success(events, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Generated " + events.size() + " work schedule events with multi-team support" );
+                return OperationResult.success( events, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error generating work schedule events", e);
-                return OperationResult.failure("Failed to generate events: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error generating work schedule events", e );
+                return OperationResult.failure( "Failed to generate events: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== TEAM MANAGEMENT ====================
@@ -208,43 +206,42 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getAllTeams() {
         return mCalendarServiceProvider.getTeamRepository().getAllActiveTeams()
-                .thenApply(teams -> OperationResult.success(teams, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error getting all teams", throwable);
-                    return OperationResult.failure("Failed to get teams: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+                .thenApply( teams -> OperationResult.success( teams, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error getting all teams", throwable );
+                    return OperationResult.failure( "Failed to get teams: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Get user's current assignment
-                UserScheduleAssignment assignment = getUserAssignmentForDate(LocalDate.now(), userId);
+                UserScheduleAssignment assignment = getUserAssignmentForDate( LocalDate.now(), userId );
                 if (assignment == null) {
-                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                    return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
                 // Get team by ID from assignment
                 String teamId = assignment.getTeamId();
-                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(teamId).join();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById( teamId ).join();
 
-                return OperationResult.success(team, OperationResult.OperationType.READ);
-
+                return OperationResult.success( team, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team for user " + userId, e);
-                return OperationResult.failure("Failed to get team for user: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting team for user " + userId, e );
+                return OperationResult.failure( "Failed to get team for user: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull Long userId, @NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Create new assignment for user
                 UserScheduleAssignment assignment = UserScheduleAssignment.createPermanentAssignment(
@@ -257,45 +254,43 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 // Save assignment
                 CompletableFuture<OperationResult<UserScheduleAssignment>> saveResult =
                         mCalendarServiceProvider.getUserScheduleAssignmentRepository()
-                                .saveUserScheduleAssignment(assignment);
+                                .saveUserScheduleAssignment( assignment );
 
                 OperationResult<UserScheduleAssignment> result = saveResult.join();
 
                 if (result.isSuccess()) {
-                    return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+                    return OperationResult.success( null, OperationResult.OperationType.UPDATE );
                 } else {
-                    return OperationResult.failure("Failed to save assignment: " + result.getErrorMessage(),
-                            OperationResult.OperationType.UPDATE);
+                    return OperationResult.failure( "Failed to save assignment: " + result.getErrorMessage(),
+                            OperationResult.OperationType.UPDATE );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "Error setting team for user " + userId, e);
-                return OperationResult.failure("Failed to set team: " + e.getMessage(),
-                        OperationResult.OperationType.UPDATE);
+                Log.e( TAG, "Error setting team for user " + userId, e );
+                return OperationResult.failure( "Failed to set team: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getTeamsWorkingOnDate(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+                WorkScheduleDay schedule = generateScheduleForDate( date, null );
                 List<Team> workingTeams = new ArrayList<>();
 
                 for (WorkScheduleShift shift : schedule.getShifts()) {
-                    workingTeams.addAll(shift.getTeams());
+                    workingTeams.addAll( shift.getTeams() );
                 }
 
-                return OperationResult.success(workingTeams, OperationResult.OperationType.READ);
-
+                return OperationResult.success( workingTeams, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting teams working on date " + date, e);
-                return OperationResult.failure("Failed to get working teams: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting teams working on date " + date, e );
+                return OperationResult.failure( "Failed to get working teams: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== SHIFT TYPE MANAGEMENT ====================
@@ -304,82 +299,81 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<List<Shift>>> getAllShifts() {
         return mCalendarServiceProvider.getShiftRepository().getAllShifts()
-                .thenApply(shifts -> OperationResult.success(shifts, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error getting all shifts", throwable);
-                    return OperationResult.failure("Failed to get shifts: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+                .thenApply( shifts -> OperationResult.success( shifts, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error getting all shifts", throwable );
+                    return OperationResult.failure( "Failed to get shifts: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Shift>> getShiftById(@NonNull String shiftId) {
-        return mCalendarServiceProvider.getShiftRepository().getShiftById(shiftId)
-                .thenApply(shift -> OperationResult.success(shift, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error getting shift by ID " + shiftId, throwable);
-                    return OperationResult.failure("Failed to get shift: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+        return mCalendarServiceProvider.getShiftRepository().getShiftById( shiftId )
+                .thenApply( shift -> OperationResult.success( shift, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error getting shift by ID " + shiftId, throwable );
+                    return OperationResult.failure( "Failed to get shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Shift>> getShiftByName(@NonNull String name) {
-        return mCalendarServiceProvider.getShiftRepository().getShiftByName(name)
-                .thenApply(shift -> OperationResult.success(shift, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error getting shift by name " + name, throwable);
-                    return OperationResult.failure("Failed to get shift: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+        return mCalendarServiceProvider.getShiftRepository().getShiftByName( name )
+                .thenApply( shift -> OperationResult.success( shift, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error getting shift by name " + name, throwable );
+                    return OperationResult.failure( "Failed to get shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Shift>> saveShift(@NonNull Shift shift) {
-        return mCalendarServiceProvider.getShiftRepository().saveShift(shift)
-                .thenApply(savedShift -> OperationResult.success(savedShift, OperationResult.OperationType.CREATE))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error saving shift", throwable);
-                    return OperationResult.failure("Failed to save shift: " + throwable.getMessage(),
-                            OperationResult.OperationType.CREATE);
-                });
+        return mCalendarServiceProvider.getShiftRepository().saveShift( shift )
+                .thenApply( savedShift -> OperationResult.success( savedShift, OperationResult.OperationType.CREATE ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error saving shift", throwable );
+                    return OperationResult.failure( "Failed to save shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.CREATE );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Object>> deleteShift(@NonNull String shiftId) {
-        return mCalendarServiceProvider.getShiftRepository().deleteShift(shiftId)
-                .thenApply(success -> {
+        return mCalendarServiceProvider.getShiftRepository().deleteShift( shiftId )
+                .thenApply( success -> {
                     if (success) {
-                        return OperationResult.success(null, OperationResult.OperationType.DELETE);
+                        return OperationResult.success( null, OperationResult.OperationType.DELETE );
                     } else {
-                        return OperationResult.failure("Failed to delete shift", OperationResult.OperationType.DELETE);
+                        return OperationResult.failure( "Failed to delete shift", OperationResult.OperationType.DELETE );
                     }
-                })
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error deleting shift " + shiftId, throwable);
-                    return OperationResult.failure("Failed to delete shift: " + throwable.getMessage(),
-                            OperationResult.OperationType.DELETE);
-                });
+                } )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error deleting shift " + shiftId, throwable );
+                    return OperationResult.failure( "Failed to delete shift: " + throwable.getMessage(),
+                            OperationResult.OperationType.DELETE );
+                } );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<WorkScheduleShift>>> getShiftsForDate(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, null);
-                return OperationResult.success(schedule.getShifts(), OperationResult.OperationType.READ);
-
+                WorkScheduleDay schedule = generateScheduleForDate( date, null );
+                return OperationResult.success( schedule.getShifts(), OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting shifts for date " + date, e);
-                return OperationResult.failure("Failed to get shifts: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting shifts for date " + date, e );
+                return OperationResult.failure( "Failed to get shifts: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== SCHEDULE CONFIGURATION ====================
@@ -387,108 +381,104 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<LocalDate>> getSchemeStartDate() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Check cache first
-                LocalDate cached = mSchemeCache.get("scheme_start_date");
+                LocalDate cached = mSchemeCache.get( "scheme_start_date" );
                 if (cached != null) {
-                    Log.v(TAG, "Returning cached scheme start date: " + cached);
-                    return OperationResult.success(cached, OperationResult.OperationType.READ);
+                    Log.v( TAG, "Returning cached scheme start date: " + cached );
+                    return OperationResult.success( cached, OperationResult.OperationType.READ );
                 }
 
                 // ✅ FIX: Read from preferences like the old QuattroDue system
                 // Use QUATTRODUE
-                LocalDate schemeStart = Preferences.getSchemeStartDate(mContext);
-                Log.d(TAG, "Read scheme start date from preferences: " + schemeStart);
+                LocalDate schemeStart = Preferences.getSchemeStartDate( mContext );
+                Log.d( TAG, "Read scheme start date from preferences: " + schemeStart );
 
                 // Cache the result
-                mSchemeCache.put("scheme_start_date", schemeStart);
+                mSchemeCache.put( "scheme_start_date", schemeStart );
 
-                return OperationResult.success(schemeStart, OperationResult.OperationType.READ);
-
+                return OperationResult.success( schemeStart, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting scheme start date from preferences", e);
+                Log.e( TAG, "Error getting scheme start date from preferences", e );
 
                 // ✅ FALLBACK: Use hardcoded default as last resort
                 // Use HARDCODED
-                LocalDate fallbackDate = LocalDate.of(2018, 11, 7); // Default QuattroDue date
-                Log.w(TAG, "Using fallback scheme start date: " + fallbackDate);
+                LocalDate fallbackDate = LocalDate.of( 2018, 11, 7 ); // Default QuattroDue date
+                Log.w( TAG, "Using fallback scheme start date: " + fallbackDate );
 
-                mSchemeCache.put("scheme_start_date", fallbackDate);
-                return OperationResult.success(fallbackDate, OperationResult.OperationType.READ);
+                mSchemeCache.put( "scheme_start_date", fallbackDate );
+                return OperationResult.success( fallbackDate, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Void>> updateSchemeStartDate(@NonNull LocalDate newStartDate) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Updating scheme start date to: " + newStartDate);
+                Log.d( TAG, "Updating scheme start date to: " + newStartDate );
 
                 // ✅ FIX: Save to preferences AND cache
-                Preferences.setSchemeStartDate(mContext, newStartDate);
-                mSchemeCache.put("scheme_start_date", newStartDate);
+                Preferences.setSchemeStartDate( mContext, newStartDate );
+                mSchemeCache.put( "scheme_start_date", newStartDate );
 
                 // Clear schedule cache since all calculations will change
                 mScheduleCache.clear();
-                Log.d(TAG, "Schedule cache cleared after scheme date update");
+                Log.d( TAG, "Schedule cache cleared after scheme date update" );
 
-                return OperationResult.success("Updating scheme start date to: " + newStartDate,
-                        OperationResult.OperationType.UPDATE);
-
+                return OperationResult.success( "Updating scheme start date to: " + newStartDate,
+                        OperationResult.OperationType.UPDATE );
             } catch (Exception e) {
-                Log.e(TAG, "Error updating scheme start date", e);
-                return OperationResult.failure("Failed to update scheme start date: " + e.getMessage(),
-                        OperationResult.OperationType.UPDATE);
+                Log.e( TAG, "Error updating scheme start date", e );
+                return OperationResult.failure( "Failed to update scheme start date: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Map<String, Object>>> getScheduleConfiguration() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 Map<String, Object> config = new HashMap<>();
-                config.put("pattern_type", "QUATTRODUE");
-                config.put("cycle_length", 18);
-                config.put("work_days", 4);
-                config.put("rest_days", 2);
-                config.put("teams_count", 9);
-                config.put("shifts_per_day", 3);
-                config.put("teams_per_shift", 2); // NEW: Multi-team support
+                config.put( "pattern_type", "QUATTRODUE" );
+                config.put( "cycle_length", 18 );
+                config.put( "work_days", 4 );
+                config.put( "rest_days", 2 );
+                config.put( "teams_count", 9 );
+                config.put( "shifts_per_day", 3 );
+                config.put( "teams_per_shift", 2 ); // NEW: Multi-team support
 
-                return OperationResult.success(config, OperationResult.OperationType.READ);
-
+                return OperationResult.success( config, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting schedule configuration", e);
-                return OperationResult.failure("Failed to get configuration: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting schedule configuration", e );
+                return OperationResult.failure( "Failed to get configuration: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Void>> updateScheduleConfiguration(@NonNull Map<String, Object> configuration) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Store configuration
-                mConfigCache.putAll(configuration);
+                mConfigCache.putAll( configuration );
 
                 // Clear schedule cache since configuration changed
                 mScheduleCache.clear();
 
-                return OperationResult.success(null, OperationResult.OperationType.UPDATE);
-
+                return OperationResult.success( null, OperationResult.OperationType.UPDATE );
             } catch (Exception e) {
-                Log.e(TAG, "Error updating schedule configuration", e);
-                return OperationResult.failure("Failed to update configuration: " + e.getMessage(),
-                        OperationResult.OperationType.UPDATE);
+                Log.e( TAG, "Error updating schedule configuration", e );
+                return OperationResult.failure( "Failed to update configuration: " + e.getMessage(),
+                        OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== PATTERN CALCULATIONS ====================
@@ -496,106 +486,102 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Integer>> getDayInCycle(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 LocalDate schemeStart = getSchemeStartDate().join().getData();
                 if (schemeStart == null)
-                    throw new RuntimeException("No Scheme StartDate");
+                    throw new RuntimeException( "No Scheme StartDate" );
 
                 // TODO: remove hardcode 18 day cycle length
-                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
+                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between( schemeStart, date );
                 int dayInCycle = (int) (daysSinceStart % 18); // 18-day QuattroDue cycle
 
-                Log.v(TAG, "Day in cycle calculation: " + date + " = day " + dayInCycle +
-                        " (scheme start: " + schemeStart + ", days since: " + daysSinceStart + ")");
+                Log.v( TAG, "Day in cycle calculation: " + date + " = day " + dayInCycle +
+                        " (scheme start: " + schemeStart + ", days since: " + daysSinceStart + ")" );
 
-                return OperationResult.success(dayInCycle, OperationResult.OperationType.READ);
-
+                return OperationResult.success( dayInCycle, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error calculating day in cycle", e);
-                return OperationResult.failure("Failed to calculate day in cycle: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error calculating day in cycle", e );
+                return OperationResult.failure( "Failed to calculate day in cycle: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Long>> getDaysFromSchemeStart(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 LocalDate schemeStart = getSchemeStartDate().join().getData();
                 if (schemeStart == null)
-                    throw new RuntimeException("No Scheme StartDate");
+                    throw new RuntimeException( "No Scheme StartDate" );
 
-                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(schemeStart, date);
+                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between( schemeStart, date );
 
-                Log.v(TAG, "Days from scheme start: " + date + " = " + daysSinceStart +
-                        " days (scheme start: " + schemeStart + ")");
+                Log.v( TAG, "Days from scheme start: " + date + " = " + daysSinceStart +
+                        " days (scheme start: " + schemeStart + ")" );
 
-                return OperationResult.success(daysSinceStart, OperationResult.OperationType.READ);
-
+                return OperationResult.success( daysSinceStart, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error calculating days from scheme start for date: " + date, e);
-                return OperationResult.failure("Failed to calculate days: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error calculating days from scheme start for date: " + date, e );
+                return OperationResult.failure( "Failed to calculate days: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> isWorkingDay(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+                WorkScheduleDay schedule = generateScheduleForDate( date, null );
                 boolean hasWorkingShifts = !schedule.getShifts().isEmpty();
 
-                return OperationResult.success(hasWorkingShifts, OperationResult.OperationType.READ);
-
+                return OperationResult.success( hasWorkingShifts, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error checking if working day", e);
-                return OperationResult.failure("Failed to check working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error checking if working day", e );
+                return OperationResult.failure( "Failed to check working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> isWorkingDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, null);
+                WorkScheduleDay schedule = generateScheduleForDate( date, null );
 
                 for (WorkScheduleShift shift : schedule.getShifts()) {
-                    if (shift.getTeams().contains(team)) {
-                        return OperationResult.success(true, OperationResult.OperationType.READ);
+                    if (shift.getTeams().contains( team )) {
+                        return OperationResult.success( true, OperationResult.OperationType.READ );
                     }
                 }
 
-                return OperationResult.success(false, OperationResult.OperationType.READ);
-
+                return OperationResult.success( false, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error checking if working day for team", e);
-                return OperationResult.failure("Failed to check team working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error checking if working day for team", e );
+                return OperationResult.failure( "Failed to check team working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> isRestDayForTeam(@NonNull LocalDate date, @NonNull Team team) {
-        return isWorkingDayForTeam(date, team)
-                .thenApply(result -> {
+        return isWorkingDayForTeam( date, team )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         boolean isWorking = result.getData();
-                        return OperationResult.success(!isWorking, OperationResult.OperationType.READ);
+                        return OperationResult.success( !isWorking, OperationResult.OperationType.READ );
                     } else {
                         return result;
                     }
-                });
+                } );
     }
 
     // ==================== CALENDAR INTEGRATION ====================
@@ -603,232 +589,252 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> hasWorkSchedule(@Nullable WorkScheduleDay day) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 boolean hasSchedule = day != null && !day.getShifts().isEmpty();
-                return OperationResult.success(hasSchedule, OperationResult.OperationType.READ);
-
+                return OperationResult.success( hasSchedule, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error checking if has work schedule", e);
-                return OperationResult.failure("Failed to check schedule: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error checking if has work schedule", e );
+                return OperationResult.failure( "Failed to check schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
+                WorkScheduleDay schedule = generateScheduleForDate( date, userId );
 
                 if (schedule.getShifts().isEmpty()) {
-                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                    return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
                 // Default work schedule color
                 String color = "#2196F3"; // Blue
 
-                return OperationResult.success(color, OperationResult.OperationType.READ);
-
+                return OperationResult.success( color, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting work schedule color", e);
-                return OperationResult.failure("Failed to get color: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting work schedule color", e );
+                return OperationResult.failure( "Failed to get color: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                WorkScheduleDay schedule = generateScheduleForDate(date, userId);
+                WorkScheduleDay schedule = generateScheduleForDate( date, userId );
 
                 if (schedule.getShifts().isEmpty()) {
-                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                    return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
                 StringBuilder summary = new StringBuilder();
                 for (WorkScheduleShift shift : schedule.getShifts()) {
-                    if (summary.length() > 0) summary.append(", ");
-                    summary.append(shift.getShift().getName());
+                    if (summary.length() > 0) summary.append( ", " );
+                    summary.append( shift.getShift().getName() );
 
                     // NEW: Include team count in summary
                     int teamCount = shift.getTeams().size();
                     if (teamCount > 1) {
-                        summary.append(" (").append(teamCount).append(" teams)");
+                        summary.append( " (" ).append( teamCount ).append( " teams)" );
                     }
                 }
 
-                return OperationResult.success(summary.toString(), OperationResult.OperationType.READ);
-
+                return OperationResult.success( summary.toString(), OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "Error getting work schedule summary", e);
-                return OperationResult.failure("Failed to get summary: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                Log.e( TAG, "Error getting work schedule summary", e );
+                return OperationResult.failure( "Failed to get summary: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== STUB IMPLEMENTATIONS FOR COMPLETENESS ====================
 
-    @Override @NonNull public CompletableFuture<OperationResult<Void>> refreshWorkScheduleData() {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Void>> refreshWorkScheduleData() {
+        return CompletableFuture.supplyAsync( () -> {
             mScheduleCache.clear();
             mConfigCache.clear();
             mSchemeCache.clear();
-            return OperationResult.success(null, OperationResult.OperationType.UPDATE);
-        }, mExecutorService);
+            return OperationResult.success( null, OperationResult.OperationType.UPDATE );
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Void>> clearCache() {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Void>> clearCache() {
         return refreshWorkScheduleData();
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Map<String, Object>>> getServiceStatus() {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Map<String, Object>>> getServiceStatus() {
+        return CompletableFuture.supplyAsync( () -> {
             Map<String, Object> status = new HashMap<>();
-            status.put("cache_size", mScheduleCache.size());
-            status.put("ready", true);
-            status.put("calendar_services_ready", mCalendarServiceProvider.areCalendarServicesReady());
-            return OperationResult.success(status, OperationResult.OperationType.READ);
-        }, mExecutorService);
+            status.put( "cache_size", mScheduleCache.size() );
+            status.put( "ready", true );
+            status.put( "calendar_services_ready", mCalendarServiceProvider.areCalendarServicesReady() );
+            return OperationResult.success( status, OperationResult.OperationType.READ );
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Map<String, Object>>> validateConfiguration() {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Map<String, Object>>> validateConfiguration() {
+        return CompletableFuture.supplyAsync( () -> {
             Map<String, Object> validation = new HashMap<>();
-            validation.put("valid", true);
-            validation.put("errors", new ArrayList<>());
-            return OperationResult.success(validation, OperationResult.OperationType.READ);
-        }, mExecutorService);
+            validation.put( "valid", true );
+            validation.put( "errors", new ArrayList<>() );
+            return OperationResult.success( validation, OperationResult.OperationType.READ );
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Boolean>> isRepositoryReady() {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Boolean>> isRepositoryReady() {
+        return CompletableFuture.supplyAsync( () -> {
             boolean ready = mCalendarServiceProvider.areCalendarServicesReady();
-            return OperationResult.success(ready, OperationResult.OperationType.READ);
-        }, mExecutorService);
+            return OperationResult.success( ready, OperationResult.OperationType.READ );
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Team>> findTeamByName(@NonNull String teamName) {
-        return mCalendarServiceProvider.getTeamRepository().getTeamByName(teamName)
-                .thenApply(team -> OperationResult.success(team, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error finding team by name " + teamName, throwable);
-                    return OperationResult.failure("Team not found: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Team>> findTeamByName(@NonNull String teamName) {
+        return mCalendarServiceProvider.getTeamRepository().getTeamByName( teamName )
+                .thenApply( team -> OperationResult.success( team, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error finding team by name " + teamName, throwable );
+                    return OperationResult.failure( "Team not found: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Team>> findTeamById(@NonNull String teamId) {
-        return mCalendarServiceProvider.getTeamRepository().getTeamById(teamId)
-                .thenApply(team -> OperationResult.success(team, OperationResult.OperationType.READ))
-                .exceptionally(throwable -> {
-                    Log.e(TAG, "Error finding team by ID " + teamId, throwable);
-                    return OperationResult.failure("Team not found: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ);
-                });
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Team>> findTeamById(@NonNull String teamId) {
+        return mCalendarServiceProvider.getTeamRepository().getTeamById( teamId )
+                .thenApply( team -> OperationResult.success( team, OperationResult.OperationType.READ ) )
+                .exceptionally( throwable -> {
+                    Log.e( TAG, "Error finding team by ID " + teamId, throwable );
+                    return OperationResult.failure( "Team not found: " + throwable.getMessage(),
+                            OperationResult.OperationType.READ );
+                } );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<List<Team>>> createStandardTeams() {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<List<Team>>> createStandardTeams() {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 List<Team> standardTeams = new ArrayList<>();
 
                 // Create standard QuattroDue teams A through I
                 String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
                 for (int i = 0; i < teamNames.length; i++) {
-                    Team team = Team.builder(String.valueOf((long) (i + 1)))
-                            .name("Team " + teamNames[i])
-                            .displayName("Team " + teamNames[i])
-                            .description("QuattroDue Team " + teamNames[i])
-                            .active(true)
+                    Team team = Team.builder( String.valueOf( (long) (i + 1) ) )
+                            .name( "Team " + teamNames[i] )
+                            .displayName( "Team " + teamNames[i] )
+                            .description( "QuattroDue Team " + teamNames[i] )
+                            .active( true )
                             .build();
 
                     // Save each team using repository
-                    Team savedTeam = mCalendarServiceProvider.getTeamRepository().saveTeam(team).join();
+                    Team savedTeam = mCalendarServiceProvider.getTeamRepository().saveTeam( team ).join();
                     if (savedTeam != null) {
-                        standardTeams.add(savedTeam);
+                        standardTeams.add( savedTeam );
                     }
                 }
 
-                return OperationResult.success(standardTeams, OperationResult.OperationType.CREATE);
-
+                return OperationResult.success( standardTeams, OperationResult.OperationType.CREATE );
             } catch (Exception e) {
-                Log.e(TAG, "Error creating standard teams", e);
-                return OperationResult.failure("Failed to create standard teams: " + e.getMessage(),
-                        OperationResult.OperationType.CREATE);
+                Log.e( TAG, "Error creating standard teams", e );
+                return OperationResult.failure( "Failed to create standard teams: " + e.getMessage(),
+                        OperationResult.OperationType.CREATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<LocalDate>> getNextWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<LocalDate>> getNextWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 for (int i = 1; i <= 30; i++) { // Check next 30 days
-                    LocalDate checkDate = fromDate.plusDays(i);
-                    if (isWorkingDayForTeam(checkDate, team).join().getData()) {
-                        return OperationResult.success(checkDate, OperationResult.OperationType.READ);
+                    LocalDate checkDate = fromDate.plusDays( i );
+                    if (isWorkingDayForTeam( checkDate, team ).join().getData()) {
+                        return OperationResult.success( checkDate, OperationResult.OperationType.READ );
                     }
                 }
-                return OperationResult.success(null, OperationResult.OperationType.READ);
+                return OperationResult.success( null, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                return OperationResult.failure("Error finding next working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                return OperationResult.failure( "Error finding next working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<LocalDate>> getPreviousWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<LocalDate>> getPreviousWorkingDay(@NonNull Team team, @NonNull LocalDate fromDate) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 for (int i = 1; i <= 30; i++) { // Check previous 30 days
-                    LocalDate checkDate = fromDate.minusDays(i);
-                    if (isWorkingDayForTeam(checkDate, team).join().getData()) {
-                        return OperationResult.success(checkDate, OperationResult.OperationType.READ);
+                    LocalDate checkDate = fromDate.minusDays( i );
+                    if (isWorkingDayForTeam( checkDate, team ).join().getData()) {
+                        return OperationResult.success( checkDate, OperationResult.OperationType.READ );
                     }
                 }
-                return OperationResult.success(null, OperationResult.OperationType.READ);
+                return OperationResult.success( null, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                return OperationResult.failure("Error finding previous working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                return OperationResult.failure( "Error finding previous working day: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Integer>> getWorkingDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Integer>> getWorkingDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 int count = 0;
-                for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-                    if (isWorkingDayForTeam(date, team).join().getData()) {
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
+                    if (isWorkingDayForTeam( date, team ).join().getData()) {
                         count++;
                     }
                 }
-                return OperationResult.success(count, OperationResult.OperationType.READ);
+                return OperationResult.success( count, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                return OperationResult.failure("Error counting working days: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                return OperationResult.failure( "Error counting working days: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
-    @Override @NonNull public CompletableFuture<OperationResult<Integer>> getRestDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        return CompletableFuture.supplyAsync(() -> {
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Integer>> getRestDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                long totalDays = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
-                int workingDays = getWorkingDaysCount(team, startDate, endDate).join().getData();
+                long totalDays = java.time.temporal.ChronoUnit.DAYS.between( startDate, endDate ) + 1;
+                int workingDays = getWorkingDaysCount( team, startDate, endDate ).join().getData();
                 int restDays = (int) totalDays - workingDays;
-                return OperationResult.success(restDays, OperationResult.OperationType.READ);
+                return OperationResult.success( restDays, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                return OperationResult.failure("Error counting rest days: " + e.getMessage(),
-                        OperationResult.OperationType.READ);
+                return OperationResult.failure( "Error counting rest days: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== HELPER METHODS ====================
@@ -840,28 +846,27 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     private WorkScheduleDay generateScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
         try {
             // Get user assignment
-            UserScheduleAssignment assignment = getUserAssignmentForDate(date, userId);
+            UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
             if (assignment == null) {
-                Log.w(TAG, "No user assignment found for date " + date + ", creating default assignment");
-                assignment = createDefaultQuattroDueAssignment(date, userId);
+                Log.w( TAG, "No user assignment found for date " + date + ", creating default assignment" );
+                assignment = createDefaultQuattroDueAssignment( date, userId );
             }
 
             // Get domain engines from CalendarServiceProvider
             SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
 
             // Generate base schedule
-            WorkScheduleDay baseSchedule = generateBaseScheduleFromAssignment(date, assignment);
+            WorkScheduleDay baseSchedule = generateBaseScheduleFromAssignment( date, assignment );
 
             // Apply exceptions if user specified
             if (userId != null) {
-                baseSchedule = applyShiftExceptionsToSchedule(baseSchedule, userId);
+                baseSchedule = applyShiftExceptionsToSchedule( baseSchedule, userId );
             }
 
             return baseSchedule;
-
         } catch (Exception e) {
-            Log.e(TAG, "Error generating schedule for date " + date, e);
-            return WorkScheduleDay.builder(date).build();
+            Log.e( TAG, "Error generating schedule for date " + date, e );
+            return WorkScheduleDay.builder( date ).build();
         }
     }
 
@@ -872,18 +877,18 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         try {
             CompletableFuture<OperationResult<UserScheduleAssignment>> futureResult =
                     mCalendarServiceProvider.getUserScheduleAssignmentRepository()
-                            .getActiveAssignmentForUser(userId, date);
+                            .getActiveAssignmentForUser( userId, date );
 
             OperationResult<UserScheduleAssignment> result = futureResult.join();
 
             if (result.isSuccess()) {
                 return result.getData();
             } else {
-                Log.w(TAG, "Failed to get user assignment: " + result.getErrorMessage());
+                Log.w( TAG, "Failed to get user assignment: " + result.getErrorMessage() );
                 return null;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting user assignment", e);
+            Log.e( TAG, "Error getting user assignment", e );
             return null;
         }
     }
@@ -891,57 +896,49 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     private UserScheduleAssignment createDefaultQuattroDueAssignment(@NonNull LocalDate date, @Nullable Long userId) {
         try {
-            // ✅ FIX: Usa la data schema come startDate invece della data richiesta
+            // Scheme Start Date instead of requested date
             LocalDate schemeStartDate = getSchemeStartDate().join().getData();
             if (schemeStartDate == null)
-                throw new RuntimeException("No Scheme StartDate");
+                throw new RuntimeException( "No Scheme StartDate" );
 
-            Log.d(TAG, "Creating default assignment with scheme start date: " + schemeStartDate +
-                    " for requested date: " + date);
+            Log.d( TAG, "Creating default assignment with scheme start date: " + schemeStartDate +
+                    " for requested date: " + date );
 
             return UserScheduleAssignment.createPermanentAssignment(
-                    userId != null ? userId : 1L,
-                    "A", // Team A invece di "1"
+                    QDuePreferences.getUserId( mContext ),
+                    QDuePreferences.getSelectedTeamName( mContext ),
                     getDefaultRecurrenceRuleId(),
                     schemeStartDate  // ✅ USA SCHEME START DATE (passato) invece di date (futuro)
             );
-
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create default assignment with scheme date, using fallback", e);
+            Log.e( TAG, "Failed to create default assignment with scheme date, using fallback", e );
 
             // ✅ FALLBACK: Crea assignment con status PENDING se validation fallisce
-            return UserScheduleAssignment.builder( )
-                    .userId(userId != null ? userId : 1L)
-                    .teamId("A")
-                    .recurrenceRuleId(getDefaultRecurrenceRuleId())
-                    .startDate(LocalDate.now().minusDays(1)) // Ieri (passato garantito)
-                    .status(UserScheduleAssignment.Status.PENDING) // ✅ PENDING invece di ACTIVE
-                    .priority(UserScheduleAssignment.Priority.NORMAL)
-                    .title("Assegnazione predefinita QuattroDue")
-                    .description("Assegnazione automatica per Team A")
+            return UserScheduleAssignment.builder()
+                    .userId(QDuePreferences.getUserId( mContext ))
+                    .teamId( QDuePreferences.getSelectedTeamName( mContext ))
+                    .recurrenceRuleId( getDefaultRecurrenceRuleId() )
+                    .startDate( LocalDate.of(2018,11,7) ) // HARDCODED DATE
+                    .priority( UserScheduleAssignment.Priority.NORMAL )
+                    .title( "QuattroDue" )
+                    .description( "Auto assignment for A team" )
                     .build();
         }
-//        return UserScheduleAssignment.createPermanentAssignment(
-//                userId != null ? userId : 1L,
-//                "1", // Default team ID
-//                getDefaultRecurrenceRuleId(),
-//                date
-//        );
     }
 
     @NonNull
     private String getDefaultRecurrenceRuleId() {
         try {
             List<RecurrenceRule> rules = mCalendarServiceProvider.getRecurrenceRuleRepository()
-                    .getRecurrenceRulesByFrequency(RecurrenceRule.Frequency.QUATTRODUE_CYCLE).join();
+                    .getRecurrenceRulesByFrequency( RecurrenceRule.Frequency.QUATTRODUE_CYCLE ).join();
 
             if (rules != null && !rules.isEmpty()) {
-                return rules.get(0).getId();
+                return rules.get( 0 ).getId();
             }
 
             return "default-quattrodue-rule";
         } catch (Exception e) {
-            Log.e(TAG, "Error getting default recurrence rule", e);
+            Log.e( TAG, "Error getting default recurrence rule", e );
             return "default-quattrodue-rule";
         }
     }
@@ -952,20 +949,19 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             // Get recurrence rule by ID from assignment
             String recurrenceRuleId = assignment.getRecurrenceRuleId();
             RecurrenceRule rule = mCalendarServiceProvider.getRecurrenceRuleRepository()
-                    .getRecurrenceRuleById(recurrenceRuleId).join();
+                    .getRecurrenceRuleById( recurrenceRuleId ).join();
 
             if (rule == null) {
-                Log.w(TAG, "Recurrence rule not found: " + recurrenceRuleId);
-                return WorkScheduleDay.builder(date).build();
+                Log.w( TAG, "Recurrence rule not found: " + recurrenceRuleId );
+                return WorkScheduleDay.builder( date ).build();
             }
 
             // Use RecurrenceCalculator to generate schedule
             RecurrenceCalculator calculator = mCalendarServiceProvider.getRecurrenceCalculator();
-            return calculator.generateScheduleForDate(date, rule, assignment);
-
+            return calculator.generateScheduleForDate( date, rule, assignment );
         } catch (Exception e) {
-            Log.e(TAG, "Error generating base schedule", e);
-            return WorkScheduleDay.builder(date).build();
+            Log.e( TAG, "Error generating base schedule", e );
+            return WorkScheduleDay.builder( date ).build();
         }
     }
 
@@ -977,7 +973,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             // Get exceptions for user and date
             CompletableFuture<OperationResult<List<ShiftException>>> futureExceptions =
                     mCalendarServiceProvider.getShiftExceptionRepository()
-                            .getEffectiveExceptionsForUserOnDate(userId, date);
+                            .getEffectiveExceptionsForUserOnDate( userId, date );
 
             OperationResult<List<ShiftException>> exceptionsResult = futureExceptions.join();
             List<ShiftException> exceptions = exceptionsResult.getData();
@@ -987,14 +983,13 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             }
 
             // Build user-team mappings
-            Map<Long, Team> userTeamMappings = buildUserTeamMappings(userId, date);
+            Map<Long, Team> userTeamMappings = buildUserTeamMappings( userId, date );
 
             // Apply exceptions using ExceptionResolver
             ExceptionResolver resolver = mCalendarServiceProvider.getExceptionResolver();
-            return resolver.applyExceptions(baseSchedule, exceptions, userTeamMappings, new HashMap<>());
-
+            return resolver.applyExceptions( baseSchedule, exceptions, userTeamMappings, new HashMap<>() );
         } catch (Exception e) {
-            Log.e(TAG, "Error applying shift exceptions", e);
+            Log.e( TAG, "Error applying shift exceptions", e );
             return baseSchedule;
         }
     }
@@ -1004,16 +999,16 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         Map<Long, Team> mappings = new HashMap<>();
 
         try {
-            UserScheduleAssignment assignment = getUserAssignmentForDate(date, userId);
+            UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
             if (assignment != null) {
                 String teamId = assignment.getTeamId();
-                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(teamId).join();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById( teamId ).join();
                 if (team != null) {
-                    mappings.put(userId, team);
+                    mappings.put( userId, team );
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error building user-team mappings", e);
+            Log.e( TAG, "Error building user-team mappings", e );
         }
 
         return mappings;
@@ -1028,17 +1023,17 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
         for (WorkScheduleShift shift : scheduleDay.getShifts()) {
             // Create WorkScheduleEvent with multiple teams support
-            WorkScheduleEvent event = WorkScheduleEvent.builder(scheduleDay.getDate())
-                    .setShift(shift.getShift())
-                    .setTeams(shift.getTeams()) // Multi-team support
-                    .setUserId(userId)
-                    .setDescription(shift.getDescription())
-                    .setDayInCycle(calculateDayInCycle(scheduleDay.getDate()))
-                    .setPatternName("QuattroDue 4-2")
-                    .setGeneratedBy("WorkScheduleRepositoryImpl")
+            WorkScheduleEvent event = WorkScheduleEvent.builder( scheduleDay.getDate() )
+                    .setShift( shift.getShift() )
+                    .setTeams( shift.getTeams() ) // Multi-team support
+                    .setUserId( userId )
+                    .setDescription( shift.getDescription() )
+                    .setDayInCycle( calculateDayInCycle( scheduleDay.getDate() ) )
+                    .setPatternName( "QuattroDue 4-2" )
+                    .setGeneratedBy( "WorkScheduleRepositoryImpl" )
                     .build();
 
-            events.add(event);
+            events.add( event );
         }
 
         return events;
@@ -1049,9 +1044,9 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
      */
     private int calculateDayInCycle(@NonNull LocalDate date) {
         try {
-            return getDayInCycle(date).join().getData();
+            return getDayInCycle( date ).join().getData();
         } catch (Exception e) {
-            Log.w(TAG, "Error calculating day in cycle for " + date, e);
+            Log.w( TAG, "Error calculating day in cycle for " + date, e );
             return 0;
         }
     }
@@ -1068,9 +1063,9 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 mExecutorService.shutdown();
             }
 
-            Log.d(TAG, "WorkScheduleRepositoryImpl cleanup completed");
+            Log.d( TAG, "WorkScheduleRepositoryImpl cleanup completed" );
         } catch (Exception e) {
-            Log.e(TAG, "Error during cleanup", e);
+            Log.e( TAG, "Error during cleanup", e );
         }
     }
 }

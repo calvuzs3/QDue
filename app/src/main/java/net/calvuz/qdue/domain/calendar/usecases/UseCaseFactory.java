@@ -1,6 +1,6 @@
 package net.calvuz.qdue.domain.calendar.usecases;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -78,7 +78,7 @@ public class UseCaseFactory {
      */
     public UseCaseFactory(@NonNull WorkScheduleRepository workScheduleRepository) {
         this.mWorkScheduleRepository = workScheduleRepository;
-        logDebug("UseCaseFactory created with repository: " +
+        Log.d(TAG,"UseCaseFactory created with repository: " +
                 workScheduleRepository.getClass().getSimpleName());
     }
 
@@ -98,7 +98,7 @@ public class UseCaseFactory {
             synchronized (mUserScheduleUseCaseLock) {
                 if (mGenerateUserScheduleUseCase == null) {
                     mGenerateUserScheduleUseCase = new GenerateUserScheduleUseCase(mWorkScheduleRepository);
-                    logDebug("Created GenerateUserScheduleUseCase instance");
+                    Log.d(TAG,"Created GenerateUserScheduleUseCase instance");
                 }
             }
         }
@@ -119,7 +119,7 @@ public class UseCaseFactory {
             synchronized (mTeamScheduleUseCaseLock) {
                 if (mGenerateTeamScheduleUseCase == null) {
                     mGenerateTeamScheduleUseCase = new GenerateTeamScheduleUseCase(mWorkScheduleRepository);
-                    logDebug("Created GenerateTeamScheduleUseCase instance");
+                    Log.d(TAG,"Created GenerateTeamScheduleUseCase instance");
                 }
             }
         }
@@ -140,7 +140,7 @@ public class UseCaseFactory {
             synchronized (mShiftExceptionsUseCaseLock) {
                 if (mApplyShiftExceptionsUseCase == null) {
                     mApplyShiftExceptionsUseCase = new ApplyShiftExceptionsUseCase(mWorkScheduleRepository);
-                    logDebug("Created ApplyShiftExceptionsUseCase instance");
+                    Log.d(TAG,"Created ApplyShiftExceptionsUseCase instance");
                 }
             }
         }
@@ -161,7 +161,7 @@ public class UseCaseFactory {
             synchronized (mScheduleStatsUseCaseLock) {
                 if (mGetScheduleStatsUseCase == null) {
                     mGetScheduleStatsUseCase = new GetScheduleStatsUseCase(mWorkScheduleRepository);
-                    logDebug("Created GetScheduleStatsUseCase instance");
+                    Log.d(TAG,"Created GetScheduleStatsUseCase instance");
                 }
             }
         }
@@ -235,7 +235,7 @@ public class UseCaseFactory {
         synchronized (mScheduleStatsUseCaseLock) {
             mGetScheduleStatsUseCase = null;
         }
-        logDebug("Cleared all cached use case instances");
+        Log.d(TAG,"Cleared all cached use case instances");
     }
 
     /**
@@ -244,7 +244,7 @@ public class UseCaseFactory {
      * <p>Called during application shutdown or when factory is no longer needed.</p>
      */
     public void cleanup() {
-        logDebug("Cleaning up UseCaseFactory");
+        Log.d(TAG,"Cleaning up UseCaseFactory");
         clearCache();
     }
 

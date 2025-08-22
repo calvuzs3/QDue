@@ -6,6 +6,7 @@
     <string name="app_name" translatable="false">Q-Due</string>
 
     <!-- PREFERENCE KEYS -->
+    <string name="qd_preference_user_id" translatable="false">qdue_user_id</string>
     <string name="qd_preference_user_team" translatable="false">preference_user_team</string>
     <string name="qd_preference_show_stops" translatable="false">preference_show_stops</string>
     <string name="qd_preference_scheme_start_date" translatable="false">preference_scheme_start_date</string>
@@ -20,10 +21,7 @@
     <string name="qd_preference_scheme_start_day" translatable="false">preference_scheme_start_day</string>
     <string name="qd_preference_scheme_start_month" translatable="false">preference_scheme_start_month</string>
     <string name="qd_preference_scheme_start_year" translatable="false">preference_scheme_start_year</string>
-    <!--    <string name="qd_preference_scheme_start_day">7</string>-->
-    <!--    <string name="qd_preference_scheme_start_month">11</string>-->
-    <!--    <string name="qd_preference_scheme_start_year">2018</string>-->
-    <!--    -->
+    <!-- Pattern  -->
     <string name="qd_preference_pattern_custom" translatable="false">qdue_pattern_custom"</string>
     <string name="qd_preference_pattern_create_new_pattern" translatable="false">qdue_pattern_create_new</string>
     <string name="qd_preference_pattern_existing_patterns_category" translatable="false">qdue_pattern_existing_patterns</string>
@@ -41,6 +39,7 @@
     <!-- Preferences -->
     <string name="settings_title">Impostazioni QDue</string>
     <string name="error_navigation_custom_patterns">Impossibile aprire Custom Pattern Settings</string>
+    <string name="settings_not_available">Impostazioni non disponibile</string>
 
     <!-- User Team Preferences -->
     <string name="settings_team_header">Team</string>
@@ -213,6 +212,7 @@
 
     <!-- User Profile Activity -->
     <string name="user_profile">Utente</string>
+    <string name="user_profile_not_available">Profilo Utente non disponibile</string>
     <string name="user_name_placeholder">Nome Utente</string>
 
     <!-- Authentication Section -->
@@ -348,6 +348,7 @@
     <!-- Events Settings Main -->
     <string name="settings_events_title">Eventi</string>
     <string name="settings_events_main_summary">Gestisci eventi, fonti esterne e Google Calendar</string>
+    <string name="settings_events_not_available">Eventi non disponibile</string>
 
     <!-- Events Header -->
     <string name="settings_events_header">Configurazione Eventi</string>
@@ -423,7 +424,7 @@
     <!-- ============================================ -->
 
     <!-- Navigation items -->
-    <string name="nav_user_profile">Utente</string>
+    <string name="nav_user_profile">Profilo</string>
 
     <!-- Header text -->
     <string name="nav_header_menu_extended">Menu principale</string>

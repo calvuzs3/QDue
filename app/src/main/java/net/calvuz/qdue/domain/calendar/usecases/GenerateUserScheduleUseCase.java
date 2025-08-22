@@ -1,7 +1,6 @@
 package net.calvuz.qdue.domain.calendar.usecases;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -72,7 +71,7 @@ public class GenerateUserScheduleUseCase {
     public CompletableFuture<OperationResult<WorkScheduleDay>> executeForDate(
             @NonNull Long userId, @NonNull LocalDate date) {
 
-        logDebug("Executing user schedule generation for userId: " + userId + ", date: " + date);
+        Log.d(TAG,"Executing user schedule generation for userId: " + userId + ", date: " + date);
 
         return mWorkScheduleRepository.getWorkScheduleForDate(date, userId)
                 .thenApply(result -> {
@@ -84,15 +83,15 @@ public class GenerateUserScheduleUseCase {
                             schedule = applyUserSpecificBusinessRules(schedule, userId);
                         }
 
-                        logDebug("Generated user schedule for " + userId + " on " + date);
+                        Log.d(TAG,"Generated user schedule for " + userId + " on " + date);
                         return OperationResult.success(schedule, OperationResult.OperationType.READ);
                     } else {
-                        logError("Failed to get user schedule: " + result.getErrorMessage(), null);
+                        Log.e(TAG,"Failed to get user schedule: " + result.getErrorMessage(), null);
                         return result;
                     }
                 })
                 .exceptionally(throwable -> {
-                    logError("Exception in user schedule generation: " + throwable.getMessage(), null);
+                    Log.e(TAG,"Exception in user schedule generation: " + throwable.getMessage(), null);
                     return OperationResult.failure("Failed to generate user schedule: " + throwable.getMessage(), OperationResult.OperationType.READ);
                 });
     }
@@ -124,7 +123,7 @@ public class GenerateUserScheduleUseCase {
                             OperationResult.OperationType.VALIDATION));
         }
 
-        logDebug("Executing user schedule range generation for userId: " + userId +
+        Log.d(TAG,"Executing user schedule range generation for userId: " + userId +
                 ", range: " + startDate + " to " + endDate);
 
         return mWorkScheduleRepository.getWorkScheduleForDateRange(startDate, endDate, userId)
@@ -138,18 +137,18 @@ public class GenerateUserScheduleUseCase {
                                     applyUserSpecificBusinessRules(schedule, userId));
                         }
 
-                        logDebug("Generated user schedule range for " + userId +
+                        Log.d(TAG,"Generated user schedule range for " + userId +
                                 ": " + startDate + " to " + endDate +
                                 " (" + (scheduleMap != null ? scheduleMap.size() : 0) + " days)");
 
                         return OperationResult.success(scheduleMap, OperationResult.OperationType.READ);
                     } else {
-                        logError("Failed to get user schedule range: " + result.getErrorMessage(), null);
+                        Log.e(TAG,"Failed to get user schedule range: " + result.getErrorMessage(), null);
                         return result;
                     }
                 })
                 .exceptionally(throwable -> {
-                    logError("Exception in user schedule range generation: " + throwable.getMessage(), null);
+                    Log.e(TAG,"Exception in user schedule range generation: " + throwable.getMessage(), null);
                     return OperationResult.failure("Failed to generate user schedule range: " + throwable.getMessage(), OperationResult.OperationType.READ);
                 });
     }
@@ -168,7 +167,7 @@ public class GenerateUserScheduleUseCase {
         LocalDate startDate = month.atDay(1);
         LocalDate endDate = month.atEndOfMonth();
 
-        logDebug("Executing user schedule month generation for userId: " + userId +
+        Log.d(TAG,"Executing user schedule month generation for userId: " + userId +
                 ", month: " + month);
 
         return executeForDateRange(userId, startDate, endDate);
@@ -204,7 +203,7 @@ public class GenerateUserScheduleUseCase {
             return schedule;
 
         } catch (Exception e) {
-            logError("Error applying user business rules for user " + userId, e);
+            Log.e(TAG,"Error applying user business rules for user " + userId, e);
             return schedule; // Return original schedule on error
         }
     }

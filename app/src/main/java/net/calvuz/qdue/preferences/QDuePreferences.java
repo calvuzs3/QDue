@@ -28,6 +28,78 @@ public class QDuePreferences {
     // TAG for logging
     private static final String TAG = "QDuePreferences";
 
+    // ==================== USER ID MANAGEMENT (SINGLE USER APP) ====================
+
+    /**
+     * Default User ID for single-user application.
+     * Fixed at 1L to ensure consistency throughout the app.
+     */
+    public static final long DEFAULT_USER_ID = 1L;
+
+    /**
+     * Get the current user ID.
+     * For single-user app, this always returns 1L or user-customized ID.
+     *
+     * @param context Application context
+     * @return User ID (default: 1L)
+     */
+    public static long getUserId(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+        long userId = prefs.getLong(QDue.Settings.QD_KEY_USER_ID, DEFAULT_USER_ID);
+
+        // Safety check: never return 0 or negative IDs
+        if (userId <= 0) {
+            Log.w(TAG, "Invalid user ID found: " + userId + ". Resetting to default: " + DEFAULT_USER_ID);
+            setUserId(context, DEFAULT_USER_ID);
+            return DEFAULT_USER_ID;
+        }
+
+        return userId;
+    }
+
+    /**
+     * Set the user ID.
+     * For single-user app, this allows customization but defaults to 1L.
+     *
+     * @param context Application context
+     * @param userId User ID to set (must be > 0)
+     */
+    public static void setUserId(Context context, long userId) {
+        // Validate user ID
+        if (userId <= 0) {
+            Log.w(TAG, "Invalid user ID provided: " + userId + ". Using default: " + DEFAULT_USER_ID);
+            userId = DEFAULT_USER_ID;
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putLong(QDue.Settings.QD_KEY_USER_ID, userId).apply();
+
+        Log.d(TAG, "User ID set to: " + userId);
+    }
+
+    /**
+     * Check if user ID has been explicitly set.
+     * Used during first-time initialization to determine if default should be applied.
+     *
+     * @param context Application context
+     * @return true if user ID preference exists
+     */
+    public static boolean hasUserIdSet(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
+        return prefs.contains(QDue.Settings.QD_KEY_USER_ID);
+    }
+
+    /**
+     * Reset user ID to default (1L).
+     * Used for troubleshooting or resetting single-user app state.
+     *
+     * @param context Application context
+     */
+    public static void resetUserIdToDefault(Context context) {
+        setUserId(context, DEFAULT_USER_ID);
+        Log.d(TAG, "User ID reset to default: " + DEFAULT_USER_ID);
+    }
+
     // ==================== VIEW MODE PREFERENCES ====================
 
     /**
@@ -500,6 +572,7 @@ public class QDuePreferences {
         if (!QDue.Debug.DEBUG_ACTIVITY) return;
 
         Log.d( TAG, "=== QDue Preferences Debug Info ===" );
+        Log.d( TAG, "User ID: " + getUserId( context ) );
         Log.d( TAG, "View Mode: " + getDefaultViewMode( context ) );
         Log.d( TAG, "Welcome Completed: " + isWelcomeCompleted( context ) );
         Log.d( TAG, "Selected Team (deprecated): " + getSelectedTeam( context ) );
@@ -533,6 +606,7 @@ public class QDuePreferences {
         SharedPreferences.Editor editor = prefs.edit();
 
         // Remove all QDue-specific preferences
+        editor.remove( QDue.Settings.QD_KEY_USER_ID );
         editor.remove( QDue.Settings.QD_KEY_VIEW_MODE );
         editor.remove( QDue.Settings.QD_KEY_WELCOME_COMPLETED );
         editor.remove( QDue.Settings.QD_KEY_SELECTED_TEAM );

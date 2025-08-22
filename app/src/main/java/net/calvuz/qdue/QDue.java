@@ -27,7 +27,7 @@ import net.calvuz.qdue.smartshifts.data.database.DatabaseInitializer;
  * Main QDue Application class with Hilt support
  * Now supports both existing QDue functionality and new SmartShifts
  */
-@HiltAndroidApp  // Hilt Support for Dependency Injection
+//@HiltAndroidApp  // Hilt Support for Dependency Injection
 public class QDue extends Application {
 
     // TAG
@@ -37,8 +37,7 @@ public class QDue extends Application {
     public static final int SETTINGS_REQUEST_CODE = 1001;
     public static final int WELCOME_REQUEST_CODE = 1002;
 
-
-    @SuppressLint("StaticFieldLeak")
+    @SuppressLint ("StaticFieldLeak")
     private static Context INSTANCE;
 
     private static Locale locale;
@@ -49,36 +48,71 @@ public class QDue extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // INSTANCE reference
-        INSTANCE = this;
+        if (INSTANCE == null) {
+            INSTANCE = this;
+        }
 
-        QDuePreferences.migrateTeamPreferencesIfNeeded(this);
-        QDuePreferences.initializeDefaultsIfNeeded(this);
+        // Initialize default preferences including User ID
+        initializeDefaultPreferences();
 
         // Locale
-        locale = getSystemLocale();
-        Log.d(TAG, "=== SystemLocale initialized");
+        locale = new Locale( Locale.US.getLanguage() ); //getSystemLocale();
+        Log.d( TAG, "=== SystemLocale initialized" );
 
         // Enable Material You Dynamic Colors (Android 12+)
-        enableDynamicColors();
-        Log.d(TAG, "=== DynamicColors initialized");
+//        enableDynamicColors();
+//        Log.d( TAG, "=== DynamicColors initialized" );
 
         // Initialize unified database
-        QDueDatabase.getInstance(this);
-        Log.d(TAG, "=== QDueDatabase initialized");
+        QDueDatabase.getInstance( this );
+        Log.d( TAG, "=== QDueDatabase initialized" );
 
         // Initialize QuattroDue
-        quattrodue = QuattroDue.getInstance(this);
-        Log.d(TAG, "=== QuattroDue initialized");
+//        quattrodue = QuattroDue.getInstance( this );
+//        Log.d( TAG, "=== QuattroDue initialized" );
 
         // 🆕 Initialize back handling services early
-        BackHandlingModule.initialize(this);
-        Log.d(TAG, "=== BackHandling services initialized");
+//        BackHandlingModule.initialize( this );
+//        Log.d( TAG, "=== BackHandling services initialized" );
 
         // ✅ AGGIUNTO: Initialize SmartShifts database
-        initializeSmartShifts();
+        //initializeSmartShifts();
     }
 
+    /**
+     * Initialize default preferences for single-user app.
+     * Ensures User ID and other critical preferences are available from app start.
+     */
+    private void initializeDefaultPreferences() {
+        try {
+            // Initialize all default preferences including User ID = 1L
+            QDuePreferences.initializeDefaultsIfNeeded( this );
+
+            // Migrate legacy team preferences if needed
+            QDuePreferences.migrateTeamPreferencesIfNeeded( this );
+
+            // Log current state for debugging
+            QDuePreferences.logAllPreferences( this );
+
+            // Colors
+            if (QDuePreferences.isDynamicColorsEnabled( this )) {
+                enableDynamicColors();
+            };
+
+            Log.d( TAG, "=== Preferences initialized" );
+        } catch (Exception e) {
+            Log.e( "QDueApplication", "Error initializing preferences", e );
+
+            // Fallback: force reset to defaults
+            try {
+                QDuePreferences.resetUserIdToDefault( this );
+                QDuePreferences.setSelectedTeamName( this, "A" );
+                Log.w( TAG, "!!! Applied emergency preference defaults" );
+            } catch (Exception fallbackError) {
+                Log.e( TAG, "Critical: Cannot initialize preferences", fallbackError );
+            }
+        }
+    }
     /* ===== GETTERS ===== */
 
     // Application Context
@@ -102,18 +136,17 @@ public class QDue extends Application {
      * Initialize SmartShifts components
      * Runs in background to avoid blocking UI
      */
-    private void initializeSmartShifts() {
-        SmartShiftsDatabase.databaseWriteExecutor.execute(() -> {
-            try {
-                SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
-                DatabaseInitializer.initializeWithLocalizedStrings(database, this);
-                android.util.Log.d(TAG, "=== SmartShifts database initialized successfully");
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing SmartShifts database", e);
-            }
-        });
-    }
-
+//    private void initializeSmartShifts() {
+//        SmartShiftsDatabase.databaseWriteExecutor.execute( () -> {
+//            try {
+//                SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase( this );
+//                DatabaseInitializer.initializeWithLocalizedStrings( database, this );
+//                android.util.Log.d( TAG, "=== SmartShifts database initialized successfully" );
+//            } catch (Exception e) {
+//                Log.e( TAG, "Error initializing SmartShifts database", e );
+//            }
+//        } );
+//    }
     @Override
     public void onTerminate() {
         super.onTerminate();
@@ -122,39 +155,28 @@ public class QDue extends Application {
         // (Mantieni tutto il cleanup QDue esistente qui)
 
         // === SMARTSHIFTS CLEANUP ===
-        try {
-            SmartShiftsDatabase.closeDatabase();
-            android.util.Log.d(TAG, "=== SmartShifts resources cleaned up");
-        } catch (Exception e) {
-            android.util.Log.e(TAG, "Error cleaning up SmartShifts resources", e);
-        }
+//        try {
+//            SmartShiftsDatabase.closeDatabase();
+//            android.util.Log.d( TAG, "=== SmartShifts resources cleaned up" );
+//        } catch (Exception e) {
+//            android.util.Log.e( TAG, "Error cleaning up SmartShifts resources", e );
+//        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
 
-        // Cleanup SmartShifts cache in low memory situations
-        try {
-            SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase(this);
-            // Could add cache clearing logic here if needed
-        } catch (Exception e) {
-            Log.w(TAG, "Could not clear SmartShifts cache", e);
-        }
+//        // Cleanup SmartShifts cache in low memory situations
+//        try {
+//            SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase( this );
+//            // Could add cache clearing logic here if needed
+//        } catch (Exception e) {
+//            Log.w( TAG, "Could not clear SmartShifts cache", e );
+//        }
     }
 
     /// ////////////////////////// SMARTSHIFTS ENDS HERE //////////////////////////////////
-
-
-    @SuppressLint("ObsoleteSdkInt")
-    private static Locale getSystemLocale() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return INSTANCE.getResources().getConfiguration().getLocales().get(0);
-        } else {
-            //noinspection deprecation
-            return INSTANCE.getResources().getConfiguration().locale;
-        }
-    }
 
     /**
      * Settings - app wide
@@ -167,11 +189,12 @@ public class QDue extends Application {
 
         // Constants for configuration
         public static final String QD_PREF_NAME = "qdue_prefs";
-        public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString(R.string.qd_preference_welcome_completed);
+        public static final String QD_KEY_USER_ID = getContext().getString( R.string.qd_preference_user_id );
+        public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString( R.string.qd_preference_welcome_completed );
         public static final String QD_KEY_SELECTED_TEAM = getContext().getString( R.string.qd_preference_selected_team );
         public static final String QD_KEY_SELECTED_TEAM_NAME = getContext().getString( R.string.qd_preference_selected_team_name );
-        public static final String QD_KEY_VIEW_MODE = getContext().getString(R.string.qd_preference_view_mode);
-        public static final String QD_KEY_DYNAMIC_COLORS = getContext().getString(R.string.qd_preference_dynamic_colors_enabled);
+        public static final String QD_KEY_VIEW_MODE = getContext().getString( R.string.qd_preference_view_mode );
+        public static final String QD_KEY_DYNAMIC_COLORS = getContext().getString( R.string.qd_preference_dynamic_colors_enabled );
 
         // View mode enum
         public enum ViewMode {
@@ -180,9 +203,14 @@ public class QDue extends Application {
             SWIPE_CALENDAR( getContext().getResources().getStringArray( R.array.qdue_view_mode_values )[2] ); //"swipe_calendar"),
 
             private final String name;
-            ViewMode(String name) { this.name = name; }
 
-            public String getName() { return this.name; }
+            ViewMode(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return this.name;
+            }
         }
 
         // View mode constants
@@ -198,9 +226,8 @@ public class QDue extends Application {
         public static final boolean DEBUG_COLORS = false;
         public static final boolean DEBUG_SHARED_VIEW_MODELS = false;
         // Base
-        public static final boolean DEBUG_BASEFRAGMENT = true;
+        public static final boolean DEBUG_BASEFRAGMENT = false;
         public static final boolean DEBUG_BASEADAPTER = false;
-
     }
 
     public static final class VirtualScrollingSettings {
@@ -221,46 +248,6 @@ public class QDue extends Application {
     }
 
     /**
-     * Debug settings for virtual scrolling
-     */
-    public static class VirtualScrollingDebugSettings {
-
-        // Enable/disable debug logging
-        public static final boolean DEBUG_VIRTUAL_SCROLLING = true;
-
-        // Enable/disable performance logging
-        public static final boolean DEBUG_PERFORMANCE = true;
-
-        // Enable/disable memory monitoring
-        public static final boolean DEBUG_MEMORY = true;
-
-        // Enable/disable cache statistics
-        public static final boolean DEBUG_CACHE_STATS = true;
-
-        // Simulate slow network for testing
-        public static final boolean SIMULATE_SLOW_LOADING = false;
-        public static final int SIMULATED_DELAY_MS = 500;
-
-        /**
-         * Log debug message if enabled
-         */
-        public void logDebug(String tag, String message) {
-            if (DEBUG_VIRTUAL_SCROLLING) {
-                android.util.Log.d(tag, message);
-            }
-        }
-
-        /**
-         * Log performance metric if enabled
-         */
-        public void logPerformance(String tag, String metric, long value) {
-            if (DEBUG_PERFORMANCE) {
-                Log.d(tag, MessageFormat.format("PERF: {0} = {1}ms", metric, value));
-            }
-        }
-    }
-
-    /**
      * Enable Material You dynamic colors with fallback support
      */
     private void enableDynamicColors() {
@@ -268,13 +255,13 @@ public class QDue extends Application {
             // Check if Material You is available (Android 12+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Enable dynamic colors for all activities
-                DynamicColors.applyToActivitiesIfAvailable(this);
-                Log.v(TAG, "=== Material You dynamic colors enabled");
+                DynamicColors.applyToActivitiesIfAvailable( this );
+                Log.i( TAG, "=== Material You dynamic colors enabled" );
             } else {
-                Log.v(TAG, "=== Using fallback purple-blue theme (Android < 12)");
+                Log.i( TAG, "=== Using fallback theme (Android < 12)" );
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error enabling dynamic colors: " + e.getMessage());
+            Log.e( TAG, "Error enabling dynamic colors", e );
             // Gracefully fallback to static theme
         }
     }
@@ -286,7 +273,7 @@ public class QDue extends Application {
      * BackHandlingService service = QDue.getBackHandlingService();
      */
     public static BackHandlingService getBackHandlingService() {
-        return BackHandlingModule.getBackHandlingService(INSTANCE);
+        return BackHandlingModule.getBackHandlingService( INSTANCE );
     }
 
     /**
@@ -296,7 +283,6 @@ public class QDue extends Application {
      * BackHandlerFactory factory = QDue.getBackHandlerFactory();
      */
     public static BackHandlerFactory getBackHandlerFactory() {
-        return BackHandlingModule.getBackHandlerFactory(INSTANCE);
+        return BackHandlingModule.getBackHandlerFactory( INSTANCE );
     }
-
 }

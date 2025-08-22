@@ -1,8 +1,6 @@
 package net.calvuz.qdue.domain.calendar.usecases;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logWarning;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -77,7 +75,7 @@ public class GenerateTeamScheduleUseCase {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                logDebug("Generating team schedule for date: " + date +
+                Log.d(TAG,"Generating team schedule for date: " + date +
                         (teamId != null ? ", teamId: " + teamId : " (all teams)"));
 
                 // Validate input
@@ -110,16 +108,16 @@ public class GenerateTeamScheduleUseCase {
                 // Validate team coverage
                 TeamCoverageResult coverageResult = validateTeamCoverage(schedule);
                 if (!coverageResult.isValid) {
-                    logWarning("Team coverage validation failed: " + coverageResult.warnings);
+                    Log.w(TAG,"Team coverage validation failed: " + coverageResult.warnings);
                 }
 
-                logDebug("Successfully generated team schedule for " + date +
+                Log.d(TAG,"Successfully generated team schedule for " + date +
                         " with " + schedule.getShifts().size() + " shifts");
 
                 return OperationResult.success(schedule, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                logError("Error generating team schedule for date: " + date, e);
+                Log.e(TAG,"Error generating team schedule for date: " + date, e);
                 return OperationResult.failure("Failed to generate team schedule: " + e.getMessage(), OperationResult.OperationType.READ);
             }
         });
@@ -139,7 +137,7 @@ public class GenerateTeamScheduleUseCase {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                logDebug("Generating team schedule range: " + startDate + " to " + endDate +
+                Log.d(TAG,"Generating team schedule range: " + startDate + " to " + endDate +
                         (teamId != null ? ", teamId: " + teamId : " (all teams)"));
 
                 // Validate input
@@ -189,16 +187,16 @@ public class GenerateTeamScheduleUseCase {
                         teamSchedules, startDate, endDate);
 
                 if (!periodCoverage.isValid) {
-                    logWarning("Team period coverage has issues: " + periodCoverage.summary);
+                    Log.w(TAG,"Team period coverage has issues: " + periodCoverage.summary);
                 }
 
-                logDebug("Successfully generated team schedule range with " +
+                Log.d(TAG,"Successfully generated team schedule range with " +
                         teamSchedules.size() + " days");
 
                 return OperationResult.success(teamSchedules, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                logError("Error generating team schedule range", e);
+                Log.e(TAG,"Error generating team schedule range", e);
                 return OperationResult.failure("Failed to generate team schedule range: " + e.getMessage(), OperationResult.OperationType.READ);
             }
         });
@@ -218,7 +216,7 @@ public class GenerateTeamScheduleUseCase {
             return filteredSchedule.build();
 
         } catch (Exception e) {
-            logError("Error filtering schedule by team: " + teamId, e);
+            Log.e(TAG,"Error filtering schedule by team: " + teamId, e);
             return schedule; // Return original schedule on error
         }
     }
@@ -241,7 +239,7 @@ public class GenerateTeamScheduleUseCase {
             return schedule;
 
         } catch (Exception e) {
-            logError("Error applying team business rules", e);
+            Log.e(TAG,"Error applying team business rules", e);
             return schedule; // Return original schedule on error
         }
     }

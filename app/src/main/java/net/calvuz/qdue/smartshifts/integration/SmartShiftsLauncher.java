@@ -10,7 +10,7 @@ import net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity;
  * This class can be referenced from QDue's MainActivity navigation
  */
 //@AndroidEntryPoint //nonsense
-public class SmartShiftsLauncher {
+public class SmartShiftsLauncher  {
 
 //    @Inject
 //    public SmartShiftsLauncher() {
@@ -23,7 +23,9 @@ public class SmartShiftsLauncher {
     }
 
     /**
-     * Launch SmartShifts activity from QDue main app
+     * Launch the activity associated with this launcher.
+     *
+     * @param fromActivity The activity launching the target activity.
      */
     public static void launch(AppCompatActivity fromActivity) {
         Intent intent = new Intent(fromActivity, SmartshiftsActivity.class);
@@ -34,7 +36,7 @@ public class SmartShiftsLauncher {
     /**
      * Check if SmartShifts is available and properly configured
      */
-    public static boolean isSmartShiftsAvailable() {
+    public static boolean isAvailable() {
         // Add any availability checks here
         // For example, check if database is initialized
         return true;

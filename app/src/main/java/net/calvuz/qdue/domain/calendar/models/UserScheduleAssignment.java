@@ -6,7 +6,9 @@ import androidx.annotation.Nullable;
 import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
+import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
@@ -43,10 +45,10 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Priority level for resolving conflicting assignments.
      */
     public enum Priority {
-        LOW(1, "low_priority"),
-        NORMAL(5, "normal_priority"),
-        HIGH(8, "high_priority"),
-        OVERRIDE(10, "override_priority");
+        LOW( 1, "low_priority" ),
+        NORMAL( 5, "normal_priority" ),
+        HIGH( 8, "high_priority" ),
+        OVERRIDE( 10, "override_priority" );
 
         private final int level;
         private final String displayNameKey;
@@ -56,19 +58,24 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             this.displayNameKey = displayNameKey;
         }
 
-        public int getLevel() { return level; }
-        public String getDisplayNameKey() { return displayNameKey; }
+        public int getLevel() {
+            return level;
+        }
+
+        public String getDisplayNameKey() {
+            return displayNameKey;
+        }
     }
 
     /**
      * Status of the assignment.
      */
     public enum Status {
-        ACTIVE("active", "currently_active_assignment"),
-        PENDING("pending", "future_assignment_not_yet_active"),
-        EXPIRED("expired", "past_assignment_no_longer_active"),
-        SUSPENDED("suspended", "temporarily_suspended"),
-        CANCELLED("cancelled", "cancelled_assignment");
+        ACTIVE( "active", "currently_active_assignment" ),
+        PENDING( "pending", "future_assignment_not_yet_active" ),
+        EXPIRED( "expired", "past_assignment_no_longer_active" ),
+        SUSPENDED( "suspended", "temporarily_suspended" ),
+        CANCELLED( "cancelled", "cancelled_assignment" );
 
         private final String displayNameKey;
         private final String descriptionKey;
@@ -78,8 +85,13 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             this.descriptionKey = descriptionKey;
         }
 
-        public String getDisplayNameKey() { return displayNameKey; }
-        public String getDescriptionKey() { return descriptionKey; }
+        public String getDisplayNameKey() {
+            return displayNameKey;
+        }
+
+        public String getDescriptionKey() {
+            return descriptionKey;
+        }
     }
 
     // ==================== IDENTIFICATION ====================
@@ -106,7 +118,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     // ==================== PRIORITY AND STATUS ====================
 
     private final Priority priority;
-    private final Status status;
+    private final Status status;           // COMPUTED - never set manually
 
     // ==================== METADATA ====================
 
@@ -119,6 +131,14 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
     // ==================== SYSTEM DATA ====================
 
+    /**
+     * Administrative enable/disable flag.
+     * <p>
+     * - true: Assignment is enabled and should be processed
+     * - false: Assignment is disabled (soft delete, administrative suspension)
+     * <p>
+     * This is independent of dates - a future assignment can be active=true
+     */
     private final boolean active;
     private final long createdAt;
     private final long updatedAt;
@@ -128,7 +148,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private UserScheduleAssignment(@NonNull Builder builder) {
-        super(builder.mLocalizer, LOCALIZATION_SCOPE);
+        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Identification
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
@@ -137,20 +157,22 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         this.notes = builder.notes;
 
         // Core data
-        this.userId = Objects.requireNonNull(builder.userId, "User ID cannot be null");
+        this.userId = Objects.requireNonNull( builder.userId, "User ID cannot be null" );
         this.userName = builder.userName;
-        this.teamId = Objects.requireNonNull(builder.teamId, "Team ID cannot be null");
+        this.teamId = Objects.requireNonNull( builder.teamId, "Team ID cannot be null" );
         this.teamName = builder.teamName;
-        this.recurrenceRuleId = Objects.requireNonNull(builder.recurrenceRuleId, "Recurrence rule ID cannot be null");
+        this.recurrenceRuleId = Objects.requireNonNull( builder.recurrenceRuleId, "Recurrence rule ID cannot be null" );
 
         // Time boundaries
-        this.startDate = Objects.requireNonNull(builder.startDate, "Start date cannot be null");
+        this.startDate = Objects.requireNonNull( builder.startDate, "Start date cannot be null" );
         this.endDate = builder.endDate;
         this.isPermanent = builder.endDate == null;
 
-        // Priority and status
+        // Status - Auto-correct status based on dates and business rules
+        this.status = computeStatus( builder.startDate, builder.endDate, builder.active );
+
+        // Priority
         this.priority = builder.priority != null ? builder.priority : Priority.NORMAL;
-        this.status = builder.status != null ? builder.status : Status.ACTIVE;
 
         // Metadata
         this.assignedByUserId = builder.assignedByUserId;
@@ -176,42 +198,188 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Validate assignment consistency.
      */
     private void validateAssignment() {
-        if (endDate != null && endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("End date cannot be before start date");
+        // Basic date validation
+        if (endDate != null && endDate.isBefore( startDate )) {
+            throw new IllegalArgumentException( "End date cannot be before start date" );
         }
 
-        if (status == Status.ACTIVE && !isCurrentlyActive()) {
-            throw new IllegalArgumentException("Status ACTIVE but dates indicate otherwise");
+        // Business rule: assignments cannot be too far in the past or future
+        LocalDate today = LocalDate.now();
+        LocalDate maxPast = today.minusYears( 50 );
+        LocalDate maxFuture = today.plusYears( 50 );
+
+        if (startDate.isBefore( maxPast )) {
+            throw new IllegalArgumentException( "Start date cannot be more than 50 years in the past: " + startDate );
         }
+
+        if (startDate.isAfter( maxFuture )) {
+            throw new IllegalArgumentException( "Start date cannot be more than 50 years in the future: " + startDate );
+        }
+
+        // Log status computation for debugging
+        Log.d( TAG, "Assignment validation passed - ID: " + id +
+                ", Status: " + status + ", Active: " + active +
+                ", Start: " + startDate + ", End: " + endDate );
     }
 
     // ==================== GETTERS ====================
 
-    @NonNull public String getId() { return id; }
-    @Nullable public String getTitle() { return title; }
-    @Nullable public String getDescription() { return description; }
-    @Nullable public String getNotes() { return notes; }
-    @NonNull public Long getUserId() { return userId; }
-    @Nullable public String getUserName() { return userName; }
-    @NonNull public String getTeamId() { return teamId; }
-    @Nullable public String getTeamName() { return teamName; }
-    @NonNull public String getRecurrenceRuleId() { return recurrenceRuleId; }
-    @NonNull public LocalDate getStartDate() { return startDate; }
-    @Nullable public LocalDate getEndDate() { return endDate; }
-    public boolean isPermanent() { return isPermanent; }
-    @NonNull public Priority getPriority() { return priority; }
-    @NonNull public Status getStatus() { return status; }
-    @Nullable public String getAssignedByUserId() { return assignedByUserId; }
-    @Nullable public String getAssignedByUserName() { return assignedByUserName; }
-    @Nullable public String getDepartmentId() { return departmentId; }
-    @Nullable public String getDepartmentName() { return departmentName; }
-    @Nullable public String getRoleId() { return roleId; }
-    @Nullable public String getRoleName() { return roleName; }
-    public boolean isActive() { return active; }
-    public long getCreatedAt() { return createdAt; }
-    public long getUpdatedAt() { return updatedAt; }
-    @Nullable public Long getCreatedByUserId() { return createdByUserId; }
-    @Nullable public Long getLastModifiedByUserId() { return lastModifiedByUserId; }
+    @NonNull
+    public String getId() {
+        return id;
+    }
+
+    @Nullable
+    public String getTitle() {
+        return title;
+    }
+
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    @Nullable
+    public String getNotes() {
+        return notes;
+    }
+
+    @NonNull
+    public Long getUserId() {
+        return userId;
+    }
+
+    @Nullable
+    public String getUserName() {
+        return userName;
+    }
+
+    @NonNull
+    public String getTeamId() {
+        return teamId;
+    }
+
+    @Nullable
+    public String getTeamName() {
+        return teamName;
+    }
+
+    @NonNull
+    public String getRecurrenceRuleId() {
+        return recurrenceRuleId;
+    }
+
+    @NonNull
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    @Nullable
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public boolean isPermanent() {
+        return isPermanent;
+    }
+
+    @NonNull
+    public Priority getPriority() {
+        return priority;
+    }
+
+    @NonNull
+    public Status getStatus() {
+        return status;
+    }
+
+    @Nullable
+    public String getAssignedByUserId() {
+        return assignedByUserId;
+    }
+
+    @Nullable
+    public String getAssignedByUserName() {
+        return assignedByUserName;
+    }
+
+    @Nullable
+    public String getDepartmentId() {
+        return departmentId;
+    }
+
+    @Nullable
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    @Nullable
+    public String getRoleId() {
+        return roleId;
+    }
+
+    @Nullable
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    @Nullable
+    public Long getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    @Nullable
+    public Long getLastModifiedByUserId() {
+        return lastModifiedByUserId;
+    }
+
+    // ==================== BUSINESS STATUS COMPUTATION ====================
+
+    /**
+     * Compute business status based on dates and administrative state.
+     * This is the single source of truth for status logic.
+     *
+     * @param startDate Assignment start date
+     * @param endDate   Assignment end date (nullable)
+     * @param active    Administrative flag
+     * @return Computed status that maintains domain consistency
+     */
+    @NonNull
+    private Status computeStatus(@NonNull LocalDate startDate,
+                                 @Nullable LocalDate endDate,
+                                 boolean active) {
+        // Administrative override: if not active, it's cancelled
+        if (!active) {
+            Log.d( TAG, "Assignment administratively disabled - status: CANCELLED" );
+            return Status.CANCELLED;
+        }
+
+        LocalDate today = LocalDate.now();
+
+        // Date-based status computation
+        if (startDate.isAfter( today )) {
+            Log.d( TAG, "Future assignment starting " + startDate + " - status: PENDING" );
+            return Status.PENDING;  // Future assignment
+        } else if (endDate != null && endDate.isBefore( today )) {
+            Log.d( TAG, "Past assignment ended " + endDate + " - status: EXPIRED" );
+            return Status.EXPIRED;  // Past assignment
+        } else {
+            Log.d( TAG, "Current assignment - status: ACTIVE" );
+            return Status.ACTIVE;   // Current assignment
+        }
+    }
 
     // ==================== BUSINESS METHODS ====================
 
@@ -219,18 +387,24 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Check if assignment applies to a specific date.
      */
     public boolean appliesTo(@NonNull LocalDate date) {
-        if (!active || status != Status.ACTIVE) {
+        // Administrative check: assignment must be enabled
+        if (!active) {
+            Log.d( TAG, "Assignment is administratively disabled" );
             return false;
         }
 
-        if (date.isBefore(startDate)) {
+        // Date range check (independent of status)
+        if (date.isBefore( startDate )) {
+            Log.d( TAG, MessageFormat.format( "Date ({0}) is before start date ({1})", date, startDate ) );
             return false;
         }
 
-        if (!isPermanent && endDate != null && date.isAfter(endDate)) {
+        if (!isPermanent && endDate != null && date.isAfter( endDate )) {
+            Log.d( TAG, MessageFormat.format( "Date ({0}) is after end date ({1})", date, endDate ) );
             return false;
         }
 
+        // Assignment applies to this date
         return true;
     }
 
@@ -239,7 +413,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     public boolean isCurrentlyActive() {
         LocalDate today = LocalDate.now();
-        return appliesTo(today);
+        return appliesTo( today );
     }
 
     /**
@@ -247,7 +421,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     public boolean isFuture() {
         LocalDate today = LocalDate.now();
-        return startDate.isAfter(today);
+        return startDate.isAfter( today );
     }
 
     /**
@@ -259,7 +433,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         }
 
         LocalDate today = LocalDate.now();
-        return endDate != null && endDate.isBefore(today);
+        return endDate != null && endDate.isBefore( today );
     }
 
     /**
@@ -267,25 +441,29 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public Status getEffectiveStatus() {
-        if (!active) {
-            return Status.CANCELLED;
-        }
+        return status; // Already computed correctly in constructor
+    }
 
-        if (status == Status.SUSPENDED) {
-            return Status.SUSPENDED;
-        }
+    /**
+     * Enhanced method: Check if assignment is administratively enabled.
+     */
+    public boolean isAdministrativelyEnabled() {
+        return active;
+    }
 
-        LocalDate today = LocalDate.now();
+    /**
+     * Enhanced method: Check if assignment is in a "processable" state.
+     * Combines administrative and business checks.
+     */
+    public boolean isProcessable() {
+        return active && (status == Status.ACTIVE || status == Status.PENDING);
+    }
 
-        if (startDate.isAfter(today)) {
-            return Status.PENDING;
-        }
-
-        if (!isPermanent && endDate != null && endDate.isBefore(today)) {
-            return Status.EXPIRED;
-        }
-
-        return Status.ACTIVE;
+    /**
+     * Enhanced method: Check if assignment should be included in future planning.
+     */
+    public boolean isValidForPlanning(@NonNull LocalDate planningDate) {
+        return active && appliesTo(planningDate);
     }
 
     /**
@@ -310,7 +488,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public String getPriorityDisplayName() {
-        return localize("priority." + priority.name().toLowerCase(), priority.name());
+        return localize( "priority." + priority.name().toLowerCase(), priority.name() );
     }
 
     /**
@@ -318,7 +496,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public String getStatusDisplayName() {
-        return localize("status." + status.name().toLowerCase(), status.name());
+        return localize( "status." + status.name().toLowerCase(), status.name() );
     }
 
     /**
@@ -326,7 +504,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public String getStatusDescription() {
-        return localize("status." + status.name().toLowerCase() + ".description", status.getDescriptionKey());
+        return localize( "status." + status.name().toLowerCase() + ".description", status.getDescriptionKey() );
     }
 
     /**
@@ -339,9 +517,9 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         }
 
         String teamDisplay = teamName != null ? teamName : teamId;
-        String userDisplay = userName != null ? userName : String.valueOf(userId);
+        String userDisplay = userName != null ? userName : String.valueOf( userId );
 
-        return localize("display.title", userDisplay + " - " + teamDisplay, userDisplay, teamDisplay);
+        return localize( "display.title", userDisplay + " - " + teamDisplay, userDisplay, teamDisplay );
     }
 
     /**
@@ -350,9 +528,9 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     @NonNull
     public String getDisplayPeriod() {
         if (isPermanent) {
-            return localize("period.permanent", "From " + startDate, startDate);
+            return localize( "period.permanent", "From " + startDate, startDate );
         } else {
-            return localize("period.temporary", startDate + " to " + endDate, startDate, endDate);
+            return localize( "period.temporary", startDate + " to " + endDate, startDate, endDate );
         }
     }
 
@@ -362,15 +540,15 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     @NonNull
     public String getAssignmentTypeDescription() {
         if (isPermanent) {
-            return localize("type.permanent", "Permanent Assignment");
+            return localize( "type.permanent", "Permanent Assignment" );
         } else {
             long days = getDurationDays();
             if (days <= 7) {
-                return localize("type.short_term", "Short-term Assignment", days);
+                return localize( "type.short_term", "Short-term Assignment", days );
             } else if (days <= 30) {
-                return localize("type.medium_term", "Medium-term Assignment", days);
+                return localize( "type.medium_term", "Medium-term Assignment", days );
             } else {
-                return localize("type.long_term", "Long-term Assignment", days);
+                return localize( "type.long_term", "Long-term Assignment", days );
             }
         }
     }
@@ -383,16 +561,16 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         Status effectiveStatus = getEffectiveStatus();
 
         if (effectiveStatus == Status.ACTIVE && isPermanent) {
-            return localize("effective_status.active_permanent", "Active (Permanent)");
+            return localize( "effective_status.active_permanent", "Active (Permanent)" );
         } else if (effectiveStatus == Status.ACTIVE && !isPermanent) {
-            return localize("effective_status.active_temporary", "Active (Until " + endDate + ")", endDate);
+            return localize( "effective_status.active_temporary", "Active (Until " + endDate + ")", endDate );
         } else if (effectiveStatus == Status.PENDING) {
-            return localize("effective_status.pending_start", "Starts " + startDate, startDate);
+            return localize( "effective_status.pending_start", "Starts " + startDate, startDate );
         } else if (effectiveStatus == Status.EXPIRED) {
-            return localize("effective_status.expired_on", "Expired " + endDate, endDate);
+            return localize( "effective_status.expired_on", "Expired " + endDate, endDate );
         }
 
-        return localize("status." + effectiveStatus.name().toLowerCase(), effectiveStatus.name());
+        return localize( "status." + effectiveStatus.name().toLowerCase(), effectiveStatus.name() );
     }
 
     /**
@@ -401,31 +579,31 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     @NonNull
     public String getDurationDescription() {
         if (isPermanent) {
-            return localize("duration.permanent", "Permanent");
+            return localize( "duration.permanent", "Permanent" );
         }
 
         long days = getDurationDays();
         if (days < 0) {
-            return localize("duration.unspecified", "Unspecified");
+            return localize( "duration.unspecified", "Unspecified" );
         } else if (days == 1) {
-            return localize("duration.one_day", "1 Day");
+            return localize( "duration.one_day", "1 Day" );
         } else if (days <= 7) {
-            return localize("duration.days", days + " Days", days);
+            return localize( "duration.days", days + " Days", days );
         } else if (days <= 31) {
             long weeks = days / 7;
             long remainingDays = days % 7;
             if (remainingDays == 0) {
-                return localize("duration.weeks", weeks + " Weeks", weeks);
+                return localize( "duration.weeks", weeks + " Weeks", weeks );
             } else {
-                return localize("duration.weeks_days", weeks + " Weeks, " + remainingDays + " Days", weeks, remainingDays);
+                return localize( "duration.weeks_days", weeks + " Weeks, " + remainingDays + " Days", weeks, remainingDays );
             }
         } else {
             long months = days / 30;
             long remainingDays = days % 30;
             if (remainingDays == 0) {
-                return localize("duration.months", months + " Months", months);
+                return localize( "duration.months", months + " Months", months );
             } else {
-                return localize("duration.months_days", months + " Months, " + remainingDays + " Days", months, remainingDays);
+                return localize( "duration.months_days", months + " Months, " + remainingDays + " Days", months, remainingDays );
             }
         }
     }
@@ -436,19 +614,63 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     @NonNull
     public String getAssignmentContext() {
         if (assignedByUserName != null) {
-            return localize("context.assigned_by", "Assigned by " + assignedByUserName, assignedByUserName);
+            return localize( "context.assigned_by", "Assigned by " + assignedByUserName, assignedByUserName );
         } else if (departmentName != null && roleName != null) {
-            return localize("context.department_role", departmentName + " - " + roleName, departmentName, roleName);
+            return localize( "context.department_role", departmentName + " - " + roleName, departmentName, roleName );
         } else if (departmentName != null) {
-            return localize("context.department_only", "Department: " + departmentName, departmentName);
+            return localize( "context.department_only", "Department: " + departmentName, departmentName );
         } else if (roleName != null) {
-            return localize("context.role_only", "Role: " + roleName, roleName);
+            return localize( "context.role_only", "Role: " + roleName, roleName );
         } else {
-            return localize("context.standard", "Standard Assignment");
+            return localize( "context.standard", "Standard Assignment" );
         }
     }
 
     // ==================== FACTORY METHODS ====================
+    /**
+     * Create pattern assignment with correct status computation.
+     * Status will be automatically determined based on start date.
+     */
+    @NonNull
+    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+                                                                 @NonNull String teamId,
+                                                                 @NonNull String recurrenceRuleId,
+                                                                 @NonNull LocalDate startDate,
+                                                                 @NonNull String patternName) {
+        return builder()
+                .userId(userId)
+                .teamId(teamId)
+                .recurrenceRuleId(recurrenceRuleId)
+                .startDate(startDate)
+                .assignedByUserName(patternName)
+                .priority(Priority.NORMAL)
+                .active(true)  // Administratively enabled
+                // DON'T set status - it will be computed automatically
+                .build();
+    }
+
+    /**
+     * Create temporary pattern assignment with end date.
+     */
+    @NonNull
+    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+                                                                 @NonNull String teamId,
+                                                                 @NonNull String recurrenceRuleId,
+                                                                 @NonNull LocalDate startDate,
+                                                                 @Nullable LocalDate endDate,
+                                                                 @NonNull String patternName) {
+        return builder()
+                .userId(userId)
+                .teamId(teamId)
+                .recurrenceRuleId(recurrenceRuleId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .assignedByUserName(patternName)
+                .priority(Priority.NORMAL)
+                .active(true)  // Administratively enabled
+                // DON'T set status - it will be computed automatically
+                .build();
+    }
 
     /**
      * Create standard permanent team assignment.
@@ -472,7 +694,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 .recurrenceRuleId(recurrenceRuleId)
                 .startDate(startDate)
                 .priority(Priority.NORMAL)
-                .status(Status.ACTIVE)
+                .active(true)
                 .localizer(localizer)
                 .build();
     }
@@ -501,7 +723,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 .startDate(startDate)
                 .endDate(endDate)
                 .priority(Priority.HIGH) // Temporary assignments usually override standard ones
-                .status(Status.ACTIVE)
+                .active(true)
                 .localizer(localizer)
                 .build();
     }
@@ -529,20 +751,31 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 .recurrenceRuleId(recurrenceRuleId)
                 .startDate(transferDate)
                 .priority(Priority.OVERRIDE) // Team transfers override existing assignments
-                .status(Status.ACTIVE)
+                .active(true)
                 .assignedByUserId(assignedByUserId)
                 .localizer(localizer)
                 .build();
     }
 
+    /**
+     * Create disabled assignment (for soft delete scenarios).
+     */
+    @NonNull
+    public static UserScheduleAssignment createDisabledAssignment(@NonNull UserScheduleAssignment source) {
+        return builder()
+                .copyFrom(source)
+                .active(false)  // Administratively disabled
+                // Status will be automatically computed as CANCELLED
+                .build();
+    }
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
 
     @Override
     @NonNull
     public UserScheduleAssignment withLocalizer(@NonNull DomainLocalizer localizer) {
         return builder()
-                .copyFrom(this)
-                .localizer(localizer)
+                .copyFrom( this )
+                .localizer( localizer )
                 .build();
     }
 
@@ -606,33 +839,146 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             this.createdByUserId = source.createdByUserId;
             this.lastModifiedByUserId = source.lastModifiedByUserId;
 
-            return copyLocalizableFrom(source);
+            return copyLocalizableFrom( source );
         }
 
-        @NonNull public Builder id(@Nullable String id) { this.id = id; return this; }
-        @NonNull public Builder title(@Nullable String title) { this.title = title; return this; }
-        @NonNull public Builder description(@Nullable String description) { this.description = description; return this; }
-        @NonNull public Builder notes(@Nullable String notes) { this.notes = notes; return this; }
-        @NonNull public Builder userId(@NonNull Long userId) { this.userId = userId; return this; }
-        @NonNull public Builder userName(@Nullable String userName) { this.userName = userName; return this; }
-        @NonNull public Builder teamId(@NonNull String teamId) { this.teamId = teamId; return this; }
-        @NonNull public Builder teamName(@Nullable String teamName) { this.teamName = teamName; return this; }
-        @NonNull public Builder recurrenceRuleId(@NonNull String recurrenceRuleId) { this.recurrenceRuleId = recurrenceRuleId; return this; }
-        @NonNull public Builder startDate(@NonNull LocalDate startDate) { this.startDate = startDate; return this; }
-        @NonNull public Builder endDate(@Nullable LocalDate endDate) { this.endDate = endDate; return this; }
-        @NonNull public Builder priority(@Nullable Priority priority) { this.priority = priority; return this; }
-        @NonNull public Builder status(@Nullable Status status) { this.status = status; return this; }
-        @NonNull public Builder assignedByUserId(@Nullable String assignedByUserId) { this.assignedByUserId = assignedByUserId; return this; }
-        @NonNull public Builder assignedByUserName(@Nullable String assignedByUserName) { this.assignedByUserName = assignedByUserName; return this; }
-        @NonNull public Builder departmentId(@Nullable String departmentId) { this.departmentId = departmentId; return this; }
-        @NonNull public Builder departmentName(@Nullable String departmentName) { this.departmentName = departmentName; return this; }
-        @NonNull public Builder roleId(@Nullable String roleId) { this.roleId = roleId; return this; }
-        @NonNull public Builder roleName(@Nullable String roleName) { this.roleName = roleName; return this; }
-        @NonNull public Builder active(boolean active) { this.active = active; return this; }
-        @NonNull public Builder createdAt(long createdAt) { this.createdAt = createdAt; return this; }
-        @NonNull public Builder updatedAt(long updatedAt) { this.updatedAt = updatedAt; return this; }
-        @NonNull public Builder createdByUserId(@Nullable Long createdByUserId) { this.createdByUserId = createdByUserId; return this; }
-        @NonNull public Builder lastModifiedByUserId(@Nullable Long lastModifiedByUserId) { this.lastModifiedByUserId = lastModifiedByUserId; return this; }
+        @NonNull
+        public Builder id(@Nullable String id) {
+            this.id = id;
+            return this;
+        }
+
+        @NonNull
+        public Builder title(@Nullable String title) {
+            this.title = title;
+            return this;
+        }
+
+        @NonNull
+        public Builder description(@Nullable String description) {
+            this.description = description;
+            return this;
+        }
+
+        @NonNull
+        public Builder notes(@Nullable String notes) {
+            this.notes = notes;
+            return this;
+        }
+
+        @NonNull
+        public Builder userId(@NonNull Long userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        @NonNull
+        public Builder userName(@Nullable String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        @NonNull
+        public Builder teamId(@NonNull String teamId) {
+            this.teamId = teamId;
+            return this;
+        }
+
+        @NonNull
+        public Builder teamName(@Nullable String teamName) {
+            this.teamName = teamName;
+            return this;
+        }
+
+        @NonNull
+        public Builder recurrenceRuleId(@NonNull String recurrenceRuleId) {
+            this.recurrenceRuleId = recurrenceRuleId;
+            return this;
+        }
+
+        @NonNull
+        public Builder startDate(@NonNull LocalDate startDate) {
+            this.startDate = startDate;
+            return this;
+        }
+
+        @NonNull
+        public Builder endDate(@Nullable LocalDate endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+        @NonNull
+        public Builder priority(@Nullable Priority priority) {
+            this.priority = priority;
+            return this;
+        }
+
+        @NonNull
+        public Builder assignedByUserId(@Nullable String assignedByUserId) {
+            this.assignedByUserId = assignedByUserId;
+            return this;
+        }
+
+        @NonNull
+        public Builder assignedByUserName(@Nullable String assignedByUserName) {
+            this.assignedByUserName = assignedByUserName;
+            return this;
+        }
+
+        @NonNull
+        public Builder departmentId(@Nullable String departmentId) {
+            this.departmentId = departmentId;
+            return this;
+        }
+
+        @NonNull
+        public Builder departmentName(@Nullable String departmentName) {
+            this.departmentName = departmentName;
+            return this;
+        }
+
+        @NonNull
+        public Builder roleId(@Nullable String roleId) {
+            this.roleId = roleId;
+            return this;
+        }
+
+        @NonNull
+        public Builder roleName(@Nullable String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        @NonNull
+        public Builder active(boolean active) {
+            this.active = active;
+            return this;
+        }
+
+        @NonNull
+        public Builder createdAt(long createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        @NonNull
+        public Builder updatedAt(long updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        @NonNull
+        public Builder createdByUserId(@Nullable Long createdByUserId) {
+            this.createdByUserId = createdByUserId;
+            return this;
+        }
+
+        @NonNull
+        public Builder lastModifiedByUserId(@Nullable Long lastModifiedByUserId) {
+            this.lastModifiedByUserId = lastModifiedByUserId;
+            return this;
+        }
 
         @Override
         @NonNull
@@ -643,7 +989,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         @Override
         @NonNull
         public UserScheduleAssignment build() {
-            return new UserScheduleAssignment(this);
+            return new UserScheduleAssignment( this );
         }
     }
 
@@ -654,12 +1000,12 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserScheduleAssignment that = (UserScheduleAssignment) o;
-        return Objects.equals(id, that.id);
+        return Objects.equals( id, that.id );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash( id );
     }
 
     @Override

@@ -1,8 +1,6 @@
 package net.calvuz.qdue.domain.calendar.engines.extensions;
 
-import static net.calvuz.qdue.domain.common.DomainLibrary.logDebug;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logError;
-import static net.calvuz.qdue.domain.common.DomainLibrary.logWarning;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -68,18 +66,18 @@ public class RecurrenceCalculatorExtensions {
             @NonNull UserScheduleAssignment assignment) {
 
         try {
-            logDebug("Calculating custom pattern shifts for date: " + date);
+            Log.d(TAG,"Calculating custom pattern shifts for date: " + date);
 
             // Verify this is a custom pattern
             if (!RecurrenceRuleExtensions.isCustomPattern(recurrenceRule)) {
-                logWarning("RecurrenceRule is not a custom pattern, returning empty shifts");
+                Log.w(TAG,"RecurrenceRule is not a custom pattern, returning empty shifts");
                 return new ArrayList<>();
             }
 
             // Extract pattern days
             List<PatternDay> patternDays = RecurrenceRuleExtensions.extractPatternDays(recurrenceRule);
             if (patternDays.isEmpty()) {
-                logWarning("No pattern days found in custom pattern rule");
+                Log.w(TAG,"No pattern days found in custom pattern rule");
                 return new ArrayList<>();
             }
 
@@ -87,7 +85,7 @@ public class RecurrenceCalculatorExtensions {
             int patternDayIndex = calculatePatternDayIndex(date, assignment.getStartDate(), patternDays.size());
 
             if (patternDayIndex < 0 || patternDayIndex >= patternDays.size()) {
-                logError("Invalid pattern day index: " + patternDayIndex + " for pattern size: " + patternDays.size(), null);
+                Log.e(TAG,"Invalid pattern day index: " + patternDayIndex + " for pattern size: " + patternDays.size(), null);
                 return new ArrayList<>();
             }
 
@@ -100,13 +98,13 @@ public class RecurrenceCalculatorExtensions {
                 shifts.add(patternDay.getShift());
             }
 
-            logDebug("Generated " + shifts.size() + " shifts for date " + date +
+            Log.d(TAG,"Generated " + shifts.size() + " shifts for date " + date +
                     " (pattern day " + (patternDayIndex + 1) + ")");
 
             return shifts;
 
         } catch (Exception e) {
-            logError("Error calculating custom pattern shifts for date: " + date, e);
+            Log.e(TAG,"Error calculating custom pattern shifts for date: " + date, e);
             return new ArrayList<>();
         }
     }
@@ -130,18 +128,18 @@ public class RecurrenceCalculatorExtensions {
         Map<LocalDate, List<Shift>> shiftsMap = new HashMap<>();
 
         try {
-            logDebug("Calculating custom pattern shifts for date range: " + startDate + " to " + endDate);
+            Log.d(TAG,"Calculating custom pattern shifts for date range: " + startDate + " to " + endDate);
 
             // Verify this is a custom pattern
             if (!RecurrenceRuleExtensions.isCustomPattern(recurrenceRule)) {
-                logWarning("RecurrenceRule is not a custom pattern, returning empty map");
+                Log.w(TAG,"RecurrenceRule is not a custom pattern, returning empty map");
                 return shiftsMap;
             }
 
             // Extract pattern days once for efficiency
             List<PatternDay> patternDays = RecurrenceRuleExtensions.extractPatternDays(recurrenceRule);
             if (patternDays.isEmpty()) {
-                logWarning("No pattern days found in custom pattern rule");
+                Log.w(TAG,"No pattern days found in custom pattern rule");
                 return shiftsMap;
             }
 
@@ -154,10 +152,10 @@ public class RecurrenceCalculatorExtensions {
                 currentDate = currentDate.plusDays(1);
             }
 
-            logDebug("Generated custom pattern shifts for " + shiftsMap.size() + " dates");
+            Log.d(TAG,"Generated custom pattern shifts for " + shiftsMap.size() + " dates");
 
         } catch (Exception e) {
-            logError("Error calculating custom pattern shifts for date range", e);
+            Log.e(TAG,"Error calculating custom pattern shifts for date range", e);
         }
 
         return shiftsMap;
@@ -180,7 +178,7 @@ public class RecurrenceCalculatorExtensions {
             @NonNull UserScheduleAssignment assignment) {
 
         try {
-            logDebug("Generating WorkScheduleDay for custom pattern: " + date);
+            Log.d(TAG,"Generating WorkScheduleDay for custom pattern: " + date);
 
             // Get shifts for this date
             List<Shift> shifts = calculateCustomPatternShiftsForDate(date, recurrenceRule, assignment);
@@ -201,11 +199,11 @@ public class RecurrenceCalculatorExtensions {
 
             WorkScheduleDay workScheduleDay = dayBuilder.build();
 
-            logDebug("Generated WorkScheduleDay with " + shifts.size() + " shifts for " + date);
+            Log.d(TAG,"Generated WorkScheduleDay with " + shifts.size() + " shifts for " + date);
             return workScheduleDay;
 
         } catch (Exception e) {
-            logError("Error generating WorkScheduleDay for custom pattern", e);
+            Log.e(TAG,"Error generating WorkScheduleDay for custom pattern", e);
 
             // Return empty day on error
             return WorkScheduleDay.builder(date).build();
@@ -231,7 +229,7 @@ public class RecurrenceCalculatorExtensions {
         List<WorkScheduleDay> workScheduleDays = new ArrayList<>();
 
         try {
-            logDebug("Generating WorkScheduleDays for custom pattern range: " + startDate + " to " + endDate);
+            Log.d(TAG,"Generating WorkScheduleDays for custom pattern range: " + startDate + " to " + endDate);
 
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter(endDate)) {
@@ -241,10 +239,10 @@ public class RecurrenceCalculatorExtensions {
                 currentDate = currentDate.plusDays(1);
             }
 
-            logDebug("Generated " + workScheduleDays.size() + " WorkScheduleDays for custom pattern");
+            Log.d(TAG,"Generated " + workScheduleDays.size() + " WorkScheduleDays for custom pattern");
 
         } catch (Exception e) {
-            logError("Error generating WorkScheduleDays for custom pattern range", e);
+            Log.e(TAG,"Error generating WorkScheduleDays for custom pattern range", e);
         }
 
         return workScheduleDays;
@@ -269,20 +267,20 @@ public class RecurrenceCalculatorExtensions {
 
             // Handle dates before pattern start
             if (daysSinceStart < 0) {
-                logWarning("Target date " + targetDate + " is before pattern start " + patternStartDate);
+                Log.w(TAG,"Target date " + targetDate + " is before pattern start " + patternStartDate);
                 return -1;
             }
 
             // Calculate position in pattern cycle (0-based)
             int patternIndex = (int) (daysSinceStart % patternLength);
 
-            logDebug("Pattern day index for " + targetDate + ": " + patternIndex +
+            Log.d(TAG,"Pattern day index for " + targetDate + ": " + patternIndex +
                     " (days since start: " + daysSinceStart + ", pattern length: " + patternLength + ")");
 
             return patternIndex;
 
         } catch (Exception e) {
-            logError("Error calculating pattern day index", e);
+            Log.e(TAG,"Error calculating pattern day index", e);
             return -1;
         }
     }
@@ -333,22 +331,15 @@ public class RecurrenceCalculatorExtensions {
             return new ValidationResult(true, "Custom pattern is valid for calculation");
 
         } catch (Exception e) {
-            logError("Error validating custom pattern for calculation", e);
+            Log.e(TAG,"Error validating custom pattern for calculation", e);
             return new ValidationResult(false, "Validation error: " + e.getMessage());
         }
     }
 
     /**
-     * Validation result container.
-     */
-    public static class ValidationResult {
-        public final boolean isValid;
-        public final String message;
-
-        public ValidationResult(boolean isValid, String message) {
-            this.isValid = isValid;
-            this.message = message;
-        }
+         * Validation result container.
+         */
+        public record ValidationResult(boolean isValid, String message) {
     }
 
     // ==================== PATTERN STATISTICS ====================
@@ -388,7 +379,7 @@ public class RecurrenceCalculatorExtensions {
             return new PatternStatistics(totalDays, workDays, restDays, workPercentage);
 
         } catch (Exception e) {
-            logError("Error calculating custom pattern statistics", e);
+            Log.e(TAG,"Error calculating custom pattern statistics", e);
             return new PatternStatistics(0, 0, 0, 0.0);
         }
     }

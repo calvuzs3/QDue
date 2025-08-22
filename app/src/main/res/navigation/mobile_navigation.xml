@@ -19,6 +19,7 @@
         android:id="@+id/nav_swipe_calendar"
         android:name="net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarFragment"
         android:label="@string/menu_swipe_calendar" />
+
     <!-- About Dialog -->
     <dialog
         android:id="@+id/nav_about"
@@ -26,5 +27,4 @@
         android:label="@string/menu_title_about"
         tools:layout="@layout/fragment_dialog_about" />
 
-    <!-- Settings Activity -->
 </navigation>
