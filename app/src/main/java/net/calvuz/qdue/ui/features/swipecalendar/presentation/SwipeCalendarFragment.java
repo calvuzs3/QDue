@@ -221,7 +221,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     public void inject(ServiceProvider serviceProvider) {
         mEventsService = serviceProvider.getEventsService();
         mUserService = serviceProvider.getUserService();
-        mWorkScheduleRepository = serviceProvider.getWorkScheduleService();
+        mWorkScheduleRepository = serviceProvider
+                .getCalendarService()
+                .getCalendarServiceProvider()
+                .getWorkScheduleRepository();
 
         Log.d(TAG, "✅ Services injected via DependencyInjector");
     }

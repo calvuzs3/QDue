@@ -65,14 +65,6 @@ public class MacroDepartmentServiceImpl implements MacroDepartmentService {
         Log.d(TAG, "MacroDepartmentServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public MacroDepartmentServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
     // ==================== CRUD OPERATIONS ====================
 
     @Override

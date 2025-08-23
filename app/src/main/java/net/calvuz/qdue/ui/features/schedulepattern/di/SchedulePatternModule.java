@@ -82,7 +82,7 @@ public class SchedulePatternModule {
 
         // Get calendar service provider from core service provider
         CalendarService calendarService = serviceProvider.getCalendarService();
-        CalendarServiceProvider calSerPro = serviceProvider.getCalendarServiceProvider();
+        CalendarServiceProvider calSerPro = calendarService.getCalendarServiceProvider();
 
 //        if (calendarService instanceof CalendarServiceProvider) {
 //            this.mCalendarServiceProvider = (CalendarServiceProvider) calendarService;

@@ -70,14 +70,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         Log.d(TAG, "OrganizationServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public OrganizationServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
     // ==================== COMPOSITE OPERATIONS ====================
 
     @Override

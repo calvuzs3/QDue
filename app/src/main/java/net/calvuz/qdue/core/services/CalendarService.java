@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.Team;
@@ -58,6 +59,9 @@ import java.util.concurrent.CompletableFuture;
  * @since Clean Architecture Phase 2
  */
 public interface CalendarService {
+
+    @NonNull
+    CalendarServiceProvider getCalendarServiceProvider();
 
     // ==================== WORK SCHEDULE OPERATIONS ====================
 

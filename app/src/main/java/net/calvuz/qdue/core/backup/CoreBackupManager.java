@@ -133,19 +133,6 @@ public class CoreBackupManager {
         Log.d(TAG, "CoreBackupManager initialized with Calendar support via dependency injection");
     }
 
-    /**
-     * Backward compatibility constructor - QDueDatabase only
-     *
-     * @deprecated Use constructor with CalendarDatabase for full functionality
-     * @param context Application context
-     * @param database QDue database instance
-     */
-    @Deprecated
-    public CoreBackupManager(Context context, QDueDatabase database) {
-        this(context, database, null);
-        Log.w(TAG, "CoreBackupManager initialized without Calendar support - limited functionality");
-    }
-
     // ==================== CALENDAR AUTO BACKUP INTEGRATION ====================
 
     /**

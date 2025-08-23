@@ -40,11 +40,11 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * <pre>
  * ServiceProvider (this)
  *   ├── Core Services (Events, User, Organization)
- *   ├── CalendarServiceProvider
- *   │   ├── Domain Repositories
- *   │   ├── Domain Engines
- *   │   └── Use Cases
  *   └── CalendarService (uses CalendarServiceProvider)
+ *      └── CalendarServiceProvider
+ *          ├── Domain Repositories
+ *          ├── Domain Engines
+ *          └── Use Cases
  * </pre>
  *
  * @author QDue Development Team
@@ -123,7 +123,7 @@ public class ServiceProviderImpl implements ServiceProvider {
     public void initializeServices() {
         synchronized (mInitializationLock) {
             if (mServicesInitialized || mServicesShutdown) {
-                Log.d(TAG, "Services already initialized or shutdown, skipping");
+                Log.i(TAG, "Services already initialized or shutdown, skipping");
                 return;
             }
 
@@ -170,13 +170,6 @@ public class ServiceProviderImpl implements ServiceProvider {
                     Log.i(TAG, "CalendarService shutdown");
                 }
 
-                // 2. CalendarServiceProvider (domain services)
-                if (mCalendarServiceProvider != null) {
-                    mCalendarServiceProvider.shutdownCalendarServices();
-                    mCalendarServiceProvider = null;
-                    Log.i(TAG, "CalendarServiceProvider shutdown");
-                }
-
                 // 3. Core services
                 if (mCoreBackupManager != null) {
                     mCoreBackupManager = null;
@@ -219,41 +212,18 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     @NonNull
-    public CalendarServiceProvider getCalendarServiceProvider() {
-        if (mCalendarServiceProvider == null) {
-            synchronized (mCalendarServiceProviderLock) {
-                if (mCalendarServiceProvider == null) {
-                    ensureInitialized();
-                    Log.d(TAG, "Creating CalendarServiceProvider instance");
-
-                    // CalendarServiceProvider needs this ServiceProvider for infrastructure
-                    mCalendarServiceProvider = CalendarServiceProviderImpl.getInstance(
-                            //this,
-                            mContext,
-                            getCalendarDatabase(),
-                            getCoreBackupManager());
-
-                    // Initialize calendar services
-                    mCalendarServiceProvider.initializeCalendarServices();
-
-                    Log.d(TAG, "CalendarServiceProvider created and initialized");
-                }
-            }
-        }
-        return mCalendarServiceProvider;
-    }
-
-    @Override
-    @NonNull
     public CalendarService getCalendarService() {
         if (mCalendarService == null) {
             synchronized (mCalendarServiceLock) {
                 if (mCalendarService == null) {
                     try {
-                        Log.d(TAG, "Creating CalendarService instance with CalendarServiceProvider DI");
+                        Log.i(TAG, "Creating CalendarService instance with CalendarServiceProvider Injected");
 
-                        // UPDATED: CalendarService now uses CalendarServiceProvider
-                        CalendarServiceProvider calendarServiceProvider = getCalendarServiceProvider();
+                        // CalendarService needs CalendarServiceProvider
+                        CalendarServiceProvider calendarServiceProvider = CalendarServiceProviderImpl.getInstance(
+                                mContext,
+                                getCalendarDatabase(),
+                                getCoreBackupManager());
 
                         mCalendarService = new CalendarServiceImpl(
                                 mContext,
@@ -276,8 +246,15 @@ public class ServiceProviderImpl implements ServiceProvider {
     @Override
     @NonNull
     public WorkScheduleRepository getWorkScheduleService() {
-        // UPDATED: Delegate to CalendarServiceProvider instead of creating directly
+        // Delegate to CalendarServiceProvider instead of creating directly
         return getCalendarServiceProvider().getWorkScheduleRepository();
+    }
+
+    @Override
+    @NonNull
+    public CalendarServiceProvider getCalendarServiceProvider() {
+        // Delegate to CalendarServiceProvider instead of creating directly
+        return getCalendarService().getCalendarServiceProvider();
     }
 
     // ==================== CORE SERVICES ====================
@@ -290,7 +267,10 @@ public class ServiceProviderImpl implements ServiceProvider {
                 if (mEventsService == null) {
                     ensureInitialized();
                     Log.d(TAG, "Creating EventsService instance");
-                    mEventsService = new EventsServiceImpl(mContext, getDatabase());
+                    mEventsService = new EventsServiceImpl(
+                            mContext,
+                            getDatabase(),
+                            getCoreBackupManager());
                 }
             }
         }
@@ -305,7 +285,10 @@ public class ServiceProviderImpl implements ServiceProvider {
                 if (mUserService == null) {
                     ensureInitialized();
                     Log.d(TAG, "Creating UserService instance");
-                    mUserService = new UserServiceImpl(mContext, getDatabase());
+                    mUserService = new UserServiceImpl(
+                            mContext,
+                            getDatabase(),
+                            getCoreBackupManager());
                 }
             }
         }
@@ -320,7 +303,10 @@ public class ServiceProviderImpl implements ServiceProvider {
                 if (mOrganizationService == null) {
                     ensureInitialized();
                     Log.d(TAG, "Creating OrganizationService instance");
-                    mOrganizationService = new OrganizationServiceImpl(mContext, getDatabase());
+                    mOrganizationService = new OrganizationServiceImpl(
+                            mContext,
+                            getDatabase(),
+                            getCoreBackupManager());
                 }
             }
         }

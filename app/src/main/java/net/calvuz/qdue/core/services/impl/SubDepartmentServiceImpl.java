@@ -61,14 +61,6 @@ public class SubDepartmentServiceImpl implements SubDepartmentService {
         Log.d(TAG, "SubDepartmentServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public SubDepartmentServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
     // ==================== CRUD OPERATIONS ====================
 
     @Override

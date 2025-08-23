@@ -60,14 +60,6 @@ public class UserServiceImpl implements UserService {
         Log.d(TAG, "UserServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public UserServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
     // ==================== CRUD OPERATIONS ====================
 
     @Override

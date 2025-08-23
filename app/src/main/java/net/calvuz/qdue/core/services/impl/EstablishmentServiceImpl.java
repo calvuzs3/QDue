@@ -68,14 +68,6 @@ public class EstablishmentServiceImpl implements EstablishmentService {
         Log.d(TAG, "EstablishmentServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public EstablishmentServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
     // ==================== CRUD OPERATIONS ====================
 
     @Override

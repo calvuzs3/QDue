@@ -174,6 +174,15 @@ public class CalendarServiceImpl implements CalendarService {
 
     // ==================== WORK SCHEDULE OPERATIONS ====================
 
+    /**
+     * @return 
+     */
+    @NonNull
+    @Override
+    public CalendarServiceProvider getCalendarServiceProvider() {
+        return mCalendarServiceProvider;
+    }
+
     @Override
     @NonNull
     public CompletableFuture<OperationResult<WorkScheduleDay>> getUserScheduleForDate(

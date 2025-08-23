@@ -76,14 +76,6 @@ public class EventsServiceImpl implements EventsService {
         Log.d(TAG, "EventsServiceImpl initialized via dependency injection");
     }
 
-    /**
-     * Alternative constructor with automatic backup manager creation
-     * For backward compatibility
-     */
-    public EventsServiceImpl(Context context, QDueDatabase database) {
-        this(context, database, new CoreBackupManager(context, database));
-    }
-
 // ==================== CORE CRUD OPERATIONS ====================
 
     @Override
