@@ -10,6 +10,7 @@ import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -66,8 +67,8 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
         this.mExecutorService = Executors.newFixedThreadPool(
                 2,
                 r -> {
-                    Thread thread = new Thread(r, "ShiftException-DB-Thread");
-                    thread.setDaemon(true); // Avoid blocking JVM shutdown
+                    Thread thread = new Thread( r, "ShiftException-DB-Thread" );
+                    thread.setDaemon( true ); // Avoid blocking JVM shutdown
                     return thread;
                 }
         );
@@ -78,85 +79,76 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<ShiftException>> getShiftExceptionById(@NonNull String exceptionId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting shift exception by ID: " + exceptionId);
-
-                ShiftExceptionEntity entity = mShiftExceptionDao.getShiftExceptionById(exceptionId);
+                ShiftExceptionEntity entity = mShiftExceptionDao.getShiftExceptionById( exceptionId );
 
                 if (entity != null) {
                     ShiftException domain = entity.toDomainModel(); // ✅ Use entity's conversion method
-                    Log.d(TAG, "Successfully retrieved shift exception: " + exceptionId);
-                    return OperationResult.success(domain, OperationResult.OperationType.READ);
+                    Log.d( TAG, "Successfully retrieved shift exception: " + exceptionId );
+                    return OperationResult.success( domain, OperationResult.OperationType.READ );
                 } else {
                     String message = "Shift exception not found: " + exceptionId;
-                    Log.w(TAG, message);
-                    return OperationResult.failure(message, OperationResult.OperationType.READ);
+                    Log.w( TAG, message );
+                    return OperationResult.failure( message, OperationResult.OperationType.READ );
                 }
-
             } catch (Exception e) {
                 String error = "Error getting shift exception by ID: " + exceptionId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error, OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<ShiftException>> saveShiftException(@NonNull ShiftException shiftException) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Saving shift exception: " + shiftException.getId());
-
                 // ✅ Use entity's conversion method
-                ShiftExceptionEntity entity = ShiftExceptionEntity.fromDomainModel(shiftException);
+                ShiftExceptionEntity entity = ShiftExceptionEntity.fromDomainModel( shiftException );
                 entity.updateTimestamp(); // Update timestamp before saving
 
-                long result = mShiftExceptionDao.insertShiftException(entity);
+                long result = mShiftExceptionDao.insertShiftException( entity );
 
                 if (result > 0) {
-                    Log.d(TAG, "Successfully saved shift exception: " + shiftException.getId());
-                    return OperationResult.success(shiftException, OperationResult.OperationType.CREATE);
+                    Log.d( TAG, "Successfully saved shift exception: " + shiftException.getId() );
+                    return OperationResult.success( shiftException, OperationResult.OperationType.CREATE );
                 } else {
                     String error = "Failed to save shift exception: " + shiftException.getId();
-                    Log.e(TAG, error);
-                    return OperationResult.failure(error, OperationResult.OperationType.CREATE);
+                    Log.e( TAG, error );
+                    return OperationResult.failure( error, OperationResult.OperationType.CREATE );
                 }
-
             } catch (Exception e) {
                 String error = "Error saving shift exception: " + shiftException.getId();
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.CREATE);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.CREATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> deleteShiftException(@NonNull String exceptionId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Deleting shift exception: " + exceptionId);
-
-                int deletedRows = mShiftExceptionDao.deleteShiftExceptionById(exceptionId);
+                int deletedRows = mShiftExceptionDao.deleteShiftExceptionById( exceptionId );
                 boolean success = deletedRows > 0;
 
                 if (success) {
-                    Log.d(TAG, "Successfully deleted shift exception: " + exceptionId);
-                    return OperationResult.success(true, OperationResult.OperationType.DELETE);
+                    Log.d( TAG, "Successfully deleted shift exception: " + exceptionId );
+                    return OperationResult.success( true, OperationResult.OperationType.DELETE );
                 } else {
                     String message = "Shift exception not found for deletion: " + exceptionId;
-                    Log.w(TAG, message);
-                    return OperationResult.failure(message, OperationResult.OperationType.DELETE);
+                    Log.w( TAG, message );
+                    return OperationResult.failure( message, OperationResult.OperationType.DELETE );
                 }
-
             } catch (Exception e) {
                 String error = "Error deleting shift exception: " + exceptionId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.DELETE);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.DELETE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== QUERY OPERATIONS ====================
@@ -165,173 +157,164 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getEffectiveExceptionsForUserOnDate(
             @NonNull Long userId, @NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting effective exceptions for user " + userId + " on date " + date);
-
                 List<ShiftExceptionEntity> entities =
-                        mShiftExceptionDao.getEffectiveExceptionsForUserAndDate(userId, date.toString());
+                        mShiftExceptionDao.getEffectiveExceptionsForUserAndDate( userId, date.toString() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " effective exceptions for user " + userId);
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.v( TAG, "Retrieved " + domain.size() + " effective exceptions for user " + userId );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting effective exceptions for user " + userId + " on date " + date;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsForUserInDateRange(
             @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting exceptions for user " + userId + " from " + startDate + " to " + endDate);
-
                 List<ShiftExceptionEntity> entities =
                         mShiftExceptionDao.getShiftExceptionsForUserInDateRange(
-                                userId, startDate.toString(), endDate.toString());
+                                userId, startDate.toString(), endDate.toString() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " exceptions for user " + userId + " in date range");
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.v( TAG, MessageFormat.format( "Retrieved {0} exceptions for user {1} in date range ({2}-{3})",
+                        domain.size(), userId, startDate.toString(), endDate.toString() ) );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                String error = "Error getting exceptions for user " + userId + " in date range";
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                String error = MessageFormat.format( "Error getting exceptions for user {0} in date range ({1}-{2})",
+                        userId, startDate.toString(), endDate.toString() );
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getEffectiveExceptionsForDate(@NonNull LocalDate date) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting effective exceptions for date: " + date);
+                Log.d( TAG, "Getting effective exceptions for date: " + date );
 
                 List<ShiftExceptionEntity> entities =
-                        mShiftExceptionDao.getEffectiveExceptionsForDate(date.toString());
+                        mShiftExceptionDao.getEffectiveExceptionsForDate( date.toString() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " effective exceptions for date " + date);
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Retrieved " + domain.size() + " effective exceptions for date " + date );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting effective exceptions for date: " + date;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsInDateRange(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting exceptions in date range: " + startDate + " to " + endDate);
+                Log.d( TAG, "Getting exceptions in date range: " + startDate + " to " + endDate );
 
                 List<ShiftExceptionEntity> entities =
                         mShiftExceptionDao.getShiftExceptionsInDateRange(
-                                startDate.toString(), endDate.toString());
+                                startDate.toString(), endDate.toString() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " exceptions in date range");
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Retrieved " + domain.size() + " exceptions in date range" );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting exceptions in date range: " + startDate + " to " + endDate;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsByTypeForUser(
             @NonNull Long userId, @NonNull ShiftException.ExceptionType exceptionType) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting exceptions by type " + exceptionType + " for user " + userId);
+                Log.d( TAG, "Getting exceptions by type " + exceptionType + " for user " + userId );
 
                 List<ShiftExceptionEntity> entities =
-                        mShiftExceptionDao.getShiftExceptionsByTypePrefix(exceptionType.name());
+                        mShiftExceptionDao.getShiftExceptionsByTypePrefix( exceptionType.name() );
 
                 // Filter by user ID
                 List<ShiftExceptionEntity> userEntities = entities.stream()
-                        .filter(entity -> entity.getUserId().equals(userId))
-                        .collect(Collectors.toList());
+                        .filter( entity -> entity.getUserId().equals( userId ) )
+                        .collect( Collectors.toList() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(userEntities);
+                List<ShiftException> domain = convertEntitiesToDomain( userEntities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " exceptions of type " + exceptionType + " for user " + userId);
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Retrieved " + domain.size() + " exceptions of type " + exceptionType + " for user " + userId );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting exceptions by type " + exceptionType + " for user " + userId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getPendingApprovalsOrderedByPriority() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting pending approvals ordered by priority");
+                Log.d( TAG, "Getting pending approvals ordered by priority" );
 
                 List<ShiftExceptionEntity> entities =
                         mShiftExceptionDao.getPendingApprovalsOrderedByDateAndPriority();
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " pending approvals");
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Retrieved " + domain.size() + " pending approvals" );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting pending approvals";
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsByApprovalStatus(
             @NonNull ShiftException.ApprovalStatus status) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting exceptions by approval status: " + status);
+                Log.d( TAG, "Getting exceptions by approval status: " + status );
 
                 List<ShiftExceptionEntity> entities =
-                        mShiftExceptionDao.getShiftExceptionsByApprovalStatus(status.name());
+                        mShiftExceptionDao.getShiftExceptionsByApprovalStatus( status.name() );
 
-                List<ShiftException> domain = convertEntitiesToDomain(entities);
+                List<ShiftException> domain = convertEntitiesToDomain( entities );
 
-                Log.d(TAG, "Retrieved " + domain.size() + " exceptions with status " + status);
-                return OperationResult.success(domain, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "Retrieved " + domain.size() + " exceptions with status " + status );
+                return OperationResult.success( domain, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting exceptions by approval status: " + status;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== UPDATE OPERATIONS ====================
@@ -340,30 +323,29 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> updateExceptionStatus(
             @NonNull String exceptionId, @NonNull ShiftException.ApprovalStatus newStatus) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Updating exception status for " + exceptionId + " to " + newStatus);
+                Log.d( TAG, "Updating exception status for " + exceptionId + " to " + newStatus );
 
                 int updatedRows = mShiftExceptionDao.updateExceptionStatus(
-                        exceptionId, newStatus.name(), System.currentTimeMillis());
+                        exceptionId, newStatus.name(), System.currentTimeMillis() );
 
                 boolean success = updatedRows > 0;
 
                 if (success) {
-                    Log.d(TAG, "Successfully updated exception status: " + exceptionId);
-                    return OperationResult.success(true, OperationResult.OperationType.UPDATE);
+                    Log.d( TAG, "Successfully updated exception status: " + exceptionId );
+                    return OperationResult.success( true, OperationResult.OperationType.UPDATE );
                 } else {
                     String message = "Exception not found for status update: " + exceptionId;
-                    Log.w(TAG, message);
-                    return OperationResult.failure(message, OperationResult.OperationType.UPDATE);
+                    Log.w( TAG, message );
+                    return OperationResult.failure( message, OperationResult.OperationType.UPDATE );
                 }
-
             } catch (Exception e) {
                 String error = "Error updating exception status for " + exceptionId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.UPDATE);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
@@ -371,61 +353,59 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     public CompletableFuture<OperationResult<Boolean>> approveException(
             @NonNull String exceptionId, @NonNull Long approverId,
             @NonNull String approverName, @NonNull LocalDate approvedDate) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Approving exception " + exceptionId + " by user " + approverId);
+                Log.d( TAG, "Approving exception " + exceptionId + " by user " + approverId );
 
                 int updatedRows = mShiftExceptionDao.approveException(
                         exceptionId, approverId, approverName,
-                        approvedDate.toString(), System.currentTimeMillis());
+                        approvedDate.toString(), System.currentTimeMillis() );
 
                 boolean success = updatedRows > 0;
 
                 if (success) {
-                    Log.d(TAG, "Successfully approved exception: " + exceptionId);
-                    return OperationResult.success(true, OperationResult.OperationType.UPDATE);
+                    Log.d( TAG, "Successfully approved exception: " + exceptionId );
+                    return OperationResult.success( true, OperationResult.OperationType.UPDATE );
                 } else {
                     String message = "Exception not found for approval: " + exceptionId;
-                    Log.w(TAG, message);
-                    return OperationResult.failure(message, OperationResult.OperationType.UPDATE);
+                    Log.w( TAG, message );
+                    return OperationResult.failure( message, OperationResult.OperationType.UPDATE );
                 }
-
             } catch (Exception e) {
                 String error = "Error approving exception " + exceptionId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.UPDATE);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> rejectException(
             @NonNull String exceptionId, @NonNull String rejectionReason) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Rejecting exception " + exceptionId + " with reason: " + rejectionReason);
+                Log.d( TAG, "Rejecting exception " + exceptionId + " with reason: " + rejectionReason );
 
                 int updatedRows = mShiftExceptionDao.rejectException(
-                        exceptionId, rejectionReason, System.currentTimeMillis());
+                        exceptionId, rejectionReason, System.currentTimeMillis() );
 
                 boolean success = updatedRows > 0;
 
                 if (success) {
-                    Log.d(TAG, "Successfully rejected exception: " + exceptionId);
-                    return OperationResult.success(true, OperationResult.OperationType.UPDATE);
+                    Log.d( TAG, "Successfully rejected exception: " + exceptionId );
+                    return OperationResult.success( true, OperationResult.OperationType.UPDATE );
                 } else {
                     String message = "Exception not found for rejection: " + exceptionId;
-                    Log.w(TAG, message);
-                    return OperationResult.failure(message, OperationResult.OperationType.UPDATE);
+                    Log.w( TAG, message );
+                    return OperationResult.failure( message, OperationResult.OperationType.UPDATE );
                 }
-
             } catch (Exception e) {
                 String error = "Error rejecting exception " + exceptionId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.UPDATE);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.UPDATE );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== STATISTICS ====================
@@ -433,21 +413,20 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Integer>> getExceptionCountForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting exception count for user: " + userId);
+                Log.d( TAG, "Getting exception count for user: " + userId );
 
-                int count = mShiftExceptionDao.getExceptionCountForUser(userId);
+                int count = mShiftExceptionDao.getExceptionCountForUser( userId );
 
-                Log.d(TAG, "User " + userId + " has " + count + " exceptions");
-                return OperationResult.success(count, OperationResult.OperationType.READ);
-
+                Log.d( TAG, "User " + userId + " has " + count + " exceptions" );
+                return OperationResult.success( count, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 String error = "Error getting exception count for user " + userId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,  OperationResult.OperationType.READ);
+                Log.e( TAG, error, e );
+                return OperationResult.failure( error, OperationResult.OperationType.READ );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== CONVERSION UTILITIES ====================
@@ -459,8 +438,8 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @NonNull
     private List<ShiftException> convertEntitiesToDomain(@NonNull List<ShiftExceptionEntity> entities) {
         return entities.stream()
-                .map(ShiftExceptionEntity::toDomainModel)
-                .collect(Collectors.toList());
+                .map( ShiftExceptionEntity::toDomainModel )
+                .collect( Collectors.toList() );
     }
 
     // ==================== RESOURCE MANAGEMENT ====================
@@ -470,7 +449,7 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
      * Should be called when the repository is no longer needed.
      */
     public void shutdown() {
-        Log.d(TAG, "Shutting down ShiftExceptionRepository executor service");
+        Log.d( TAG, "Shutting down ShiftExceptionRepository executor service" );
         mExecutorService.shutdown();
     }
 }

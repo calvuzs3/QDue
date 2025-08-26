@@ -254,15 +254,6 @@ public interface WorkScheduleRepository {
     CompletableFuture<OperationResult<Integer>> getDayInCycle(@NonNull LocalDate date);
 
     /**
-     * Calculate how many days between scheme start and target date.
-     *
-     * @param date Target date
-     * @return CompletableFuture with number of days from scheme start wrapped in OperationResult
-     */
-    @NonNull
-    CompletableFuture<OperationResult<Long>> getDaysFromSchemeStart(@NonNull LocalDate date);
-
-    /**
      * Check if a date is a working day for any team.
      *
      * @param date Target date

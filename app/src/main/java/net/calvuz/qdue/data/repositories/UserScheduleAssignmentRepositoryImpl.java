@@ -167,25 +167,24 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
             @NonNull Long userId, @NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting active assignment for user " + userId + " on date " + date);
-
                 UserScheduleAssignmentEntity entity =
                         mUserScheduleAssignmentDao.getActiveAssignmentForUserOnDate(userId, date.toString());
 
                 if (entity != null) {
+                    // User has an assignment on this date
                     UserScheduleAssignment domain = entity.toDomainModel();
-                    Log.d(TAG, "Found active assignment for user " + userId + ": " + entity.getId());
+                    Log.v(TAG, "Found active assignment for user " + userId + ": " + entity.getId());
                     return OperationResult.success(domain, OperationResult.OperationType.READ);
                 } else {
-                    String message = "No active assignment found for user " + userId + " on date " + date;
-                    Log.d(TAG, message); // Debug level since this is a common case
+                    // User has no active assignment on this date (free day?)
+                    Log.v(TAG, "No active assignment found for user " + userId + " on date " + date); // Debug level since this is a common case
                     return OperationResult.success(null, OperationResult.OperationType.READ);
                 }
 
             } catch (Exception e) {
-                String error = "Error getting active assignment for user " + userId + " on date " + date;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting active assignment for user " + userId + " on date " + date, e);
+                return OperationResult.failure("Error getting active assignment for user",
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -195,20 +194,18 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
     public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getActiveAssignmentsForUser(@NonNull Long userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting active assignments for user: " + userId);
-
                 List<UserScheduleAssignmentEntity> entities =
                         mUserScheduleAssignmentDao.getAssignmentsByUserAndStatus(userId, "ACTIVE");
 
                 List<UserScheduleAssignment> domain = convertEntitiesToDomain(entities);
 
-                Log.d(TAG, "Retrieved " + domain.size() + " active assignments for user " + userId);
+                Log.v(TAG, "Retrieved " + domain.size() + " active assignments for user " + userId);
                 return OperationResult.success(domain, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Error getting active assignments for user " + userId;
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting active assignments for user " + userId, e);
+                return OperationResult.failure("Error getting active assignments for user",
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }
@@ -219,21 +216,19 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
             @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting assignments for user " + userId + " from " + startDate + " to " + endDate);
-
                 List<UserScheduleAssignmentEntity> entities =
                         mUserScheduleAssignmentDao.getAssignmentsForUserInDateRange(
                                 userId, startDate.toString(), endDate.toString());
 
                 List<UserScheduleAssignment> domain = convertEntitiesToDomain(entities);
 
-                Log.d(TAG, "Retrieved " + domain.size() + " assignments for user " + userId + " in date range");
+                Log.v(TAG, "Retrieved " + domain.size() + " assignments for user " + userId + " in date range");
                 return OperationResult.success(domain, OperationResult.OperationType.READ);
 
             } catch (Exception e) {
-                String error = "Error getting assignments for user " + userId + " in date range";
-                Log.e(TAG, error, e);
-                return OperationResult.failure(error,OperationResult.OperationType.READ);
+                Log.e(TAG, "Error getting assignments for user " + userId + " in date range", e);
+                return OperationResult.failure("Error getting assignments for user in date range",
+                        OperationResult.OperationType.READ);
             }
         }, mExecutorService);
     }

@@ -78,11 +78,11 @@ public class Team extends LocalizableDomainModel {
      * Enumeration of team types in the work schedule system with localization keys.
      */
     public enum TeamType {
-        STANDARD("standard", "standard_work_teams"),
-        QUATTRODUE("quattrodue", "quattrodue_cycle_teams"),
-        EMERGENCY("emergency", "emergency_response_teams"),
-        MANAGEMENT("management", "management_and_supervisory_teams"),
-        SUPPORT("support", "support_and_auxiliary_teams");
+        STANDARD( "standard", "standard_work_teams" ),
+        QUATTRODUE( "quattrodue", "quattrodue_cycle_teams" ),
+        EMERGENCY( "emergency", "emergency_response_teams" ),
+        MANAGEMENT( "management", "management_and_supervisory_teams" ),
+        SUPPORT( "support", "support_and_auxiliary_teams" );
 
         private final String displayNameKey;
         private final String descriptionKey;
@@ -132,20 +132,20 @@ public class Team extends LocalizableDomainModel {
      * Private constructor for builder pattern with localization support.
      */
     private Team(@NonNull Builder builder) {
-        super(builder.mLocalizer, LOCALIZATION_SCOPE);
+        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Validation
-        Objects.requireNonNull(builder.id, "Team ID cannot be null");
-        Objects.requireNonNull(builder.name, "Team name cannot be null");
+        Objects.requireNonNull( builder.id, "Team ID cannot be null" );
+        Objects.requireNonNull( builder.name, "Team name cannot be null" );
 
         String cleanId = builder.id.trim();
         String cleanName = builder.name.trim();
 
         if (cleanId.isEmpty()) {
-            throw new IllegalArgumentException("Team ID cannot be empty");
+            throw new IllegalArgumentException( "Team ID cannot be empty" );
         }
         if (cleanName.isEmpty()) {
-            throw new IllegalArgumentException("Team name cannot be empty");
+            throw new IllegalArgumentException( "Team name cannot be empty" );
         }
 
         // Core properties
@@ -158,7 +158,7 @@ public class Team extends LocalizableDomainModel {
         this.active = builder.active;
 
         // Cache hash code
-        this.hashCodeCache = Objects.hash(this.id);
+        this.hashCodeCache = Objects.hash( this.id );
     }
 
     // ==================== GETTERS ====================
@@ -234,7 +234,7 @@ public class Team extends LocalizableDomainModel {
         if (other == null) {
             return false;
         }
-        return this.id.equals(other.id);
+        return this.id.equals( other.id );
     }
 
     /**
@@ -247,7 +247,7 @@ public class Team extends LocalizableDomainModel {
         if (teamName == null) {
             return false;
         }
-        return this.name.equalsIgnoreCase(teamName.trim());
+        return this.name.equalsIgnoreCase( teamName.trim() );
     }
 
     /**
@@ -260,7 +260,7 @@ public class Team extends LocalizableDomainModel {
         if (teamId == null) {
             return false;
         }
-        return this.id.equals(teamId.trim());
+        return this.id.equals( teamId.trim() );
     }
 
     /**
@@ -298,11 +298,11 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public String getTypeDisplayName() {
         if (teamType != null) {
-            return localize("type." + teamType.name().toLowerCase(),
+            return localize( "type." + teamType.name().toLowerCase(),
                     teamType.name(), // fallback
-                    teamType.name());
+                    teamType.name() );
         }
-        return localize("type.unspecified", "Unspecified", "Unspecified");
+        return localize( "type.unspecified", "Unspecified", "Unspecified" );
     }
 
     /**
@@ -311,11 +311,11 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public String getTypeDescription() {
         if (teamType != null) {
-            return localize("type." + teamType.name().toLowerCase() + ".description",
+            return localize( "type." + teamType.name().toLowerCase() + ".description",
                     teamType.getDescriptionKey(), // fallback
-                    teamType.name());
+                    teamType.name() );
         }
-        return localize("type.unspecified.description", "No specific type", "No specific type");
+        return localize( "type.unspecified.description", "No specific type", "No specific type" );
     }
 
     /**
@@ -324,9 +324,9 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public String getStatusDisplayName() {
         if (active) {
-            return localize("status.active", "Active", "Active");
+            return localize( "status.active", "Active", "Active" );
         } else {
-            return localize("status.inactive", "Inactive", "Inactive");
+            return localize( "status.inactive", "Inactive", "Inactive" );
         }
     }
 
@@ -365,8 +365,8 @@ public class Team extends LocalizableDomainModel {
         }
 
         // Localize common descriptions or use as-is
-        String localizedDescription = localize("description.custom", description, description);
-        String separator = localize("format.name_description_separator", " - ", " - ");
+        String localizedDescription = localize( "description.custom", description, description );
+        String separator = localize( "format.name_description_separator", " - ", " - " );
         return title + separator + localizedDescription;
     }
 
@@ -380,25 +380,25 @@ public class Team extends LocalizableDomainModel {
         StringBuilder summary = new StringBuilder();
 
         // Team label with name
-        String teamLabel = localize("label.team", "Team", "Team");
-        summary.append(teamLabel).append(" ").append(getDisplayTitle());
+        String teamLabel = localize( "label.team", "Team", "Team" );
+        summary.append( teamLabel ).append( " " ).append( getDisplayTitle() );
 
         // Add ID if different from display name
-        if (!name.equals(displayName)) {
-            String idTemplate = localize("format.id_parentheses", " ({0})", " ({0})");
-            summary.append(String.format(idTemplate.replace("{0}", "%s"), name));
+        if (!name.equals( displayName )) {
+            String idTemplate = localize( "format.id_parentheses", " ({0})", " ({0})" );
+            summary.append( String.format( idTemplate.replace( "{0}", "%s" ), name ) );
         }
 
         // Add type if specified
         if (teamType != null) {
-            String typeTemplate = localize("format.type_brackets", " [{0}]", " [{0}]");
-            summary.append(String.format(typeTemplate.replace("{0}", "%s"), getTypeDisplayName()));
+            String typeTemplate = localize( "format.type_brackets", " [{0}]", " [{0}]" );
+            summary.append( String.format( typeTemplate.replace( "{0}", "%s" ), getTypeDisplayName() ) );
         }
 
         // Add status if inactive
         if (!active) {
-            String inactiveLabel = localize("status.inactive_suffix", " [INACTIVE]", " [INACTIVE]");
-            summary.append(inactiveLabel);
+            String inactiveLabel = localize( "status.inactive_suffix", " [INACTIVE]", " [INACTIVE]" );
+            summary.append( inactiveLabel );
         }
 
         return summary.toString();
@@ -414,28 +414,28 @@ public class Team extends LocalizableDomainModel {
         StringBuilder card = new StringBuilder();
 
         // Title
-        card.append(getDisplayTitle()).append("\n");
+        card.append( getDisplayTitle() ).append( "\n" );
 
         // ID if different
-        if (!name.equals(displayName)) {
-            String idLabel = localize("label.id", "ID", "ID");
-            card.append(idLabel).append(": ").append(name).append("\n");
+        if (!name.equals( displayName )) {
+            String idLabel = localize( "label.id", "ID", "ID" );
+            card.append( idLabel ).append( ": " ).append( name ).append( "\n" );
         }
 
         // Type
         if (teamType != null) {
-            String typeLabel = localize("label.type", "Type", "Type");
-            card.append(typeLabel).append(": ").append(getTypeDisplayName()).append("\n");
+            String typeLabel = localize( "label.type", "Type", "Type" );
+            card.append( typeLabel ).append( ": " ).append( getTypeDisplayName() ).append( "\n" );
         }
 
         // Status
-        String statusLabel = localize("label.status", "Status", "Status");
-        card.append(statusLabel).append(": ").append(getStatusDisplayName()).append("\n");
+        String statusLabel = localize( "label.status", "Status", "Status" );
+        card.append( statusLabel ).append( ": " ).append( getStatusDisplayName() ).append( "\n" );
 
         // Description
         if (!description.isEmpty()) {
-            String descLabel = localize("label.description", "Description", "Description");
-            card.append(descLabel).append(": ").append(description);
+            String descLabel = localize( "label.description", "Description", "Description" );
+            card.append( descLabel ).append( ": " ).append( description );
         }
 
         return card.toString().trim();
@@ -466,18 +466,18 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public String getSummary() {
         StringBuilder summary = new StringBuilder();
-        summary.append("Team ").append(displayName);
+        summary.append( "Team " ).append( displayName );
 
-        if (!name.equals(displayName)) {
-            summary.append(" (").append(name).append(")");
+        if (!name.equals( displayName )) {
+            summary.append( " (" ).append( name ).append( ")" );
         }
 
         if (teamType != null) {
-            summary.append(" [").append(teamType.name()).append("]");
+            summary.append( " [" ).append( teamType.name() ).append( "]" );
         }
 
         if (!active) {
-            summary.append(" [INACTIVE]");
+            summary.append( " [INACTIVE]" );
         }
 
         return summary.toString();
@@ -489,51 +489,51 @@ public class Team extends LocalizableDomainModel {
      * Create a standard QuattroDue team with localization support.
      *
      * @param teamLetter Team letter (A, B, C, etc.)
-     * @param localizer Optional domain localizer for i18n
+     * @param localizer  Optional domain localizer for i18n
      * @return QuattroDue team
      */
     @NonNull
     public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable DomainLocalizer localizer) {
-        return builder(teamLetter)
-                .name(teamLetter)
-                .displayName("Team " + teamLetter)
-                .teamType(TeamType.QUATTRODUE)
-                .description("QuattroDue cycle team " + teamLetter)
-                .localizer(localizer)
+        return builder( teamLetter )
+                .name( teamLetter )
+                .displayName( "Team " + teamLetter )
+                .teamType( TeamType.QUATTRODUE )
+                .description( "QuattroDue cycle team " + teamLetter )
+                .localizer( localizer )
                 .build();
     }
 
     /**
      * Create a management team with localization support.
      *
-     * @param teamName Team name
+     * @param teamName  Team name
      * @param localizer Optional domain localizer for i18n
      * @return Management team
      */
     @NonNull
     public static Team createManagementTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
-        return builder(teamName)
-                .name(teamName)
-                .displayName(teamName)
-                .teamType(TeamType.MANAGEMENT)
-                .localizer(localizer)
+        return builder( teamName )
+                .name( teamName )
+                .displayName( teamName )
+                .teamType( TeamType.MANAGEMENT )
+                .localizer( localizer )
                 .build();
     }
 
     /**
      * Create an emergency team with localization support.
      *
-     * @param teamName Team name
+     * @param teamName  Team name
      * @param localizer Optional domain localizer for i18n
      * @return Emergency team
      */
     @NonNull
     public static Team createEmergencyTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
-        return builder(teamName)
-                .name(teamName)
-                .displayName(teamName)
-                .teamType(TeamType.EMERGENCY)
-                .localizer(localizer)
+        return builder( teamName )
+                .name( teamName )
+                .displayName( teamName )
+                .teamType( TeamType.EMERGENCY )
+                .localizer( localizer )
                 .build();
     }
 
@@ -549,9 +549,9 @@ public class Team extends LocalizableDomainModel {
     @Override
     @NonNull
     public Team withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder(this.id)
-                .copyFrom(this)
-                .localizer(localizer)
+        return builder( this.id )
+                .copyFrom( this )
+                .localizer( localizer )
                 .build();
     }
 
@@ -573,19 +573,19 @@ public class Team extends LocalizableDomainModel {
      */
     @NonNull
     public static Builder builder(@NonNull String id) {
-        return new Builder(id);
+        return new Builder( id );
     }
 
     /**
      * Create a builder for constructing Team instances with name.
      *
-     * @param id Team ID (required)
+     * @param id   Team ID (required)
      * @param name Team name (required)
      * @return Builder instance
      */
     @NonNull
     public static Builder builder(@NonNull String id, @NonNull String name) {
-        return new Builder(id, name);
+        return new Builder( id, name );
     }
 
     /**
@@ -595,7 +595,7 @@ public class Team extends LocalizableDomainModel {
      */
     @NonNull
     public Builder toBuilder() {
-        return new Builder(this);
+        return new Builder( this );
     }
 
     /**
@@ -615,13 +615,13 @@ public class Team extends LocalizableDomainModel {
         }
 
         private Builder(@NonNull String id) {
-            this.id = Objects.requireNonNull(id, "Team ID cannot be null").trim();
+            this.id = Objects.requireNonNull( id, "Team ID cannot be null" ).trim();
             this.name = this.id; // Default name to ID
         }
 
         private Builder(@NonNull String id, @NonNull String name) {
-            this.id = Objects.requireNonNull(id, "Team ID cannot be null").trim();
-            this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
+            this.id = Objects.requireNonNull( id, "Team ID cannot be null" ).trim();
+            this.name = Objects.requireNonNull( name, "Team name cannot be null" ).trim();
         }
 
         private Builder(@NonNull Team existingTeam) {
@@ -644,7 +644,7 @@ public class Team extends LocalizableDomainModel {
             this.teamType = source.teamType;
             this.active = source.active;
 
-            return copyLocalizableFrom(source);
+            return copyLocalizableFrom( source );
         }
 
         /**
@@ -655,7 +655,9 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public Builder name(@NonNull String name) {
-            this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
+            this.name = Objects.requireNonNull( name, "Team name cannot be null" ).trim();
+            if (this.displayName == null)
+                this.displayName = this.name;
             return this;
         }
 
@@ -667,7 +669,8 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public Builder displayName(@Nullable String displayName) {
-            this.displayName = displayName;
+            if (displayName != null)
+                this.displayName = displayName;
             return this;
         }
 
@@ -733,7 +736,7 @@ public class Team extends LocalizableDomainModel {
         @Override
         @NonNull
         public Team build() {
-            return new Team(this);
+            return new Team( this );
         }
     }
 
@@ -747,21 +750,21 @@ public class Team extends LocalizableDomainModel {
      */
     @NonNull
     public static Team fromName(@NonNull String name) {
-        Objects.requireNonNull(name, "Team name cannot be null");
+        Objects.requireNonNull( name, "Team name cannot be null" );
         String cleanName = name.trim();
-        return builder(cleanName).name(cleanName).build();
+        return builder( cleanName ).name( cleanName ).build();
     }
 
     /**
      * Create a team from ID and name.
      *
-     * @param id Team ID
+     * @param id   Team ID
      * @param name Team name
      * @return Team instance
      */
     @NonNull
     public static Team fromIdAndName(@NonNull String id, @NonNull String name) {
-        return builder(id, name).build();
+        return builder( id, name ).build();
     }
 
     /**
@@ -773,11 +776,11 @@ public class Team extends LocalizableDomainModel {
      */
     @NonNull
     public static Team[] fromNames(@NonNull String... names) {
-        Objects.requireNonNull(names, "Team names array cannot be null");
+        Objects.requireNonNull( names, "Team names array cannot be null" );
 
         Team[] teams = new Team[names.length];
         for (int i = 0; i < names.length; i++) {
-            teams[i] = fromName(names[i]);
+            teams[i] = fromName( names[i] );
         }
         return teams;
     }
@@ -801,7 +804,7 @@ public class Team extends LocalizableDomainModel {
             Team[] teams = new Team[teamLetters.length];
 
             for (int i = 0; i < teamLetters.length; i++) {
-                teams[i] = createQuattroDueTeam(teamLetters[i], localizer);
+                teams[i] = createQuattroDueTeam( teamLetters[i], localizer );
             }
 
             return teams;
@@ -814,73 +817,9 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public static Team[] createQuattroDueTeams() {
-            return createQuattroDueTeams(null);
+            return createQuattroDueTeams( null );
         }
 
-        /**
-         * Get team A with localization support.
-         *
-         * @param localizer Optional domain localizer for i18n
-         * @return Team A
-         */
-        @NonNull
-        public static Team teamA(@Nullable DomainLocalizer localizer) {
-            return createQuattroDueTeam("A", localizer);
-        }
-
-        /**
-         * Get team A (legacy method).
-         *
-         * @return Team A
-         */
-        @NonNull
-        public static Team teamA() {
-            return teamA(null);
-        }
-
-        /**
-         * Get team B with localization support.
-         *
-         * @param localizer Optional domain localizer for i18n
-         * @return Team B
-         */
-        @NonNull
-        public static Team teamB(@Nullable DomainLocalizer localizer) {
-            return createQuattroDueTeam("B", localizer);
-        }
-
-        /**
-         * Get team B (legacy method).
-         *
-         * @return Team B
-         */
-        @NonNull
-        public static Team teamB() {
-            return teamB(null);
-        }
-
-        /**
-         * Get team C with localization support.
-         *
-         * @param localizer Optional domain localizer for i18n
-         * @return Team C
-         */
-        @NonNull
-        public static Team teamC(@Nullable DomainLocalizer localizer) {
-            return createQuattroDueTeam("C", localizer);
-        }
-
-        /**
-         * Get team C (legacy method).
-         *
-         * @return Team C
-         */
-        @NonNull
-        public static Team teamC() {
-            return teamC(null);
-        }
-
-        // Additional standard teams can be added here as needed
     }
 
     // ==================== OBJECT METHODS ====================
@@ -891,7 +830,7 @@ public class Team extends LocalizableDomainModel {
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Team team = (Team) obj;
-        return Objects.equals(id, team.id);
+        return Objects.equals( id, team.id );
     }
 
     @Override
@@ -945,13 +884,13 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public static Team[] fromNameArray(@NonNull String[] teamNames, @Nullable DomainLocalizer localizer) {
-            Objects.requireNonNull(teamNames, "Team names array cannot be null");
+            Objects.requireNonNull( teamNames, "Team names array cannot be null" );
 
             Team[] teams = new Team[teamNames.length];
             for (int i = 0; i < teamNames.length; i++) {
-                teams[i] = builder(teamNames[i])
-                        .name(teamNames[i])
-                        .localizer(localizer)
+                teams[i] = builder( teamNames[i] )
+                        .name( teamNames[i] )
+                        .localizer( localizer )
                         .build();
             }
             return teams;
@@ -965,7 +904,7 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public static Team[] fromNameArray(@NonNull String[] teamNames) {
-            return fromNameArray(teamNames, null);
+            return fromNameArray( teamNames, null );
         }
 
         /**
@@ -976,7 +915,7 @@ public class Team extends LocalizableDomainModel {
          */
         @NonNull
         public static String[] toNameArray(@NonNull Team[] teams) {
-            Objects.requireNonNull(teams, "Teams array cannot be null");
+            Objects.requireNonNull( teams, "Teams array cannot be null" );
 
             String[] names = new String[teams.length];
             for (int i = 0; i < teams.length; i++) {
@@ -989,16 +928,16 @@ public class Team extends LocalizableDomainModel {
          * Find team by ID in array.
          *
          * @param teams Array of teams to search
-         * @param id Team ID to find
+         * @param id    Team ID to find
          * @return Team with matching ID, or null if not found
          */
         @Nullable
         public static Team findById(@NonNull Team[] teams, @NonNull String id) {
-            Objects.requireNonNull(teams, "Teams array cannot be null");
-            Objects.requireNonNull(id, "Team ID cannot be null");
+            Objects.requireNonNull( teams, "Teams array cannot be null" );
+            Objects.requireNonNull( id, "Team ID cannot be null" );
 
             for (Team team : teams) {
-                if (team != null && team.hasId(id)) {
+                if (team != null && team.hasId( id )) {
                     return team;
                 }
             }
@@ -1009,16 +948,16 @@ public class Team extends LocalizableDomainModel {
          * Find team by name in array.
          *
          * @param teams Array of teams to search
-         * @param name Team name to find
+         * @param name  Team name to find
          * @return Team with matching name, or null if not found
          */
         @Nullable
         public static Team findByName(@NonNull Team[] teams, @NonNull String name) {
-            Objects.requireNonNull(teams, "Teams array cannot be null");
-            Objects.requireNonNull(name, "Team name cannot be null");
+            Objects.requireNonNull( teams, "Teams array cannot be null" );
+            Objects.requireNonNull( name, "Team name cannot be null" );
 
             for (Team team : teams) {
-                if (team != null && team.hasName(name)) {
+                if (team != null && team.hasName( name )) {
                     return team;
                 }
             }

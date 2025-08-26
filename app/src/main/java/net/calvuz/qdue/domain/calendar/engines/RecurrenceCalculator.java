@@ -15,6 +15,7 @@ import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -134,8 +135,6 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                                    @NonNull RecurrenceRule recurrenceRule,
                                                    @NonNull UserScheduleAssignment assignment) {
         try {
-            Log.d( TAG, "Generating schedule for date: " + date + ", rule: " + recurrenceRule.getId() );
-
             WorkScheduleDay.Builder scheduleBuilder = WorkScheduleDay.builder( date );
 
             // Calculate shifts for this date
@@ -146,13 +145,14 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 WorkScheduleShift workScheduleShift = createWorkScheduleShift( shift, assignment );
                 if (workScheduleShift != null) {
                     scheduleBuilder.addShift( workScheduleShift );
+                    Log.v( TAG, MessageFormat.format( "{0} Added WorkScheduleShift: {1}",
+                            date, shift.getName() ) );
+                } else {
+                    Log.w( TAG, "createWorkScheduleShift returned null for: " + shift.getName() );
                 }
             }
 
-            WorkScheduleDay schedule = scheduleBuilder.build();
-            Log.d( TAG, "Generated schedule with " + schedule.getShifts().size() + " shifts" );
-
-            return schedule;
+            return scheduleBuilder.build();
         } catch (Exception e) {
             Log.e( TAG, "Error generating schedule for date: " + date, e );
             return WorkScheduleDay.builder( date ).build(); // Return empty schedule on error
@@ -172,14 +172,37 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                                               @NonNull RecurrenceRule recurrenceRule,
                                               @NonNull UserScheduleAssignment assignment) {
         try {
-            Log.d( TAG, "Calculating shifts for date: " + date + ", rule: " + recurrenceRule.getId() );
-
             // Parse recurrence pattern from domain model
             RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
 
-            // Get team offset from assignment (or 0 if not available)
+            // Get team offset from assignment (or 0 if not available) (0 HARDCODED - test )
             int teamOffset = getTeamOffsetFromAssignment( assignment );
 
+            return calculateShiftsForDate( date, recurrenceRule, assignment, pattern, teamOffset );
+        } catch (Exception e) {
+            Log.e( TAG, "Error calculating shifts for date: " + date, e );
+            return new ArrayList<>(); // Return empty list on error
+        }
+    }
+
+    /**
+     * Calculate shifts for specific date based on recurrence rule and user assignment.
+     *
+     * @param date           Target date for calculation
+     * @param recurrenceRule Recurrence rule domain model
+     * @param assignment     User schedule assignment domain model
+     * @param pattern        Parsed recurrence pattern
+     * @param teamOffset     Team offset for multi-team coordination
+     *
+     * @return List of Shift objects for the date
+     */
+    @NonNull
+    public List<Shift> calculateShiftsForDate(@NonNull LocalDate date,
+                                              @NonNull RecurrenceRule recurrenceRule,
+                                              @NonNull UserScheduleAssignment assignment,
+                                              @NonNull RecurrencePattern pattern,
+                                              int teamOffset) {
+        try {
             // Calculate cycle position for the date
             int cyclePosition = calculateCyclePosition( date, assignment.getStartDate(),
                     pattern, teamOffset );
@@ -196,7 +219,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 }
             }
 
-            Log.d( TAG, "Generated " + shifts.size() + " shifts for date: " + date );
+            Log.v( TAG, "Generated " + shifts.size() + " shifts for date: " + date );
             return shifts;
         } catch (Exception e) {
             Log.e( TAG, "Error calculating shifts for date: " + date, e );
@@ -222,8 +245,6 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         Map<LocalDate, List<Shift>> shiftsMap = new HashMap<>();
 
         try {
-            Log.d( TAG, "Calculating shifts for date range: " + startDate + " to " + endDate );
-
             // Parse pattern once for efficiency
             RecurrencePattern pattern = parseRecurrencePattern( recurrenceRule );
             int teamOffset = getTeamOffsetFromAssignment( assignment );
@@ -231,12 +252,13 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             // Process each date in range
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter( endDate )) {
-                List<Shift> shifts = calculateShiftsForDate( currentDate, recurrenceRule, assignment );
+                List<Shift> shifts = calculateShiftsForDate( currentDate, recurrenceRule, assignment,
+                        pattern, teamOffset);
                 shiftsMap.put( currentDate, shifts );
                 currentDate = currentDate.plusDays( 1 );
             }
 
-            Log.d( TAG, "Generated shifts for " + shiftsMap.size() + " dates" );
+            Log.v( TAG, "Generated shifts for " + shiftsMap.size() + " dates" );
         } catch (Exception e) {
             Log.e( TAG, "Error calculating shifts for date range", e );
         }
@@ -314,7 +336,8 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             pattern.interval = recurrenceRule.getInterval();
             pattern.cycleLength = recurrenceRule.getCycleLength() != null ?
                     recurrenceRule.getCycleLength() : 1;
-            pattern.isContinuous = false; // Could be derived from frequency type
+            pattern.isContinuous = recurrenceRule.getFrequency()
+                    .equals( RecurrenceRule.Frequency.QUATTRODUE_CYCLE );
 
             // Create shift sequence based on frequency
             pattern.shiftSequence = createShiftSequenceFromRule( recurrenceRule );
@@ -327,8 +350,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 
             return pattern;
         } catch (Exception e) {
-            Log.e( TAG, "Error parsing recurrence pattern", e );
-            return createDefaultPattern();
+            Log.e( TAG, "Error parsing recurrence pattern, returning an empty default", e );
+            return new RecurrencePattern();
+//            return createDefaultPattern();
         }
     }
 
@@ -357,16 +381,21 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         return sequences;
     }
 
+    /**
+     * Create default pattern for QUATTRODUE_CYCLE.
+     * QuattroDue 4-2 Pattern: 18-day cycle
+     * Work periods: 1-4, 7-10, 13-16
+     * Rest periods: 5,6, 11,12, 17,18
+     *
+     * @return List of ShiftSequence objects
+     */
     private List<ShiftSequence> createQuattroDueSequence() {
         List<ShiftSequence> sequences = new ArrayList<>();
-
-        // QuattroDue 4-2 Pattern: 18-day cycle
-        // Work periods: 1-4, 7-10, 13-16
 
         // WORK PERIOD 1: Days 1-4 (Morning shift)
         ShiftSequence work1 = new ShiftSequence();
         work1.shiftType = "morning";
-        work1.days = Arrays.asList( 0, 1, 2, 3 );
+        work1.days = Arrays.asList( 1, 2, 3, 4 );
         work1.startTime = LocalTime.of( 5, 0 ).toString();
         work1.endTime = LocalTime.of( 13, 0 ).toString();
         work1.duration = 8 * 60;
@@ -374,13 +403,13 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 
         ShiftSequence rest1 = new ShiftSequence();
         rest1.shiftType = "rest";
-        rest1.days = Arrays.asList( 4, 5 );
+        rest1.days = Arrays.asList( 5, 6 );
         sequences.add( rest1 );
 
         // WORK PERIOD 2: Days 7-10 (Night shift)
         ShiftSequence work2 = new ShiftSequence();
         work2.shiftType = "night";
-        work2.days = Arrays.asList( 6, 7, 8, 9 );
+        work2.days = Arrays.asList( 7, 8, 9, 10 );
         work2.startTime = LocalTime.of( 21, 0 ).toString();
         work2.endTime = LocalTime.of( 5, 0 ).toString();
         work2.duration = 8 * 60;
@@ -388,13 +417,13 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 
         ShiftSequence rest2 = new ShiftSequence();
         rest2.shiftType = "rest";
-        rest2.days = List.of( 10, 11 );
+        rest2.days = List.of( 11, 12 );
         sequences.add( rest2 );
 
         // WORK PERIOD 3: Days 13-16 (Afternoon shift)
         ShiftSequence work3 = new ShiftSequence();
         work3.shiftType = "afternoon";
-        work3.days = Arrays.asList( 12, 13, 14, 15 );
+        work3.days = Arrays.asList( 13, 14, 15, 16 );
         work3.startTime = LocalTime.of( 13, 0 ).toString();
         work3.endTime = LocalTime.of( 21, 0 ).toString();
         work3.duration = 8 * 60;
@@ -402,50 +431,10 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
 
         ShiftSequence rest3 = new ShiftSequence();
         rest3.shiftType = "rest";
-        rest3.days = List.of( 16, 17 );
+        rest3.days = List.of( 17, 18 );
         sequences.add( rest3 );
 
-//        // Standard 18-day QuattroDue cycle
-//        ShiftSequence morningSeq = new ShiftSequence();
-//        morningSeq.shiftType = "morning";
-//        morningSeq.days = List.of(1, 2, 3, 4);
-//        morningSeq.startTime = "06:00";
-//        morningSeq.endTime = "14:00";
-//        morningSeq.duration = 480;
-//        sequences.add(morningSeq);
-//
-//        ShiftSequence restSeq1 = new ShiftSequence();
-//        restSeq1.shiftType = "rest";
-//        restSeq1.days = List.of(5, 6);
-//        sequences.add(restSeq1);
-//
-//        ShiftSequence afternoonSeq = new ShiftSequence();
-//        afternoonSeq.shiftType = "afternoon";
-//        afternoonSeq.days = List.of(7, 8, 9, 10);
-//        afternoonSeq.startTime = "14:00";
-//        afternoonSeq.endTime = "22:00";
-//        afternoonSeq.duration = 480;
-//        sequences.add(afternoonSeq);
-//
-//        ShiftSequence restSeq2 = new ShiftSequence();
-//        restSeq2.shiftType = "rest";
-//        restSeq2.days = List.of(11, 12);
-//        sequences.add(restSeq2);
-//
-//        ShiftSequence nightSeq = new ShiftSequence();
-//        nightSeq.shiftType = "night";
-//        nightSeq.days = List.of(13, 14, 15, 16);
-//        nightSeq.startTime = "22:00";
-//        nightSeq.endTime = "06:00";
-//        nightSeq.duration = 480;
-//        sequences.add(nightSeq);
-//
-//        ShiftSequence restSeq3 = new ShiftSequence();
-//        restSeq3.shiftType = "rest";
-//        restSeq3.days = List.of(17, 18);
-//        sequences.add(restSeq3);
-
-        Log.d( TAG, "Created QuattroDue sequence with " + sequences.size() + " work periods" );
+        Log.d( TAG, "Generated " + sequences.size() + " shift sequences" );
         return sequences;
     }
 
@@ -529,11 +518,11 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         // Apply team offset (for multi-team coordination)
         daysSinceStart += teamOffset;
 
-        // Calculate position in cycle (1-based)
+        // Calculate position in cycle (0-based)
         int cyclePosition = (int) ((daysSinceStart % pattern.cycleLength) + 1);
 
         // Handle negative values for dates before start
-        if (cyclePosition <= 0) {
+        if (cyclePosition < 0) {
             cyclePosition += pattern.cycleLength;
         }
 
@@ -581,7 +570,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                     .build();
 
             builder.addTeam( userTeam );
-            Log.d( TAG, "Added team " + userTeam.getName() + " to shift " + shift.getName() );
+            Log.v( TAG, "Added team " + userTeam.getId() + " to shift " + shift.getName() );
 
             return builder.build();
         } catch (Exception e) {
@@ -640,10 +629,14 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         try {
             // Simple hash-based offset for demonstration
             // In practice, this would be a proper field or calculated value
-            String teamId = assignment.getTeamId();
-            if (teamId != null) {
-                return Math.abs( teamId.hashCode() ) % 6; // 0-5 days offset
-            }
+//            String teamId = assignment.getTeamId();
+//            if (teamId != null) {
+//                return Math.abs( teamId.hashCode() ) % 6; // 0-5 days offset
+//            }
+
+            // TODO: rethink this logic
+            //Return 0 (Team A hardcoded)
+            return 0;
         } catch (Exception e) {
             Log.w( TAG, "Error calculating team offset, using 0" );
         }

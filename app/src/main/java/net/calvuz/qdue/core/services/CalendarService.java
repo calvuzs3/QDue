@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.Team;
@@ -62,6 +63,16 @@ public interface CalendarService {
 
     @NonNull
     CalendarServiceProvider getCalendarServiceProvider();
+
+    // ==================== RECURRENCE RULE OPERATIONS ====================
+
+    /**
+     * Get all available recurrence rules.
+     *
+     * @return CompletableFuture with List of RecurrenceRule objects
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<RecurrenceRule>>> getAllRecurrenceRules();
 
     // ==================== WORK SCHEDULE OPERATIONS ====================
 

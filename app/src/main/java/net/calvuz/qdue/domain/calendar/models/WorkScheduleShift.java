@@ -271,10 +271,10 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
      * @param teamName Team name to check
      * @return true if team with that name is assigned
      */
-    public boolean hasTeamWithName(@NonNull String teamName) {
-        Objects.requireNonNull(teamName, "Team name cannot be null");
+    public boolean hasTeamWithId(@NonNull String teamId) {
+        Objects.requireNonNull(teamId, "Team name cannot be null");
         return teams.stream()
-                .anyMatch(team -> team.hasName(teamName));
+                .anyMatch(team -> team.hasId(teamId));
     }
 
     /**

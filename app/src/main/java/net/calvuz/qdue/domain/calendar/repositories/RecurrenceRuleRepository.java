@@ -16,6 +16,13 @@ import java.util.concurrent.CompletableFuture;
 public interface RecurrenceRuleRepository {
 
     /**
+     * Get all recurrence rules.
+     * @return List of RecurrenceRule objects
+     */
+    @NonNull
+    CompletableFuture<List<RecurrenceRule>> getAllRecurrenceRules();
+
+    /**
      * Get recurrence rule by ID.
      *
      * @param ruleId Recurrence rule ID

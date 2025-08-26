@@ -15,6 +15,7 @@ import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 
 import java.time.LocalDate;
 
@@ -354,13 +355,22 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
         // Handle toolbar back button
-        if (item.getItemId() == android.R.id.home) {
+        if (itemId == android.R.id.home) {
             Log.d(TAG, "Back button pressed - finishing debug activity");
             finish();
             return true;
         }
 
+        // Handle Settings
+        if ( itemId == R.id.action_settings ) {
+            if (SettingsLauncher.isAvailable()) {
+                SettingsLauncher.launch( this );
+            }
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 

@@ -217,7 +217,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         }
 
         // Log status computation for debugging
-        Log.d( TAG, "Assignment validation passed - ID: " + id +
+        Log.v( TAG, "Assignment validation passed - ID: " + id +
                 ", Status: " + status + ", Active: " + active +
                 ", Start: " + startDate + ", End: " + endDate );
     }
@@ -370,13 +370,13 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
         // Date-based status computation
         if (startDate.isAfter( today )) {
-            Log.d( TAG, "Future assignment starting " + startDate + " - status: PENDING" );
+            Log.v( TAG, "Future assignment starting " + startDate + " - status: PENDING" );
             return Status.PENDING;  // Future assignment
         } else if (endDate != null && endDate.isBefore( today )) {
-            Log.d( TAG, "Past assignment ended " + endDate + " - status: EXPIRED" );
+            Log.v( TAG, "Past assignment ended " + endDate + " - status: EXPIRED" );
             return Status.EXPIRED;  // Past assignment
         } else {
-            Log.d( TAG, "Current assignment - status: ACTIVE" );
+            Log.v( TAG, "Current assignment - status: ACTIVE" );
             return Status.ACTIVE;   // Current assignment
         }
     }
@@ -389,18 +389,18 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     public boolean appliesTo(@NonNull LocalDate date) {
         // Administrative check: assignment must be enabled
         if (!active) {
-            Log.d( TAG, "Assignment is administratively disabled" );
+            Log.v( TAG, "Assignment is administratively disabled" );
             return false;
         }
 
         // Date range check (independent of status)
         if (date.isBefore( startDate )) {
-            Log.d( TAG, MessageFormat.format( "Date ({0}) is before start date ({1})", date, startDate ) );
+            Log.e( TAG, MessageFormat.format( "Date ({0}) is before start date ({1})", date, startDate ) );
             return false;
         }
 
         if (!isPermanent && endDate != null && date.isAfter( endDate )) {
-            Log.d( TAG, MessageFormat.format( "Date ({0}) is after end date ({1})", date, endDate ) );
+            Log.e( TAG, MessageFormat.format( "Date ({0}) is after end date ({1})", date, endDate ) );
             return false;
         }
 
@@ -1013,12 +1013,30 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     public String toString() {
         return "UserScheduleAssignment{" +
                 "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", notes='" + notes + '\'' +
                 ", userId=" + userId +
+                ", userName='" + userName + '\'' +
                 ", teamId='" + teamId + '\'' +
+                ", teamName='" + teamName + '\'' +
+                ", recurrenceRuleId='" + recurrenceRuleId + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", status=" + status +
                 ", priority=" + priority +
+                ", status=" + status +
+                ", assignedByUserId='" + assignedByUserId + '\'' +
+                ", assignedByUserName='" + assignedByUserName + '\'' +
+                ", departmentId='" + departmentId + '\'' +
+                ", departmentName='" + departmentName + '\'' +
+                ", roleId='" + roleId + '\'' +
+                ", roleName='" + roleName + '\'' +
+                ", active=" + active +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", createdByUserId=" + createdByUserId +
+                ", lastModifiedByUserId=" + lastModifiedByUserId +
                 '}';
+
     }
 }

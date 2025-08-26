@@ -276,7 +276,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
                 return;
             }
 
-            String userTeam = QDuePreferences.getSelectedTeamNameForRepository( mContext ); // QuattroDue.getInstance( mContext ).getUserHalfTeam();
+            String userTeam = QDuePreferences.getSelectedTeamName( mContext ); // This Team name is = ID
             boolean hasWorkSchedule = dayItem.dayData.isTeamWorking( userTeam );
 
             // WorkSchedule Text

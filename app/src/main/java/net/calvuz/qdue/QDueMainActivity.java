@@ -25,16 +25,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
-import net.calvuz.qdue.diagnosis.DiagnosticTestRunner;
-import net.calvuz.qdue.diagnosis.FixedQDSchemeAnalysis;
-import net.calvuz.qdue.diagnosis.PatternAnalysisTest;
-import net.calvuz.qdue.diagnosis.QuattroDueImplementationFix;
-import net.calvuz.qdue.diagnosis.QuattroDuePatternDiagnostics;
-import net.calvuz.qdue.diagnosis.QuattroDuePatternVerification;
-import net.calvuz.qdue.diagnosis.TeamAssignmentDiagnostics;
-import net.calvuz.qdue.diagnosis.TestWorkDay;
 import net.calvuz.qdue.diagnosis.UIDataFlowTest;
-import net.calvuz.qdue.diagnosis.WorkScheduleDiagnosticTestSuite;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.core.common.utils.Library;
@@ -1098,25 +1089,8 @@ public class QDueMainActivity extends BaseActivity {
             boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
             boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
 
-            WorkScheduleDiagnosticTestSuite.addDebugMenuOption( this, menu );
-
-            PatternAnalysisTest.addDebugMenuOption( this, menu );
-
             UIDataFlowTest.addDebugMenuOption( this, menu );
 
-            DiagnosticTestRunner.addDebugMenuOption( this, menu );
-
-            QuattroDuePatternDiagnostics.addDebugMenuOption( this, menu );
-
-            FixedQDSchemeAnalysis.addDebugMenuOption( this, menu );
-
-            TeamAssignmentDiagnostics.addDebugMenuOption( this, menu );
-
-            QuattroDuePatternVerification.addDebugMenuOption( this, menu );
-
-            QuattroDueImplementationFix.addDebugMenuOption( this, menu );
-
-            TestWorkDay.addDebugMenuOption( this, menu );
 
             if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer

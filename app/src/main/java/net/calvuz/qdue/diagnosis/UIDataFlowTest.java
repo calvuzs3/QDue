@@ -8,7 +8,8 @@ import android.util.Log;
 
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
-import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
+import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.models.Team;
@@ -19,6 +20,7 @@ import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +48,15 @@ public class UIDataFlowTest {
                         }).start();
                         return true;
                     });
+            menu.add( 0, 447777, 0, "🔍 Direct Path Comparison" )
+                    .setOnMenuItemClickListener( item -> {
+                        new Thread( () -> {
+                            String results = testDirectPathComparison( activity.getApplicationContext() );
+                            Log.v( "PATHCOMPARISON", results );
+                            System.out.println( results );
+                        } ).start();
+                        return true;
+                    } );
         }
     }
 
@@ -54,6 +65,11 @@ public class UIDataFlowTest {
      * Test complete data flow: Repository → UseCase → SwipeCalendarModule → UI
      */
     public static String testCompleteDataFlow(Context context) {
+
+        // DEBUG Database tables
+        debugDatabaseTables( context );
+
+        // Complete Data Flow
         StringBuilder report = new StringBuilder();
 
         report.append("=== UI DATA FLOW TEST ===\n");
@@ -348,5 +364,242 @@ public class UIDataFlowTest {
         }
 
         Log.w(TAG, "=== UI DATA FLOW DIAGNOSIS COMPLETE ===");
+    }
+
+
+    /**
+     * Add this method to UIDataFlowTest class for quick database inspection
+     */
+    public static String dumpDatabaseTables(Context context) {
+        StringBuilder result = new StringBuilder();
+        result.append("=== DATABASE DUMP - UserScheduleAssignment & RecurrenceRule ===\n\n");
+
+        try {
+            ServiceProvider serviceProvider = ServiceProviderImpl.getInstance(context);
+
+            // === RECURRENCE RULES TABLE ===
+            result.append("📋 RECURRENCE RULES:\n");
+            result.append("=".repeat(50)).append("\n");
+
+            serviceProvider.getCalendarService()
+                    .getAllRecurrenceRules()
+                    .thenAccept(rulesResult -> {
+                        if (rulesResult.isSuccess() && rulesResult.getData() != null) {
+                            List<RecurrenceRule> rules = rulesResult.getData();
+                            result.append("Total Rules: ").append(rules.size()).append("\n\n");
+
+                            for (int i = 0; i < rules.size(); i++) {
+                                RecurrenceRule rule = rules.get(i);
+                                result.append(String.format("[%d] ID: %s\n", i+1, rule.getId()));
+                                result.append("    Name: ").append(rule.getName()).append("\n");
+                                result.append("    Frequency: ").append(rule.getFrequency()).append("\n");
+                                result.append("    Interval: ").append(rule.getInterval()).append("\n");
+                                result.append("    Cycle Length: ").append(rule.getCycleLength()).append("\n");
+                                result.append("    Active: ").append(rule.isActive()).append("\n");
+                                result.append("    Created: ").append(rule.getCreatedAt()).append("\n\n");
+                            }
+                        } else {
+                            result.append("❌ No RecurrenceRules found or error: ")
+                                    .append(rulesResult.getErrorMessage()).append("\n\n");
+                        }
+                    }).join();
+
+            // === USER SCHEDULE ASSIGNMENTS TABLE ===
+            result.append("\n👤 USER SCHEDULE ASSIGNMENTS:\n");
+            result.append("=".repeat(50)).append("\n");
+
+            // Get all active user IDs first
+            serviceProvider.getCalendarServiceProvider()
+                    .getUserScheduleAssignmentRepository()
+                    .getAllActiveUserIds()
+                    .thenAccept(userIdsResult -> {
+                        if (userIdsResult.isSuccess() && userIdsResult.getData() != null) {
+                            List<Long> userIds = userIdsResult.getData();
+                            result.append("Active Users: ").append(userIds.size()).append("\n");
+                            result.append("User IDs: ").append(userIds.toString()).append("\n\n");
+
+                            // For each user, get their assignments
+                            for (Long userId : userIds) {
+                                result.append("USER ").append(userId).append(" ASSIGNMENTS:\n");
+                                result.append("-".repeat(30)).append("\n");
+
+                                serviceProvider.getCalendarServiceProvider()
+                                        .getUserScheduleAssignmentRepository()
+                                        .getActiveAssignmentsForUser(userId)
+                                        .thenAccept(assignmentsResult -> {
+                                            if (assignmentsResult.isSuccess() && assignmentsResult.getData() != null) {
+                                                List<UserScheduleAssignment> assignments = assignmentsResult.getData();
+
+                                                if (assignments.isEmpty()) {
+                                                    result.append("  ❌ No active assignments\n\n");
+                                                } else {
+                                                    for (int i = 0; i < assignments.size(); i++) {
+                                                        UserScheduleAssignment assignment = assignments.get(i);
+                                                        result.append(String.format("  [%d] ID: %s\n", i+1, assignment.getId()));
+                                                        result.append("      Team: ").append(assignment.getTeamId())
+                                                                .append(" (").append(assignment.getTeamName()).append(")\n");
+                                                        result.append("      RecurrenceRule ID: ").append(assignment.getRecurrenceRuleId()).append("\n");
+                                                        result.append("      Status: ").append(assignment.getStatus()).append("\n");
+                                                        result.append("      Priority: ").append(assignment.getPriority()).append("\n");
+                                                        result.append("      Start: ").append(assignment.getStartDate()).append("\n");
+                                                        result.append("      End: ").append(assignment.getEndDate() != null ? assignment.getEndDate() : "PERMANENT").append("\n");
+                                                        result.append("      Is Permanent: ").append(assignment.isPermanent()).append("\n");
+                                                        result.append("      Title: ").append(assignment.getTitle()).append("\n\n");
+                                                    }
+                                                }
+                                            } else {
+                                                result.append("  ❌ Error getting assignments: ")
+                                                        .append(assignmentsResult.getErrorMessage()).append("\n\n");
+                                            }
+                                        }).join();
+                            }
+                        } else {
+                            result.append("❌ No active users found or error: ")
+                                    .append(userIdsResult.getErrorMessage()).append("\n\n");
+                        }
+                    }).join();
+
+            // === SPECIFIC CHECKS ===
+            result.append("\n🔍 SPECIFIC CHECKS:\n");
+            result.append("=".repeat(50)).append("\n");
+
+            LocalDate today = LocalDate.now();
+            Long testUserId = 1L;
+
+            result.append("Testing getActiveAssignmentForUser(").append(testUserId)
+                    .append(", ").append(today).append("):\n");
+
+            serviceProvider.getCalendarServiceProvider()
+                    .getUserScheduleAssignmentRepository()
+                    .getActiveAssignmentForUser(testUserId, today)
+                    .thenAccept(assignmentResult -> {
+                        if (assignmentResult.isSuccess()) {
+                            if (assignmentResult.getData() != null) {
+                                UserScheduleAssignment assignment = assignmentResult.getData();
+                                result.append("✅ FOUND Assignment:\n");
+                                result.append("   ID: ").append(assignment.getId()).append("\n");
+                                result.append("   Team: ").append(assignment.getTeamId()).append("\n");
+                                result.append("   RecurrenceRule: ").append(assignment.getRecurrenceRuleId()).append("\n");
+                                result.append("   Status: ").append(assignment.getStatus()).append("\n");
+                            } else {
+                                result.append("❌ NULL - No active assignment found for user ")
+                                        .append(testUserId).append(" on ").append(today).append("\n");
+                            }
+                        } else {
+                            result.append("❌ ERROR: ").append(assignmentResult.getErrorMessage()).append("\n");
+                        }
+                    }).join();
+
+        } catch (Exception e) {
+            result.append("❌ EXCEPTION during database dump: ").append(e.getMessage()).append("\n");
+            Log.e("DatabaseDump", "Error during dump", e);
+        }
+
+        result.append("\n=== END DATABASE DUMP ===\n");
+        return result.toString();
+    }
+
+    /**
+     * Quick method to run database dump and log results
+     * Call this from any Activity or add to debug menu
+     */
+    public static void debugDatabaseTables(Context context) {
+        new Thread(() -> {
+            String dumpResult = dumpDatabaseTables(context);
+            Log.v("DATABASE_DUMP", dumpResult);
+
+            // Also print to System.out for easier reading in logcat
+            System.out.println("\n" + dumpResult);
+        }).start();
+    }
+
+
+    /**
+     * Test to directly compare the two paths: real assignment vs default assignment
+     */
+    public static String testDirectPathComparison(Context context) {
+        StringBuilder result = new StringBuilder();
+        result.append("=== DIRECT PATH COMPARISON TEST ===\n\n");
+
+        try {
+            ServiceProvider serviceProvider = ServiceProviderImpl.getInstance(context);
+            WorkScheduleRepository repo = serviceProvider.getCalendarServiceProvider().getWorkScheduleRepository();
+
+            LocalDate testDate = LocalDate.of(2025, 8, 28); // Use a work day
+            Long userId = 1L;
+
+            result.append("Testing date: ").append(testDate).append("\n");
+            result.append("User ID: ").append(userId).append("\n\n");
+
+            // PATH A: Force assignment creation (simulate assignment == null)
+            result.append("🔍 PATH A: Default Assignment (createDefaultQuattroDueAssignment)\n");
+            result.append("=".repeat(60)).append("\n");
+
+            try {
+                // Call the method directly with null assignment to force default creation
+                WorkScheduleDay pathAResult = repo.getWorkScheduleForDate(testDate, null).join().getData(); // null user forces default
+
+                if (pathAResult != null) {
+                    result.append("✅ Path A generated WorkScheduleDay\n");
+                    result.append("   Shifts count: ").append(pathAResult.getShifts().size()).append("\n");
+
+                    for (int i = 0; i < pathAResult.getShifts().size(); i++) {
+                        WorkScheduleShift shift = pathAResult.getShifts().get(i);
+                        result.append("   [").append(i).append("] ").append(shift.getShift().getName())
+                                .append(" (").append(shift.getStartTime()).append("-").append(shift.getEndTime()).append(")\n");
+                        result.append("       Teams: ").append(shift.getTeams() != null ? shift.getTeams().size() : "null").append("\n");
+                    }
+                } else {
+                    result.append("❌ Path A returned null\n");
+                }
+
+            } catch (Exception e) {
+                result.append("❌ Path A error: ").append(e.getMessage()).append("\n");
+            }
+
+            // PATH B: Real assignment from database
+            result.append("\n🔍 PATH B: Real Assignment (from database)\n");
+            result.append("=".repeat(60)).append("\n");
+
+            try {
+                WorkScheduleDay pathBResult = repo.getWorkScheduleForDate(testDate, userId).join().getData();
+
+                if (pathBResult != null) {
+                    result.append("✅ Path B generated WorkScheduleDay\n");
+                    result.append("   Shifts count: ").append(pathBResult.getShifts().size()).append("\n");
+
+                    if (pathBResult.getShifts().isEmpty()) {
+                        result.append("❌ PATH B HAS ZERO SHIFTS - This is the UI problem!\n");
+                    } else {
+                        for (int i = 0; i < pathBResult.getShifts().size(); i++) {
+                            WorkScheduleShift shift = pathBResult.getShifts().get(i);
+                            result.append("   [").append(i).append("] ").append(shift.getShift().getName())
+                                    .append(" (").append(shift.getStartTime()).append("-").append(shift.getEndTime()).append(")\n");
+                            result.append("       Teams: ").append(shift.getTeams() != null ? shift.getTeams().size() : "null").append("\n");
+                        }
+                    }
+                } else {
+                    result.append("❌ Path B returned null\n");
+                }
+
+            } catch (Exception e) {
+                result.append("❌ Path B error: ").append(e.getMessage()).append("\n");
+            }
+
+            // COMPARISON
+            result.append("\n📊 COMPARISON ANALYSIS\n");
+            result.append("=".repeat(60)).append("\n");
+            result.append("This test shows exactly where the data diverges.\n");
+            result.append("If Path A has shifts but Path B doesn't, the problem is in:\n");
+            result.append("- Assignment properties causing different behavior\n");
+            result.append("- Exception handling removing shifts only from real assignments\n");
+            result.append("- RecurrenceCalculator treating them differently\n");
+
+        } catch (Exception e) {
+            result.append("❌ Test failed: ").append(e.getMessage()).append("\n");
+        }
+
+        result.append("\n=== END DIRECT PATH COMPARISON ===\n");
+        return result.toString();
     }
 }

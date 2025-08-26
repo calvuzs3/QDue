@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -26,10 +29,12 @@ import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
+import net.calvuz.qdue.diagnosis.UIDataFlowTest;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
+import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
@@ -151,6 +156,9 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
         // Parse arguments
         parseArguments();
+
+        // Menu
+        setHasOptionsMenu( true );
 
         Log.d( TAG, "SwipeCalendarFragment created" );
     }
@@ -454,6 +462,25 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
                 }
             } );
         }
+    }
+
+    // ========================= MENU =========================
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu( menu, inflater );
+
+        // DEBUG menu item
+        UIDataFlowTest.addDebugMenuOption( getActivity(), menu );
+
+        inflater.inflate( R.menu.menu_main, menu );
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+
+        return super.onOptionsItemSelected( item );
     }
 
     // ==================== CALENDAR SETUP ====================

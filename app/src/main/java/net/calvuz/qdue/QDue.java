@@ -15,13 +15,8 @@ import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.quattrodue.QuattroDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
-import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.Locale;
-
-import dagger.hilt.android.HiltAndroidApp;
-
-import net.calvuz.qdue.smartshifts.data.database.SmartShiftsDatabase;
-import net.calvuz.qdue.smartshifts.data.database.DatabaseInitializer;
 
 /**
  * Main QDue Application class with Hilt support
@@ -34,6 +29,12 @@ public class QDue extends Application {
     static String TAG = "QDUE";
 
     // CONSTANTS
+    public static final String QDUE_RRULE_SCHEME_START_DATE =
+            LocalDate.of( 2018, 11, 7 ).toString(); // First day morning team A
+    public static final String QDUE_RRULE_DAILY_START_DATE =
+            LocalDate.of( 2025, 8, 11 ).toString(); // Monday
+    public static final String QDUE_RRULE_SCHEME_START_ASSIGNMENT_DATE =
+            LocalDate.of( 2025, 8, 8 ).toString();
     public static final int SETTINGS_REQUEST_CODE = 1001;
     public static final int WELCOME_REQUEST_CODE = 1002;
 
@@ -97,7 +98,8 @@ public class QDue extends Application {
             // Colors
             if (QDuePreferences.isDynamicColorsEnabled( this )) {
                 enableDynamicColors();
-            };
+            }
+            ;
 
             Log.d( TAG, "=== Preferences initialized" );
         } catch (Exception e) {

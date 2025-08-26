@@ -81,7 +81,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
 
     // ==================== CONSTANTS ====================
 
-    private static final String STANDARD_QUATTRODUE_RULE_ID = "quattrodue_standard_cycle";
+    private static final String STANDARD_QUATTRODUE_RULE_ID = "quattrodue_standard";
     private static final String STANDARD_WEEKDAYS_RULE_ID = "weekdays_only";
     private static final String STANDARD_DAILY_RULE_ID = "daily_pattern";
 
@@ -90,8 +90,8 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     /**
      * Constructor for dependency injection following clean architecture principles.
      *
-     * @param context Application context for resource access
-     * @param database CalendarDatabase instance for data operations
+     * @param context       Application context for resource access
+     * @param database      CalendarDatabase instance for data operations
      * @param backupManager CoreBackupManager for automatic backup integration
      */
     public RecurrenceRuleRepositoryImpl(@NonNull Context context,
@@ -101,24 +101,45 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
         this.mDatabase = database;
         this.mRecurrenceRuleDao = database.recurrenceRuleDao();
         this.mBackupManager = backupManager;
-        this.mLocaleManager = new LocaleManager(mContext);
-        this.mExecutorService = Executors.newFixedThreadPool(3);
+        this.mLocaleManager = new LocaleManager( mContext );
+        this.mExecutorService = Executors.newFixedThreadPool( 3 );
 
         // Initialize standard recurrence rules if needed
         initializeStandardRulesIfNeeded();
 
-        Log.d(TAG, "RecurrenceRuleRepositoryImpl initialized via dependency injection");
+        Log.d( TAG, "RecurrenceRuleRepositoryImpl initialized via dependency injection" );
     }
 
     // ==================== RECURRENCE RULE CRUD OPERATIONS ====================
 
     @NonNull
     @Override
+    public CompletableFuture<List<RecurrenceRule>> getAllRecurrenceRules() {
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getAllRecurrenceRules();
+
+                List<RecurrenceRule> domainRules = entities.stream()
+                        .map( RecurrenceRuleEntity::toDomainModel )
+                        .filter( java.util.Objects::nonNull )
+                        .collect( Collectors.toList() );
+
+                Log.v( TAG, "Successfully retrieved " + domainRules.size() + " recurrence rules" );
+                return domainRules;
+            } catch (Exception e) {
+                Log.e( TAG, "Error getting all recurrence rules", e );
+                return new ArrayList<>();
+            }
+        }, mExecutorService );
+    }
+
+
+
+    @NonNull
+    @Override
     public CompletableFuture<RecurrenceRule> getRecurrenceRuleById(@NonNull String ruleId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting recurrence rule by ID: " + ruleId);
-
                 // Check standard rules cache first
                 if (mStandardRulesCache.containsKey(ruleId)) {
                     Log.d(TAG, "Returning cached standard rule: " + ruleId);
@@ -133,7 +154,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                 }
 
                 RecurrenceRule domainRule = entity.toDomainModel();
-                Log.d(TAG, "Successfully retrieved recurrence rule: " + ruleId);
+                Log.v(TAG, "Successfully retrieved recurrence rule: " + ruleId);
                 return domainRule;
 
             } catch (Exception e) {
@@ -148,15 +169,13 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<List<RecurrenceRule>> getAllActiveRecurrenceRules() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting all active recurrence rules");
-
                 List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getAllActiveRecurrenceRules();
                 List<RecurrenceRule> domainRules = entities.stream()
                         .map(RecurrenceRuleEntity::toDomainModel)
                         .filter(java.util.Objects::nonNull)
                         .collect(Collectors.toList());
 
-                Log.d(TAG, "Successfully retrieved " + domainRules.size() + " active recurrence rules");
+                Log.v(TAG, "Successfully retrieved " + domainRules.size() + " active recurrence rules");
                 return domainRules;
 
             } catch (Exception e) {
@@ -171,8 +190,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<List<RecurrenceRule>> getRecurrenceRulesByFrequency(@NonNull RecurrenceRule.Frequency frequency) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting recurrence rules by frequency: " + frequency);
-
                 String frequencyString = frequency.name();
                 List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getRecurrenceRulesByFrequency(frequencyString);
                 List<RecurrenceRule> domainRules = entities.stream()
@@ -180,7 +197,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                         .filter(java.util.Objects::nonNull)
                         .collect(Collectors.toList());
 
-                Log.d(TAG, "Successfully retrieved " + domainRules.size() + " rules with frequency: " + frequency);
+                Log.v(TAG, "Successfully retrieved " + domainRules.size() + " rules with frequency: " + frequency);
                 return domainRules;
 
             } catch (Exception e) {
@@ -195,8 +212,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<RecurrenceRule> saveRecurrenceRule(@NonNull RecurrenceRule recurrenceRule) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Saving recurrence rule: " + recurrenceRule.getName());
-
                 // Convert to entity
                 RecurrenceRuleEntity entity = RecurrenceRuleEntity.fromDomainModel(recurrenceRule);
                 if (entity == null) {
@@ -232,7 +247,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                 }
 
                 RecurrenceRule savedRule = entity.toDomainModel();
-                Log.d(TAG, "Successfully saved recurrence rule: " + recurrenceRule.getName());
+                Log.i(TAG, "Successfully saved recurrence rule: " + recurrenceRule.getName());
                 return savedRule;
 
             } catch (Exception e) {
@@ -247,8 +262,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<Boolean> deleteRecurrenceRule(@NonNull String ruleId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Deleting recurrence rule: " + ruleId);
-
                 // Prevent deletion of standard rules
                 if (isStandardRule(ruleId)) {
                     Log.w(TAG, "Cannot delete standard recurrence rule: " + ruleId);
@@ -273,7 +286,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                     int affectedRows = mRecurrenceRuleDao.deleteRecurrenceRuleById(ruleId);
                     if (affectedRows > 0) {
                         mBackupManager.performAutoBackup("recurrence_rules", "delete");
-                        Log.d(TAG, "Successfully deleted recurrence rule: " + ruleId);
+                        Log.i(TAG, "Successfully deleted recurrence rule: " + ruleId);
                         return true;
                     } else {
                         Log.w(TAG, "No recurrence rule found to delete: " + ruleId);
@@ -293,8 +306,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<Boolean> isRecurrenceRuleInUse(@NonNull String ruleId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Checking if recurrence rule is in use: " + ruleId);
-
                 // This would need to check UserScheduleAssignmentDao or other entities
                 // that reference this recurrence rule. For now, implement basic logic.
 
@@ -305,7 +316,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
 
                 // TODO: Implement actual usage check by querying UserScheduleAssignmentDao
                 // For now, return false (not in use) for non-standard rules
-                Log.d(TAG, "Recurrence rule usage check completed for: " + ruleId);
+                Log.v(TAG, "Recurrence rule usage check completed for: " + ruleId);
                 return false;
 
             } catch (Exception e) {
@@ -326,14 +337,12 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<List<RecurrenceRule>> getStandardRecurrenceRules() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting standard recurrence rules");
-
                 if (!mStandardRulesCacheInitialized) {
                     initializeStandardRulesCache();
                 }
 
                 List<RecurrenceRule> standardRules = new ArrayList<>(mStandardRulesCache.values());
-                Log.d(TAG, "Retrieved " + standardRules.size() + " standard recurrence rules");
+                Log.v(TAG, "Retrieved " + standardRules.size() + " standard recurrence rules");
                 return standardRules;
 
             } catch (Exception e) {
@@ -352,15 +361,13 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<List<RecurrenceRule>> getQuattroDueRecurrenceRules() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting QuattroDue recurrence rules");
-
                 List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getQuattroDueRecurrenceRules();
                 List<RecurrenceRule> domainRules = entities.stream()
                         .map(RecurrenceRuleEntity::toDomainModel)
                         .filter(java.util.Objects::nonNull)
                         .collect(Collectors.toList());
 
-                Log.d(TAG, "Retrieved " + domainRules.size() + " QuattroDue recurrence rules");
+                Log.v(TAG, "Retrieved " + domainRules.size() + " QuattroDue recurrence rules");
                 return domainRules;
 
             } catch (Exception e) {
@@ -380,8 +387,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<List<RecurrenceRule>> getActiveRecurrenceRulesForDate(@NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting active recurrence rules for date: " + date);
-
                 String dateString = date.toString();
                 List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getActiveRecurrenceRulesForDate(dateString);
                 List<RecurrenceRule> domainRules = entities.stream()
@@ -389,7 +394,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                         .filter(java.util.Objects::nonNull)
                         .collect(Collectors.toList());
 
-                Log.d(TAG, "Retrieved " + domainRules.size() + " active rules for date: " + date);
+                Log.v(TAG, "Retrieved " + domainRules.size() + " active rules for date: " + date);
                 return domainRules;
 
             } catch (Exception e) {
@@ -408,8 +413,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     public CompletableFuture<RecurrenceRuleStatistics> getRecurrenceRuleStatistics() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Getting recurrence rule statistics");
-
                 RecurrenceRuleDao.RecurrenceRuleStatistics dbStats = mRecurrenceRuleDao.getRecurrenceRuleStatistics();
                 if (dbStats == null) {
                     return new RecurrenceRuleStatistics(0, 0, 0, 0, 0);
@@ -423,7 +426,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                         dbStats.daily_rules
                 );
 
-                Log.d(TAG, "Calculated recurrence rule statistics successfully");
+                Log.v(TAG, "Calculated recurrence rule statistics successfully");
                 return statistics;
 
             } catch (Exception e) {
@@ -441,8 +444,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     private void initializeStandardRulesIfNeeded() {
         CompletableFuture.runAsync(() -> {
             try {
-                Log.d(TAG, "Checking if standard recurrence rules need initialization");
-
                 // Check if standard rules exist
                 if (mRecurrenceRuleDao.getRecurrenceRuleById(STANDARD_QUATTRODUE_RULE_ID) == null) {
                     createStandardQuattroDueRule();
@@ -456,7 +457,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
                     createStandardDailyRule();
                 }
 
-                Log.d(TAG, "Standard recurrence rules initialization completed");
+                Log.v(TAG, "Standard recurrence rules initialization completed");
 
             } catch (Exception e) {
                 Log.e(TAG, "Error initializing standard recurrence rules", e);
@@ -469,8 +470,6 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
      */
     private void initializeStandardRulesCache() {
         try {
-            Log.d(TAG, "Initializing standard recurrence rules cache");
-
             // Load all standard rules
             String[] standardRuleIds = {STANDARD_QUATTRODUE_RULE_ID, STANDARD_WEEKDAYS_RULE_ID, STANDARD_DAILY_RULE_ID};
 
@@ -483,7 +482,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
             }
 
             mStandardRulesCacheInitialized = true;
-            Log.d(TAG, "Standard recurrence rules cache initialized with " + mStandardRulesCache.size() + " rules");
+            Log.v(TAG, "Standard recurrence rules cache initialized with " + mStandardRulesCache.size() + " rules");
 
         } catch (Exception e) {
             Log.e(TAG, "Error initializing standard rules cache", e);
@@ -514,7 +513,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
 
             RecurrenceRuleEntity entity = RecurrenceRuleEntity.fromDomainModel(quattroDueRule);
             mRecurrenceRuleDao.insertRecurrenceRule(entity);
-            Log.d(TAG, "Created standard QuattroDue recurrence rule");
+            Log.v(TAG, "Created standard QuattroDue recurrence rule");
 
         } catch (Exception e) {
             Log.e(TAG, "Error creating standard QuattroDue rule", e);
@@ -556,7 +555,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
 
             RecurrenceRuleEntity entity = RecurrenceRuleEntity.fromDomainModel(weekdaysRule);
             mRecurrenceRuleDao.insertRecurrenceRule(entity);
-            Log.d(TAG, "Created standard weekdays recurrence rule");
+            Log.v(TAG, "Created standard weekdays recurrence rule");
 
         } catch (Exception e) {
             Log.e(TAG, "Error creating standard weekdays rule", e);
@@ -581,7 +580,7 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
 
             RecurrenceRuleEntity entity = RecurrenceRuleEntity.fromDomainModel(dailyRule);
             mRecurrenceRuleDao.insertRecurrenceRule(entity);
-            Log.d(TAG, "Created standard daily recurrence rule");
+            Log.v(TAG, "Created standard daily recurrence rule");
 
         } catch (Exception e) {
             Log.e(TAG, "Error creating standard daily rule", e);

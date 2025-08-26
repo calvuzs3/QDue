@@ -8,12 +8,15 @@ import androidx.annotation.Nullable;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.data.repositories.RecurrenceRuleRepositoryImpl;
+import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
@@ -172,6 +175,37 @@ public class CalendarServiceImpl implements CalendarService {
         Log.d(TAG, "CalendarService cleanup completed");
     }
 
+    // ==================== RECURRENCE RULE OPERATIONS ====================
+
+    /**
+     * Get all available recurrence rules.
+     * @return CompletableFuture with List of RecurrenceRule objects
+     */
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<List<RecurrenceRule>>> getAllRecurrenceRules() {
+        Log.d(TAG, "Getting all recurrence rules");
+
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                if (!isReady()) {
+                    return OperationResult.failure("CalendarService not ready", OperationResult.OperationType.READ);
+                }
+
+                RecurrenceRuleRepository recurrenceRuleRepository = mCalendarServiceProvider.getRecurrenceRuleRepository();
+                List<RecurrenceRule> recurrenceRules = recurrenceRuleRepository.getAllRecurrenceRules().join();
+
+                Log.d(TAG, "Retrieved " + recurrenceRules.size() + " recurrence rules");
+                return OperationResult.success(recurrenceRules, OperationResult.OperationType.READ);
+
+
+            } catch (Exception e) {
+                Log.e( TAG, "Error getting all recurrence rules", e );
+                return OperationResult.failure("Failed to get recurrence rules: " + e.getMessage(), OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
     // ==================== WORK SCHEDULE OPERATIONS ====================
 
     /**
@@ -179,6 +213,7 @@ public class CalendarServiceImpl implements CalendarService {
      */
     @NonNull
     @Override
+    @Deprecated
     public CalendarServiceProvider getCalendarServiceProvider() {
         return mCalendarServiceProvider;
     }

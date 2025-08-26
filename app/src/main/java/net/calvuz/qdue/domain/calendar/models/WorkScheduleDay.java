@@ -302,14 +302,14 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
     /**
      * Check if a specific team is working on this day by team name.
      *
-     * @param teamName Name of the team to check
+     * @param teamID Name of the team to check
      * @return true if team is working in any shift
      */
-    public boolean isTeamWorking(@NonNull String teamName) {
-        Objects.requireNonNull(teamName, "Team name cannot be null");
+    public boolean isTeamWorking(@NonNull String teamID) {
+        Objects.requireNonNull(teamID, "Team ID cannot be null");
 
         return shifts.stream()
-                .anyMatch(shift -> shift.hasTeamWithName(teamName));
+                .anyMatch(shift -> shift.hasTeamWithId(teamID));
     }
 
     /**
@@ -362,7 +362,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
         Objects.requireNonNull(teamName, "Team name cannot be null");
 
         for (int i = 0; i < shifts.size(); i++) {
-            if (shifts.get(i).hasTeamWithName(teamName)) {
+            if (shifts.get(i).hasTeamWithId(teamName)) {
                 return i;
             }
         }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -53,7 +54,7 @@ public class CalendarDatabaseMigrations {
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            Log.i(TAG, "Starting CalendarDatabase migration from version 1 to 2");
+            Log.w(TAG, "Starting CalendarDatabase migration from version 1 to 2");
 
             try {
                 // Create new tables
@@ -71,7 +72,7 @@ public class CalendarDatabaseMigrations {
                 // Update database pragma settings for optimal performance
                 optimizeDatabaseSettings(database);
 
-                Log.i(TAG, "✅ CalendarDatabase migration 1→2 completed successfully");
+                Log.w(TAG, "✅ CalendarDatabase migration 1→2 completed successfully");
 
             } catch (Exception e) {
                 Log.e(TAG, "❌ Migration 1→2 failed", e);
@@ -86,7 +87,7 @@ public class CalendarDatabaseMigrations {
      * Create recurrence_rules table with full RRULE support.
      */
     private static void createRecurrenceRulesTable(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Creating recurrence_rules table");
+        Log.w(TAG, "Creating recurrence_rules table");
 
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS recurrence_rules (
@@ -117,7 +118,7 @@ public class CalendarDatabaseMigrations {
      * Create shift_exceptions table with comprehensive exception support.
      */
     private static void createShiftExceptionsTable(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Creating shift_exceptions table");
+        Log.w(TAG, "Creating shift_exceptions table");
 
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS shift_exceptions (
@@ -161,7 +162,7 @@ public class CalendarDatabaseMigrations {
      * Create user_schedule_assignments table for multi-user support.
      */
     private static void createUserScheduleAssignmentsTable(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Creating user_schedule_assignments table");
+        Log.w(TAG, "Creating user_schedule_assignments table");
 
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS user_schedule_assignments (
@@ -200,7 +201,7 @@ public class CalendarDatabaseMigrations {
      * Create performance indexes for optimal query performance.
      */
     private static void createPerformanceIndexes(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Creating performance indexes");
+        Log.w(TAG, "Creating performance indexes");
 
         // Recurrence Rules Indexes
         database.execSQL("CREATE INDEX IF NOT EXISTS idx_recurrence_frequency_active_start " +
@@ -260,76 +261,78 @@ public class CalendarDatabaseMigrations {
      * Insert default recurrence rules for QuattroDue patterns.
      */
     private static void insertDefaultRecurrenceRules(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Inserting default recurrence rules");
+        Log.w(TAG, "Inserting default recurrence rules");
 
         long currentTime = System.currentTimeMillis();
         String today = java.time.LocalDate.now().toString();
+        String dailyStartDate = QDue.QDUE_RRULE_DAILY_START_DATE;
+        String quattroDueStartDate = QDue.QDUE_RRULE_SCHEME_START_DATE;
 
         try {
             // Standard QuattroDue 4-2 cycle pattern
             database.execSQL("""
                 INSERT OR IGNORE INTO recurrence_rules (
-                    id, name, description, frequency, interval_value, start_date, 
-                    end_type, cycle_length, work_days, rest_days, active, 
+                    id, name, description, frequency, interval_value, start_date,
+                    end_type, cycle_length, work_days, rest_days, active,
                     created_at, updated_at
                 ) VALUES (
-                    'quattrodue_standard_cycle', 
-                    'Ciclo QuattroDue Standard', 
-                    'Pattern QuattroDue 4-2: 28 giorni lavoro, 14 giorni riposo in ciclo di 42 giorni',
-                    'QUATTRODUE_CYCLE', 
-                    1, 
-                    ?, 
-                    'NEVER', 
-                    18, 
-                    4, 
-                    2, 
-                    1, 
-                    ?, 
+                    'quattrodue_standard',
+                    'Ciclo QuattroDue Standard',
+                    'Pattern QuattroDue 4-2: 12 giorni lavoro, 6 giorni riposo in ciclo di 18 giorni',
+                    'QUATTRODUE_CYCLE',
+                    1,
+                    ?,
+                    'NEVER',
+                    18,
+                    4,
+                    2,
+                    1,
+                    ?,
                     ?
                 )
-                """, new Object[]{today, currentTime, currentTime});
+                """, new Object[]{quattroDueStartDate, currentTime, currentTime});
 
             // Weekdays only pattern (for special assignments)
             database.execSQL("""
                 INSERT OR IGNORE INTO recurrence_rules (
-                    id, name, description, frequency, interval_value, start_date, 
-                    end_type, by_day_json, week_start, active, created_at, updated_at
+                    id, name, description, frequency, interval_value, start_date,
+                     end_type, by_day_json, week_start, active, created_at, updated_at
                 ) VALUES (
-                    'weekdays_only', 
-                    'Solo Giorni Feriali', 
+                    'weekdays_only',
+                    'Solo Giorni Feriali',
                     'Dal lunedì al venerdì, esclusi weekend',
-                    'WEEKLY', 
-                    1, 
-                    ?, 
-                    'NEVER', 
-                    '["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"]', 
-                    'MONDAY', 
-                    1, 
-                    ?, 
+                    'WEEKLY',
+                    1,
+                    ?,
+                    'NEVER',
+                    '["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"]',
+                    'MONDAY',
+                    1,
+                    ?,
                     ?
                 )
-                """, new Object[]{today, currentTime, currentTime});
+                """, new Object[]{dailyStartDate, currentTime, currentTime});
 
             // Daily pattern (for temporary assignments)
             database.execSQL("""
                 INSERT OR IGNORE INTO recurrence_rules (
-                    id, name, description, frequency, interval_value, start_date, 
-                    end_type, active, created_at, updated_at
+                    id, name, description, frequency, interval_value, start_date,
+                     end_type, active, created_at, updated_at
                 ) VALUES (
-                    'daily_pattern', 
-                    'Pattern Giornaliero', 
+                    'daily_pattern',
+                    'Pattern Giornaliero',
                     'Ogni giorno senza eccezioni',
-                    'DAILY', 
-                    1, 
-                    ?, 
-                    'NEVER', 
-                    1, 
-                    ?, 
+                    'DAILY',
+                    1,
+                    ?,
+                    'NEVER',
+                    1,
+                    ?,
                     ?
                 )
                 """, new Object[]{today, currentTime, currentTime});
 
-            Log.d(TAG, "✅ Default recurrence rules inserted successfully");
+            Log.w(TAG, "✅ Default recurrence rules inserted successfully");
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Failed to insert default recurrence rules", e);
@@ -341,7 +344,7 @@ public class CalendarDatabaseMigrations {
      * Insert default user assignments for existing teams.
      */
     private static void insertDefaultUserAssignments(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Inserting default user assignments");
+        Log.w(TAG, "Inserting default user assignments");
 
         long currentTime = System.currentTimeMillis();
         String today = java.time.LocalDate.now().toString();
@@ -349,30 +352,30 @@ public class CalendarDatabaseMigrations {
         try {
             // Create default admin user assignment to Team A
             database.execSQL("""
-                INSERT OR IGNORE INTO user_schedule_assignments (
-                    id, title, description, user_id, user_name, team_id, team_name,
-                    recurrence_rule_id, start_date, is_permanent, priority, status,
-                    active, created_at, updated_at
-                ) VALUES (
-                    'default_admin_assignment', 
-                    'Assegnazione Amministratore Predefinita', 
-                    'Assegnazione predefinita per amministratore di sistema',
-                    1, 
-                    'Amministratore', 
-                    'A', 
-                    'Team A',
-                    'quattrodue_standard_cycle', 
-                    ?, 
-                    1, 
-                    'OVERRIDE', 
-                    'ACTIVE', 
-                    1, 
-                    ?, 
-                    ?
-                )
-                """, new Object[]{today, currentTime, currentTime});
+                    INSERT OR IGNORE INTO user_schedule_assignments (
+                        id, title, description, user_id, user_name, team_id, team_name,
+                        recurrence_rule_id, start_date, is_permanent, priority, status,
+                        active, created_at, updated_at
+                    ) VALUES (
+                        'default_user_assignment',
+                        'Assegnazione Predefinita',
+                        'Assegnazione predefinita di sistema',
+                        1,
+                        'User',
+                        'A',
+                        'A',
+                        'quattrodue_standard',
+                        ?,
+                        1,
+                        'OVERRIDE',
+                        'ACTIVE',
+                        1,
+                        ?,
+                        ?
+                    )
+                    """, new Object[]{today, currentTime, currentTime});
 
-            Log.d(TAG, "✅ Default user assignments inserted successfully");
+            Log.w(TAG, "✅ Default user assignments inserted successfully");
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Failed to insert default user assignments", e);
@@ -386,7 +389,7 @@ public class CalendarDatabaseMigrations {
      * Optimize database settings for calendar engine performance.
      */
     private static void optimizeDatabaseSettings(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Optimizing database settings for calendar engine");
+        Log.w(TAG, "Optimizing database settings for calendar engine");
 
         try {
             // Enable foreign keys (for future relationships)
@@ -403,7 +406,7 @@ public class CalendarDatabaseMigrations {
             database.execSQL("ANALYZE shift_exceptions");
             database.execSQL("ANALYZE user_schedule_assignments");
 
-            Log.d(TAG, "✅ Database optimization completed");
+            Log.w(TAG, "✅ Database optimization completed");
 
         } catch (Exception e) {
             Log.e(TAG, "❌ Database optimization failed", e);
@@ -418,7 +421,7 @@ public class CalendarDatabaseMigrations {
      * Checks that all tables and indexes were created correctly.
      */
     public static boolean validateMigration(@NonNull SupportSQLiteDatabase database) {
-        Log.d(TAG, "Validating migration 1→2");
+        Log.w(TAG, "Validating migration 1→2");
 
         try {
             // Check table existence
@@ -449,7 +452,7 @@ public class CalendarDatabaseMigrations {
                 return false;
             }
 
-            Log.d(TAG, "✅ Migration validation successful");
+            Log.w(TAG, "✅ Migration validation successful");
             return true;
 
         } catch (Exception e) {
@@ -498,7 +501,7 @@ public class CalendarDatabaseMigrations {
     private static boolean hasDefaultData(@NonNull SupportSQLiteDatabase database) {
         try {
             android.database.Cursor cursor = database.query(
-                    "SELECT COUNT(*) FROM recurrence_rules WHERE id = 'quattrodue_standard_cycle'",
+                    "SELECT COUNT(*) FROM recurrence_rules WHERE id = 'quattrodue_standard'",
                     null
             );
             boolean hasData = false;
@@ -521,7 +524,7 @@ public class CalendarDatabaseMigrations {
     public static final Migration MIGRATION_2_1 = new Migration(2, 1) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            Log.i(TAG, "Starting CalendarDatabase rollback from version 2 to 1");
+            Log.w(TAG, "Starting CalendarDatabase rollback from version 2 to 1");
 
             try {
                 // Drop new tables (preserving shifts and teams)
@@ -534,7 +537,7 @@ public class CalendarDatabaseMigrations {
                 database.execSQL("DROP INDEX IF EXISTS idx_exception_user_date_priority");
                 database.execSQL("DROP INDEX IF EXISTS idx_assignment_user_date_priority");
 
-                Log.i(TAG, "✅ CalendarDatabase rollback 2→1 completed successfully");
+                Log.w(TAG, "✅ CalendarDatabase rollback 2→1 completed successfully");
 
             } catch (Exception e) {
                 Log.e(TAG, "❌ Rollback 2→1 failed", e);
@@ -551,21 +554,22 @@ public class CalendarDatabaseMigrations {
     @NonNull
     public static String getMigrationStatistics(@NonNull SupportSQLiteDatabase database) {
         try {
-            StringBuilder stats = new StringBuilder();
-            stats.append("CalendarDatabase Migration Statistics:\n");
 
             // Table counts
-            stats.append("Tables: ").append(getTableCount(database)).append("\n");
-            stats.append("Indexes: ").append(getIndexCount(database)).append("\n");
-
             // Data counts
-            stats.append("Recurrence Rules: ").append(getRecordCount(database, "recurrence_rules")).append("\n");
-            stats.append("Shift Exceptions: ").append(getRecordCount(database, "shift_exceptions")).append("\n");
-            stats.append("User Assignments: ").append(getRecordCount(database, "user_schedule_assignments")).append("\n");
-            stats.append("Teams: ").append(getRecordCount(database, "teams")).append("\n");
-            stats.append("Shifts: ").append(getRecordCount(database, "shifts")).append("\n");
 
-            return stats.toString();
+            return "CalendarDatabase Migration Statistics:\n" +
+
+                    // Table counts
+                    "Tables: " + getTableCount( database ) + "\n" +
+                    "Indexes: " + getIndexCount( database ) + "\n" +
+
+                    // Data counts
+                    "Recurrence Rules: " + getRecordCount( database, "recurrence_rules" ) + "\n" +
+                    "Shift Exceptions: " + getRecordCount( database, "shift_exceptions" ) + "\n" +
+                    "User Assignments: " + getRecordCount( database, "user_schedule_assignments" ) + "\n" +
+                    "Teams: " + getRecordCount( database, "teams" ) + "\n" +
+                    "Shifts: " + getRecordCount( database, "shifts" ) + "\n";
 
         } catch (Exception e) {
             return "Error getting migration statistics: " + e.getMessage();

@@ -58,6 +58,10 @@ public interface RecurrenceRuleDao {
 
     // ==================== LIST QUERIES ====================
 
+    @Query("SELECT * FROM recurrence_rules ORDER BY created_at DESC")
+    @NonNull
+    List<RecurrenceRuleEntity> getAllRecurrenceRules();
+
     @Query("SELECT * FROM recurrence_rules WHERE active = 1 ORDER BY created_at DESC")
     @NonNull
     List<RecurrenceRuleEntity> getAllActiveRecurrenceRules();
@@ -93,13 +97,6 @@ public interface RecurrenceRuleDao {
     int updateTimestamp(@NonNull String ruleId, long timestamp);
 
     // ==================== NEW METHODS FOR BACKUP SUPPORT ====================
-
-     /**
-      * ✅ NEW: Get ALL recurrence rules for complete backup (including inactive)
-      */
-     @Query("SELECT * FROM recurrence_rules ORDER BY created_at DESC")
-     @NonNull
-     List<RecurrenceRuleEntity> getAllRecurrenceRules();
 
      /**
       * ✅ NEW: Get all recurrence rules with status filter
