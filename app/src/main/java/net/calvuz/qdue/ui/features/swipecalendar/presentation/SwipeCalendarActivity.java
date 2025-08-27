@@ -149,6 +149,8 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         Log.d(TAG, "SwipeCalendarActivity onCreate() - Debug mode started");
 // Check if user needs to see welcome before setting up main activity
         if (shouldRedirectToWelcome()) {
@@ -156,7 +158,6 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
             return;
         }
 
-        super.onCreate(savedInstanceState);
 
         // Set content view
         setContentView(R.layout.activity_swipe_calendar);

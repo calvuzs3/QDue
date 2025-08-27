@@ -129,7 +129,7 @@ public interface TeamDao {
      *
      * @return List of all teams
      */
-    @Query("SELECT * FROM teams ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT * FROM teams ORDER BY name ASC")
     List<TeamEntity> getAllTeams();
 
     /**
@@ -138,7 +138,7 @@ public interface TeamDao {
      *
      * @return List of active teams
      */
-    @Query("SELECT * FROM teams WHERE active = 1 ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT * FROM teams WHERE active = 1 ORDER BY name ASC")
     List<TeamEntity> getActiveTeams();
 
     /**
@@ -196,7 +196,7 @@ public interface TeamDao {
      * @param names List of team names
      * @return List of matching teams
      */
-    @Query("SELECT * FROM teams WHERE name IN (:names) ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT * FROM teams WHERE name IN (:names) ORDER BY name ASC")
     List<TeamEntity> getTeamsByNames(@NonNull List<String> names);
 
     /**
@@ -205,7 +205,7 @@ public interface TeamDao {
      * @param ids List of team IDs
      * @return List of matching teams
      */
-    @Query("SELECT * FROM teams WHERE id IN (:ids) ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT * FROM teams WHERE id IN (:ids) ORDER BY name ASC")
     List<TeamEntity> getTeamsByIds(@NonNull List<Long> ids);
 
     // ==================== STATUS MANAGEMENT ====================
@@ -310,16 +310,6 @@ public interface TeamDao {
     boolean teamExistsById(long id);
 
     /**
-     * Get maximum sort order value.
-     * Useful for adding new teams at the end.
-     *
-     * @return Maximum sort order, or 0 if no teams exist
-     */
-    @Query("SELECT COALESCE(MAX(sort_order), 0) FROM teams")
-    int getMaxSortOrder();
-
-
-    /**
      * Get teams by status for backup operations
      *
      * @param active Status to filter by
@@ -348,17 +338,6 @@ public interface TeamDao {
     List<TeamEntity> getTeamsUpdatedAfter(long timestamp);
 
     // ==================== BATCH OPERATIONS ====================
-
-    /**
-     * Update sort order for multiple teams.
-     * Useful for reordering teams.
-     *
-     * @param teamId Team ID
-     * @param sortOrder New sort order
-     * @return Number of rows affected
-     */
-    @Query("UPDATE teams SET sort_order = :sortOrder, updated_at = :timestamp WHERE id = :teamId")
-    int updateTeamSortOrder(long teamId, int sortOrder, long timestamp);
 
     /**
      * Bulk update team names.
@@ -416,7 +395,7 @@ public interface TeamDao {
      *
      * @return List of team names
      */
-    @Query("SELECT name FROM teams WHERE active = 1 ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT name FROM teams WHERE active = 1 ORDER BY name ASC")
     List<String> getActiveTeamNames();
 
     /**
@@ -424,7 +403,7 @@ public interface TeamDao {
      *
      * @return List of teams with minimal data
      */
-    @Query("SELECT id, name, display_name FROM teams WHERE active = 1 ORDER BY sort_order ASC, name ASC")
+    @Query("SELECT id, name, display_name FROM teams WHERE active = 1 ORDER BY name ASC")
     List<TeamMinimalEntity> getActiveTeamsMinimal();
 
     /**

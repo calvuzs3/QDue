@@ -119,19 +119,14 @@ import java.util.Objects;
  */
 @Database (
         entities = {
-                // Legacy entities (Version 1)
                 ShiftEntity.class,
                 TeamEntity.class,
-
-                // Enhanced entities (Version 2)
                 RecurrenceRuleEntity.class,
                 ShiftExceptionEntity.class,
                 UserScheduleAssignmentEntity.class,
-
-                // Simplified User Management
                 QDueUserEntity.class
         },
-        version = CalendarDatabase.DATABASE_VERSION, // INCREMENTED for QDueUser addition
+        version = CalendarDatabase.DATABASE_VERSION,
         exportSchema = true
 )
 @TypeConverters ({
@@ -141,7 +136,18 @@ import java.util.Objects;
 
 public abstract class CalendarDatabase extends RoomDatabase {
 
-    public final static int DATABASE_VERSION = 3;
+    // Team, Shift
+    //public final static int DATABASE_VERSION = 1;
+
+    // RecurrenceRule, ShiftException, UserScheduleAssignment
+    //public final static int DATABASE_VERSION = 2;
+
+    // QDueUser
+    //public final static int DATABASE_VERSION = 3;
+
+    // Alter Team - add qdue_offset
+    public final static int DATABASE_VERSION = 4;
+//    public final static int DATABASE_VERSION = 5;
 
     private static final String TAG = "CalendarDatabase";
     private static final String DATABASE_NAME = "calendar_database";
@@ -149,20 +155,11 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
     // ==================== ABSTRACT DAO METHODS ====================
 
-    // Legacy DAOs (Version 1)
     public abstract ShiftDao shiftDao();
-
     public abstract TeamDao teamDao();
-
-    // Enhanced DAOs (Version 2)
     public abstract RecurrenceRuleDao recurrenceRuleDao();
-
     public abstract ShiftExceptionDao shiftExceptionDao();
-
     public abstract UserScheduleAssignmentDao userScheduleAssignmentDao();
-
-
-    // QDueUser DAO
     public abstract QDueUserDao qDueUserDao();
 
     // ==================== SINGLETON INSTANCE ====================
@@ -186,7 +183,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
                             // Migration strategy
                             .addMigrations(
                                     CalendarDatabaseMigrations.MIGRATION_1_2,
-                                    CalendarDatabaseMigrations.MIGRATION_2_3
+                                    CalendarDatabaseMigrations.MIGRATION_2_3,
+                                    CalendarDatabaseMigrations.MIGRATION_3_4
                             )
                             .addCallback( new EnhancedDatabaseCallback( context.getApplicationContext() ) )
                             .build();
@@ -312,7 +310,7 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
             // Preserve existing team indexes
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_teams_active_sort " +
-                    "ON teams(active, sort_order) WHERE active = 1" );
+                    "ON teams(active) WHERE active = 1" );
         }
 
         private void createRecurrenceRuleIndexes(@NonNull SupportSQLiteDatabase db) {
@@ -417,9 +415,9 @@ public abstract class CalendarDatabase extends RoomDatabase {
                 String teamDescription = teamDescTemplate + " " + teamName;
 
                 db.execSQL( "INSERT OR IGNORE INTO teams (" +
-                                "name, display_name, description, active, created_at, updated_at, sort_order) VALUES " +
-                                "(?, ?, ?, 1, ?, ?, ?)",
-                        new Object[]{teamName, teamDisplayName, teamDescription, currentTime, currentTime, i} );
+                                "name, display_name, description, active, created_at, updated_at) VALUES " +
+                                "(?, ?, ?, 1, ?, ?)",
+                        new Object[]{teamName, teamDisplayName, teamDescription, currentTime, currentTime} );
             }
         }
 

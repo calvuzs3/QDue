@@ -95,6 +95,9 @@ public class UserScheduleAssignmentEntity {
     @ColumnInfo(name = "recurrence_rule_id")
     private String recurrenceRuleId;
 
+    @ColumnInfo(name = "cycle_day_position", defaultValue = "1")
+    private int cycleDayPosition;
+
     // ==================== TIME BOUNDARIES ====================
 
     @NonNull
@@ -170,6 +173,7 @@ public class UserScheduleAssignmentEntity {
      */
     public UserScheduleAssignmentEntity() {
         // Room requires a no-argument constructor
+        this.cycleDayPosition = 1; // Default to first day of cycle
     }
 
     /**
@@ -182,6 +186,7 @@ public class UserScheduleAssignmentEntity {
         this.userId = userId;
         this.teamId = teamId;
         this.recurrenceRuleId = recurrenceRuleId;
+        this.cycleDayPosition = 1; // Default to first day of cycle
         this.startDate = startDate;
         this.isPermanent = true; // Default to permanent if no end date
         this.priority = "NORMAL";
@@ -228,6 +233,9 @@ public class UserScheduleAssignmentEntity {
     @NonNull
     public String getRecurrenceRuleId() { return recurrenceRuleId; }
     public void setRecurrenceRuleId(@NonNull String recurrenceRuleId) { this.recurrenceRuleId = recurrenceRuleId; }
+
+    public int getCycleDayPosition() { return cycleDayPosition; }
+    public void setCycleDayPosition(int cycleDayPosition) { this.cycleDayPosition = cycleDayPosition; }
 
     @NonNull
     public String getStartDate() { return startDate; }
@@ -306,6 +314,7 @@ public class UserScheduleAssignmentEntity {
                 .teamId(this.teamId)
                 .teamName(this.teamName)
                 .recurrenceRuleId(this.recurrenceRuleId)
+                .cycleDayPosition(this.cycleDayPosition)
                 .startDate(LocalDate.parse(this.startDate))
                 .priority(UserScheduleAssignment.Priority.valueOf(this.priority))
                 .active(this.active)
@@ -353,6 +362,7 @@ public class UserScheduleAssignmentEntity {
         entity.setTeamId(domainModel.getTeamId());
         entity.setTeamName(domainModel.getTeamName());
         entity.setRecurrenceRuleId(domainModel.getRecurrenceRuleId());
+        entity.setCycleDayPosition(domainModel.getCycleDayPosition());
         entity.setStartDate(domainModel.getStartDate().toString());
         entity.setPermanent(domainModel.isPermanent());
         entity.setPriority(domainModel.getPriority().name());
@@ -489,6 +499,8 @@ public class UserScheduleAssignmentEntity {
                 "id='" + id + '\'' +
                 ", userId=" + userId +
                 ", teamId='" + teamId + '\'' +
+                ", recurrenceRuleId='" + recurrenceRuleId + '\'' +
+                ", cycleDayPosition=" + cycleDayPosition +
                 ", startDate='" + startDate + '\'' +
                 ", endDate='" + endDate + '\'' +
                 ", status='" + status + '\'' +

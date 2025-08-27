@@ -815,7 +815,6 @@ public class TeamRepositoryImpl implements TeamRepository {
                         TeamEntity entity = new TeamEntity(teamName);
                         entity.setDisplayName(localizedDisplayName != null ? localizedDisplayName : "Team " + teamName);
                         entity.setDescription(localizedDescription);
-                        entity.setSortOrder(i);
 
                         mTeamDao.insertTeam(entity);
                         Log.d(TAG, "Initialized standard QuattroDue team: " + teamName);

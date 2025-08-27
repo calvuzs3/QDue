@@ -7,6 +7,9 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.ui.core.common.utils.Log;
+
 import java.util.Objects;
 
 /**
@@ -37,61 +40,59 @@ import java.util.Objects;
  * @version 1.0.0 - Initial Implementation
  * @since Database Version 6
  */
-@Entity(
+@Entity (
         tableName = "teams",
         indices = {
-                @Index(value = "name", unique = true),  // Unique team names
-                @Index(value = "active"),               // Query by active status
-                @Index(value = {"name", "active"})     // Composite index for common queries
+                @Index(value = {"name"}, unique = true, name = "ix_teams_name"),
+                @Index(value = {"active"}, name = "ix_teams_active"),
+                @Index(value = {"name", "active"}, name = "ix_teams_name_active"),
+                @Index(value = {"qdue_offset"}, name = "idx_teams_qdue_offset") // NEW INDEX
         }
 )
+
 public class TeamEntity {
 
     // ==================== DATABASE COLUMNS ====================
 
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
+    @PrimaryKey (autoGenerate = true)
+    @ColumnInfo (name = "id")
     private long id;
 
     @NonNull
-    @ColumnInfo(name = "name")
+    @ColumnInfo (name = "name")
     private String name;
 
     @Nullable
-    @ColumnInfo(name = "display_name")
+    @ColumnInfo (name = "display_name")
     private String displayName;
 
     @Nullable
-    @ColumnInfo(name = "description")
+    @ColumnInfo (name = "description")
     private String description;
 
-    @ColumnInfo(name = "active", defaultValue = "1")
+    @ColumnInfo (name = "active", defaultValue = "1")
     private boolean active;
 
-    @ColumnInfo(name = "created_at")
+    @ColumnInfo (name = "created_at")
     private long createdAt;
 
-    @ColumnInfo(name = "updated_at")
+    @ColumnInfo (name = "updated_at")
     private long updatedAt;
 
     // Future extensions - ready for additional properties
     @Nullable
-    @ColumnInfo(name = "color_hex")
+    @ColumnInfo (name = "color_hex")
     private String colorHex;
 
-    @ColumnInfo(name = "sort_order", defaultValue = "0")
-    private int sortOrder;
+    /**
+     * QuattroDue pattern offset in days.
+     * Determines this team's position in the 18-day QuattroDue cycle.
+     * Range: 0-17 (0 = base pattern, others are phase shifts)
+     */
+    @ColumnInfo(name = "qdue_offset", defaultValue = "0")
+    private int qdueOffset;
 
     // ==================== CONSTRUCTORS ====================
-
-    /**
-     * Default constructor required by Room.
-     */
-    public TeamEntity() {
-        this.active = true;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
-    }
 
     /**
      * Constructor with basic team information.
@@ -99,29 +100,14 @@ public class TeamEntity {
      * @param name Team name (required)
      */
     public TeamEntity(@NonNull String name) {
-        this();
-        this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
+        this.name = Objects.requireNonNull( name, "Team name cannot be null" ).trim();
         this.displayName = this.name; // Default display name to name
-    }
+        this.qdueOffset = 0;
 
-    /**
-     * Constructor with complete team information.
-     *
-     * @param name Team name (required)
-     * @param displayName Display name for UI
-     * @param description Team description
-     * @param active Whether team is active
-     */
-    public TeamEntity(@NonNull String name,
-                      @Nullable String displayName,
-                      @Nullable String description,
-                      boolean active) {
-        this();
-        this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
-        this.displayName = displayName != null && !displayName.trim().isEmpty() ?
-                displayName.trim() : this.name;
-        this.description = description != null ? description.trim() : null;
-        this.active = active;
+        long currentTime = System.currentTimeMillis();
+        this.createdAt = currentTime;
+        this.updatedAt = currentTime;
+
     }
 
     // ==================== GETTERS AND SETTERS ====================
@@ -140,7 +126,7 @@ public class TeamEntity {
     }
 
     public void setName(@NonNull String name) {
-        this.name = Objects.requireNonNull(name, "Team name cannot be null").trim();
+        this.name = Objects.requireNonNull( name, "Team name cannot be null" ).trim();
         this.updatedAt = System.currentTimeMillis();
     }
 
@@ -198,16 +184,12 @@ public class TeamEntity {
 
     public void setColorHex(@Nullable String colorHex) {
         this.colorHex = colorHex;
-        this.updatedAt = System.currentTimeMillis();
     }
-
-    public int getSortOrder() {
-        return sortOrder;
+    public int getQdueOffset() {
+        return qdueOffset;
     }
-
-    public void setSortOrder(int sortOrder) {
-        this.sortOrder = sortOrder;
-        this.updatedAt = System.currentTimeMillis();
+    public void setQdueOffset(int qdueOffset) {
+        this.qdueOffset = qdueOffset;
     }
 
     // ==================== BUSINESS METHODS ====================
@@ -238,7 +220,7 @@ public class TeamEntity {
      * @return true if display name differs from name
      */
     public boolean hasCustomDisplayName() {
-        return displayName != null && !displayName.equals(name);
+        return displayName != null && !displayName.equals( name );
     }
 
     /**
@@ -259,19 +241,19 @@ public class TeamEntity {
      */
     public boolean validate() {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalStateException("Team name cannot be null or empty");
+            throw new IllegalStateException( "Team name cannot be null or empty" );
         }
 
         if (name.length() > 50) { // Reasonable limit for team names
-            throw new IllegalStateException("Team name cannot exceed 50 characters");
+            throw new IllegalStateException( "Team name cannot exceed 50 characters" );
         }
 
         if (displayName != null && displayName.length() > 100) {
-            throw new IllegalStateException("Display name cannot exceed 100 characters");
+            throw new IllegalStateException( "Display name cannot exceed 100 characters" );
         }
 
         if (description != null && description.length() > 500) {
-            throw new IllegalStateException("Description cannot exceed 500 characters");
+            throw new IllegalStateException( "Description cannot exceed 500 characters" );
         }
 
         return true;
@@ -311,13 +293,13 @@ public class TeamEntity {
         }
 
         // Otherwise use business key (name)
-        return Objects.equals(name, that.name);
+        return Objects.equals( name, that.name );
     }
 
     @Override
     public int hashCode() {
         // Use ID if available, otherwise use name
-        return id != 0 ? Long.hashCode(id) : Objects.hash(name);
+        return id != 0 ? Long.hashCode( id ) : Objects.hash( name );
     }
 
     @Override
@@ -349,46 +331,54 @@ public class TeamEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", colorHex='" + colorHex + '\'' +
-                ", sortOrder=" + sortOrder +
                 '}';
     }
 
-    // ==================== FACTORY METHODS ====================
+    // ==================== DOMAIN MODEL CONVERSION ====================
 
     /**
-     * Create TeamEntity from name only.
-     *
-     * @param name Team name
-     * @return New TeamEntity instance
+     * Convert to domain Team model.
      */
     @NonNull
-    public static TeamEntity fromName(@NonNull String name) {
-        return new TeamEntity(name);
+    public Team toDomainModel() {
+        return Team.builder(
+                        String.valueOf(this.id),
+                        this.name
+                )
+                .displayName(this.displayName)
+                .description(this.description)
+                .active(this.active)
+                .colorHex(this.colorHex)
+                .qdueOffset(this.qdueOffset) // NEW FIELD
+                .build();
     }
 
     /**
-     * Create standard QuattroDue teams.
-     * Utility method for initial database setup.
-     *
-     * @return Array of standard team entities
+     * Create from domain Team model.
      */
     @NonNull
-    public static TeamEntity[] createStandardQuattroDueTeams() {
-        String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-        TeamEntity[] teams = new TeamEntity[teamNames.length];
+    public static TeamEntity fromDomainModel(@NonNull Team team) {
+        TeamEntity entity = new TeamEntity(team.getName());
 
-        for (int i = 0; i < teamNames.length; i++) {
-            teams[i] = new TeamEntity(
-                    teamNames[i],
-                    "Team " + teamNames[i],
-                    "Standard QuattroDue team " + teamNames[i],
-                    true
-            );
-            teams[i].setSortOrder(i); // Preserve alphabetical order
+        if (team.getId() != null && !team.getId().isEmpty()) {
+            try {
+                entity.id = Long.parseLong(team.getId());
+            } catch (NumberFormatException e) {
+                // Keep auto-generated ID
+                Log.e("TeamEntity"  , "Failed to parse team ID: " + team.getId(), e);
+            }
         }
 
-        return teams;
+        entity.name = team.getName();
+        entity.displayName = team.getDisplayName();
+        entity.description = team.getDescription();
+        entity.active = team.isActive();
+        entity.colorHex = team.getColorHex();
+        entity.qdueOffset = team.getQdueOffset(); // NEW FIELD
+
+        return entity;
     }
+
 
     // ==================== CONVERSION UTILITIES ====================
 
@@ -408,23 +398,23 @@ public class TeamEntity {
             if (entity1 == null || entity2 == null) {
                 return false;
             }
-            return Objects.equals(entity1.getName(), entity2.getName());
+            return Objects.equals( entity1.getName(), entity2.getName() );
         }
 
         /**
          * Find team entity by name in array.
          *
          * @param entities Array of team entities
-         * @param name Team name to find
+         * @param name     Team name to find
          * @return TeamEntity with matching name, or null if not found
          */
         @Nullable
         public static TeamEntity findByName(@NonNull TeamEntity[] entities, @NonNull String name) {
-            Objects.requireNonNull(entities, "Entities array cannot be null");
-            Objects.requireNonNull(name, "Team name cannot be null");
+            Objects.requireNonNull( entities, "Entities array cannot be null" );
+            Objects.requireNonNull( name, "Team name cannot be null" );
 
             for (TeamEntity entity : entities) {
-                if (entity != null && name.equalsIgnoreCase(entity.getName())) {
+                if (entity != null && name.equalsIgnoreCase( entity.getName() )) {
                     return entity;
                 }
             }

@@ -108,6 +108,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     private final String teamId;            // Team assignment
     private final String teamName;          // Team display name
     private final String recurrenceRuleId;  // Schedule pattern
+    private final int cycleDayPosition;     // For patterns
 
     // ==================== TIME BOUNDARIES ====================
 
@@ -162,6 +163,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         this.teamId = Objects.requireNonNull( builder.teamId, "Team ID cannot be null" );
         this.teamName = builder.teamName;
         this.recurrenceRuleId = Objects.requireNonNull( builder.recurrenceRuleId, "Recurrence rule ID cannot be null" );
+        this.cycleDayPosition = builder.cycleDayPosition;
 
         // Time boundaries
         this.startDate = Objects.requireNonNull( builder.startDate, "Start date cannot be null" );
@@ -268,6 +270,8 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     public String getRecurrenceRuleId() {
         return recurrenceRuleId;
     }
+
+    public int getCycleDayPosition() { return cycleDayPosition; }
 
     @NonNull
     public LocalDate getStartDate() {
@@ -796,6 +800,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         private String teamId;
         private String teamName;
         private String recurrenceRuleId;
+        private int cycleDayPosition;
         private LocalDate startDate;
         private LocalDate endDate;
         private Priority priority;
@@ -823,6 +828,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             this.teamId = source.teamId;
             this.teamName = source.teamName;
             this.recurrenceRuleId = source.recurrenceRuleId;
+            this.cycleDayPosition = source.cycleDayPosition;
             this.startDate = source.startDate;
             this.endDate = source.endDate;
             this.priority = source.priority;
@@ -893,6 +899,12 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         @NonNull
         public Builder recurrenceRuleId(@NonNull String recurrenceRuleId) {
             this.recurrenceRuleId = recurrenceRuleId;
+            return this;
+        }
+
+        @NonNull
+        public Builder cycleDayPosition(int cycleDayPosition) {
+            this.cycleDayPosition = cycleDayPosition;
             return this;
         }
 
@@ -1021,6 +1033,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 ", teamId='" + teamId + '\'' +
                 ", teamName='" + teamName + '\'' +
                 ", recurrenceRuleId='" + recurrenceRuleId + '\'' +
+                ", cycleDayPosition=" + cycleDayPosition +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", priority=" + priority +

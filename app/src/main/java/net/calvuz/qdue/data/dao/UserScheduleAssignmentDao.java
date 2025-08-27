@@ -63,7 +63,7 @@ public interface UserScheduleAssignmentDao {
         WHERE user_id = :userId 
         AND status = 'ACTIVE' 
         AND start_date <= :date 
-        AND (is_permanent = 1 OR end_date >= :date)
+        AND (is_permanent = 1 OR end_date >= :date) 
         AND active = 1 
         ORDER BY priority DESC 
         LIMIT 1
@@ -74,8 +74,8 @@ public interface UserScheduleAssignmentDao {
     @Query("""
         SELECT * FROM user_schedule_assignments 
         WHERE user_id = :userId 
-        AND start_date <= :endDate 
-        AND (is_permanent = 1 OR end_date >= :startDate)
+        AND start_date <= :endDate  
+        AND (is_permanent = 1 OR end_date >= :startDate) 
         AND active = 1 
         ORDER BY priority DESC, start_date
         """)
@@ -194,7 +194,7 @@ public interface UserScheduleAssignmentDao {
     SELECT * FROM user_schedule_assignments 
     WHERE status = 'ACTIVE' 
     AND start_date <= :endDate 
-    AND (is_permanent = 1 OR end_date >= :startDate)
+    AND (is_permanent = 1 OR end_date >= :startDate) 
     AND active = 1 
     ORDER BY team_id, user_id
     """)
@@ -208,8 +208,8 @@ public interface UserScheduleAssignmentDao {
     @Query("""
     SELECT DISTINCT user_id FROM user_schedule_assignments 
     WHERE status = 'ACTIVE' 
-    AND start_date <= date('now')
-    AND (is_permanent = 1 OR end_date >= date('now'))
+    AND start_date <= date('now') 
+    AND (is_permanent = 1 OR end_date >= date('now')) 
     AND active = 1 
     ORDER BY user_id
     """)
@@ -222,8 +222,8 @@ public interface UserScheduleAssignmentDao {
     @Query("""
     SELECT DISTINCT user_id FROM user_schedule_assignments 
     WHERE status = 'ACTIVE' 
-    AND start_date <= :date
-    AND (is_permanent = 1 OR end_date >= :date)
+    AND start_date <= :date 
+    AND (is_permanent = 1 OR end_date >= :date) 
     AND active = 1 
     ORDER BY user_id
     """)
@@ -236,9 +236,9 @@ public interface UserScheduleAssignmentDao {
     @Query("""
     SELECT COUNT(*) FROM user_schedule_assignments 
     WHERE user_id = :userId 
-    AND status = 'ACTIVE'
-    AND start_date <= date('now')
-    AND (is_permanent = 1 OR end_date >= date('now'))
+    AND status = 'ACTIVE'  
+    AND start_date <= date('now') 
+    AND (is_permanent = 1 OR end_date >= date('now')) 
     AND active = 1
     """)
     int getActiveAssignmentCountForUser(@NonNull Long userId);
@@ -249,9 +249,9 @@ public interface UserScheduleAssignmentDao {
     @Query("""
     SELECT COUNT(*) FROM user_schedule_assignments 
     WHERE team_id = :teamId 
-    AND status = 'ACTIVE'
-    AND start_date <= date('now')
-    AND (is_permanent = 1 OR end_date >= date('now'))
+    AND status = 'ACTIVE' 
+    AND start_date <= date('now') 
+    AND (is_permanent = 1 OR end_date >= date('now')) 
     AND active = 1
     """)
     int getActiveAssignmentCountForTeam(@NonNull String teamId);
@@ -308,11 +308,11 @@ public interface UserScheduleAssignmentDao {
     @Query("""
         SELECT 
             COUNT(*) as total_assignments,
-            SUM(CASE WHEN active = 1 THEN 1 ELSE 0 END) as active_assignments,
-            SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) as current_assignments,
-            SUM(CASE WHEN is_permanent = 1 THEN 1 ELSE 0 END) as permanent_assignments,
-            COUNT(DISTINCT user_id) as unique_users,
-            COUNT(DISTINCT team_id) as unique_teams
+            SUM(CASE WHEN active = 1 THEN 1 ELSE 0 END) as active_assignments, 
+            SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) as current_assignments, 
+            SUM(CASE WHEN is_permanent = 1 THEN 1 ELSE 0 END) as permanent_assignments, 
+            COUNT(DISTINCT user_id) as unique_users, 
+            COUNT(DISTINCT team_id) as unique_teams 
         FROM user_schedule_assignments
         """)
     @Nullable

@@ -119,7 +119,9 @@ public class Team extends LocalizableDomainModel {
     private final String name;
     private final String displayName;
     private final String description;
+    private final String colorHex;
     private final TeamType teamType;
+    private final int qdueOffset;
     private final boolean active;
 
     // ==================== CACHED VALUES ====================
@@ -154,6 +156,8 @@ public class Team extends LocalizableDomainModel {
         this.displayName = builder.displayName != null && !builder.displayName.trim().isEmpty() ?
                 builder.displayName.trim() : this.name;
         this.description = builder.description != null ? builder.description.trim() : "";
+        this.colorHex = builder.colorHex != null ? builder.colorHex.trim() : null;
+        this.qdueOffset = builder.qdueOffset;
         this.teamType = builder.teamType;
         this.active = builder.active;
 
@@ -201,6 +205,25 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Get the team color hex code.
+     *
+     * @return Team color hex code or null if not set
+     */
+    @Nullable
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    /**
+     * Get the QuattroDue pattern offset in days.
+     *
+     * @return QuattroDue pattern offset in days
+     */
+    public int getQdueOffset() {
+        return qdueOffset;
     }
 
     /**
@@ -342,16 +365,6 @@ public class Team extends LocalizableDomainModel {
     }
 
     /**
-     * Get short identifier for compact display.
-     *
-     * @return Team name (short form)
-     */
-    @NonNull
-    public String getShortName() {
-        return name;
-    }
-
-    /**
      * Get localized full name with description if available.
      *
      * @return Localized full team description
@@ -483,60 +496,6 @@ public class Team extends LocalizableDomainModel {
         return summary.toString();
     }
 
-    // ==================== FACTORY METHODS ====================
-
-    /**
-     * Create a standard QuattroDue team with localization support.
-     *
-     * @param teamLetter Team letter (A, B, C, etc.)
-     * @param localizer  Optional domain localizer for i18n
-     * @return QuattroDue team
-     */
-    @NonNull
-    public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable DomainLocalizer localizer) {
-        return builder( teamLetter )
-                .name( teamLetter )
-                .displayName( "Team " + teamLetter )
-                .teamType( TeamType.QUATTRODUE )
-                .description( "QuattroDue cycle team " + teamLetter )
-                .localizer( localizer )
-                .build();
-    }
-
-    /**
-     * Create a management team with localization support.
-     *
-     * @param teamName  Team name
-     * @param localizer Optional domain localizer for i18n
-     * @return Management team
-     */
-    @NonNull
-    public static Team createManagementTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
-        return builder( teamName )
-                .name( teamName )
-                .displayName( teamName )
-                .teamType( TeamType.MANAGEMENT )
-                .localizer( localizer )
-                .build();
-    }
-
-    /**
-     * Create an emergency team with localization support.
-     *
-     * @param teamName  Team name
-     * @param localizer Optional domain localizer for i18n
-     * @return Emergency team
-     */
-    @NonNull
-    public static Team createEmergencyTeam(@NonNull String teamName, @Nullable DomainLocalizer localizer) {
-        return builder( teamName )
-                .name( teamName )
-                .displayName( teamName )
-                .teamType( TeamType.EMERGENCY )
-                .localizer( localizer )
-                .build();
-    }
-
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
 
     /**
@@ -606,6 +565,8 @@ public class Team extends LocalizableDomainModel {
         private String name;
         private String displayName;
         private String description = "";
+        private String colorHex = "#4CAF50";
+        private int qdueOffset = 0;
         private TeamType teamType;
         private boolean active = true;
 
@@ -629,6 +590,8 @@ public class Team extends LocalizableDomainModel {
             this.name = existingTeam.name;
             this.displayName = existingTeam.displayName;
             this.description = existingTeam.description;
+            this.colorHex = existingTeam.colorHex;
+            this.qdueOffset = existingTeam.qdueOffset;
             this.teamType = existingTeam.teamType;
             this.active = existingTeam.active;
         }
@@ -641,6 +604,8 @@ public class Team extends LocalizableDomainModel {
             this.name = source.name;
             this.displayName = source.displayName;
             this.description = source.description;
+            this.colorHex = source.colorHex;
+            this.qdueOffset = source.qdueOffset;
             this.teamType = source.teamType;
             this.active = source.active;
 
@@ -683,6 +648,34 @@ public class Team extends LocalizableDomainModel {
         @NonNull
         public Builder description(@Nullable String description) {
             this.description = description != null ? description : "";
+            return this;
+        }
+
+        /**
+         * Set team color hex code.
+         *
+         * @param colorHex Team color hex code
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder colorHex(@Nullable String colorHex) {
+            // HARDCODED DEFAULT COLOR GREEN if null
+            if (colorHex != null) {
+                this.colorHex = colorHex;
+            }
+            return this;
+        }
+
+        /**
+         * Set QuattroDue pattern offset in days.
+         * Determines this team's position in the 18-day QuattroDue cycle.
+         * Range: 0-17 (0 = base pattern, others are phase shifts)
+         * @param qdueOffset QuattroDue pattern offset in days
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder qdueOffset(int qdueOffset) {
+            this.qdueOffset = qdueOffset;
             return this;
         }
 
@@ -740,6 +733,63 @@ public class Team extends LocalizableDomainModel {
         }
     }
 
+    // ==================== FACTORY METHODS ====================
+
+    /**
+     * Create a standard QuattroDue team with localization support.
+     *
+     * @param teamLetter Team letter (A, B, C, etc.)
+     * @param localizer  Optional domain localizer for i18n
+     * @return QuattroDue team
+     */
+    @NonNull
+    public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable String colorHex, int qdueOffset, @Nullable DomainLocalizer localizer) {
+        return builder( teamLetter )
+                .displayName( "Team " + teamLetter )
+                .teamType( TeamType.QUATTRODUE )
+                .description( "QuattroDue cycle team " + teamLetter )
+                .colorHex( colorHex )
+                .qdueOffset( qdueOffset )
+                .localizer( localizer )
+                .build();
+    }
+
+    /**
+     * Create a management team with localization support.
+     *
+     * @param teamName  Team name
+     * @param localizer Optional domain localizer for i18n
+     * @return Management team
+     */
+    @NonNull
+    public static Team createManagementTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+        return builder( teamName )
+                .name( teamName )
+                .displayName( teamName )
+                .colorHex( colorHex )
+                .teamType( TeamType.MANAGEMENT )
+                .localizer( localizer )
+                .build();
+    }
+
+    /**
+     * Create an emergency team with localization support.
+     *
+     * @param teamName  Team name
+     * @param localizer Optional domain localizer for i18n
+     * @return Emergency team
+     */
+    @NonNull
+    public static Team createEmergencyTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+        return builder( teamName )
+                .name( teamName )
+                .displayName( teamName )
+                .colorHex( colorHex )
+                .teamType( TeamType.EMERGENCY )
+                .localizer( localizer )
+                .build();
+    }
+
     // ==================== FACTORY METHODS (Legacy Support) ====================
 
     /**
@@ -755,72 +805,6 @@ public class Team extends LocalizableDomainModel {
         return builder( cleanName ).name( cleanName ).build();
     }
 
-    /**
-     * Create a team from ID and name.
-     *
-     * @param id   Team ID
-     * @param name Team name
-     * @return Team instance
-     */
-    @NonNull
-    public static Team fromIdAndName(@NonNull String id, @NonNull String name) {
-        return builder( id, name ).build();
-    }
-
-    /**
-     * Create teams from an array of names.
-     * Convenient for creating multiple teams at once.
-     *
-     * @param names Array of team names
-     * @return Array of Team instances
-     */
-    @NonNull
-    public static Team[] fromNames(@NonNull String... names) {
-        Objects.requireNonNull( names, "Team names array cannot be null" );
-
-        Team[] teams = new Team[names.length];
-        for (int i = 0; i < names.length; i++) {
-            teams[i] = fromName( names[i] );
-        }
-        return teams;
-    }
-
-    // ==================== STANDARD TEAMS FACTORY ====================
-
-    /**
-     * Utility class for creating standard QuattroDue teams.
-     */
-    public static class Standard {
-
-        /**
-         * Create standard QuattroDue teams (A, B, C, D, E, F, G, H, I) with localization.
-         *
-         * @param localizer Optional domain localizer for i18n
-         * @return Array of standard teams
-         */
-        @NonNull
-        public static Team[] createQuattroDueTeams(@Nullable DomainLocalizer localizer) {
-            String[] teamLetters = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
-            Team[] teams = new Team[teamLetters.length];
-
-            for (int i = 0; i < teamLetters.length; i++) {
-                teams[i] = createQuattroDueTeam( teamLetters[i], localizer );
-            }
-
-            return teams;
-        }
-
-        /**
-         * Create standard QuattroDue teams without localization (legacy).
-         *
-         * @return Array of standard teams
-         */
-        @NonNull
-        public static Team[] createQuattroDueTeams() {
-            return createQuattroDueTeams( null );
-        }
-
-    }
 
     // ==================== OBJECT METHODS ====================
 
@@ -866,102 +850,5 @@ public class Team extends LocalizableDomainModel {
                 ", active=" + active +
                 ", hasLocalizationSupport=" + hasLocalizationSupport() +
                 '}';
-    }
-
-    // ==================== CONVERSION UTILITIES ====================
-
-    /**
-     * Utility methods for team conversion and manipulation.
-     */
-    public static class Utils {
-
-        /**
-         * Convert team names to Team objects with localization support.
-         *
-         * @param teamNames Array of team names
-         * @param localizer Optional domain localizer for i18n
-         * @return Array of Team objects
-         */
-        @NonNull
-        public static Team[] fromNameArray(@NonNull String[] teamNames, @Nullable DomainLocalizer localizer) {
-            Objects.requireNonNull( teamNames, "Team names array cannot be null" );
-
-            Team[] teams = new Team[teamNames.length];
-            for (int i = 0; i < teamNames.length; i++) {
-                teams[i] = builder( teamNames[i] )
-                        .name( teamNames[i] )
-                        .localizer( localizer )
-                        .build();
-            }
-            return teams;
-        }
-
-        /**
-         * Convert team names to Team objects (legacy method).
-         *
-         * @param teamNames Array of team names
-         * @return Array of Team objects
-         */
-        @NonNull
-        public static Team[] fromNameArray(@NonNull String[] teamNames) {
-            return fromNameArray( teamNames, null );
-        }
-
-        /**
-         * Extract team names from Team objects.
-         *
-         * @param teams Array of Team objects
-         * @return Array of team names
-         */
-        @NonNull
-        public static String[] toNameArray(@NonNull Team[] teams) {
-            Objects.requireNonNull( teams, "Teams array cannot be null" );
-
-            String[] names = new String[teams.length];
-            for (int i = 0; i < teams.length; i++) {
-                names[i] = teams[i] != null ? teams[i].getName() : "";
-            }
-            return names;
-        }
-
-        /**
-         * Find team by ID in array.
-         *
-         * @param teams Array of teams to search
-         * @param id    Team ID to find
-         * @return Team with matching ID, or null if not found
-         */
-        @Nullable
-        public static Team findById(@NonNull Team[] teams, @NonNull String id) {
-            Objects.requireNonNull( teams, "Teams array cannot be null" );
-            Objects.requireNonNull( id, "Team ID cannot be null" );
-
-            for (Team team : teams) {
-                if (team != null && team.hasId( id )) {
-                    return team;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Find team by name in array.
-         *
-         * @param teams Array of teams to search
-         * @param name  Team name to find
-         * @return Team with matching name, or null if not found
-         */
-        @Nullable
-        public static Team findByName(@NonNull Team[] teams, @NonNull String name) {
-            Objects.requireNonNull( teams, "Teams array cannot be null" );
-            Objects.requireNonNull( name, "Team name cannot be null" );
-
-            for (Team team : teams) {
-                if (team != null && team.hasName( name )) {
-                    return team;
-                }
-            }
-            return null;
-        }
     }
 }

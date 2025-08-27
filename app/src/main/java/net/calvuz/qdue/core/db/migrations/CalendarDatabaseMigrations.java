@@ -45,6 +45,46 @@ public class CalendarDatabaseMigrations {
 
     private static final String TAG = "CalendarDatabaseMigrations";
 
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            Log.i(TAG, "🔄 Migrating database from version 3 to 4 - Adding QuattroDue offset support");
+
+            try {
+                // 1. Add qdue_offset column to teams table - Drop sort_order
+                database.execSQL("ALTER TABLE teams ADD COLUMN qdue_offset INTEGER DEFAULT 0");
+                database.execSQL("ALTER TABLE teams DROP COLUMN sort_order");
+
+                // 2. Add cycle_day_position column to user_schedule_assignments
+                database.execSQL("ALTER TABLE user_schedule_assignments ADD COLUMN cycle_day_position INTEGER DEFAULT 1");
+                database.execSQL("UPDATE user_schedule_assignments SET cycle_day_position = 1");
+
+                // 3. Update teams with QuattroDue offset values
+                // Based on document: TEAM_OFFSETS = {0, 16, 4, 6, 10, 12, 14, 2, 8} for teams A-I
+                String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
+                int[] teamOffsets = {0, 16, 4, 6, 10, 12, 14, 2, 8};
+
+                for (int i = 0; i < teamNames.length && i < teamOffsets.length; i++) {
+                    database.execSQL("UPDATE teams SET qdue_offset = ? WHERE name = ?",
+                            new Object[]{teamOffsets[i], teamNames[i]});
+                    Log.d(TAG, "✅ Updated team " + teamNames[i] + " with offset " + teamOffsets[i]);
+                }
+
+                // 4. Create index for qdue_offset queries
+                database.execSQL("CREATE INDEX IF NOT EXISTS idx_teams_qdue_offset ON teams(qdue_offset)");
+
+                // 5. Create index for cycle_day_position queries
+                database.execSQL("CREATE INDEX IF NOT EXISTS idx_assignment_cycle_position ON user_schedule_assignments(cycle_day_position)");
+
+                Log.i(TAG, "✅ Migration 3->4 completed: QuattroDue offset support added");
+
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Failed to migrate database from version 3 to 4", e);
+                throw new RuntimeException("Database migration failed", e);
+            }
+        }
+    };
+
     public static final Migration MIGRATION_2_3 = new Migration(2,3) {
         @Override
         public void migrate(@NonNull androidx.sqlite.db.SupportSQLiteDatabase database) {
