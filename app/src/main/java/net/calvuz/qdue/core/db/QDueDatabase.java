@@ -24,6 +24,8 @@ import net.calvuz.qdue.user.data.entities.User;
 import net.calvuz.qdue.core.db.converters.QDueTypeConverters;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
+
 /**
  * QDueDatabase - Unified main database for Q-DUE application.
  * <p>
@@ -40,7 +42,7 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * - Cross-entity transactions and joins
  * - Unified backup and migration system
  */
-@Database(
+@Database (
         entities = {
                 // Events and Calendar
                 LocalEvent.class,
@@ -50,15 +52,18 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
                 User.class,
                 Establishment.class,
                 MacroDepartment.class,
-                SubDepartment.class
+                SubDepartment.class,
+
         },
-        version = 4,
+        version = QDueDatabase.DATABASE_VERSION,
         exportSchema = false
 )
-@TypeConverters({
+@TypeConverters ({
         QDueTypeConverters.class
 })
 public abstract class QDueDatabase extends RoomDatabase {
+
+    public  static final int DATABASE_VERSION = 4;
 
     private static final String TAG = "QDueDatabase";
     private static final String DATABASE_NAME = "qd_database";
@@ -76,6 +81,7 @@ public abstract class QDueDatabase extends RoomDatabase {
     public abstract MacroDepartmentDao macroDepartmentDao();
     public abstract SubDepartmentDao subDepartmentDao();
 
+
     // ==================== SINGLETON INSTANCE ====================
 
     /**
@@ -92,7 +98,7 @@ public abstract class QDueDatabase extends RoomDatabase {
                                     DATABASE_NAME
                             )
                             .fallbackToDestructiveMigration()
-                            .addCallback(DATABASE_CALLBACK)
+                            .addCallback( DATABASE_CALLBACK )
                             .build();
                 }
             }
@@ -108,34 +114,37 @@ public abstract class QDueDatabase extends RoomDatabase {
      */
     private static final RoomDatabase.Callback DATABASE_CALLBACK = new RoomDatabase.Callback() {
         @Override
-        public void onCreate(SupportSQLiteDatabase db) {
-            super.onCreate(db);
-            Log.i(TAG, "QDueDatabase created successfully");
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate( db );
+            Log.i( TAG, MessageFormat.format( "QDueDatabase created successfully (Version {0})",
+                    DATABASE_VERSION));
 
             // Enable foreign keys
-            db.execSQL("PRAGMA foreign_keys = ON");
+            db.execSQL( "PRAGMA foreign_keys = ON" );
 
-//            // Optimize for read-heavy workload (virtual scrolling)
+            // Optimize for read-heavy workload (virtual scrolling)
 //            db.execSQL("PRAGMA journal_mode = WAL");
 //            db.execSQL("PRAGMA synchronous = NORMAL");
 //            db.execSQL("PRAGMA cache_size = 10000");
 
             // Additional performance indexes
-            createPerformanceIndexes(db);
+            createPerformanceIndexes( db );
 
             // Initialize default data if needed
-            initializeDefaultData(db);
+            initializeDefaultData( db );
         }
 
         @Override
-        public void onOpen(SupportSQLiteDatabase db) {
-            super.onOpen(db);
+        public void onOpen(@NonNull SupportSQLiteDatabase db) {
+            super.onOpen( db );
+
+            Log.d(TAG, "QDueDatabase opened (version " + db.getVersion() + ")");
 
             // Ensure foreign keys are enabled
-            db.execSQL("PRAGMA foreign_keys = ON");
+            db.execSQL( "PRAGMA foreign_keys = ON" );
 
             // Analyze tables for query optimization
-            db.execSQL("ANALYZE");
+            db.execSQL( "ANALYZE" );
         }
 
         /**
@@ -144,25 +153,24 @@ public abstract class QDueDatabase extends RoomDatabase {
         private void createPerformanceIndexes(SupportSQLiteDatabase db) {
             try {
                 // Cross-entity indexes for user-exception queries
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_turn_exceptions_user_date_active " +
-                        "ON turn_exceptions(user_id, date, status) WHERE status = 'ACTIVE'");
+                db.execSQL( "CREATE INDEX IF NOT EXISTS idx_turn_exceptions_user_date_active " +
+                        "ON turn_exceptions(user_id, date, status) WHERE status = 'ACTIVE'" );
 
                 // Virtual scrolling month queries
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_turn_exceptions_month_range " +
-                        "ON turn_exceptions(user_id, date) WHERE status = 'ACTIVE'");
+                db.execSQL( "CREATE INDEX IF NOT EXISTS idx_turn_exceptions_month_range " +
+                        "ON turn_exceptions(user_id, date) WHERE status = 'ACTIVE'" );
 
                 // User-events correlation
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_events_date_user " +
-                        "ON events(start_time, end_time) WHERE package_id IS NULL");
+                db.execSQL( "CREATE INDEX IF NOT EXISTS idx_events_date_user " +
+                        "ON events(start_time, end_time) WHERE package_id IS NULL" );
 
                 // Organizational hierarchy queries
-                db.execSQL("CREATE INDEX IF NOT EXISTS idx_users_organization " +
-                        "ON users(establishment_id, macro_department_id, sub_department_id, is_active)");
+                db.execSQL( "CREATE INDEX IF NOT EXISTS idx_users_organization " +
+                        "ON users(establishment_id, macro_department_id, sub_department_id, is_active)" );
 
-                Log.d(TAG, "Performance indexes created successfully");
-
+                Log.d( TAG, "Performance indexes created successfully" );
             } catch (Exception e) {
-                Log.e(TAG, "Error creating performance indexes: " + e.getMessage());
+                Log.e( TAG, "Error creating performance indexes: " + e.getMessage() );
             }
         }
 
@@ -172,17 +180,15 @@ public abstract class QDueDatabase extends RoomDatabase {
         private void initializeDefaultData(SupportSQLiteDatabase db) {
             try {
                 // Create default establishment if none exists
-                db.execSQL("INSERT OR IGNORE INTO establishments (id, name, code, created_at, updated_at) " +
-                        "VALUES (1, 'Default Organization', 'DEFAULT', date('now'), date('now'))");
+                db.execSQL( "INSERT OR IGNORE INTO establishments (id, name, code, created_at, updated_at) " +
+                        "VALUES (1, 'Default Organization', 'DEFAULT', date('now'), date('now'))" );
 
-                Log.d(TAG, "Default data initialized");
-
+                Log.d( TAG, "Default data initialized" );
             } catch (Exception e) {
-                Log.e(TAG, "Error initializing default data: " + e.getMessage());
+                Log.e( TAG, "Error initializing default data: " + e.getMessage() );
             }
         }
     };
-
 
     // ==================== UTILITY METHODS ====================
 
@@ -190,33 +196,33 @@ public abstract class QDueDatabase extends RoomDatabase {
      * Clear all data from database (for testing/reset purposes).
      */
     public void clearAllData() {
-        runInTransaction(() -> {
+        runInTransaction( () -> {
             // Clear in correct order due to FK constraints
-            turnExceptionDao().deleteAllExceptionsForUser(0); // This deletes all
+            turnExceptionDao().deleteAllExceptionsForUser( 1L ); // This deletes all
             eventDao().deleteAllEvents();
             userDao().deleteAllUsers();
             subDepartmentDao().deleteAllSubDepartments();
             macroDepartmentDao().deleteAllMacroDepartments();
             establishmentDao().deleteAllEstablishments();
 
-            Log.i(TAG, "All database data cleared");
-        });
+            Log.i( TAG, "All database data cleared" );
+        } );
     }
 
     /**
      * Get comprehensive database statistics
      */
     public DatabaseStatistics getDatabaseStatistics() {
-        return runInTransaction(() -> {
+        return runInTransaction( () -> {
             DatabaseStatistics stats = new DatabaseStatistics();
 
             // Event statistics
             stats.totalEvents = eventDao().getTotalEventCount();
-            stats.upcomingEvents = eventDao().getUpcomingEventsCount(java.time.LocalDateTime.now());
+            stats.upcomingEvents = eventDao().getUpcomingEventsCount( java.time.LocalDateTime.now() );
 
             // Exception statistics
             TurnExceptionDao.ExceptionStatistics exceptionStats =
-                    turnExceptionDao().getExceptionStatistics(java.time.LocalDate.now());
+                    turnExceptionDao().getExceptionStatistics( java.time.LocalDate.now() );
             stats.totalExceptions = exceptionStats.total;
             stats.activeExceptions = exceptionStats.active;
             stats.futureExceptions = exceptionStats.future;
@@ -232,26 +238,26 @@ public abstract class QDueDatabase extends RoomDatabase {
             stats.databaseSizeKB = getDatabaseSizeKB();
 
             return stats;
-        });
+        } );
     }
 
     /**
      * Cleanup old data and maintain database health
      */
     public int performMaintenance() {
-        return runInTransaction(() -> {
+        return runInTransaction( () -> {
             int itemsCleanedUp = 0;
 
             try {
                 // Clean up old cancelled exceptions (older than 30 days)
-                java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusDays(30);
+                java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusDays( 30 );
                 java.util.List<TurnException> expiredExceptions =
-                        turnExceptionDao().getExpiredCancelledExceptions(cutoff);
+                        turnExceptionDao().getExpiredCancelledExceptions( cutoff );
 
                 if (!expiredExceptions.isEmpty()) {
-                    turnExceptionDao().deleteExceptions(expiredExceptions);
+                    turnExceptionDao().deleteExceptions( expiredExceptions );
                     itemsCleanedUp += expiredExceptions.size();
-                    Log.i(TAG, "Cleaned up " + expiredExceptions.size() + " old exceptions");
+                    Log.i( TAG, "Cleaned up " + expiredExceptions.size() + " old exceptions" );
                 }
 
                 // Clean up orphaned data
@@ -259,18 +265,17 @@ public abstract class QDueDatabase extends RoomDatabase {
                         turnExceptionDao().getOrphanedExceptions();
 
                 if (!orphanedExceptions.isEmpty()) {
-                    turnExceptionDao().deleteExceptions(orphanedExceptions);
+                    turnExceptionDao().deleteExceptions( orphanedExceptions );
                     itemsCleanedUp += orphanedExceptions.size();
-                    Log.i(TAG, "Cleaned up " + orphanedExceptions.size() + " orphaned exceptions");
+                    Log.i( TAG, "Cleaned up " + orphanedExceptions.size() + " orphaned exceptions" );
                 }
 
                 return itemsCleanedUp;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error during database maintenance: " + e.getMessage());
+                Log.e( TAG, "Error during database maintenance: " + e.getMessage() );
                 return 0;
             }
-        });
+        } );
     }
 
     /**
@@ -285,24 +290,23 @@ public abstract class QDueDatabase extends RoomDatabase {
      */
     private long getDatabaseSizeKB() {
         try {
-            android.database.Cursor cursor = query("PRAGMA page_count", null);
+            android.database.Cursor cursor = query( "PRAGMA page_count", null );
             long pageCount = 0;
             if (cursor.moveToFirst()) {
-                pageCount = cursor.getLong(0);
+                pageCount = cursor.getLong( 0 );
             }
             cursor.close();
 
-            cursor = query("PRAGMA page_size", null);
+            cursor = query( "PRAGMA page_size", null );
             long pageSize = 0;
             if (cursor.moveToFirst()) {
-                pageSize = cursor.getLong(0);
+                pageSize = cursor.getLong( 0 );
             }
             cursor.close();
 
             return (pageCount * pageSize) / 1024; // Convert to KB
-
         } catch (Exception e) {
-            Log.e(TAG, "Error calculating database size: " + e.getMessage());
+            Log.e( TAG, "Error calculating database size: " + e.getMessage() );
             return 0;
         }
     }

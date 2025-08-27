@@ -45,6 +45,38 @@ public class CalendarDatabaseMigrations {
 
     private static final String TAG = "CalendarDatabaseMigrations";
 
+    public static final Migration MIGRATION_2_3 = new Migration(2,3) {
+        @Override
+        public void migrate(@NonNull androidx.sqlite.db.SupportSQLiteDatabase database) {
+            Log.i(TAG, "🔄 Migrating database from version 2 to 3 - Adding QDueUser table");
+
+            try {
+                // Create QDueUser table with auto-increment ID starting from 1
+                database.execSQL(
+                        "CREATE TABLE IF NOT EXISTS `qdueuser` (" +
+                                "`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                "`nickname` TEXT NOT NULL DEFAULT '', " +
+                                "`email` TEXT NOT NULL DEFAULT ''" +
+                                ")"
+                );
+
+                // Create index on email for efficient lookups
+                database.execSQL(
+                        "CREATE INDEX IF NOT EXISTS `index_qdueuser_email` ON `qdueuser` (`email`)"
+                );
+
+                // Reset auto-increment counter to start from 1
+                database.execSQL("DELETE FROM sqlite_sequence WHERE name='qdueuser'");
+
+                Log.i(TAG, "✅ Migration 2→3 completed successfully - QDueUser table created");
+
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Migration 2→3 failed", e);
+                throw new RuntimeException("Failed to migrate database to version 5", e);
+            }
+        }
+    };
+
     // ==================== MIGRATION 1 → 2 ====================
 
     /**
@@ -54,7 +86,7 @@ public class CalendarDatabaseMigrations {
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            Log.w(TAG, "Starting CalendarDatabase migration from version 1 to 2");
+            Log.w(TAG, "🔄 Starting CalendarDatabase migration from version 1 to 2");
 
             try {
                 // Create new tables
@@ -514,37 +546,6 @@ public class CalendarDatabaseMigrations {
             return false;
         }
     }
-
-    // ==================== ROLLBACK METHODS ====================
-
-    /**
-     * Rollback migration from version 2 to version 1.
-     * Removes all new tables while preserving existing data.
-     */
-    public static final Migration MIGRATION_2_1 = new Migration(2, 1) {
-        @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
-            Log.w(TAG, "Starting CalendarDatabase rollback from version 2 to 1");
-
-            try {
-                // Drop new tables (preserving shifts and teams)
-                database.execSQL("DROP TABLE IF EXISTS user_schedule_assignments");
-                database.execSQL("DROP TABLE IF EXISTS shift_exceptions");
-                database.execSQL("DROP TABLE IF EXISTS recurrence_rules");
-
-                // Drop indexes
-                database.execSQL("DROP INDEX IF EXISTS idx_recurrence_frequency_active_start");
-                database.execSQL("DROP INDEX IF EXISTS idx_exception_user_date_priority");
-                database.execSQL("DROP INDEX IF EXISTS idx_assignment_user_date_priority");
-
-                Log.w(TAG, "✅ CalendarDatabase rollback 2→1 completed successfully");
-
-            } catch (Exception e) {
-                Log.e(TAG, "❌ Rollback 2→1 failed", e);
-                throw e;
-            }
-        }
-    };
 
     // ==================== UTILITY METHODS ====================
 

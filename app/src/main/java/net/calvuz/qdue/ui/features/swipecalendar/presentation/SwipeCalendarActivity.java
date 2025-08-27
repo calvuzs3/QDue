@@ -14,8 +14,10 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
+import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 
 import java.time.LocalDate;
 
@@ -148,6 +150,11 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "SwipeCalendarActivity onCreate() - Debug mode started");
+// Check if user needs to see welcome before setting up main activity
+        if (shouldRedirectToWelcome()) {
+            redirectToWelcome();
+            return;
+        }
 
         super.onCreate(savedInstanceState);
 
@@ -244,6 +251,30 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
             throw new IllegalStateException("ServiceProvider not initialized - call initializeDependencyInjection() first");
         }
         return mServiceProvider;
+    }
+
+    // ==================== MAIN ACTIVITY LOGIC ====================
+
+    /**
+     * Check if user should be redirected to WelcomeActivity
+     *
+     * @return true if welcome should be shown
+     */
+    private boolean shouldRedirectToWelcome() {
+        boolean shouldShow = QDuePreferences.shouldShowWelcome( this );
+        Log.d( TAG, "Should redirect to welcome: " + shouldShow );
+        return shouldShow;
+    }
+
+    /**
+     * Redirect user to WelcomeActivity for initial setup
+     */
+    private void redirectToWelcome() {
+        Log.d( TAG, "Redirecting to WelcomeActivity" );
+
+        Intent welcomeIntent = new Intent( this, WelcomeActivity.class );
+        startActivity( welcomeIntent );
+        finish(); // Close main activity
     }
 
     // ==================== LOCALE INTEGRATION ====================

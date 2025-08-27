@@ -191,6 +191,11 @@ public class QDue extends Application {
 
         // Constants for configuration
         public static final String QD_PREF_NAME = "qdue_prefs";
+
+        public static final String QD_KEY_QDUEUSER_NICKNAME = getContext().getString( R.string.qd_preference_qdueuser_nickname );
+        public static final String QD_KEY_QDUEUSER_EMAIL = getContext().getString( R.string.qd_preference_qdueuser_email );
+        public static final String QD_KEY_QDUEUSER_ONBOARDING_COMPLETED = getContext().getString( R.string.qd_preference_qdueuser_onboarding_completed );
+
         public static final String QD_KEY_USER_ID = getContext().getString( R.string.qd_preference_user_id );
         public static final String QD_KEY_WELCOME_COMPLETED = getContext().getString( R.string.qd_preference_welcome_completed );
         public static final String QD_KEY_SELECTED_TEAM = getContext().getString( R.string.qd_preference_selected_team );

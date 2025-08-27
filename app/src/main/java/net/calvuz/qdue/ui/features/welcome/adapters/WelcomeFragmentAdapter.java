@@ -8,6 +8,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import net.calvuz.qdue.ui.features.welcome.presentation.IntroductionFragment;
 import net.calvuz.qdue.ui.features.welcome.presentation.PersonalizationFragment;
+import net.calvuz.qdue.ui.features.welcome.presentation.QDueUserOnboardingFragment;
 import net.calvuz.qdue.ui.features.welcome.presentation.TeamSelectionFragment;
 import net.calvuz.qdue.ui.features.welcome.presentation.ViewModeFragment;
 
@@ -49,19 +50,19 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
         // Step 0: Introduction and App Overview
         fragmentList.add(new IntroductionFragment());
 
-        // Step 1: Features Overview (moved in into section)
-//        fragmentList.add(new FeaturesOverviewFragment());
+        // Step 1: feature QDueUser
+        fragmentList.add(new QDueUserOnboardingFragment() );
 
-        // Step 2: Team Selection (9 teams available)
-        fragmentList.add(new TeamSelectionFragment());
+//        // Step 2: Team Selection (9 teams available)
+//        fragmentList.add(new TeamSelectionFragment());
 
-        // Step 3: View Mode Selection
+        // Step 2: View Mode Selection
         fragmentList.add(new ViewModeFragment());
 
-        // Step 4: Personalization (colors, etc.)
+        // Step 3: Personalization (colors, etc.)
         fragmentList.add(new PersonalizationFragment());
 
-        // Last Step: Complete
+        // Step 4: Complete
         // change "continue" button with "get started" text
 
         return fragmentList;

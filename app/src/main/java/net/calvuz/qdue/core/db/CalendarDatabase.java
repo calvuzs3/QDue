@@ -25,8 +25,11 @@ import net.calvuz.qdue.core.db.converters.CalendarTypeConverters;
 import net.calvuz.qdue.core.db.converters.QDueTypeConverters;
 import net.calvuz.qdue.core.db.migrations.CalendarDatabaseMigrations;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
+import net.calvuz.qdue.data.qdueuser.dao.QDueUserDao;
+import net.calvuz.qdue.data.qdueuser.entities.QDueUserEntity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.text.MessageFormat;
 import java.util.Objects;
 
 /**
@@ -123,16 +126,22 @@ import java.util.Objects;
                 // Enhanced entities (Version 2)
                 RecurrenceRuleEntity.class,
                 ShiftExceptionEntity.class,
-                UserScheduleAssignmentEntity.class
+                UserScheduleAssignmentEntity.class,
+
+                // Simplified User Management
+                QDueUserEntity.class
         },
-        version = 2,
+        version = CalendarDatabase.DATABASE_VERSION, // INCREMENTED for QDueUser addition
         exportSchema = true
 )
 @TypeConverters ({
         QDueTypeConverters.class,          // Legacy converters
         CalendarTypeConverters.class       // New enhanced converters
 })
+
 public abstract class CalendarDatabase extends RoomDatabase {
+
+    public final static int DATABASE_VERSION = 3;
 
     private static final String TAG = "CalendarDatabase";
     private static final String DATABASE_NAME = "calendar_database";
@@ -152,6 +161,10 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
     public abstract UserScheduleAssignmentDao userScheduleAssignmentDao();
 
+
+    // QDueUser DAO
+    public abstract QDueUserDao qDueUserDao();
+
     // ==================== SINGLETON INSTANCE ====================
 
     /**
@@ -170,12 +183,11 @@ public abstract class CalendarDatabase extends RoomDatabase {
                                     CalendarDatabase.class,
                                     DATABASE_NAME
                             )
-                            // Migration strategy: safe upgrade path from v1 to v2
+                            // Migration strategy
                             .addMigrations(
                                     CalendarDatabaseMigrations.MIGRATION_1_2,
-                                    CalendarDatabaseMigrations.MIGRATION_2_1  // Rollback support
+                                    CalendarDatabaseMigrations.MIGRATION_2_3
                             )
-                            .fallbackToDestructiveMigration() // Last resort for development
                             .addCallback( new EnhancedDatabaseCallback( context.getApplicationContext() ) )
                             .build();
                 }
@@ -200,7 +212,18 @@ public abstract class CalendarDatabase extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate( db );
-            Log.i( TAG, "CalendarDatabase v2 created successfully" );
+            Log.i( TAG, MessageFormat.format( "CalendarDatabase created successfully (Version {0})",
+                    DATABASE_VERSION));
+
+            // Initialize QDueUser table with optimal settings
+            try {
+                // Ensure auto-increment starts from 1 for QDueUser
+                db.execSQL("DELETE FROM sqlite_sequence WHERE name='qdueuser'");
+                Log.d(TAG, "QDueUser auto-increment initialized to start from 1");
+
+            } catch (Exception e) {
+                Log.w(TAG, "⚠️ Could not initialize QDueUser auto-increment", e);
+            }
 
             // Enable foreign keys for relationship support
             db.execSQL( "PRAGMA foreign_keys = ON" );

@@ -1,5 +1,9 @@
 package net.calvuz.qdue.ui.features.welcome.presentation;
 
+import static net.calvuz.qdue.QDue.Settings.QD_KEY_QDUEUSER_EMAIL;
+import static net.calvuz.qdue.QDue.Settings.QD_KEY_QDUEUSER_NICKNAME;
+import static net.calvuz.qdue.QDue.Settings.QD_KEY_QDUEUSER_ONBOARDING_COMPLETED;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -14,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.button.MaterialButton;
@@ -25,7 +30,11 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
 
+import net.calvuz.qdue.core.di.Injectable;
+import net.calvuz.qdue.core.di.ServiceProvider;
+import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.preferences.QDuePreferences;
+import net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarActivity;
 import net.calvuz.qdue.ui.features.welcome.interfaces.WelcomeInterface;
 import net.calvuz.qdue.ui.features.welcome.adapters.WelcomeFragmentAdapter;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -42,9 +51,13 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * - Dynamic colors configuration
  * - Smooth transitions between steps
  */
-public class WelcomeActivity extends AppCompatActivity implements WelcomeInterface {
+public class WelcomeActivity extends AppCompatActivity implements WelcomeInterface, Injectable {
     // TAG
     private final static String TAG = "WelcomeActivity";
+
+    // Dependencies
+    private ServiceProvider mServiceProvider;
+    private boolean mDependenciesReady = false;
 
     // View components
     private ViewPager2 viewPager;
@@ -61,11 +74,19 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
 
     // Current step tracking
     private int currentStep = 0;
-    private final int totalSteps = 5; // Welcome, Team, View, Features, Colors, Complete
+    private final int totalSteps = 5; // Welcome, QDueUser, View, Features, Colors, Complete
+
+    // Email validation pattern
+    private static final java.util.regex.Pattern EMAIL_PATTERN = java.util.regex.Pattern.compile(
+            "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize dependency injection FIRST
+        initializeDependencyInjection();
 
         // Initialize preferences
         preferences = getSharedPreferences(QDue.Settings.QD_PREF_NAME, MODE_PRIVATE);
@@ -84,10 +105,15 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
 
         // Start with logo animation
         startLogoAnimation();
+    }
 
-        // DEBUG
-        if (QDue.Debug.DEBUG_ACTIVITY) {
-            debugPreferencesIntegration();
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Ensure current fragment has dependencies if needed
+        if (mDependenciesReady) {
+            injectDependenciesForCurrentStep();
         }
     }
 
@@ -96,15 +122,71 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
         // Log final preferences state if welcome was completed
         if (preferences.getBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, false)) {
             Log.d(TAG, "onDestroy: Welcome completed successfully");
-            if (QDue.Debug.DEBUG_ACTIVITY) {
-                QDuePreferences.logAllPreferences(this);
-            }
         } else {
             Log.d(TAG, "onDestroy: Welcome activity destroyed without completion");
         }
 
+        // Clean up references
+        mServiceProvider = null;
+        mDependenciesReady = false;
+
         super.onDestroy();
     }
+
+    // ==================== ADD DEPENDENCY INJECTION METHODS ====================
+
+    /**
+     * Initialize dependency injection for WelcomeActivity
+     */
+    private void initializeDependencyInjection() {
+        Log.d(TAG, "Initializing dependency injection for WelcomeActivity");
+
+        try {
+            // Get ServiceProvider instance
+            mServiceProvider = ServiceProviderImpl.getInstance(getApplicationContext());
+
+            // Initialize services if needed
+            if (!mServiceProvider.areServicesReady()) {
+                mServiceProvider.initializeServices();
+                Log.d(TAG, "Services initialized successfully");
+            }
+
+            mDependenciesReady = true;
+            Log.d(TAG, "✅ Dependency injection completed successfully");
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Failed to initialize dependency injection", e);
+            mDependenciesReady = false;
+
+            // Continue without QDueUserService (graceful degradation)
+            Log.w(TAG, "⚠️ Continuing without QDueUserService - some features may be unavailable");
+        }
+    }
+
+    /**
+     * Injectable interface implementation
+     */
+    @Override
+    public void inject(ServiceProvider serviceProvider) {
+        Log.d(TAG, "Injectable.inject() called");
+        this.mServiceProvider = serviceProvider;
+        this.mDependenciesReady = (serviceProvider != null);
+    }
+
+    /**
+     * Injectable interface implementation
+     */
+    @Override
+    public boolean areDependenciesReady() {
+        boolean ready = mServiceProvider != null &&
+                mServiceProvider.areServicesReady() &&
+                mDependenciesReady;
+
+        Log.d(TAG, "Dependencies ready check: " + ready);
+        return ready;
+    }
+
+    // ==================== VIEW INITIALIZATION METHODS ====================
 
     /**
      * Initialize all view components and setup listeners
@@ -128,10 +210,14 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
                     tab.setIcon(R.drawable.ic_rounded_home_24);
                     //tab.setContentDescription(getString(R.string.welcome_step_intro));
                     break;
-                case 1: // Team Selection
-                    tab.setIcon(R.drawable.ic_rounded_group_24);
+                case 1: // QDueUser Preferences
+                    tab.setIcon(R.drawable.ic_rounded_person_24);
                     //tab.setContentDescription(getString(R.string.welcome_step_team));
                     break;
+//                case 1: // Team Selection
+//                    tab.setIcon(R.drawable.ic_rounded_group_24);
+//                    //tab.setContentDescription(getString(R.string.welcome_step_team));
+//                    break;
                 case 2: // View Mode
                     tab.setIcon(R.drawable.ic_rounded_visibility_24);
                     //tab.setContentDescription(getString(R.string.welcome_step_view));
@@ -140,7 +226,7 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
                     tab.setIcon(R.drawable.ic_rounded_star_24);
                     //tab.setContentDescription(getString(R.string.welcome_step_features));
                     break;
-                case 4: // Personalization
+                case 4: // Personalization (completed)
                     tab.setIcon(R.drawable.ic_rounded_palette_24);
                     //tab.setContentDescription(getString(R.string.welcome_step_personalization));
                     break;
@@ -167,6 +253,10 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
                 viewPager.setCurrentItem(currentStep, true);
                 updateProgressText();
                 updateButtonStates();
+
+                // Inject dependencies when navigating to QDueUserOnboardingFragment
+                injectDependenciesForCurrentStep();
+
             } else {
                 // Complete welcome process
                 setWelcomeCompleted();
@@ -186,9 +276,80 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
                 currentStep = position;
                 updateProgressText();
                 updateButtonStates();
+
+                // Inject dependencies when navigating to QDueUserOnboardingFragment
+                injectDependenciesForCurrentStep();
             }
         });
     }
+
+
+    /**
+     * Set welcome as completed
+     */
+    @Override
+    public void setWelcomeCompleted() {
+        Log.d(TAG, "Completing welcome flow");
+
+        // Mark welcome as completed (existing logic)
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, true);
+        editor.apply();
+
+        // Save QDueUser
+        triggerQDueUserOnboarding();
+
+        // Final Log - preferences state for debugging
+            Log.d(TAG, "Welcome Completed successfully");
+            QDuePreferences.logAllPreferences(this);
+
+        // Start main activity with smooth transition (existing logic)
+        startMainActivity();
+    }
+
+// ==================== ADD NEW INJECTION METHOD ====================
+
+    /**
+     * Inject dependencies into fragments that need them
+     */
+    private void injectDependenciesForCurrentStep() {
+        if (!mDependenciesReady) {
+            Log.w(TAG, "⚠️ Dependencies not ready, skipping injection for step " + currentStep);
+            return;
+        }
+
+        try {
+            // Get current fragment from adapter
+            Fragment currentFragment = adapter.getFragmentAt(currentStep);
+
+            if (currentFragment instanceof QDueUserOnboardingFragment onboardingFragment) {
+                Log.d(TAG, "Injecting dependencies into QDueUserOnboardingFragment");
+
+                // Set the WelcomeInterface (this activity)
+                onboardingFragment.setWelcomeInterface(this);
+
+                // Also inject ServiceProvider if needed for validation
+                onboardingFragment.inject(mServiceProvider);
+
+                Log.d(TAG, "QDueUserOnboardingFragment setup completed");
+
+            } else if (currentFragment instanceof Injectable) {
+                Log.d(TAG, "Injecting dependencies into Injectable fragment: " +
+                        currentFragment.getClass().getSimpleName());
+
+                ((Injectable) currentFragment).inject(mServiceProvider);
+
+            } else {
+                Log.d(TAG, "Current fragment does not require injection: " +
+                        (currentFragment != null ? currentFragment.getClass().getSimpleName() : "null"));
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error injecting dependencies for step " + currentStep, e);
+        }
+    }
+
+    // ==================== HELPER METHODS ====================
 
     /**
      * Start the animated logo introduction
@@ -312,6 +473,16 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
         editor.putString(QDue.Settings.QD_KEY_VIEW_MODE, QDue.Settings.VIEW_MODE_CALENDAR); // Default to calendar
         editor.putBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, true); // Enable dynamic colors by default
 
+        // QDueUser defaults (empty strings)
+        editor.putString(QD_KEY_QDUEUSER_NICKNAME, "");
+        editor.putString(QD_KEY_QDUEUSER_EMAIL, "");
+        editor.putBoolean(QD_KEY_QDUEUSER_ONBOARDING_COMPLETED, false);
+
+        editor.apply();
+
+        // Trigger QDueUser onboarding with empty values
+        performQDueUserOnboarding("", "");
+
         editor.apply();
 
         // ENHANCEMENT: Use QDuePreferences for consistency logging
@@ -367,7 +538,8 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
             validateAndSyncPreferences();
 
             // Create intent to main activity (existing logic)
-            Intent intent = new Intent(this, QDueMainActivity.class);
+            // TODO verify the activity after all debugs
+            Intent intent = new Intent(this, SwipeCalendarActivity.class);
 
             // Pass information about welcome completion
             intent.putExtra("from_welcome", true);
@@ -466,42 +638,58 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
         }
     }
 
-    // ==================== INTEGRATION HELPER METHODS ====================
+    // ==================== QDUEUSER SERVICE INTEGRATION ====================
 
     /**
-     * ADD this new method to check integration with QDuePreferences
-     * This helps debug any synchronization issues
+     * Check if QDueUser data is ready and trigger actual service onboarding
      */
-    private void debugPreferencesIntegration() {
-        if (!QDue.Debug.DEBUG_ACTIVITY) return;
+    private void triggerQDueUserOnboarding() {
+        if (!mDependenciesReady || isQDueUserOnboardingCompleted()) {
+            return;
+        }
 
-        Log.d(TAG, "=== WelcomeActivity Preferences Debug ===");
-        Log.d(TAG, "WelcomeActivity values:");
-        Log.d(TAG, " - getViewMode(): " + getViewMode());
-        Log.d(TAG, " - getSelectedTeam(): " + getSelectedTeam());
-        Log.d(TAG, " - isDynamicColorsEnabled(): " + isDynamicColorsEnabled());
+        String nickname = getQDueUserNickname();
+        String email = getQDueUserEmail();
 
-        Log.d(TAG, "QDuePreferences values:");
-        Log.d(TAG, " - getDefaultViewMode(): " + QDuePreferences.getDefaultViewMode(this));
-        Log.d(TAG, " - getSelectedTeam(): " + QDuePreferences.getSelectedTeam(this));
-        Log.d(TAG, " - isDynamicColorsEnabled(): " + QDuePreferences.isDynamicColorsEnabled(this));
-        Log.d(TAG, "=== End Debug ===");
+        performQDueUserOnboarding(nickname, email);
     }
 
     /**
-     * ADD this method to be called when fragments update preferences
-     * This ensures consistency across the welcome flow
+     * Perform actual QDueUser onboarding using the service
      */
-    public void onPreferenceUpdatedFromFragment(String key, Object value) {
-        final String methodTag = TAG + ".onPreferenceUpdatedFromFragment";
-        Log.d(methodTag, "Preference updated from fragment - Key: " + key + ", Value: " + value);
+    private void performQDueUserOnboarding(String nickname, String email) {
+        Log.d(TAG, "QDueUser Onboarding {nickname='" + nickname + "', email='" + email + "'}");
 
-        // Trigger validation and sync
-        validateAndSyncPreferences();
+        try {
+            if (mServiceProvider != null) {
+                net.calvuz.qdue.core.services.QDueUserService qDueUserService = mServiceProvider.getQDueUserService();
 
-        // Debug the state if enabled
-        debugPreferencesIntegration();
+                if (qDueUserService != null) {
+                    qDueUserService.onboardUser(nickname, email)
+                            .thenAccept(result -> {
+                                runOnUiThread(() -> {
+                                    if (result.isSuccess()) {
+                                        net.calvuz.qdue.domain.qdueuser.models.QDueUser user = result.getData();
+                                        Log.d(TAG, "QDueUser Onboarding Success {User=" + user.getDisplayName()+"}");
+                                        setQDueUserOnboardingCompleted();
+                                    } else {
+                                        Log.e(TAG, "QDueUser Onboarding Failed - " + result.getErrorMessage());
+                                    }
+                                });
+                            })
+                            .exceptionally(throwable -> {
+                                Log.e(TAG, "QDueUser Onboarding Exception", throwable);
+                                return null;
+                            });
+                } else {
+                    Log.w(TAG, "performQDueUserOnboarding: QDueUserService not available");
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "performQDueUserOnboarding: Error", e);
+        }
     }
+
 
     // =============================== WELCOME INTERFACE ==================================
 
@@ -596,26 +784,71 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
         return preferences.getBoolean(QDue.Settings.QD_KEY_DYNAMIC_COLORS, true);
     }
 
-    /**
-     * Set welcome as completed
-     */
+    // ==================== FRAGMENT COMMUNICATION - QDUEUSER ====================
+
     @Override
-    public void setWelcomeCompleted() {
-        Log.d(TAG, "setWelcomeCompleted: Completing welcome flow");
+    public void setQDueUserNickname(String nickname) {
+        String safeNickname = nickname != null ? nickname.trim() : "";
+        //Log.d(TAG, "setQDueUserNickname: Setting nickname: '" + safeNickname + "'");
 
-        // Mark welcome as completed (existing logic)
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, true);
+        editor.putString(QD_KEY_QDUEUSER_NICKNAME, safeNickname);
         editor.apply();
-
-        // ENHANCEMENT: Log final preferences state for debugging
-        if (QDue.Debug.DEBUG_ACTIVITY) {
-            Log.d(TAG, "setWelcomeCompleted: Welcome completed with final preferences:");
-            QDuePreferences.logAllPreferences(this);
-        }
-
-        // Start main activity with smooth transition (existing logic)
-        startMainActivity();
     }
 
+    @Override
+    public String getQDueUserNickname() {
+        String nickname = preferences.getString(QD_KEY_QDUEUSER_NICKNAME, "");
+        Log.d(TAG, "getQDueUserNickname: Retrieved nickname: '" + nickname + "'");
+        return nickname;
+    }
+
+    @Override
+    public void setQDueUserEmail(String email) {
+        String safeEmail = email != null ? email.trim() : "";
+        //Log.d(TAG, "setQDueUserEmail: Setting email: '" + safeEmail + "'");
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(QD_KEY_QDUEUSER_EMAIL, safeEmail);
+        editor.apply();
+    }
+
+    @Override
+    public String getQDueUserEmail() {
+        String email = preferences.getString(QD_KEY_QDUEUSER_EMAIL, "");
+        Log.d(TAG, "getQDueUserEmail: Retrieved email: '" + email + "'");
+        return email;
+    }
+
+    @Override
+    public boolean isQDueUserOnboardingCompleted() {
+        boolean completed = preferences.getBoolean(QD_KEY_QDUEUSER_ONBOARDING_COMPLETED, false);
+        Log.d(TAG, "isQDueUserOnboardingCompleted: " + completed);
+        return completed;
+    }
+
+    @Override
+    public void setQDueUserOnboardingCompleted() {
+        Log.d(TAG, "setQDueUserOnboardingCompleted: Marking QDueUser onboarding as completed");
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(QD_KEY_QDUEUSER_ONBOARDING_COMPLETED, true);
+        editor.apply();
+    }
+
+    @Override
+    public boolean validateQDueUserData(String nickname, String email) {
+        Log.d(TAG, "validateQDueUserData: Validating nickname: '" + nickname + "', email: '" + email + "'");
+
+        // Nickname validation (optional, so always valid)
+        // Email validation (optional, but must be valid format if provided)
+        if (email != null && !email.trim().isEmpty()) {
+            boolean emailValid = EMAIL_PATTERN.matcher(email.trim()).matches();
+            Log.d(TAG, "validateQDueUserData: Email format valid: " + emailValid);
+            return emailValid;
+        }
+
+        Log.d(TAG, "validateQDueUserData: Validation passed");
+        return true;
+    }
 }

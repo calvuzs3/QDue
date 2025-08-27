@@ -54,6 +54,51 @@ public interface WelcomeInterface {
     abstract public boolean isDynamicColorsEnabled();
 
     /**
+     * Set QDueUser nickname preference
+     * @param nickname User nickname (can be empty)
+     */
+    abstract void setQDueUserNickname(String nickname);
+
+    /**
+     * Get QDueUser nickname preference
+     * @return User nickname or empty string
+     */
+    abstract String getQDueUserNickname();
+
+    /**
+     * Set QDueUser email preference
+     * @param email User email (can be empty)
+     */
+    abstract void setQDueUserEmail(String email);
+
+    /**
+     * Get QDueUser email preference
+     * @return User email or empty string
+     */
+    abstract String getQDueUserEmail();
+
+    /**
+     * Check if QDueUser onboarding is completed
+     * @return true if user data has been set
+     */
+    abstract boolean isQDueUserOnboardingCompleted();
+
+    /**
+     * Mark QDueUser onboarding as completed
+     */
+    abstract void setQDueUserOnboardingCompleted();
+
+    /**
+     * Validate QDueUser data (email format if present)
+     * @param nickname User nickname
+     * @param email User email
+     * @return true if data is valid
+     */
+    abstract boolean validateQDueUserData(String nickname, String email);
+
+    // ============================================================================================
+
+    /**
      * Set welcome as completed
      */
     abstract public void setWelcomeCompleted();

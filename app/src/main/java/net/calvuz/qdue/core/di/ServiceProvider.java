@@ -2,6 +2,7 @@ package net.calvuz.qdue.core.di;
 
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.EventsService;
+import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
@@ -12,6 +13,32 @@ import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
  * Dependency injection interface for service providers
  */
 public interface ServiceProvider {
+
+    /**
+     * Get QDueUserService for simplified user management.
+     *
+     * <p>Provides simplified user management operations following clean architecture
+     * principles with minimal onboarding and optional profile fields.</p>
+     *
+     * <h4>Service Features:</h4>
+     * <ul>
+     *   <li><strong>Minimal Onboarding</strong>: Single-step user creation</li>
+     *   <li><strong>Optional Fields</strong>: Nickname and email with empty defaults</li>
+     *   <li><strong>Clean Architecture</strong>: Domain-driven design with use cases</li>
+     *   <li><strong>Async Operations</strong>: CompletableFuture for all operations</li>
+     * </ul>
+     *
+     * <h4>Use Cases:</h4>
+     * <ul>
+     *   <li><strong>New Applications</strong>: Simple user management needs</li>
+     *   <li><strong>Onboarding Flows</strong>: Minimal friction user creation</li>
+     *   <li><strong>Calendar Integration</strong>: User identification for calendar features</li>
+     *   <li><strong>Profile Management</strong>: Basic profile completion workflows</li>
+     * </ul>
+     *
+     * @return QDueUserService instance with full dependency injection
+     */
+    QDueUserService getQDueUserService();
 
     /**
      * Get CalendarService instance for work schedule and calendar operations.

@@ -6,6 +6,9 @@
     <string name="app_name" translatable="false">Q-Due</string>
 
     <!-- PREFERENCE KEYS -->
+    <string name="qd_preference_qdueuser_nickname" translatable="false">qd_qdueuser_nickname</string>
+    <string name="qd_preference_qdueuser_email" translatable="false">qd_qdueuser_email</string>
+    <string name="qd_preference_qdueuser_onboarding_completed" translatable="false">qd_qdueuser_onboarding_completed</string>
     <string name="qd_preference_user_id" translatable="false">qdue_user_id</string>
     <string name="qd_preference_user_team" translatable="false">preference_user_team</string>
     <string name="qd_preference_show_stops" translatable="false">preference_show_stops</string>

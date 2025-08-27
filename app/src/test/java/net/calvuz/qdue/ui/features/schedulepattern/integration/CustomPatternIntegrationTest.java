@@ -129,7 +129,6 @@ public class CustomPatternIntegrationTest {
                 .teamId("test_team")
                 .recurrenceRuleId(recurrenceRule.getId())
                 .startDate(testStartDate)
-                .status(UserScheduleAssignment.Status.ACTIVE)
                 .priority(UserScheduleAssignment.Priority.NORMAL)
                 .build();
 
@@ -187,7 +186,6 @@ public class CustomPatternIntegrationTest {
                 .teamId("test_team")
                 .recurrenceRuleId(recurrenceRule.getId())
                 .startDate(testStartDate)
-                .status(UserScheduleAssignment.Status.ACTIVE)
                 .priority(UserScheduleAssignment.Priority.NORMAL)
                 .build();
 
@@ -297,7 +295,6 @@ public class CustomPatternIntegrationTest {
                 .teamId("test_team")
                 .recurrenceRuleId(standardRule.getId())
                 .startDate(testStartDate)
-                .status(UserScheduleAssignment.Status.ACTIVE)
                 .priority(UserScheduleAssignment.Priority.NORMAL)
                 .build();
 
@@ -323,7 +320,6 @@ public class CustomPatternIntegrationTest {
                 .teamId("test_team")
                 .recurrenceRuleId(recurrenceRule.getId())
                 .startDate(testStartDate)
-                .status(UserScheduleAssignment.Status.ACTIVE)
                 .priority(UserScheduleAssignment.Priority.NORMAL)
                 .build();
 
