@@ -34,7 +34,7 @@ import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
-import net.calvuz.qdue.ui.features.settings.QDueSettingsActivity;
+import net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity;
 import net.calvuz.qdue.ui.core.architecture.base.BaseActivity;
 import net.calvuz.qdue.ui.core.common.enums.NavigationMode;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;

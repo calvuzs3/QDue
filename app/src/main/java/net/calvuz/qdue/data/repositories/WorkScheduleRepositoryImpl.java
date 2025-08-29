@@ -19,7 +19,6 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleEvent;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
-import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.quattrodue.Preferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -250,7 +248,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 // Save assignment
                 CompletableFuture<OperationResult<UserScheduleAssignment>> saveResult =
                         mCalendarServiceProvider.getUserScheduleAssignmentRepository()
-                                .saveUserScheduleAssignment( assignment );
+                                .insertUserScheduleAssignment( assignment );
 
                 OperationResult<UserScheduleAssignment> result = saveResult.join();
 

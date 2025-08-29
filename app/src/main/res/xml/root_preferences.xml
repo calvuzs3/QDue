@@ -1,6 +1,22 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <PreferenceCategory
+        android:title="@string/settings_category_work_schedule"
+        android:key="category_work_schedule">
+
+        <!-- Existing preferences... -->
+
+        <!-- Pattern Assignment Preference -->
+        <Preference
+            android:key="pattern_assignment"
+            android:title="@string/settings_pattern_assignment_title"
+            android:summary="@string/settings_pattern_assignment_summary"
+            android:icon="@drawable/ic_rounded_assignment_24"
+            android:fragment="net.calvuz.qdue.ui.features.settings.presentation.PatternAssignmentPreferenceFragment" />
+
+    </PreferenceCategory>
+
     <!-- Categoria originale QDue -->
     <PreferenceCategory app:title="@string/settings_title">
 

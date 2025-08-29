@@ -174,7 +174,7 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 
                 // Save assignment
                 OperationResult<UserScheduleAssignment> assignmentResult =
-                        mUserScheduleAssignmentRepository.saveUserScheduleAssignment(assignment).join();
+                        mUserScheduleAssignmentRepository.insertUserScheduleAssignment(assignment).join();
 
                 if (assignmentResult.isSuccess()) {
                     UserScheduleAssignment savedAssignment = assignmentResult.getData();
@@ -254,7 +254,7 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 
                 // Save updated assignment
                 OperationResult<UserScheduleAssignment> savedAssignmentResult = mUserScheduleAssignmentRepository
-                        .saveUserScheduleAssignment( updatedAssignment ).join();
+                        .insertUserScheduleAssignment( updatedAssignment ).join();
                 if (savedAssignmentResult.isFailure()) {
                     return OperationResult.failure( "Failed to save updated assignment", OperationResult.OperationType.UPDATE );
                 }

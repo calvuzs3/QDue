@@ -4,8 +4,7 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity;
-import net.calvuz.qdue.user.ui.UserProfileActivity;
+import net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity;
 
 public class SettingsLauncher {
 

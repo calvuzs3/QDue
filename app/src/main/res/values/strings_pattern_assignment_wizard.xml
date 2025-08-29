@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ==================== WIZARD MAIN ACTIVITY ==================== -->
+
+    <!-- Activity Titles -->
+    <string name="title_pattern_assignment_wizard">Assegnazione Pattern</string>
+    <string name="title_first_assignment_wizard">Prima Assegnazione</string>
+    <string name="title_change_assignment_wizard">Cambio Assegnazione</string>
+
+    <!-- Progress and Navigation -->
+    <string name="wizard_progress">Passo %1$d di %2$d</string>
+    <string name="wizard_progress_default">Configura il tuo pattern di lavoro</string>
+    <string name="wizard_next">Avanti</string>
+    <string name="wizard_previous">Indietro</string>
+    <string name="wizard_create_assignment">Crea Assegnazione</string>
+    <string name="wizard_creating_assignment">Creazione assegnazione in corso…</string>
+    <string name="wizard_cancel">Annulla</string>
+
+    <!-- ===== ONBOARDING FRAGMENT ===== -->
+    <string name="onboarding_pattern_assignment_title">Configura il tuo Pattern di Lavoro</string>
+    <string name="onboarding_pattern_assignment_description">Scegli il pattern di turni più adatto alle tue esigenze lavorative. Potrai sempre modificarlo successivamente.</string>
+
+    <!-- Onboarding Benefits -->
+    <string name="onboarding_pattern_benefits_item_1">Pianificazione automatica dei turni</string>
+    <string name="onboarding_pattern_benefits_item_2">Sincronizzazione con il calendario</string>
+    <string name="onboarding_pattern_benefits_item_3">Gestione flessibile delle modifiche</string>
+
+    <!-- Onboarding Actions -->
+    <string name="onboarding_assign_now">Configura Ora</string>
+    <string name="onboarding_skip_for_now">Salta per Ora</string>
+
+    <!-- ==================== STEP 1: PATTERN TYPE SELECTION ==================== -->
+
+    <string name="wizard_step_pattern_type">Tipo Pattern</string>
+    <string name="wizard_step_pattern_type_title">Scegli il Tipo di Pattern</string>
+    <string name="wizard_step_pattern_type_description">Seleziona il tipo di pattern di lavoro che desideri utilizzare per la tua assegnazione.</string>
+    <string name="wizard_step_selection">Selezione</string>
+    <string name="wizard_step_date_position">Data e Posizione</string>
+
+    <!-- Pattern Type Buttons -->
+    <string name="pattern_type_quattrodue">QuattroDue</string>
+    <string name="pattern_type_custom">Personalizzato</string>
+    <string name="pattern_type_quattrodue_title">QuattroDue Standard</string>
+    <string name="pattern_type_quattrodue_description">Pattern classico 4–2: 4 giorni lavoro, 2 riposo con rotazione turni</string>
+    <string name="pattern_type_quattrodue_details">4 mattine → 2 riposi → 4 notti → 2 riposi → 4 pomeriggi → 2 riposi (16 giorni)</string>
+    <string name="pattern_type_custom_title">Pattern Personalizzato</string>
+    <string name="pattern_type_custom_description">Usa un pattern personalizzato creato in precedenza</string>
+    <string name="pattern_type_custom_details">Scegli tra i pattern personalizzati disponibili</string>
+
+    <!-- QuattroDue Pattern Info -->
+    <string name="pattern_quattrodue_title">Pattern QuattroDue Standard</string>
+    <string name="pattern_quattrodue_description">Il classico pattern 4–2: 4 giorni di lavoro seguiti da 2 giorni di riposo, in un ciclo di 18 giorni con rotazione di turni mattino, pomeriggio e notte.</string>
+    <string name="pattern_quattrodue_features">• Ciclo di 18 giorni\n• 9 squadre coordinate (A-I)\n• Rotazione automatica turni\n• Pattern testato e ottimizzato</string>
+
+    <!-- Custom Pattern Info -->
+    <string name="pattern_custom_title">Pattern Personalizzato</string>
+    <string name="pattern_custom_description">Utilizza un pattern di lavoro creato da te con turni, riposi e durata personalizzabili secondo le tue esigenze specifiche.</string>
+    <string name="pattern_custom_features">• Durata ciclo personalizzabile\n• Sequenza turni flessibile\n• Configurazione libera\n• Massima personalizzazione</string>
+
+    <!-- ==================== STEP 2A: TEAM SELECTION ==================== -->
+
+    <string name="wizard_step_team_selection_title">Seleziona la Tua Squadra</string>
+    <string name="wizard_step_team_selection_description">Scegli la squadra QuattroDue a cui appartieni. Ogni squadra ha un offset specifico nel pattern di 18 giorni.</string>
+    <string name="wizard_team_selection_info">L\'offset determina quando la tua squadra inizia il pattern rispetto al ciclo base. Squadre diverse iniziano in giorni diversi per garantire copertura continua.</string>
+
+    <!-- Loading and Empty States -->
+    <string name="loading_teams">Caricamento squadre…</string>
+    <string name="empty_state_no_teams_title">Nessuna Squadra Disponibile</string>
+    <string name="empty_state_no_teams_description">Non sono state trovate squadre nel database. Verifica la configurazione del sistema.</string>
+    <string name="empty_state_no_patterns_title">Nessun Pattern Personalizzato</string>
+    <string name="empty_state_no_patterns_description">Non hai ancora creato pattern personalizzati. Inizia creando il tuo primo pattern su misura.</string>
+    <string name="no_custom_patterns_title">Nessun Pattern Personalizzato</string>
+    <string name="no_custom_patterns_description">Non hai ancora creato pattern personalizzati. Puoi creare nuovi pattern dalla sezione Pattern.</string>
+    <string name="loading_custom_patterns">Caricamento pattern personalizzati…</string>
+    <string name="loading_existing_assignments">Caricamento assignment esistenti…</string>
+    <string name="creating_assignment">Creazione assignment in corso…</string>
+    <string name="updating_assignment">Aggiornamento assignment in corso…</string>
+
+    <!-- Team Display -->
+    <string name="team_display_format">Squadra %1$s</string>
+    <string name="team_offset_format">Offset: %1$d giorni</string>
+    <string name="team_cycle_description">Inizia il ciclo al giorno %1$d</string>
+
+    <!-- No Teams Available -->
+    <string name="no_teams_available_title">Nessuna Squadra Disponibile</string>
+    <string name="no_teams_available_description">Non sono disponibili squadre configurate per il pattern QuattroDue. Contatta l\'amministratore.</string>
+
+    <!-- ==================== STEP 2B: CUSTOM PATTERN SELECTION ==================== -->
+
+    <string name="wizard_step_custom_pattern_title">Seleziona Pattern Personalizzato</string>
+    <string name="wizard_step_custom_pattern_description">Scegli uno dei tuoi pattern personalizzati esistenti o creane uno nuovo.</string>
+    <string name="wizard_step_custom_pattern_selection_title">Scegli Pattern Personalizzato</string>
+    <string name="wizard_step_custom_pattern_selection_description">Seleziona il pattern personalizzato che vuoi utilizzare</string>
+
+    <!-- Custom Pattern Display -->
+    <string name="custom_pattern_cycle_days">%1$d giorni ciclo</string>
+    <string name="custom_pattern_work_rest_info">%1$d lavoro, %2$d riposo</string>
+    <string name="custom_pattern_type_badge">Personalizzato</string>
+
+    <!-- ==================== STEP 3: DATE AND CYCLE SELECTION ==================== -->
+
+    <string name="wizard_step_date_cycle_title">Data e Posizione nel Ciclo</string>
+    <string name="wizard_step_date_cycle_description">Specifica quando inizia l\'assegnazione e in quale giorno del ciclo ti trovi attualmente.</string>
+    <string name="wizard_step_date_position_title">Data Inizio e Posizione Ciclo</string>
+    <string name="wizard_step_date_position_description">Seleziona quando iniziare l\'assignment e la posizione nel ciclo</string>
+
+    <!-- Date Selection -->
+    <string name="wizard_assignment_date_title">Data di Inizio Assegnazione</string>
+    <string name="wizard_assignment_date_description">La data da cui l\'assegnazione diventa attiva e viene applicata al calendario.</string>
+    <string name="hint_select_assignment_date">Seleziona data di inizio</string>
+    <string name="title_select_assignment_date">Seleziona Data di Inizio</string>
+    <string name="assignment_date_label">Data Inizio Assignment</string>
+    <string name="assignment_date_hint">Seleziona data inizio</string>
+    <string name="assignment_date_today">Oggi</string>
+    <string name="assignment_date_tomorrow">Domani</string>
+    <string name="assignment_date_custom">Altra data…</string>
+
+    <!-- Cycle Position Selection -->
+    <string name="wizard_cycle_position_title">Posizione nel Ciclo</string>
+    <string name="title_cycle_position">Posizione nel Ciclo %1$s</string>
+    <string name="cycle_range_format">Giorni da %1$d a %2$d</string>
+    <string name="cycle_range_default">Seleziona la posizione nel ciclo</string>
+    <string name="cycle_day_format">Giorno %1$d di %2$d</string>
+    <string name="cycle_day_format_default">Giorno 1 di 18</string>
+    <string name="cycle_position_label">Posizione nel Ciclo</string>
+    <string name="cycle_position_hint">Giorno del ciclo (1-%1$d)</string>
+    <string name="cycle_position_description_quattrodue">Scegli a che punto del ciclo QuattroDue vuoi iniziare (1–16)</string>
+    <string name="cycle_position_description_custom">Scegli a che punto del ciclo personalizzato vuoi iniziare</string>
+
+    <!-- QuattroDue Phase Information -->
+    <string name="quattrodue_phase_morning_work">Turni mattutini (giorni 1–4)</string>
+    <string name="quattrodue_phase_afternoon_work">Turni pomeridiani (giorni 7–10)</string>
+    <string name="quattrodue_phase_night_work">Turni notturni (giorni 13–16)</string>
+    <string name="quattrodue_phase_rest">Riposo</string>
+    <string name="quattrodue_phase_unknown">Posizione ciclo non definita</string>
+    <string name="quattrodue_phase_info_default">Seleziona posizione per vedere la fase</string>
+
+    <!-- Tips and Help -->
+    <string name="wizard_date_cycle_tips_title">Suggerimenti</string>
+    <string name="wizard_date_cycle_tips_content">La posizione nel ciclo indica in quale giorno del pattern ti trovi oggi. Questo serve per allineare correttamente il calendario con il tuo turno attuale.</string>
+
+    <!-- Position Details -->
+    <string name="cycle_position_details_format">Giorno %1$d: %2$s</string>
+    <string name="cycle_day_morning">Mattina</string>
+    <string name="cycle_day_night">Notte</string>
+    <string name="cycle_day_afternoon">Pomeriggio</string>
+    <string name="cycle_day_rest">Riposo</string>
+    <string name="cycle_day_work">Lavoro</string>
+
+    <!-- ==================== STEP 4: CONFIRMATION ==================== -->
+
+    <string name="wizard_step_confirmation">Conferma</string>
+    <string name="wizard_step_confirmation_title">Conferma Assegnazione</string>
+    <string name="wizard_step_confirmation_description">Verifica i dettagli dell\'assegnazione prima di crearla.</string>
+
+    <!-- Summary Labels -->
+    <string name="summary_cycle_position_format">Posizione: Giorno %1$d di %2$d</string>
+    <string name="summary_cycle_position_format_one">Posizione: Giorno %1$d</string>
+    <string name="summary_pattern_quattrodue">Pattern QuattroDue Standard</string>
+    <string name="summary_pattern_custom">Pattern Personalizzato</string>
+    <string name="confirmation_assignment_summary">Riepilogo Assignment</string>
+    <string name="summary_team_format">Squadra: %1$s</string>
+    <string name="summary_team_offset_format">Offset squadra: %1$d giorni</string>
+    <string name="summary_custom_pattern_format">Pattern: %1$s</string>
+    <string name="summary_cycle_length_format">Durata ciclo: %1$d giorni</string>
+    <string name="summary_start_date_format">Data inizio: %1$s</string>
+    <string name="summary_start_date">Data inizio</string>
+    <string name="summary_assignment_description">Descrizione assegnazione</string>
+
+    <!-- Confirmation Actions -->
+    <string name="btn_contact_admin">Contatta Amministratore</string>
+    <string name="btn_edit_settings">Modifica Impostazioni</string>
+    <string name="btn_confirm_create">Conferma e Crea</string>
+    <string name="btn_create_custom_pattern">Crea Nuovo Pattern</string>
+    <string name="btn_view_existing_assignments">Visualizza Assignment Esistenti</string>
+    <string name="btn_continue">Continua</string>
+    <string name="btn_go_back">Torna Indietro</string>
+
+    <!-- Warning Messages -->
+    <string name="warning_existing_assignments_will_be_closed">Le assegnazioni esistenti verranno automaticamente terminate il giorno prima della nuova assegnazione.</string>
+    <string name="warning_existing_assignments_will_be_closed_format">Le assegnazioni esistenti verranno automaticamente terminate il giorno prima della nuova assegnazione.\n{0}</string>
+    <string name="warning_existing_assignments_title">Assignment Esistenti</string>
+    <string name="warning_existing_assignments_details">Saranno interessati %1$d assignment esistenti.</string>
+
+    <!-- ==================== PATTERN NAMES ==================== -->
+
+    <string name="pattern_quattrodue">QuattroDue</string>
+    <string name="pattern_custom">Personalizzato</string>
+
+    <!-- ==================== SUCCESS AND ERROR MESSAGES ==================== -->
+
+    <!-- Success Messages -->
+    <string name="success_assignment_created">Assegnazione creata con successo</string>
+    <string name="success_quattrodue_assignment">Assegnazione QuattroDue attivata</string>
+    <string name="success_custom_assignment">Assegnazione pattern personalizzato attivata</string>
+    <string name="success_assignment_updated">Assegnazione aggiornata con successo!</string>
+
+    <!-- Error Messages -->
+    <string name="error_assignment_creation_failed">Creazione assegnazione fallita: %1$s</string>
+    <string name="error_team_not_selected">Seleziona una squadra per continuare</string>
+    <string name="error_custom_pattern_not_selected">Seleziona un pattern personalizzato per continuare</string>
+    <string name="error_assignment_date_past">La data di assegnazione non può essere nel passato</string>
+    <string name="error_loading_teams">Errore nel caricamento delle squadre</string>
+    <string name="error_loading_patterns">Errore nel caricamento dei pattern</string>
+    <string name="error_assignment_update_failed">Aggiornamento assignment fallito: %1$s</string>
+    <string name="error_invalid_date_selection">Seleziona una data valida per l\'assignment</string>
+    <string name="error_invalid_cycle_position">La posizione nel ciclo deve essere tra 1 e %1$d</string>
+    <string name="error_no_team_selected">Devi selezionare una squadra</string>
+    <string name="error_no_custom_pattern_selected">Devi selezionare un pattern personalizzato</string>
+    <string name="error_date_in_past">La data di inizio non può essere nel passato</string>
+
+    <!-- Validation Messages -->
+    <string name="validation_pattern_type_required">Seleziona un tipo di pattern</string>
+    <string name="validation_team_required">Seleziona una squadra</string>
+    <string name="validation_custom_pattern_required">Seleziona un pattern personalizzato</string>
+    <string name="validation_assignment_date_required">Seleziona una data di inizio</string>
+    <string name="validation_cycle_position_required">Specifica la posizione nel ciclo</string>
+    <string name="validation_date_required">Seleziona la data di inizio</string>
+    <string name="validation_wizard_incomplete">Completa tutti i passaggi del wizard</string>
+
+    <!-- ==================== ACCESSIBILITY ==================== -->
+
+    <string name="accessibility_pattern_type_selection">Selezione tipo pattern</string>
+    <string name="accessibility_team_selection">Selezione squadra</string>
+    <string name="accessibility_custom_pattern_selection">Selezione pattern personalizzato</string>
+    <string name="accessibility_date_picker">Selettore data</string>
+    <string name="accessibility_cycle_position_picker">Selettore posizione ciclo</string>
+    <string name="accessibility_wizard_progress">Progresso wizard</string>
+    <string name="accessibility_assignment_summary">Riepilogo assignment</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_team_color_indicator">Colore indicativo squadra</string>
+    <string name="cd_pattern_status_active">Pattern attivo</string>
+    <string name="cd_pattern_status_inactive">Pattern inattivo</string>
+    <string name="cd_selected">Selezionato</string>
+    <string name="cd_not_selected">Non selezionato</string>
+
+    <!-- ==================== INTEGRATION POINTS ==================== -->
+
+    <!-- Launch Actions -->
+    <string name="action_assign_pattern">Assegna Pattern</string>
+    <string name="action_change_assignment">Cambia Assegnazione</string>
+    <string name="action_first_assignment">Prima Assegnazione</string>
+
+    <!-- Menu Items -->
+    <string name="menu_pattern_assignment">Assegnazione Pattern</string>
+    <string name="menu_assignment_wizard">Wizard Assegnazione</string>
+    <string name="menu_edit_assignment">Modifica Assignment</string>
+    <string name="menu_view_assignments">Visualizza Assignment</string>
+    <string name="menu_assignment_history">Storico Assignment</string>
+
+    <!-- ==================== OTHER POINTS ==================== -->
+
+    <!-- ===== DIALOG MESSAGES ===== -->
+    <string name="dialog_cancel_wizard_title">Annulla Wizard</string>
+    <string name="dialog_cancel_wizard_message">Sei sicuro di voler annullare la creazione dell\'assignment? I dati inseriti verranno persi.</string>
+    <string name="dialog_close_existing_assignments_title">Chiudi Assignment Esistenti</string>
+    <string name="dialog_close_existing_assignments_message">Ci sono %1$d assignment attivi che verranno chiusi. Vuoi continuare?</string>
+
+    <!-- ===== TOOLTIPS AND HINTS ===== -->
+    <string name="tooltip_quattrodue_pattern">Il pattern QuattroDue è un ciclo di 16 giorni con rotazione di turni mattina-notte-pomeriggio</string>
+    <string name="tooltip_team_offset">L\'offset squadra determina da quale giorno del ciclo la tua squadra inizia</string>
+    <string name="tooltip_cycle_position">La posizione nel ciclo determina con quale turno inizierai</string>
+    <string name="tooltip_custom_pattern">I pattern personalizzati ti permettono di creare cicli di lavoro su misura</string>
+
+    <!-- ===== QUICK ACTIONS ===== -->
+    <string name="quick_action_start_today">Inizia Oggi</string>
+    <string name="quick_action_start_tomorrow">Inizia Domani</string>
+    <string name="quick_action_start_monday">Inizia Lunedì</string>
+    <string name="quick_action_cycle_position_1">Inizia dal Giorno 1</string>
+    <string name="quick_action_auto_detect">Rileva Automaticamente</string>
+
+    <!-- ===== PREFERENCES INTEGRATION ===== -->
+    <string name="pref_title_assignment_wizard">Pattern Assignment</string>
+    <string name="pref_summary_assignment_wizard">Configura e modifica il tuo pattern di turni</string>
+    <string name="pref_title_current_assignment">Assignment Attuale</string>
+    <string name="pref_summary_current_assignment">%1$s - Iniziato il %2$s</string>
+    <string name="pref_summary_no_assignment">Nessun pattern attivo</string>
+
+
+
+
+
+
+
+</resources>

@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.db.CalendarDatabase;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.dao.RecurrenceRuleDao;
 import net.calvuz.qdue.data.entities.RecurrenceRuleEntity;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
@@ -111,6 +112,64 @@ public class RecurrenceRuleRepositoryImpl implements RecurrenceRuleRepository {
     }
 
     // ==================== RECURRENCE RULE CRUD OPERATIONS ====================
+
+    /**
+     * Get active RecurrenceRules created by specific user.
+     *
+     * @param userId User ID to filter by
+     * @return CompletableFuture with user's active patterns
+     */
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<List<RecurrenceRule>>> getActiveUserRecurrenceRules(@NonNull Long userId) {
+        // Unused userId
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                List<RecurrenceRuleEntity> entities = mRecurrenceRuleDao.getActiveUserRecurrenceRules();
+                List<RecurrenceRule> domainRules = entities.stream()
+                        .map(RecurrenceRuleEntity::toDomainModel)
+                        .filter(java.util.Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                Log.v(TAG, "Successfully retrieved " + domainRules.size() + " active recurrence rules");
+                return OperationResult.success( domainRules,
+                        OperationResult.OperationType.READ );
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting all active recurrence rules", e);
+                return OperationResult.failure( "Error getting all active user recurrence rules" ,
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
+
+    /**
+     * Get RecurrenceRule by name with fallback alternatives.
+     *
+     * @param name Primary name to search
+     * @return OperationResult that supports .or() chaining
+     */
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<RecurrenceRule>> getRecurrenceRuleByName(@NonNull String name) {
+
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                RecurrenceRuleEntity entity = mRecurrenceRuleDao.getRecurrenceRuleByName( name );
+                if (entity == null) {
+                    throw new IllegalArgumentException( "No recurrence Rule found by name" );
+                }
+                RecurrenceRule domainRule = entity.toDomainModel();
+
+                Log.v( TAG, "Successfully retrieved recurrence rule by name: " + name );
+                return OperationResult.success( domainRule, OperationResult.OperationType.READ );
+            } catch (Exception e) {
+                Log.e( TAG, "Error getting recurrence rule by name: " + name, e );
+            return OperationResult.failure( "Error getting recurrence rule by name: " + name,
+                    OperationResult.OperationType.READ );
+            }
+        }, mExecutorService );
+    }
 
     @NonNull
     @Override

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Current Assignment Display -->
+    <Preference
+        android:key="current_assignment"
+        android:title="@string/settings_current_assignment"
+        android:summary="@string/settings_loading_assignment"
+        android:icon="@drawable/ic_rounded_assignment_ind_24"
+        android:selectable="false" />
+
+    <!-- Assignment Actions Category -->
+    <PreferenceCategory
+        android:title="@string/settings_assignment_actions"
+        android:key="assignment_actions">
+
+        <Preference
+            android:key="change_assignment"
+            android:title="@string/settings_change_assignment"
+            android:summary="@string/settings_change_assignment_summary"
+            android:icon="@drawable/ic_rounded_swap_horiz_24" />
+
+        <Preference
+            android:key="assignment_history"
+            android:title="@string/settings_assignment_history"
+            android:summary="@string/settings_assignment_history_summary"
+            android:icon="@drawable/ic_rounded_history_24" />
+
+    </PreferenceCategory>
+
+    <!-- Assignment Information Category -->
+    <PreferenceCategory
+        android:title="@string/settings_assignment_info"
+        android:key="assignment_info">
+
+        <Preference
+            android:key="assignment_help"
+            android:title="@string/settings_assignment_help"
+            android:summary="@string/settings_assignment_help_summary"
+            android:icon="@drawable/ic_rounded_help_24" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

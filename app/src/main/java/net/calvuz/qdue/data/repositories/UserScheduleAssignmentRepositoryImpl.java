@@ -11,6 +11,7 @@ import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentReposi
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +105,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<UserScheduleAssignment>> saveUserScheduleAssignment(@NonNull UserScheduleAssignment assignment) {
+    public CompletableFuture<OperationResult<UserScheduleAssignment>> insertUserScheduleAssignment(@NonNull UserScheduleAssignment assignment) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Saving user schedule assignment: " + assignment.getId());
@@ -159,7 +160,70 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
         }, mExecutorService);
     }
 
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<UserScheduleAssignment>> updateUserScheduleAssignment(@NonNull UserScheduleAssignment assignment) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d( TAG, "Updating user schedule assignment: " + assignment.getId() );
+
+                // ✅ Use entity's conversion method
+                UserScheduleAssignmentEntity entity = UserScheduleAssignmentEntity.fromDomainModel( assignment );
+                entity.updateTimestamp(); // Update timestamp before saving
+
+                long result = mUserScheduleAssignmentDao.updateUserScheduleAssignment(entity);
+                if (result > 0) {
+                    Log.d(TAG, "Successfully updated user assignment: " + assignment.getId());
+                    return OperationResult.success(assignment, OperationResult.OperationType.UPDATE);
+                } else {
+                    String error = "Failed to update user schedule assignment: " + assignment.getId();
+                    Log.e(TAG, error);
+                    return OperationResult.failure(error, OperationResult.OperationType.UPDATE);
+                }
+
+            } catch (Exception e) {
+                String error = "Error updating user schedule assignment: " + assignment.getId();
+                Log.e(TAG, error, e);
+                return OperationResult.failure(error,OperationResult.OperationType.UPDATE);
+            }
+        }, mExecutorService);
+            }
+
     // ==================== USER-SPECIFIC QUERIES ====================
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull Long userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Getting active assignments for user: " + userId);
+
+                // Get assignments that are not expired or cancelled
+                List<UserScheduleAssignmentEntity> entities = mUserScheduleAssignmentDao.getUserActiveAssignments(userId);
+                List<UserScheduleAssignment> activeAssignments = new ArrayList<>();
+
+                for (UserScheduleAssignmentEntity entity : entities) {
+                    UserScheduleAssignment domainAssignment = entity.toDomainModel(); //convertToDomainModel(entity);
+                    if (domainAssignment != null && domainAssignment.isActive()) {
+                        // Include ACTIVE and PENDING assignments (not EXPIRED or CANCELLED)
+                        UserScheduleAssignment.Status status = domainAssignment.getStatus();
+                        if (status == UserScheduleAssignment.Status.ACTIVE ||
+                                status == UserScheduleAssignment.Status.PENDING) {
+                            activeAssignments.add(domainAssignment);
+                        }
+                    }
+                }
+
+                Log.d(TAG, "Found " + activeAssignments.size() + " active assignments for user");
+                return OperationResult.success(activeAssignments, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting active assignments for user: " + userId, e);
+                return OperationResult.failure("Failed to load active assignments: " + e.getMessage(),
+                        OperationResult.OperationType.READ);
+            }
+        }, mExecutorService);
+    }
 
     @Override
     @NonNull

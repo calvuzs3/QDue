@@ -2,6 +2,7 @@ package net.calvuz.qdue.domain.calendar.repositories;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 
 import java.util.List;
@@ -14,6 +15,22 @@ import java.util.concurrent.CompletableFuture;
  * patterns without any infrastructure dependencies.</p>
  */
 public interface RecurrenceRuleRepository {
+
+    /**
+     * Get active RecurrenceRules created by specific user.
+     * @param userId User ID to filter by
+     * @return CompletableFuture with user's active patterns
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<RecurrenceRule>>> getActiveUserRecurrenceRules(@NonNull Long userId);
+
+    /**
+     * Get RecurrenceRule by name with fallback alternatives.
+     * @param name Primary name to search
+     * @return OperationResult that supports .or() chaining
+     */
+    @NonNull
+    CompletableFuture<OperationResult<RecurrenceRule>> getRecurrenceRuleByName(@NonNull String name);
 
     /**
      * Get all recurrence rules.

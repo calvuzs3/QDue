@@ -3,6 +3,7 @@ package net.calvuz.qdue.domain.calendar.repositories;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.Team;
 
 import java.util.List;
@@ -64,6 +65,15 @@ public interface TeamRepository {
      */
     @NonNull
     CompletableFuture<List<Team>> getAllActiveTeams();
+
+    /**
+     * For convention let's assume an non negative offset to be a quattrodue valid team
+     * Get teams configured for QuattroDue pattern (with qdue_offset >= 0).
+     *
+     * @return CompletableFuture with teams that have qdue_offset defined
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<Team>>> getTeamsWithQuattroDueOffset();
 
     /**
      * Get all teams (active and inactive).
@@ -139,8 +149,8 @@ public interface TeamRepository {
     /**
      * Assign user to team.
      *
-     * @param userId User ID to assign
-     * @param teamId Team ID to assign to
+     * @param userId    User ID to assign
+     * @param teamId    Team ID to assign to
      * @param isPrimary Whether this is the user's primary team assignment
      * @return CompletableFuture with boolean indicating success
      */
@@ -182,7 +192,7 @@ public interface TeamRepository {
     /**
      * Check if user is member of team by team name.
      *
-     * @param userId User ID to check
+     * @param userId   User ID to check
      * @param teamName Team name to check
      * @return CompletableFuture with boolean indicating membership
      */
@@ -262,7 +272,7 @@ public interface TeamRepository {
      * Bulk assign users to team.
      *
      * @param userIds List of user IDs to assign
-     * @param teamId Team ID to assign to
+     * @param teamId  Team ID to assign to
      * @return CompletableFuture with count of successful assignments
      */
     @NonNull
@@ -271,9 +281,9 @@ public interface TeamRepository {
     /**
      * Transfer users between teams.
      *
-     * @param userIds List of user IDs to transfer
+     * @param userIds    List of user IDs to transfer
      * @param fromTeamId Source team ID
-     * @param toTeamId Destination team ID
+     * @param toTeamId   Destination team ID
      * @return CompletableFuture with count of successful transfers
      */
     @NonNull

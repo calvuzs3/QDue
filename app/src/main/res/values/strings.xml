@@ -127,6 +127,7 @@
     <string name="action_cancel">Annulla</string>
     <string name="action_close">Chiudi</string>
     <string name="action_delete">Elimina</string>"
+    <string name="action_change">Modifica</string>
 
     <!-- Navigation -->
     <string name="menu_dayslist">Tutti Turni</string>
@@ -943,7 +944,6 @@
     <!-- slide_in_right: Slide in from right transition -->
     <!-- slide_out_left: Slide out to left transition -->
 
-    <string name="error_no_team_selected">Seleziona una squadra per continuare</string>
     <string name="error_no_view_selected">Scegli una modalità di visualizzazione</string>
     <string name="error_configuration_failed">Errore nel salvare la configurazione</string>
     <string name="error_retry">Riprova</string>
@@ -1244,7 +1244,23 @@
 
     <!-- ======================================================================= -->
 
+    <string name="settings_category_work_schedule">Programma di Lavoro</string>
+    <string name="settings_pattern_assignment_title">Assegnazione Pattern</string>
+    <string name="settings_pattern_assignment_summary">Gestisci la tua assegnazione di squadra e pattern di lavoro</string>
 
+    <string name="settings_current_assignment">Assegnazione Attuale</string>
+    <string name="settings_loading_assignment">Caricamento assegnazione…</string>
+
+    <string name="settings_assignment_actions">Azioni Assegnazione</string>
+    <string name="settings_change_assignment">Cambia Assegnazione</string>
+    <string name="settings_change_assignment_summary">Modifica squadra o pattern di lavoro</string>
+
+    <string name="settings_assignment_history">Storico Assegnazioni</string>
+    <string name="settings_assignment_history_summary">Visualizza le assegnazioni precedenti</string>
+
+    <string name="settings_assignment_info">Informazioni</string>
+    <string name="settings_assignment_help">Aiuto Assegnazioni</string>
+    <string name="settings_assignment_help_summary">Come funzionano le assegnazioni di pattern</string>
 
 
 

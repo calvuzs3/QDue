@@ -35,8 +35,14 @@ public class QDue extends Application {
             LocalDate.of( 2025, 8, 11 ).toString(); // Monday
     public static final String QDUE_RRULE_SCHEME_START_ASSIGNMENT_DATE =
             LocalDate.of( 2025, 8, 8 ).toString();
+
     public static final int SETTINGS_REQUEST_CODE = 1001;
     public static final int WELCOME_REQUEST_CODE = 1002;
+    // PatternAssignmentPreferenceFragment
+    public static final int REQUEST_CHANGE_ASSIGNMENT = 2001;
+    // PatternAssignmentOnboardingFragment
+    public static final int REQUEST_PATTERN_ASSIGNMENT = 2051;
+
 
     @SuppressLint ("StaticFieldLeak")
     private static Context INSTANCE;

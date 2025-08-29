@@ -34,6 +34,7 @@ import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.preferences.QDuePreferences;
+import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.features.swipecalendar.presentation.SwipeCalendarActivity;
 import net.calvuz.qdue.ui.features.welcome.interfaces.WelcomeInterface;
 import net.calvuz.qdue.ui.features.welcome.adapters.WelcomeFragmentAdapter;
@@ -850,5 +851,20 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
 
         Log.d(TAG, "validateQDueUserData: Validation passed");
         return true;
+    }
+
+    // ==================== FRAGMENT COMMUNICATION - PATTERN ASSIGNMENT ====================
+
+    @Override
+    public void onPatternAssignmentCompleted(boolean success) {
+        Log.d(TAG, "Pattern assignment completed during onboarding: " + success);
+
+        if (success) {
+            // User completed pattern assignment
+            Library.showSuccess(this, "Pattern di lavoro configurato" );
+        } else {
+            // User skipped - will use default assignment
+            Library.showSuccess(this, "Potrai configurare il pattern in seguito nelle impostazioni");
+        }
     }
 }

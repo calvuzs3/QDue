@@ -677,6 +677,104 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     }
 
     /**
+     * Create temporary pattern assignment with end date.
+     */
+    @NonNull
+    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+                                                                 @NonNull String teamId,
+                                                                 @NonNull String recurrenceRuleId,
+                                                                 @NonNull LocalDate startDate,
+                                                                 @Nullable String patternName,
+                                                                 int cycleDayPosition) {
+        return builder()
+                .title(patternName)
+                .userId(userId)
+                .teamId(teamId)
+                .recurrenceRuleId(recurrenceRuleId)
+                .startDate(startDate)
+                .cycleDayPosition(cycleDayPosition)
+                .assignedByUserName(patternName)
+                .priority(Priority.NORMAL)
+                .active(true)  // Administratively enabled
+                // DON'T set status - it will be computed automatically
+                .build();
+    }
+
+    /**
+     * Create pattern assignment with cycle position and end date.
+     * For temporary or limited-duration assignments.
+     *
+     * @param userId User ID for assignment
+     * @param teamId Team ID or name
+     * @param recurrenceRuleId RecurrenceRule ID for pattern
+     * @param startDate Assignment start date
+     * @param endDate Assignment end date (can be null for permanent)
+     * @param patternName Display name for pattern
+     * @param cycleDayPosition Position in pattern cycle (1-based)
+     * @return New UserScheduleAssignment with cycle position and end date
+     */
+    @NonNull
+    public static UserScheduleAssignment createPatternAssignment(
+            @NonNull Long userId,
+            @NonNull String teamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate startDate,
+            @Nullable LocalDate endDate,
+            @NonNull String patternName,
+            int cycleDayPosition) {
+
+        return builder()
+                .userId(userId)
+                .teamId(teamId)
+                .recurrenceRuleId(recurrenceRuleId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .assignedByUserName(patternName)
+                .priority(Priority.NORMAL)
+                .active(true)  // Administratively enabled
+                .cycleDayPosition(cycleDayPosition)  // NEW: Cycle position field
+                // DON'T set status - it will be computed automatically
+                .build();
+    }
+
+
+    /**
+     * Create ended version of existing assignment for gap-filling strategy.
+     * Sets end date to terminate existing assignment before new one starts.
+     *
+     * @param existing Existing assignment to terminate
+     * @param endDate Date when assignment should end
+     * @return New assignment with same properties but with end date set
+     */
+    @NonNull
+    public static UserScheduleAssignment createEndedAssignment(
+            @NonNull UserScheduleAssignment existing,
+            @NonNull LocalDate endDate) {
+
+        return builder()
+                .id(existing.getId())  // Keep same ID for update
+                .userId(existing.getUserId())
+                .teamId(existing.getTeamId())
+                .recurrenceRuleId(existing.getRecurrenceRuleId())
+                .startDate(existing.getStartDate())
+                .endDate(endDate)  // NEW: Set end date to terminate
+                .title(existing.getTitle())
+                .description(existing.getDescription())
+                .notes(existing.getNotes())
+                .assignedByUserId(existing.getAssignedByUserId())
+                .assignedByUserName(existing.getAssignedByUserName())
+                .priority(existing.getPriority())
+                .active(existing.isActive())  // Keep original active state
+                .cycleDayPosition(existing.getCycleDayPosition())
+                .createdAt(existing.getCreatedAt())
+                .updatedAt(System.currentTimeMillis())  // Update timestamp
+                .createdByUserId(existing.getCreatedByUserId())
+                .lastModifiedByUserId(existing.getLastModifiedByUserId())
+                // DON'T set status - it will be recomputed based on new end date
+                .build();
+    }
+
+    /**
      * Create standard permanent team assignment.
      */
     @NonNull
@@ -772,6 +870,42 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 // Status will be automatically computed as CANCELLED
                 .build();
     }
+
+
+    /**
+     * Create terminated version of existing assignment for conflict resolution.
+     * Sets status to CANCELLED and marks as administratively disabled.
+     *
+     * @param existing Existing assignment to cancel
+     * @return New assignment marked as cancelled and disabled
+     */
+    @NonNull
+    public static UserScheduleAssignment createCancelledAssignment(
+            @NonNull UserScheduleAssignment existing) {
+
+        return builder()
+                .id(existing.getId())  // Keep same ID for update
+                .userId(existing.getUserId())
+                .teamId(existing.getTeamId())
+                .recurrenceRuleId(existing.getRecurrenceRuleId())
+                .startDate(existing.getStartDate())
+                .endDate(existing.getEndDate())
+                .title(existing.getTitle())
+                .description(existing.getDescription())
+                .notes(existing.getNotes())
+                .assignedByUserId(existing.getAssignedByUserId())
+                .assignedByUserName(existing.getAssignedByUserName())
+                .priority(existing.getPriority())
+                .active(false)  // NEW: Administratively disable
+                .cycleDayPosition(existing.getCycleDayPosition())
+                .createdAt(existing.getCreatedAt())
+                .updatedAt(System.currentTimeMillis())  // Update timestamp
+                .createdByUserId(existing.getCreatedByUserId())
+                .lastModifiedByUserId(existing.getLastModifiedByUserId())
+                // Status will be computed as CANCELLED due to active=false
+                .build();
+    }
+
     // ==================== LOCALIZABLE IMPLEMENTATION ====================
 
     @Override

@@ -7,10 +7,9 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import net.calvuz.qdue.ui.features.welcome.presentation.IntroductionFragment;
+import net.calvuz.qdue.ui.features.welcome.presentation.PatternAssignmentOnboardingFragment;
 import net.calvuz.qdue.ui.features.welcome.presentation.PersonalizationFragment;
 import net.calvuz.qdue.ui.features.welcome.presentation.QDueUserOnboardingFragment;
-import net.calvuz.qdue.ui.features.welcome.presentation.TeamSelectionFragment;
-import net.calvuz.qdue.ui.features.welcome.presentation.ViewModeFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,34 +32,39 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
 
     /**
      * Constructor - initializes all welcome fragments
+     *
      * @param fragmentActivity The parent activity
      */
     public WelcomeFragmentAdapter(@NonNull FragmentActivity fragmentActivity) {
-        super(fragmentActivity);
+        super( fragmentActivity );
         this.fragments = createWelcomeFragments();
     }
 
     /**
      * Create and return the list of welcome fragments in order
+     *
      * @return List of welcome step fragments
      */
     private List<Fragment> createWelcomeFragments() {
         List<Fragment> fragmentList = new ArrayList<>();
 
         // Step 0: Introduction and App Overview
-        fragmentList.add(new IntroductionFragment());
+        fragmentList.add( new IntroductionFragment() );
 
         // Step 1: feature QDueUser
-        fragmentList.add(new QDueUserOnboardingFragment() );
+        fragmentList.add( new QDueUserOnboardingFragment() );
+
+        // Step 2: Pattern Assignment
+        fragmentList.add( new PatternAssignmentOnboardingFragment() );
 
 //        // Step 2: Team Selection (9 teams available)
 //        fragmentList.add(new TeamSelectionFragment());
 
-        // Step 2: View Mode Selection
-        fragmentList.add(new ViewModeFragment());
+//        // Step 2: View Mode Selection
+//        fragmentList.add( new ViewModeFragment() );
 
         // Step 3: Personalization (colors, etc.)
-        fragmentList.add(new PersonalizationFragment());
+        fragmentList.add( new PersonalizationFragment() );
 
         // Step 4: Complete
         // change "continue" button with "get started" text
@@ -73,7 +77,7 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         // Return the fragment at the specified position
         if (position >= 0 && position < fragments.size()) {
-            return fragments.get(position);
+            return fragments.get( position );
         }
 
         // Fallback to introduction fragment if position is invalid
@@ -87,18 +91,20 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
 
     /**
      * Get fragment at specific position (utility method)
+     *
      * @param position Fragment position
      * @return Fragment instance or null if invalid position
      */
     public Fragment getFragmentAt(int position) {
         if (position >= 0 && position < fragments.size()) {
-            return fragments.get(position);
+            return fragments.get( position );
         }
         return null;
     }
 
     /**
      * Get total number of welcome steps
+     *
      * @return Total step count
      */
     public int getTotalSteps() {
@@ -107,6 +113,7 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
 
     /**
      * Check if position is the last step
+     *
      * @param position Current position
      * @return True if this is the final step
      */
@@ -116,6 +123,7 @@ public class WelcomeFragmentAdapter extends FragmentStateAdapter {
 
     /**
      * Check if position is the first step
+     *
      * @param position Current position
      * @return True if this is the first step
      */

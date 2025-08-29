@@ -111,4 +111,12 @@ public interface WelcomeInterface {
         SharedPreferences prefs = activity.getSharedPreferences(QDue.Settings.QD_PREF_NAME, MODE_PRIVATE);
         return prefs.getBoolean(QDue.Settings.QD_KEY_WELCOME_COMPLETED, false);
     }
+
+    // ============================================================================================
+
+    /**
+     * Called when pattern assignment step is completed
+     * @param success true if assignment was created, false if skipped
+     */
+    void onPatternAssignmentCompleted(boolean success);
 }

@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.db.CalendarDatabase;
+import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.dao.TeamDao;
 import net.calvuz.qdue.data.entities.TeamEntity;
 import net.calvuz.qdue.domain.calendar.models.Team;
@@ -81,8 +82,8 @@ public class TeamRepositoryImpl implements TeamRepository {
     /**
      * Constructor for dependency injection following clean architecture principles.
      *
-     * @param context Application context for resource access
-     * @param database CalendarDatabase instance for data operations
+     * @param context       Application context for resource access
+     * @param database      CalendarDatabase instance for data operations
      * @param backupManager CoreBackupManager for automatic backup integration
      */
     public TeamRepositoryImpl(@NonNull Context context,
@@ -92,13 +93,13 @@ public class TeamRepositoryImpl implements TeamRepository {
         this.mDatabase = database;
         this.mTeamDao = database.teamDao();
         this.mBackupManager = backupManager;
-        this.mLocaleManager = new LocaleManager(mContext);
-        this.mExecutorService = Executors.newFixedThreadPool(3);
+        this.mLocaleManager = new LocaleManager( mContext );
+        this.mExecutorService = Executors.newFixedThreadPool( 3 );
 
         // Initialize with standard QuattroDue teams
         initializeStandardTeamsIfNeeded();
 
-        Log.d(TAG, "TeamRepositoryImpl initialized via dependency injection");
+        Log.d( TAG, "TeamRepositoryImpl initialized via dependency injection" );
     }
 
     // ==================== TEAM CRUD OPERATIONS ====================
@@ -106,175 +107,190 @@ public class TeamRepositoryImpl implements TeamRepository {
     @NonNull
     @Override
     public CompletableFuture<Team> getTeamById(@NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting team by ID: " + teamId);
+                Log.d( TAG, "Getting team by ID: " + teamId );
 
                 // Use team name as ID for domain model
-                TeamEntity entity = mTeamDao.getActiveTeamByName(teamId);
+                TeamEntity entity = mTeamDao.getActiveTeamByName( teamId );
                 if (entity == null) {
-                    Log.w(TAG, "Team not found with ID: " + teamId);
+                    Log.w( TAG, "Team not found with ID: " + teamId );
                     return null;
                 }
 
-                Team domainTeam = convertToDomainModel(entity);
-                Log.d(TAG, "Successfully retrieved team: " + teamId);
+                Team domainTeam = convertToDomainModel( entity );
+                Log.d( TAG, "Successfully retrieved team: " + teamId );
                 return domainTeam;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team by ID: " + teamId, e);
+                Log.e( TAG, "Error getting team by ID: " + teamId, e );
                 return null;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Team> getTeamByName(@NonNull String teamName) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting team by name: " + teamName);
+                Log.d( TAG, "Getting team by name: " + teamName );
 
-                TeamEntity entity = mTeamDao.getActiveTeamByName(teamName);
+                TeamEntity entity = mTeamDao.getActiveTeamByName( teamName );
                 if (entity == null) {
-                    Log.w(TAG, "Team not found with name: " + teamName);
+                    Log.w( TAG, "Team not found with name: " + teamName );
                     return null;
                 }
 
-                Team domainTeam = convertToDomainModel(entity);
-                Log.d(TAG, "Successfully retrieved team by name: " + teamName);
+                Team domainTeam = convertToDomainModel( entity );
+                Log.d( TAG, "Successfully retrieved team by name: " + teamName );
                 return domainTeam;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team by name: " + teamName, e);
+                Log.e( TAG, "Error getting team by name: " + teamName, e );
                 return null;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getAllActiveTeams() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting all active teams");
+                Log.d( TAG, "Getting all active teams" );
 
                 List<TeamEntity> entities = mTeamDao.getActiveTeams();
                 List<Team> domainTeams = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .map( this::convertToDomainModel )
+                        .filter( java.util.Objects::nonNull )
+                        .collect( Collectors.toList() );
 
-                Log.d(TAG, "Successfully retrieved " + domainTeams.size() + " active teams");
+                Log.d( TAG, "Successfully retrieved " + domainTeams.size() + " active teams" );
                 return domainTeams;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting active teams", e);
+                Log.e( TAG, "Error getting active teams", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
+    }
+
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<List<Team>>> getTeamsWithQuattroDueOffset() {
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                List<TeamEntity> teams = mTeamDao.getAllTeams();
+                List<Team> domainTeams = teams.stream()
+                        .map( this::convertToDomainModel )
+                        .filter( java.util.Objects::nonNull )
+                        .filter( team -> team.getQdueOffset() >= 0 )
+                        .collect( Collectors.toList() );
+
+                return OperationResult.success( domainTeams,
+                        OperationResult.OperationType.READ );
+            } catch (Exception e) {
+                return OperationResult.failure( "Failed to load QuattroDue teams: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
+            }
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getAllTeams() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting all teams");
+                Log.d( TAG, "Getting all teams" );
 
                 List<TeamEntity> entities = mTeamDao.getAllTeams();
                 List<Team> domainTeams = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .map( this::convertToDomainModel )
+                        .filter( java.util.Objects::nonNull )
+                        .collect( Collectors.toList() );
 
-                Log.d(TAG, "Successfully retrieved " + domainTeams.size() + " teams");
+                Log.d( TAG, "Successfully retrieved " + domainTeams.size() + " teams" );
                 return domainTeams;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting all teams", e);
+                Log.e( TAG, "Error getting all teams", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Team> saveTeam(@NonNull Team team) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Saving team: " + team.getDisplayName());
+                Log.d( TAG, "Saving team: " + team.getDisplayName() );
 
                 // Convert to entity
-                TeamEntity entity = convertToEntity(team);
+                TeamEntity entity = convertToEntity( team );
                 if (entity == null) {
-                    throw new IllegalArgumentException("Cannot convert team to entity");
+                    throw new IllegalArgumentException( "Cannot convert team to entity" );
                 }
 
                 // Check if team exists by name
-                boolean isUpdate = mTeamDao.activeTeamExistsByName(team.getName());
+                boolean isUpdate = mTeamDao.activeTeamExistsByName( team.getName() );
                 if (isUpdate) {
                     // Get existing entity to preserve ID
-                    TeamEntity existingEntity = mTeamDao.getActiveTeamByName(team.getName());
+                    TeamEntity existingEntity = mTeamDao.getActiveTeamByName( team.getName() );
                     if (existingEntity != null) {
-                        entity.setId(existingEntity.getId());
-                        entity.setCreatedAt(existingEntity.getCreatedAt());
+                        entity.setId( existingEntity.getId() );
+                        entity.setCreatedAt( existingEntity.getCreatedAt() );
                     }
-                    mTeamDao.updateTeam(entity);
-                    Log.d(TAG, "Updated existing team: " + team.getName());
+                    mTeamDao.updateTeam( entity );
+                    Log.d( TAG, "Updated existing team: " + team.getName() );
                 } else {
-                    mTeamDao.insertTeam(entity);
-                    Log.d(TAG, "Inserted new team: " + team.getName());
+                    mTeamDao.insertTeam( entity );
+                    Log.d( TAG, "Inserted new team: " + team.getName() );
                 }
 
                 // Trigger auto backup
-                mBackupManager.performAutoBackup("teams", isUpdate ? "update" : "create");
+                mBackupManager.performAutoBackup( "teams", isUpdate ? "update" : "create" );
 
-                Team savedTeam = convertToDomainModel(entity);
-                Log.d(TAG, "Successfully saved team: " + team.getDisplayName());
+                Team savedTeam = convertToDomainModel( entity );
+                Log.d( TAG, "Successfully saved team: " + team.getDisplayName() );
                 return savedTeam;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error saving team: " + team.getDisplayName(), e);
-                throw new RuntimeException("Failed to save team", e);
+                Log.e( TAG, "Error saving team: " + team.getDisplayName(), e );
+                throw new RuntimeException( "Failed to save team", e );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Boolean> deleteTeam(@NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Deleting team: " + teamId);
+                Log.d( TAG, "Deleting team: " + teamId );
 
                 // Prevent deletion of standard QuattroDue teams
-                if (isStandardQuattroDueTeam(teamId)) {
-                    Log.w(TAG, "Cannot delete standard QuattroDue team: " + teamId);
+                if (isStandardQuattroDueTeam( teamId )) {
+                    Log.w( TAG, "Cannot delete standard QuattroDue team: " + teamId );
                     return false;
                 }
 
                 // Remove all user assignments for this team
-                removeAllUsersFromTeam(teamId);
+                removeAllUsersFromTeam( teamId );
 
                 // Soft delete by marking inactive
                 long timestamp = System.currentTimeMillis();
-                int affectedRows = mTeamDao.markTeamAsInactiveByName(teamId, timestamp);
+                int affectedRows = mTeamDao.markTeamAsInactiveByName( teamId, timestamp );
 
                 if (affectedRows > 0) {
-                    mBackupManager.performAutoBackup("teams", "delete");
-                    Log.d(TAG, "Successfully deleted team: " + teamId);
+                    mBackupManager.performAutoBackup( "teams", "delete" );
+                    Log.d( TAG, "Successfully deleted team: " + teamId );
                     return true;
                 } else {
-                    Log.w(TAG, "No team found to delete: " + teamId);
+                    Log.w( TAG, "No team found to delete: " + teamId );
                     return false;
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "Error deleting team: " + teamId, e);
+                Log.e( TAG, "Error deleting team: " + teamId, e );
                 return false;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== USER-TEAM ASSIGNMENT OPERATIONS ====================
@@ -282,194 +298,189 @@ public class TeamRepositoryImpl implements TeamRepository {
     @NonNull
     @Override
     public CompletableFuture<Team> getTeamForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting primary team for user: " + userId);
+                Log.d( TAG, "Getting primary team for user: " + userId );
 
-                String primaryTeamId = mUserPrimaryTeamAssignments.get(userId);
+                String primaryTeamId = mUserPrimaryTeamAssignments.get( userId );
                 if (primaryTeamId == null) {
                     // Fallback to first assigned team
-                    List<String> userTeams = mUserTeamAssignments.get(userId);
+                    List<String> userTeams = mUserTeamAssignments.get( userId );
                     if (userTeams != null && !userTeams.isEmpty()) {
-                        primaryTeamId = userTeams.get(0);
+                        primaryTeamId = userTeams.get( 0 );
                     }
                 }
 
                 if (primaryTeamId != null) {
-                    return getTeamById(primaryTeamId).get();
+                    return getTeamById( primaryTeamId ).get();
                 }
 
-                Log.d(TAG, "No team found for user: " + userId);
+                Log.d( TAG, "No team found for user: " + userId );
                 return null;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team for user: " + userId, e);
+                Log.e( TAG, "Error getting team for user: " + userId, e );
                 return null;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getTeamsForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting teams for user: " + userId);
+                Log.d( TAG, "Getting teams for user: " + userId );
 
-                List<String> teamIds = mUserTeamAssignments.get(userId);
+                List<String> teamIds = mUserTeamAssignments.get( userId );
                 if (teamIds == null || teamIds.isEmpty()) {
                     return new ArrayList<>();
                 }
 
                 List<Team> teams = new ArrayList<>();
                 for (String teamId : teamIds) {
-                    Team team = getTeamById(teamId).get();
+                    Team team = getTeamById( teamId ).get();
                     if (team != null) {
-                        teams.add(team);
+                        teams.add( team );
                     }
                 }
 
-                Log.d(TAG, "Found " + teams.size() + " teams for user: " + userId);
+                Log.d( TAG, "Found " + teams.size() + " teams for user: " + userId );
                 return teams;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting teams for user: " + userId, e);
+                Log.e( TAG, "Error getting teams for user: " + userId, e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Long>> getUsersInTeam(@NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                List<Long> users = mTeamUserAssignments.get(teamId);
-                return users != null ? new ArrayList<>(users) : new ArrayList<>();
+                List<Long> users = mTeamUserAssignments.get( teamId );
+                return users != null ? new ArrayList<>( users ) : new ArrayList<>();
             } catch (Exception e) {
-                Log.e(TAG, "Error getting users in team: " + teamId, e);
+                Log.e( TAG, "Error getting users in team: " + teamId, e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Long>> getUsersInTeamByName(@NonNull String teamName) {
-        return getUsersInTeam(teamName); // Team name is used as ID
+        return getUsersInTeam( teamName ); // Team name is used as ID
     }
 
     @NonNull
     @Override
     public CompletableFuture<Boolean> assignUserToTeam(@NonNull Long userId, @NonNull String teamId, boolean isPrimary) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Assigning user " + userId + " to team " + teamId + " (primary: " + isPrimary + ")");
+                Log.d( TAG, "Assigning user " + userId + " to team " + teamId + " (primary: " + isPrimary + ")" );
 
                 // Verify team exists
-                Team team = getTeamById(teamId).get();
+                Team team = getTeamById( teamId ).get();
                 if (team == null || !team.isActive()) {
-                    Log.w(TAG, "Cannot assign to inactive or non-existent team: " + teamId);
+                    Log.w( TAG, "Cannot assign to inactive or non-existent team: " + teamId );
                     return false;
                 }
 
                 // Add to user's team list
-                List<String> userTeams = mUserTeamAssignments.computeIfAbsent(userId, k -> new ArrayList<>());
-                if (!userTeams.contains(teamId)) {
-                    userTeams.add(teamId);
+                List<String> userTeams = mUserTeamAssignments.computeIfAbsent( userId, k -> new ArrayList<>() );
+                if (!userTeams.contains( teamId )) {
+                    userTeams.add( teamId );
                 }
 
                 // Add to team's user list
-                List<Long> teamUsers = mTeamUserAssignments.computeIfAbsent(teamId, k -> new ArrayList<>());
-                if (!teamUsers.contains(userId)) {
-                    teamUsers.add(userId);
+                List<Long> teamUsers = mTeamUserAssignments.computeIfAbsent( teamId, k -> new ArrayList<>() );
+                if (!teamUsers.contains( userId )) {
+                    teamUsers.add( userId );
                 }
 
                 // Set as primary if requested or if it's the user's first team
-                if (isPrimary || mUserPrimaryTeamAssignments.get(userId) == null) {
-                    mUserPrimaryTeamAssignments.put(userId, teamId);
+                if (isPrimary || mUserPrimaryTeamAssignments.get( userId ) == null) {
+                    mUserPrimaryTeamAssignments.put( userId, teamId );
                 }
 
-                mBackupManager.performAutoBackup("teams", "user_assignment");
-                Log.d(TAG, "Successfully assigned user " + userId + " to team " + teamId);
+                mBackupManager.performAutoBackup( "teams", "user_assignment" );
+                Log.d( TAG, "Successfully assigned user " + userId + " to team " + teamId );
                 return true;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error assigning user to team", e);
+                Log.e( TAG, "Error assigning user to team", e );
                 return false;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Boolean> removeUserFromTeam(@NonNull Long userId, @NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Removing user " + userId + " from team " + teamId);
+                Log.d( TAG, "Removing user " + userId + " from team " + teamId );
 
                 // Remove from user's team list
-                List<String> userTeams = mUserTeamAssignments.get(userId);
+                List<String> userTeams = mUserTeamAssignments.get( userId );
                 if (userTeams != null) {
-                    userTeams.remove(teamId);
+                    userTeams.remove( teamId );
                     if (userTeams.isEmpty()) {
-                        mUserTeamAssignments.remove(userId);
+                        mUserTeamAssignments.remove( userId );
                     }
                 }
 
                 // Remove from team's user list
-                List<Long> teamUsers = mTeamUserAssignments.get(teamId);
+                List<Long> teamUsers = mTeamUserAssignments.get( teamId );
                 if (teamUsers != null) {
-                    teamUsers.remove(userId);
+                    teamUsers.remove( userId );
                     if (teamUsers.isEmpty()) {
-                        mTeamUserAssignments.remove(teamId);
+                        mTeamUserAssignments.remove( teamId );
                     }
                 }
 
                 // Update primary team if necessary
-                String primaryTeam = mUserPrimaryTeamAssignments.get(userId);
-                if (teamId.equals(primaryTeam)) {
+                String primaryTeam = mUserPrimaryTeamAssignments.get( userId );
+                if (teamId.equals( primaryTeam )) {
                     // Set new primary team to first remaining team, or remove if none
                     if (userTeams != null && !userTeams.isEmpty()) {
-                        mUserPrimaryTeamAssignments.put(userId, userTeams.get(0));
+                        mUserPrimaryTeamAssignments.put( userId, userTeams.get( 0 ) );
                     } else {
-                        mUserPrimaryTeamAssignments.remove(userId);
+                        mUserPrimaryTeamAssignments.remove( userId );
                     }
                 }
 
-                mBackupManager.performAutoBackup("teams", "user_removal");
-                Log.d(TAG, "Successfully removed user " + userId + " from team " + teamId);
+                mBackupManager.performAutoBackup( "teams", "user_removal" );
+                Log.d( TAG, "Successfully removed user " + userId + " from team " + teamId );
                 return true;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error removing user from team", e);
+                Log.e( TAG, "Error removing user from team", e );
                 return false;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Boolean> setPrimaryTeamForUser(@NonNull Long userId, @NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Verify user is assigned to this team
-                List<String> userTeams = mUserTeamAssignments.get(userId);
-                if (userTeams == null || !userTeams.contains(teamId)) {
-                    Log.w(TAG, "Cannot set primary team - user " + userId + " not assigned to team " + teamId);
+                List<String> userTeams = mUserTeamAssignments.get( userId );
+                if (userTeams == null || !userTeams.contains( teamId )) {
+                    Log.w( TAG, "Cannot set primary team - user " + userId + " not assigned to team " + teamId );
                     return false;
                 }
 
-                mUserPrimaryTeamAssignments.put(userId, teamId);
-                mBackupManager.performAutoBackup("teams", "primary_assignment");
-                Log.d(TAG, "Set primary team for user " + userId + " to " + teamId);
+                mUserPrimaryTeamAssignments.put( userId, teamId );
+                mBackupManager.performAutoBackup( "teams", "primary_assignment" );
+                Log.d( TAG, "Set primary team for user " + userId + " to " + teamId );
                 return true;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error setting primary team", e);
+                Log.e( TAG, "Error setting primary team", e );
                 return false;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== BUSINESS QUERY OPERATIONS ====================
@@ -477,93 +488,92 @@ public class TeamRepositoryImpl implements TeamRepository {
     @NonNull
     @Override
     public CompletableFuture<Boolean> isUserInTeam(@NonNull Long userId, @NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                List<String> userTeams = mUserTeamAssignments.get(userId);
-                return userTeams != null && userTeams.contains(teamId);
+                List<String> userTeams = mUserTeamAssignments.get( userId );
+                return userTeams != null && userTeams.contains( teamId );
             } catch (Exception e) {
-                Log.e(TAG, "Error checking user team membership", e);
+                Log.e( TAG, "Error checking user team membership", e );
                 return false;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Boolean> isUserInTeamByName(@NonNull Long userId, @NonNull String teamName) {
-        return isUserInTeam(userId, teamName); // Team name is used as ID
+        return isUserInTeam( userId, teamName ); // Team name is used as ID
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getTeamsByNamePattern(@NonNull String namePattern) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Searching teams by name pattern: " + namePattern);
+                Log.d( TAG, "Searching teams by name pattern: " + namePattern );
 
                 // Convert pattern to SQL LIKE pattern
-                String sqlPattern = namePattern.replace("*", "%").replace("?", "_");
-                if (!sqlPattern.contains("%")) {
+                String sqlPattern = namePattern.replace( "*", "%" ).replace( "?", "_" );
+                if (!sqlPattern.contains( "%" )) {
                     sqlPattern = "%" + sqlPattern + "%";
                 }
 
-                List<TeamEntity> entities = mTeamDao.findTeamsByNamePattern(sqlPattern);
+                List<TeamEntity> entities = mTeamDao.findTeamsByNamePattern( sqlPattern );
                 List<Team> domainTeams = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .map( this::convertToDomainModel )
+                        .filter( java.util.Objects::nonNull )
+                        .collect( Collectors.toList() );
 
-                Log.d(TAG, "Found " + domainTeams.size() + " teams matching pattern: " + namePattern);
+                Log.d( TAG, "Found " + domainTeams.size() + " teams matching pattern: " + namePattern );
                 return domainTeams;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error searching teams by name pattern", e);
+                Log.e( TAG, "Error searching teams by name pattern", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getTeamsForShifts(@NonNull List<String> shiftIds) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // This would require shift-team assignment logic
                 // For now, return all active teams as placeholder
-                Log.d(TAG, "Getting teams for shifts (placeholder implementation)");
+                Log.d( TAG, "Getting teams for shifts (placeholder implementation)" );
                 return getAllActiveTeams().get();
             } catch (Exception e) {
-                Log.e(TAG, "Error getting teams for shifts", e);
+                Log.e( TAG, "Error getting teams for shifts", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Integer> getActiveTeamCount() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 return mTeamDao.getActiveTeamCount();
             } catch (Exception e) {
-                Log.e(TAG, "Error getting active team count", e);
+                Log.e( TAG, "Error getting active team count", e );
                 return 0;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Integer> getUserCountInTeam(@NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                List<Long> users = mTeamUserAssignments.get(teamId);
+                List<Long> users = mTeamUserAssignments.get( teamId );
                 return users != null ? users.size() : 0;
             } catch (Exception e) {
-                Log.e(TAG, "Error getting user count in team", e);
+                Log.e( TAG, "Error getting user count in team", e );
                 return 0;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== ADVANCED TEAM OPERATIONS ====================
@@ -571,73 +581,73 @@ public class TeamRepositoryImpl implements TeamRepository {
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getAvailableTeamsForScheduling() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // Return all active teams as available for scheduling
                 return getAllActiveTeams().get();
             } catch (Exception e) {
-                Log.e(TAG, "Error getting available teams for scheduling", e);
+                Log.e( TAG, "Error getting available teams for scheduling", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getTeamsWithMinimumUsers(int minUserCount) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 List<Team> allTeams = getAllActiveTeams().get();
                 List<Team> eligibleTeams = new ArrayList<>();
 
                 for (Team team : allTeams) {
-                    int userCount = getUserCountInTeam(team.getId()).get();
+                    int userCount = getUserCountInTeam( team.getId() ).get();
                     if (userCount >= minUserCount) {
-                        eligibleTeams.add(team);
+                        eligibleTeams.add( team );
                     }
                 }
 
                 return eligibleTeams;
             } catch (Exception e) {
-                Log.e(TAG, "Error getting teams with minimum users", e);
+                Log.e( TAG, "Error getting teams with minimum users", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getEligibleTeamsForUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 // For now, return all active teams as eligible
                 // Business logic can be added here for eligibility rules
                 return getAllActiveTeams().get();
             } catch (Exception e) {
-                Log.e(TAG, "Error getting eligible teams for user", e);
+                Log.e( TAG, "Error getting eligible teams for user", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<Integer> bulkAssignUsersToTeam(@NonNull List<Long> userIds, @NonNull String teamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 int successCount = 0;
                 for (Long userId : userIds) {
-                    boolean success = assignUserToTeam(userId, teamId, false).get();
+                    boolean success = assignUserToTeam( userId, teamId, false ).get();
                     if (success) {
                         successCount++;
                     }
                 }
                 return successCount;
             } catch (Exception e) {
-                Log.e(TAG, "Error bulk assigning users to team", e);
+                Log.e( TAG, "Error bulk assigning users to team", e );
                 return 0;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
@@ -645,13 +655,13 @@ public class TeamRepositoryImpl implements TeamRepository {
     public CompletableFuture<Integer> transferUsersBetweenTeams(@NonNull List<Long> userIds,
                                                                 @NonNull String fromTeamId,
                                                                 @NonNull String toTeamId) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 int successCount = 0;
                 for (Long userId : userIds) {
-                    boolean removed = removeUserFromTeam(userId, fromTeamId).get();
+                    boolean removed = removeUserFromTeam( userId, fromTeamId ).get();
                     if (removed) {
-                        boolean assigned = assignUserToTeam(userId, toTeamId, false).get();
+                        boolean assigned = assignUserToTeam( userId, toTeamId, false ).get();
                         if (assigned) {
                             successCount++;
                         }
@@ -659,10 +669,10 @@ public class TeamRepositoryImpl implements TeamRepository {
                 }
                 return successCount;
             } catch (Exception e) {
-                Log.e(TAG, "Error transferring users between teams", e);
+                Log.e( TAG, "Error transferring users between teams", e );
                 return 0;
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== STATISTICS AND REPORTING ====================
@@ -670,7 +680,7 @@ public class TeamRepositoryImpl implements TeamRepository {
     @NonNull
     @Override
     public CompletableFuture<TeamStatistics> getTeamStatistics() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 int totalTeams = mTeamDao.getTeamCount();
                 int activeTeams = mTeamDao.getActiveTeamCount();
@@ -687,14 +697,14 @@ public class TeamRepositoryImpl implements TeamRepository {
                 int minUsers = Integer.MAX_VALUE;
 
                 for (String teamId : mTeamUserAssignments.keySet()) {
-                    int userCount = mTeamUserAssignments.get(teamId).size();
+                    int userCount = mTeamUserAssignments.get( teamId ).size();
                     if (userCount > maxUsers) {
                         maxUsers = userCount;
-                        largestTeam = getTeamById(teamId).get();
+                        largestTeam = getTeamById( teamId ).get();
                     }
                     if (userCount < minUsers) {
                         minUsers = userCount;
-                        smallestTeam = getTeamById(teamId).get();
+                        smallestTeam = getTeamById( teamId ).get();
                     }
                 }
 
@@ -707,42 +717,40 @@ public class TeamRepositoryImpl implements TeamRepository {
                         largestTeam,
                         smallestTeam
                 );
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting team statistics", e);
-                return new TeamStatistics(0, 0, 0, 0, 0.0, null, null);
+                Log.e( TAG, "Error getting team statistics", e );
+                return new TeamStatistics( 0, 0, 0, 0, 0.0, null, null );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @NonNull
     @Override
     public CompletableFuture<List<Team>> getTeamsOrderedByUserCount(boolean ascending) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 List<Team> allTeams = getAllActiveTeams().get();
 
                 // Create team-usercount map
                 Map<Team, Integer> teamUserCounts = new HashMap<>();
                 for (Team team : allTeams) {
-                    int userCount = getUserCountInTeam(team.getId()).get();
-                    teamUserCounts.put(team, userCount);
+                    int userCount = getUserCountInTeam( team.getId() ).get();
+                    teamUserCounts.put( team, userCount );
                 }
 
                 // Sort teams by user count
-                allTeams.sort((t1, t2) -> {
-                    int count1 = teamUserCounts.get(t1);
-                    int count2 = teamUserCounts.get(t2);
-                    return ascending ? Integer.compare(count1, count2) : Integer.compare(count2, count1);
-                });
+                allTeams.sort( (t1, t2) -> {
+                    int count1 = teamUserCounts.get( t1 );
+                    int count2 = teamUserCounts.get( t2 );
+                    return ascending ? Integer.compare( count1, count2 ) : Integer.compare( count2, count1 );
+                } );
 
                 return allTeams;
-
             } catch (Exception e) {
-                Log.e(TAG, "Error getting teams ordered by user count", e);
+                Log.e( TAG, "Error getting teams ordered by user count", e );
                 return new ArrayList<>();
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== DOMAIN MODEL CONVERSION ====================
@@ -753,26 +761,25 @@ public class TeamRepositoryImpl implements TeamRepository {
     @Nullable
     private Team convertToDomainModel(@NonNull TeamEntity entity) {
         try {
-            Team.Builder builder = Team.builder(entity.getName())
-                    .name(entity.getName())
-                    .displayName(entity.getEffectiveDisplayName())
-                    .active(entity.isActive());
+            Team.Builder builder = Team.builder( entity.getName() )
+                    .name( entity.getName() )
+                    .displayName( entity.getEffectiveDisplayName() )
+                    .active( entity.isActive() );
 
             if (entity.hasDescription()) {
-                builder.description(entity.getDescription());
+                builder.description( entity.getDescription() );
             }
 
             // Determine team type for QuattroDue teams
-            if (isStandardQuattroDueTeam(entity.getName())) {
-                builder.teamType(Team.TeamType.QUATTRODUE);
+            if (isStandardQuattroDueTeam( entity.getName() )) {
+                builder.teamType( Team.TeamType.QUATTRODUE );
             } else {
-                builder.teamType(Team.TeamType.STANDARD);
+                builder.teamType( Team.TeamType.STANDARD );
             }
 
             return builder.build();
-
         } catch (Exception e) {
-            Log.e(TAG, "Error converting entity to domain model: " + entity.getName(), e);
+            Log.e( TAG, "Error converting entity to domain model: " + entity.getName(), e );
             return null;
         }
     }
@@ -783,15 +790,14 @@ public class TeamRepositoryImpl implements TeamRepository {
     @Nullable
     private TeamEntity convertToEntity(@NonNull Team team) {
         try {
-            TeamEntity entity = new TeamEntity(team.getName());
-            entity.setDisplayName(team.getDisplayName());
-            entity.setDescription(team.getDescription());
-            entity.setActive(team.isActive());
+            TeamEntity entity = new TeamEntity( team.getName() );
+            entity.setDisplayName( team.getDisplayName() );
+            entity.setDescription( team.getDescription() );
+            entity.setActive( team.isActive() );
 
             return entity;
-
         } catch (Exception e) {
-            Log.e(TAG, "Error converting domain model to entity: " + team.getName(), e);
+            Log.e( TAG, "Error converting domain model to entity: " + team.getName(), e );
             return null;
         }
     }
@@ -802,28 +808,28 @@ public class TeamRepositoryImpl implements TeamRepository {
      * Initialize standard QuattroDue teams if they don't exist.
      */
     private void initializeStandardTeamsIfNeeded() {
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync( () -> {
             try {
                 String[] standardTeams = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
 
                 for (int i = 0; i < standardTeams.length; i++) {
                     String teamName = standardTeams[i];
-                    if (!mTeamDao.activeTeamExistsByName(teamName)) {
-                        String localizedDisplayName = mLocaleManager.getTeamDisplayName(mContext, teamName);
-                        String localizedDescription = mLocaleManager.getTeamDescriptionTemplate(mContext) + " " + teamName;
+                    if (!mTeamDao.activeTeamExistsByName( teamName )) {
+                        String localizedDisplayName = mLocaleManager.getTeamDisplayName( mContext, teamName );
+                        String localizedDescription = mLocaleManager.getTeamDescriptionTemplate( mContext ) + " " + teamName;
 
-                        TeamEntity entity = new TeamEntity(teamName);
-                        entity.setDisplayName(localizedDisplayName != null ? localizedDisplayName : "Team " + teamName);
-                        entity.setDescription(localizedDescription);
+                        TeamEntity entity = new TeamEntity( teamName );
+                        entity.setDisplayName( localizedDisplayName != null ? localizedDisplayName : "Team " + teamName );
+                        entity.setDescription( localizedDescription );
 
-                        mTeamDao.insertTeam(entity);
-                        Log.d(TAG, "Initialized standard QuattroDue team: " + teamName);
+                        mTeamDao.insertTeam( entity );
+                        Log.d( TAG, "Initialized standard QuattroDue team: " + teamName );
                     }
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error initializing standard teams", e);
+                Log.e( TAG, "Error initializing standard teams", e );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     /**
@@ -832,7 +838,7 @@ public class TeamRepositoryImpl implements TeamRepository {
     private boolean isStandardQuattroDueTeam(@NonNull String teamName) {
         String[] standardTeams = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
         for (String standardTeam : standardTeams) {
-            if (standardTeam.equals(teamName)) {
+            if (standardTeam.equals( teamName )) {
                 return true;
             }
         }
@@ -843,23 +849,23 @@ public class TeamRepositoryImpl implements TeamRepository {
      * Remove all users from a team (used during team deletion).
      */
     private void removeAllUsersFromTeam(@NonNull String teamId) {
-        List<Long> users = mTeamUserAssignments.remove(teamId);
+        List<Long> users = mTeamUserAssignments.remove( teamId );
         if (users != null) {
             for (Long userId : users) {
-                List<String> userTeams = mUserTeamAssignments.get(userId);
+                List<String> userTeams = mUserTeamAssignments.get( userId );
                 if (userTeams != null) {
-                    userTeams.remove(teamId);
+                    userTeams.remove( teamId );
                     if (userTeams.isEmpty()) {
-                        mUserTeamAssignments.remove(userId);
+                        mUserTeamAssignments.remove( userId );
                     }
                 }
 
                 // Remove primary assignment if necessary
-                if (teamId.equals(mUserPrimaryTeamAssignments.get(userId))) {
+                if (teamId.equals( mUserPrimaryTeamAssignments.get( userId ) )) {
                     if (userTeams != null && !userTeams.isEmpty()) {
-                        mUserPrimaryTeamAssignments.put(userId, userTeams.get(0));
+                        mUserPrimaryTeamAssignments.put( userId, userTeams.get( 0 ) );
                     } else {
-                        mUserPrimaryTeamAssignments.remove(userId);
+                        mUserPrimaryTeamAssignments.remove( userId );
                     }
                 }
             }

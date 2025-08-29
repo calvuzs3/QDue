@@ -23,6 +23,7 @@ import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.ApplyShiftExceptionsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
@@ -119,6 +120,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== USE CASE INSTANCES ====================
 
+    private volatile CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
     private volatile GenerateUserScheduleUseCase mGenerateUserScheduleUseCase;
     private volatile GenerateTeamScheduleUseCase mGenerateTeamScheduleUseCase;
     private volatile ApplyShiftExceptionsUseCase mApplyShiftExceptionsUseCase;
@@ -412,6 +414,19 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     }
 
     // ==================== USE CASES ====================
+
+    @NonNull
+    @Override
+    public CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase() {
+        if (mCreatePatternAssignmentUseCase == null) {
+            mCreatePatternAssignmentUseCase = new CreatePatternAssignmentUseCase(
+                    getTeamRepository(),
+                    getRecurrenceRuleRepository(),
+                    getUserScheduleAssignmentRepository()
+            );
+        }
+        return mCreatePatternAssignmentUseCase;
+    }
 
     @Override
     @NonNull

@@ -83,7 +83,7 @@ public interface UserScheduleAssignmentRepository {
      * @return CompletableFuture with OperationResult containing saved UserScheduleAssignment
      */
     @NonNull
-    CompletableFuture<OperationResult<UserScheduleAssignment>> saveUserScheduleAssignment(@NonNull UserScheduleAssignment assignment);
+    CompletableFuture<OperationResult<UserScheduleAssignment>> insertUserScheduleAssignment(@NonNull UserScheduleAssignment assignment);
 
     /**
      * Delete user schedule assignment by identifier.
@@ -97,7 +97,30 @@ public interface UserScheduleAssignmentRepository {
     @NonNull
     CompletableFuture<OperationResult<Boolean>> deleteUserScheduleAssignment(@NonNull String assignmentId);
 
+    /**
+     * Update user schedule assignment.
+     *
+     * <p>Updates an existing assignment with new data. Returns a failure
+     * result if the assignment is not found or an error occurs during update.</p>
+     *
+     * @param assignment Updated UserScheduleAssignment domain model
+     * @return CompletableFuture with OperationResult containing updated UserScheduleAssignment
+     */
+    @NonNull
+    CompletableFuture<OperationResult<UserScheduleAssignment>> updateUserScheduleAssignment(@NonNull UserScheduleAssignment assignment);
+
     // ==================== USER-SPECIFIC QUERIES ====================
+
+
+    /**
+     * Get active assignments for specific user.
+     * Returns assignments that are currently active or will be active in future.
+     *
+     * @param userId User ID to get assignments for
+     * @return CompletableFuture with OperationResult containing active assignments
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull Long userId);
 
     /**
      * Get active assignment for user on specific date.

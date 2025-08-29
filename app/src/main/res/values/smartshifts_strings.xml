@@ -118,7 +118,6 @@
 
     <!-- ===== SUCCESS MESSAGES ===== -->
     <string name="success_pattern_saved">Pattern salvato con successo</string>
-    <string name="success_assignment_created">Assegnazione creata con successo</string>
     <string name="success_shifts_generated">Turni generati per i prossimi 12 mesi</string>
     <string name="success_contact_saved">Contatto salvato</string>
     <string name="success_contact_deleted">Contatto eliminato</string>

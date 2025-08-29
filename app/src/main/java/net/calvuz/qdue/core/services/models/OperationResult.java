@@ -106,6 +106,19 @@ public class OperationResult<T> {
         return new OperationResult<>(false, null, message, errors, operationType);
     }
 
+    // ====================  CHAINING UTILITY ====================
+
+    /**
+     * Chain result with another result
+*/
+    public OperationResult<T> or(@NonNull OperationResult<T> other) {
+        if (this.success) {
+            return this;
+        } else {
+            return other;
+        }
+    }
+
     // ==================== VALIDATION FACTORY METHODS ====================
 
     /**

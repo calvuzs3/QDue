@@ -64,6 +64,10 @@ public interface RecurrenceRuleDao {
 
     @Query("SELECT * FROM recurrence_rules WHERE active = 1 ORDER BY created_at DESC")
     @NonNull
+    List<RecurrenceRuleEntity> getActiveUserRecurrenceRules();
+
+    @Query("SELECT * FROM recurrence_rules WHERE active = 1 ORDER BY created_at DESC")
+    @NonNull
     List<RecurrenceRuleEntity> getAllActiveRecurrenceRules();
 
     @Query("SELECT * FROM recurrence_rules WHERE frequency = :frequency AND active = 1 ORDER BY start_date")

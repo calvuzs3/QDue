@@ -59,6 +59,16 @@ public interface UserScheduleAssignmentDao {
     List<UserScheduleAssignmentEntity> getAssignmentsByUserId(@NonNull Long userId);
 
     @Query("""
+            SELECT * FROM user_schedule_assignments 
+            WHERE user_id = :userId 
+            AND active = 1 
+            AND (end_date IS NULL OR end_date >= date('now'))
+            ORDER BY priority DESC, start_date DESC
+            """)
+    @NonNull
+    List<UserScheduleAssignmentEntity> getUserActiveAssignments(@NonNull Long userId);
+
+    @Query("""
         SELECT * FROM user_schedule_assignments 
         WHERE user_id = :userId 
         AND status = 'ACTIVE' 

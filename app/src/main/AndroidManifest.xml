@@ -19,13 +19,41 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
+        <!-- Pattern Assignment Wizard Activity -->
+        <activity
+            android:name="net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardActivity"
+            android:exported="false"
+            android:label="@string/title_pattern_assignment_wizard"
+            android:parentActivityName="net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.QDue"
+            android:windowSoftInputMode="adjustResize">
+
+            <!-- Intent filters for different launch modes -->
+            <intent-filter>
+                <action android:name="net.calvuz.qdue.action.FIRST_ASSIGNMENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="net.calvuz.qdue.action.CHANGE_ASSIGNMENT" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!-- Metadata for navigation -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity" />
+
+        </activity>
+
         <!-- SwipeCalendarActivity - Debug Main Activity -->
         <activity
             android:name=".ui.features.swipecalendar.presentation.SwipeCalendarActivity"
             android:exported="true"
             android:label="@string/debug_swipe_calendar_title"
-            android:theme="@style/Theme.QDue"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.QDue">
 
             <!-- MAIN LAUNCHER INTENT-FILTER (moved from QDueMainActivity) -->
             <intent-filter>
@@ -37,9 +65,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="qdue"
+                <data
                     android:host="calendar"
-                    android:pathPrefix="/debug" />
+                    android:pathPrefix="/debug"
+                    android:scheme="qdue" />
             </intent-filter>
 
         </activity>
@@ -86,7 +115,7 @@
 
         <!-- SettingsActivity -->
         <activity
-            android:name=".ui.features.settings.QDueSettingsActivity"
+            android:name=".ui.features.settings.presentation.QDueSettingsActivity"
             android:exported="false"
             android:label="@string/menu_title_settings"
             android:parentActivityName=".QDueMainActivity">
@@ -95,17 +124,16 @@
                 android:value=".QDueMainActivity" />
         </activity>
 
-        <!-- User Profile Activity -->
+        <!-- UserProfileActivity -->
         <activity
-            android:name=".user.ui.UserProfileActivity"
+            android:name="net.calvuz.qdue.user.ui.UserProfileActivity"
             android:exported="false"
             android:label="@string/user_profile"
             android:parentActivityName=".QDueMainActivity"
             android:windowSoftInputMode="adjustResize">
-            <!--            android:theme="@style/Theme.QDue"-->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".QDueMainActivity" />
+                android:value="net.calvuz.qdue.QDueMainActivity" />
         </activity>
 
         <!-- UserSchedulePatternCreationActivity -->
@@ -221,18 +249,6 @@
             </intent-filter>
         </activity>
 
-        <!-- UserProfileActivity -->
-        <activity
-            android:name=".user.ui.UserProfileActivity"
-            android:exported="false"
-            android:label="@string/user_profile"
-            android:parentActivityName=".QDueMainActivity"
-            android:windowSoftInputMode="adjustResize">
-            <!--            android:theme="@style/Theme.QDue"-->
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".QDueMainActivity" />
-        </activity>
         <activity android:name="net.calvuz.qdue.smartshifts.ui.settings.SmartShiftsSettingsActivity" />
 
         <!-- Fonts -->
@@ -246,7 +262,7 @@
 
         <!-- Time changes -->
         <receiver
-            android:name=".ui.core.common.utils.TimeChangeReceiver"
+            android:name="net.calvuz.qdue.ui.core.common.utils.TimeChangeReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter android:priority="1000">

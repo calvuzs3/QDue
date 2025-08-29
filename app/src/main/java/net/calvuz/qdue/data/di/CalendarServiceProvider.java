@@ -12,6 +12,7 @@ import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.ApplyShiftExceptionsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
@@ -62,6 +63,13 @@ import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
  * @since Clean Architecture Phase 3
  */
 public interface CalendarServiceProvider {
+
+    /**
+     * Get CreatePatternAssignmentUseCase for assignment creation operations.
+     * @return CreatePatternAssignmentUseCase instance
+     */
+    @NonNull
+    CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase();
 
     // ==================== DOMAIN REPOSITORIES ====================
 

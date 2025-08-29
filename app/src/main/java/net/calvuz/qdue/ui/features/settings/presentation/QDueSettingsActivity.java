@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.settings;
+package net.calvuz.qdue.ui.features.settings.presentation;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -9,8 +9,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.ui.features.settings.presentation.CustomPatternPreferencesFragment;
-import net.calvuz.qdue.ui.features.settings.presentation.SettingsFragment;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
