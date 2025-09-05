@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
+import net.calvuz.qdue.domain.common.enums.Priority;
+import net.calvuz.qdue.domain.common.enums.Status;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -39,61 +41,6 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
     private static final String LOCALIZATION_SCOPE = "user_assignment";
 
-    // ==================== ENUMS ====================
-
-    /**
-     * Priority level for resolving conflicting assignments.
-     */
-    public enum Priority {
-        LOW( 1, "low_priority" ),
-        NORMAL( 5, "normal_priority" ),
-        HIGH( 8, "high_priority" ),
-        OVERRIDE( 10, "override_priority" );
-
-        private final int level;
-        private final String displayNameKey;
-
-        Priority(int level, String displayNameKey) {
-            this.level = level;
-            this.displayNameKey = displayNameKey;
-        }
-
-        public int getLevel() {
-            return level;
-        }
-
-        public String getDisplayNameKey() {
-            return displayNameKey;
-        }
-    }
-
-    /**
-     * Status of the assignment.
-     */
-    public enum Status {
-        ACTIVE( "active", "currently_active_assignment" ),
-        PENDING( "pending", "future_assignment_not_yet_active" ),
-        EXPIRED( "expired", "past_assignment_no_longer_active" ),
-        SUSPENDED( "suspended", "temporarily_suspended" ),
-        CANCELLED( "cancelled", "cancelled_assignment" );
-
-        private final String displayNameKey;
-        private final String descriptionKey;
-
-        Status(String displayNameKey, String descriptionKey) {
-            this.displayNameKey = displayNameKey;
-            this.descriptionKey = descriptionKey;
-        }
-
-        public String getDisplayNameKey() {
-            return displayNameKey;
-        }
-
-        public String getDescriptionKey() {
-            return descriptionKey;
-        }
-    }
-
     // ==================== IDENTIFICATION ====================
 
     private final String id;
@@ -103,7 +50,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
     // ==================== CORE ASSIGNMENT DATA ====================
 
-    private final Long userId;              // User being assigned
+    private final String userId;            // User being assigned
     private final String userName;          // Display name for UI
     private final String teamId;            // Team assignment
     private final String teamName;          // Team display name
@@ -127,7 +74,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     private final String assignedByUserName;
     private final String departmentId;     // Optional department grouping
     private final String departmentName;
-    private final String roleId;          // Optional role within team
+    private final String roleId;           // Optional role within team
     private final String roleName;
 
     // ==================== SYSTEM DATA ====================
@@ -143,8 +90,8 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     private final boolean active;
     private final long createdAt;
     private final long updatedAt;
-    private final Long createdByUserId;
-    private final Long lastModifiedByUserId;
+    private final String createdByUserId;
+    private final String lastModifiedByUserId;
 
     // ==================== CONSTRUCTOR ====================
 
@@ -158,15 +105,19 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         this.notes = builder.notes;
 
         // Core data
-        this.userId = Objects.requireNonNull( builder.userId, "User ID cannot be null" );
+        this.userId = Objects.requireNonNull( builder.userId,
+                "User ID cannot be null" );
         this.userName = builder.userName;
-        this.teamId = Objects.requireNonNull( builder.teamId, "Team ID cannot be null" );
+        this.teamId = Objects.requireNonNull( builder.teamId,
+                "Team ID cannot be null" );
         this.teamName = builder.teamName;
-        this.recurrenceRuleId = Objects.requireNonNull( builder.recurrenceRuleId, "Recurrence rule ID cannot be null" );
+        this.recurrenceRuleId = Objects.requireNonNull( builder.recurrenceRuleId,
+                "Recurrence rule ID cannot be null" );
         this.cycleDayPosition = builder.cycleDayPosition;
 
         // Time boundaries
-        this.startDate = Objects.requireNonNull( builder.startDate, "Start date cannot be null" );
+        this.startDate = Objects.requireNonNull( builder.startDate,
+                "Start date cannot be null" );
         this.endDate = builder.endDate;
         this.isPermanent = builder.endDate == null;
 
@@ -247,7 +198,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     }
 
     @NonNull
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
@@ -340,12 +291,12 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     }
 
     @Nullable
-    public Long getCreatedByUserId() {
+    public String getCreatedByUserId() {
         return createdByUserId;
     }
 
     @Nullable
-    public Long getLastModifiedByUserId() {
+    public String getLastModifiedByUserId() {
         return lastModifiedByUserId;
     }
 
@@ -636,7 +587,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Status will be automatically determined based on start date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
                                                                  @NonNull String teamId,
                                                                  @NonNull String recurrenceRuleId,
                                                                  @NonNull LocalDate startDate,
@@ -657,7 +608,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary pattern assignment with end date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
                                                                  @NonNull String teamId,
                                                                  @NonNull String recurrenceRuleId,
                                                                  @NonNull LocalDate startDate,
@@ -680,7 +631,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary pattern assignment with end date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull Long userId,
+    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
                                                                  @NonNull String teamId,
                                                                  @NonNull String recurrenceRuleId,
                                                                  @NonNull LocalDate startDate,
@@ -715,7 +666,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public static UserScheduleAssignment createPatternAssignment(
-            @NonNull Long userId,
+            @NonNull String userId,
             @NonNull String teamId,
             @NonNull String recurrenceRuleId,
             @NonNull LocalDate startDate,
@@ -778,7 +729,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create standard permanent team assignment.
      */
     @NonNull
-    public static UserScheduleAssignment createPermanentAssignment(@NonNull Long userId, @NonNull String teamId,
+    public static UserScheduleAssignment createPermanentAssignment(@NonNull String userId, @NonNull String teamId,
                                                                    @NonNull String recurrenceRuleId, @NonNull LocalDate startDate) {
         return createPermanentAssignment(userId, teamId, recurrenceRuleId, startDate, null);
     }
@@ -787,7 +738,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create standard permanent team assignment with localization support.
      */
     @NonNull
-    public static UserScheduleAssignment createPermanentAssignment(@NonNull Long userId, @NonNull String teamId,
+    public static UserScheduleAssignment createPermanentAssignment(@NonNull String userId, @NonNull String teamId,
                                                                    @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
                                                                    @Nullable DomainLocalizer localizer) {
         return builder()
@@ -805,7 +756,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary team assignment with end date.
      */
     @NonNull
-    public static UserScheduleAssignment createTemporaryAssignment(@NonNull Long userId, @NonNull String teamId,
+    public static UserScheduleAssignment createTemporaryAssignment(@NonNull String userId, @NonNull String teamId,
                                                                    @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
                                                                    @NonNull LocalDate endDate) {
         return createTemporaryAssignment(userId, teamId, recurrenceRuleId, startDate, endDate, null);
@@ -815,7 +766,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary team assignment with end date and localization support.
      */
     @NonNull
-    public static UserScheduleAssignment createTemporaryAssignment(@NonNull Long userId, @NonNull String teamId,
+    public static UserScheduleAssignment createTemporaryAssignment(@NonNull String userId, @NonNull String teamId,
                                                                    @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
                                                                    @NonNull LocalDate endDate, @Nullable DomainLocalizer localizer) {
         return builder()
@@ -834,7 +785,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create team transfer assignment (replaces previous assignment).
      */
     @NonNull
-    public static UserScheduleAssignment createTeamTransfer(@NonNull Long userId, @NonNull String newTeamId,
+    public static UserScheduleAssignment createTeamTransfer(@NonNull String userId, @NonNull String newTeamId,
                                                             @NonNull String recurrenceRuleId, @NonNull LocalDate transferDate,
                                                             @Nullable String assignedByUserId) {
         return createTeamTransfer(userId, newTeamId, recurrenceRuleId, transferDate, assignedByUserId, null);
@@ -844,7 +795,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create team transfer assignment with localization support.
      */
     @NonNull
-    public static UserScheduleAssignment createTeamTransfer(@NonNull Long userId, @NonNull String newTeamId,
+    public static UserScheduleAssignment createTeamTransfer(@NonNull String userId, @NonNull String newTeamId,
                                                             @NonNull String recurrenceRuleId, @NonNull LocalDate transferDate,
                                                             @Nullable String assignedByUserId, @Nullable DomainLocalizer localizer) {
         return builder()
@@ -929,7 +880,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         private String title;
         private String description;
         private String notes;
-        private Long userId;
+        private String userId;
         private String userName;
         private String teamId;
         private String teamName;
@@ -948,8 +899,8 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         private boolean active = true;
         private long createdAt;
         private long updatedAt;
-        private Long createdByUserId;
-        private Long lastModifiedByUserId;
+        private String createdByUserId;
+        private String lastModifiedByUserId;
 
         @NonNull
         public Builder copyFrom(@NonNull UserScheduleAssignment source) {
@@ -1007,7 +958,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         }
 
         @NonNull
-        public Builder userId(@NonNull Long userId) {
+        public Builder userId(@NonNull String userId) {
             this.userId = userId;
             return this;
         }
@@ -1115,13 +1066,13 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         }
 
         @NonNull
-        public Builder createdByUserId(@Nullable Long createdByUserId) {
+        public Builder createdByUserId(@Nullable String createdByUserId) {
             this.createdByUserId = createdByUserId;
             return this;
         }
 
         @NonNull
-        public Builder lastModifiedByUserId(@Nullable Long lastModifiedByUserId) {
+        public Builder lastModifiedByUserId(@Nullable String lastModifiedByUserId) {
             this.lastModifiedByUserId = lastModifiedByUserId;
             return this;
         }
@@ -1162,9 +1113,9 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", notes='" + notes + '\'' +
-                ", userId=" + userId +
+                ", userID=" + userId +
                 ", userName='" + userName + '\'' +
-                ", teamId='" + teamId + '\'' +
+                ", teamID='" + teamId + '\'' +
                 ", teamName='" + teamName + '\'' +
                 ", recurrenceRuleId='" + recurrenceRuleId + '\'' +
                 ", cycleDayPosition=" + cycleDayPosition +
@@ -1172,7 +1123,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 ", endDate=" + endDate +
                 ", priority=" + priority +
                 ", status=" + status +
-                ", assignedByUserId='" + assignedByUserId + '\'' +
+                ", assignedByUserID='" + assignedByUserId + '\'' +
                 ", assignedByUserName='" + assignedByUserName + '\'' +
                 ", departmentId='" + departmentId + '\'' +
                 ", departmentName='" + departmentName + '\'' +

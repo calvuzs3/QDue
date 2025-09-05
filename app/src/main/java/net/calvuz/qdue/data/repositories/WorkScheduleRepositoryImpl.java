@@ -103,7 +103,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> getWorkScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
+    public CompletableFuture<OperationResult<WorkScheduleDay>> getWorkScheduleForDate(@NonNull LocalDate date, @Nullable String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 // Check cache first
@@ -122,7 +122,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 return OperationResult.success( schedule, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error generating work schedule for date: " + date, e );
-                return OperationResult.failure( "Failed to generate schedule for " + date ,
+                return OperationResult.failure( "Failed to generate schedule for " + date,
                         OperationResult.OperationType.READ );
             }
         }, mExecutorService );
@@ -131,7 +131,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForDateRange(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId) {
 
         return CompletableFuture.supplyAsync( () -> {
             Log.v( TAG, "Generating work schedule for date range: " + startDate + " to " + endDate );
@@ -157,7 +157,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForMonth(
-            @NonNull YearMonth month, @Nullable Long userId) {
+            @NonNull YearMonth month, @Nullable String userId) {
 
         LocalDate startDate = month.atDay( 1 );
         LocalDate endDate = month.atEndOfMonth();
@@ -168,7 +168,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<WorkScheduleEvent>>> generateWorkScheduleEvents(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId) {
 
         return CompletableFuture.supplyAsync( () -> {
             Log.v( TAG, "Getting work schedule events from " + startDate + " to " + endDate );
@@ -208,7 +208,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 // Get user's current assignment
@@ -232,9 +232,9 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull Long userId, @NonNull Team team) {
+    public CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull String userId, @NonNull Team team) {
         return CompletableFuture.supplyAsync( () -> {
-            Log.w(TAG, "Setting team for user " + userId + " to " + team.getName());
+            Log.w( TAG, "Setting team for user " + userId + " to " + team.getName() );
 
             try {
                 // Create new assignment for user
@@ -579,7 +579,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable Long userId) {
+    public CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, userId );
@@ -602,7 +602,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable Long userId) {
+    public CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, userId );
@@ -709,6 +709,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @Override
     @NonNull
+    @Deprecated
     public CompletableFuture<OperationResult<List<Team>>> createStandardTeams() {
         return CompletableFuture.supplyAsync( () -> {
             try {
@@ -815,17 +816,17 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     // ==================== HELPER METHODS ====================
 
-    private String buildCacheKey(@NonNull LocalDate date, @Nullable Long userId) {
+    private String buildCacheKey(@NonNull LocalDate date, @Nullable String userId) {
         return "schedule_" + date + "_" + (userId != null ? userId : "default");
     }
 
-    private WorkScheduleDay generateScheduleForDate(@NonNull LocalDate date, @Nullable Long userId) {
+    private WorkScheduleDay generateScheduleForDate(@NonNull LocalDate date, @Nullable String userId) {
         try {
             // Get user assignment
             UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
             if (assignment == null) {
                 // Means user doesn't have work assignment on this date
-                Log.i( TAG, "No user assignment found for date " + date  );
+                Log.i( TAG, "No user assignment found for date " + date );
 
                 // Create an empty schedule
                 return WorkScheduleDay.builder( date ).build();
@@ -850,7 +851,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     }
 
     @Nullable
-    private UserScheduleAssignment getUserAssignmentForDate(@NonNull LocalDate date, @Nullable Long userId) {
+    private UserScheduleAssignment getUserAssignmentForDate(@NonNull LocalDate date, @Nullable String userId) {
         if (userId == null) return null;
 
         try {
@@ -906,7 +907,6 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             // Use RecurrenceCalculator to generate schedule
             RecurrenceCalculator calculator = mCalendarServiceProvider.getRecurrenceCalculator();
             return calculator.generateScheduleForDate( date, theRule, assignment );
-
         } catch (Exception e) {
             Log.e( TAG, "Error generating base schedule", e );
             return WorkScheduleDay.builder( date ).build();
@@ -914,7 +914,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     }
 
     @NonNull
-    private WorkScheduleDay applyShiftExceptionsToSchedule(@NonNull WorkScheduleDay baseSchedule, @NonNull Long userId) {
+    private WorkScheduleDay applyShiftExceptionsToSchedule(@NonNull WorkScheduleDay baseSchedule, @NonNull String userId) {
         try {
             LocalDate date = baseSchedule.getDate();
 
@@ -931,7 +931,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             }
 
             // Build user-team mappings
-            Map<Long, Team> userTeamMappings = buildUserTeamMappings( userId, date );
+            Map<String, Team> userTeamMappings = buildUserTeamMappings( userId, date );
 
             // Apply exceptions using ExceptionResolver
             ExceptionResolver resolver = mCalendarServiceProvider.getExceptionResolver();
@@ -943,8 +943,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     }
 
     @NonNull
-    private Map<Long, Team> buildUserTeamMappings(@NonNull Long userId, @NonNull LocalDate date) {
-        Map<Long, Team> mappings = new HashMap<>();
+    private Map<String, Team> buildUserTeamMappings(@NonNull String userId, @NonNull LocalDate date) {
+        Map<String, Team> mappings = new HashMap<>();
 
         try {
             UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
@@ -966,7 +966,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
      * NEW: Convert WorkScheduleDay to multi-team WorkScheduleEvents.
      */
     @NonNull
-    private List<WorkScheduleEvent> convertScheduleDayToMultiTeamEvents(@NonNull WorkScheduleDay scheduleDay, @Nullable Long userId) {
+    private List<WorkScheduleEvent> convertScheduleDayToMultiTeamEvents(@NonNull WorkScheduleDay scheduleDay, @Nullable String userId) {
         List<WorkScheduleEvent> events = new ArrayList<>();
 
         for (WorkScheduleShift shift : scheduleDay.getShifts()) {

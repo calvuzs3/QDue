@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
@@ -16,6 +17,7 @@ import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
+import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
 
 import java.time.LocalDate;
@@ -82,7 +84,7 @@ public class UIDataFlowTest {
 
             LocalDate testDate = LocalDate.now().plusDays(1); // Tomorrow (likely a work day)
             YearMonth testMonth = YearMonth.from(testDate);
-            Long userId = 1L;
+            String userId = QDuePreferences.getUserId( context );
 
             report.append("Test Parameters:\n");
             report.append("  Date: ").append(testDate).append("\n");
@@ -107,14 +109,10 @@ public class UIDataFlowTest {
 
                     // Shift details
                     Shift shiftInfo = shift.getShift();
-                    if (shiftInfo != null) {
-                        report.append("    Shift ID: ").append(shiftInfo.getId()).append("\n");
-                        report.append("    Shift Name: ").append(shiftInfo.getName()).append("\n");
-                        report.append("    Start Time: ").append(shiftInfo.getStartTime()).append("\n");
-                        report.append("    End Time: ").append(shiftInfo.getEndTime()).append("\n");
-                    } else {
-                        report.append("    ❌ Shift is NULL!\n");
-                    }
+                    report.append( "    Shift ID: " ).append( shiftInfo.getId() ).append( "\n" );
+                    report.append("    Shift Name: ").append(shiftInfo.getName()).append("\n");
+                    report.append("    Start Time: ").append(shiftInfo.getStartTime()).append("\n");
+                    report.append("    End Time: ").append(shiftInfo.getEndTime()).append("\n");
 
                     // Team details - THIS IS CRITICAL
                     if (shift.getTeams() != null) {
@@ -150,8 +148,7 @@ public class UIDataFlowTest {
             report.append("---------------------\n");
 
             try {
-                GenerateUserScheduleUseCase useCase = serviceProvider.getCalendarServiceProvider()
-                        .getUseCaseFactory().getUserScheduleUseCase();
+                GenerateUserScheduleUseCase useCase = serviceProvider.getCalendarServiceProvider().getUserScheduleUseCase();
 
                 if (useCase != null) {
                     WorkScheduleDay useCaseDay = useCase.executeForDate(userId, testDate).join().getData();
@@ -185,8 +182,9 @@ public class UIDataFlowTest {
                 // Initialize SwipeCalendarModule the same way SwipeCalendarFragment does
                 SwipeCalendarModule calendarModule = new SwipeCalendarModule(
                         context,
+                        serviceProvider.getCalendarServiceProvider(),
                         serviceProvider.getEventsService(),
-                        serviceProvider.getUserService(),
+                        serviceProvider.getQDueUserService(),
                         repository
                 );
 
@@ -311,18 +309,20 @@ public class UIDataFlowTest {
                 LocalDate testDate = startDate.plusDays(i);
 
                 try {
-                    WorkScheduleDay day = repository.getWorkScheduleForDate(testDate, 1L).join().getData();
+                    String userID = QDuePreferences.getUserId( context );
+                    WorkScheduleDay day = repository.getWorkScheduleForDate(testDate, userID).join().getData();
 
                     if (day != null && !day.getShifts().isEmpty()) {
                         for (WorkScheduleShift shift : day.getShifts()) {
-                            int teamCount = shift.getTeams() != null ? shift.getTeams().size() : 0;
-                            boolean displayable = teamCount > 0 && shift.getShift() != null;
+                            shift.getTeams();
+                            int teamCount = shift.getTeams().size();
+                            boolean displayable = teamCount > 0;
 
-                            report.append(String.format("%-10s | %6d | %5d | %s\n",
+                            report.append(String.format( QDue.getLocale(), "%-10s | %6d | %5d | %s\n",
                                     testDate, 1, teamCount, displayable ? "YES" : "NO"));
                         }
                     } else {
-                        report.append(String.format("%-10s | %6d | %5d | %s\n",
+                        report.append(String.format(QDue.getLocale(), "%-10s | %6d | %5d | %s\n",
                                 testDate, 0, 0, "NO (Rest)"));
                     }
 
@@ -414,12 +414,12 @@ public class UIDataFlowTest {
                     .getAllActiveUserIds()
                     .thenAccept(userIdsResult -> {
                         if (userIdsResult.isSuccess() && userIdsResult.getData() != null) {
-                            List<Long> userIds = userIdsResult.getData();
+                            List<String> userIds = userIdsResult.getData();
                             result.append("Active Users: ").append(userIds.size()).append("\n");
                             result.append("User IDs: ").append(userIds.toString()).append("\n\n");
 
                             // For each user, get their assignments
-                            for (Long userId : userIds) {
+                            for (String userId : userIds) {
                                 result.append("USER ").append(userId).append(" ASSIGNMENTS:\n");
                                 result.append("-".repeat(30)).append("\n");
 
@@ -435,7 +435,7 @@ public class UIDataFlowTest {
                                                 } else {
                                                     for (int i = 0; i < assignments.size(); i++) {
                                                         UserScheduleAssignment assignment = assignments.get(i);
-                                                        result.append(String.format("  [%d] ID: %s\n", i+1, assignment.getId()));
+                                                        result.append(String.format(QDue.getLocale(), "  [%d] ID: %s\n", i+1, assignment.getId()));
                                                         result.append("      Team: ").append(assignment.getTeamId())
                                                                 .append(" (").append(assignment.getTeamName()).append(")\n");
                                                         result.append("      RecurrenceRule ID: ").append(assignment.getRecurrenceRuleId()).append("\n");
@@ -464,7 +464,7 @@ public class UIDataFlowTest {
             result.append("=".repeat(50)).append("\n");
 
             LocalDate today = LocalDate.now();
-            Long testUserId = 1L;
+            String testUserId = QDuePreferences.getUserId( context );
 
             result.append("Testing getActiveAssignmentForUser(").append(testUserId)
                     .append(", ").append(today).append("):\n");
@@ -526,7 +526,7 @@ public class UIDataFlowTest {
             WorkScheduleRepository repo = serviceProvider.getCalendarServiceProvider().getWorkScheduleRepository();
 
             LocalDate testDate = LocalDate.of(2025, 8, 28); // Use a work day
-            Long userId = 1L;
+            String userId = QDuePreferences.getUserId( context );
 
             result.append("Testing date: ").append(testDate).append("\n");
             result.append("User ID: ").append(userId).append("\n\n");

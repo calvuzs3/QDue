@@ -42,15 +42,15 @@ import java.util.Map;
  * @version 1.0.0 - Calendar Engine Database
  * @since Clean Architecture Phase 2
  */
-@Entity(
+@Entity (
         tableName = "shift_exceptions",
         indices = {
-                @Index(value = {"user_id", "target_date", "priority"}, name = "idx_exception_user_date_priority"),
-                @Index(value = {"status", "requires_approval", "target_date"}, name = "idx_exception_status_approval"),
-                @Index(value = {"target_date", "active"}, name = "idx_exception_date_active"),
-                @Index(value = {"swap_with_user_id", "target_date"}, name = "idx_exception_swap_user"),
-                @Index(value = {"exception_type", "target_date"}, name = "idx_exception_type_date"),
-                @Index(value = {"user_id", "status"}, name = "idx_exception_user_status")
+                @Index (value = {"user_id", "target_date", "priority"}, name = "idx_exception_user_date_priority"),
+                @Index (value = {"status", "requires_approval", "target_date"}, name = "idx_exception_status_approval"),
+                @Index (value = {"target_date", "active"}, name = "idx_exception_date_active"),
+                @Index (value = {"swap_with_user_id", "target_date"}, name = "idx_exception_swap_user"),
+                @Index (value = {"exception_type", "target_date"}, name = "idx_exception_type_date"),
+                @Index (value = {"user_id", "status"}, name = "idx_exception_user_status")
         }
 )
 public class ShiftExceptionEntity {
@@ -59,140 +59,140 @@ public class ShiftExceptionEntity {
 
     @PrimaryKey
     @NonNull
-    @ColumnInfo(name = "id")
+    @ColumnInfo (name = "id")
     private String id;
 
     // ==================== IDENTIFICATION ====================
 
     @Nullable
-    @ColumnInfo(name = "title")
+    @ColumnInfo (name = "title")
     private String title;
 
     @Nullable
-    @ColumnInfo(name = "description")
+    @ColumnInfo (name = "description")
     private String description;
 
     @Nullable
-    @ColumnInfo(name = "notes")
+    @ColumnInfo (name = "notes")
     private String notes;
 
     // ==================== CORE EXCEPTION DATA ====================
 
     @NonNull
-    @ColumnInfo(name = "exception_type")
+    @ColumnInfo (name = "exception_type")
     private String exceptionType; // ABSENCE_VACATION, CHANGE_SWAP, etc.
 
     @NonNull
-    @ColumnInfo(name = "user_id")
-    private Long userId;
+    @ColumnInfo (name = "user_id")
+    private String userId;
 
     @NonNull
-    @ColumnInfo(name = "target_date")
+    @ColumnInfo (name = "target_date")
     private String targetDate; // ISO format: yyyy-MM-dd
 
-    @ColumnInfo(name = "is_full_day", defaultValue = "0")
+    @ColumnInfo (name = "is_full_day", defaultValue = "0")
     private boolean isFullDay;
 
     // ==================== TIMING MODIFICATIONS ====================
 
     @Nullable
-    @ColumnInfo(name = "original_shift_id")
+    @ColumnInfo (name = "original_shift_id")
     private String originalShiftId;
 
     @Nullable
-    @ColumnInfo(name = "new_shift_id")
+    @ColumnInfo (name = "new_shift_id")
     private String newShiftId;
 
     @Nullable
-    @ColumnInfo(name = "new_start_time")
+    @ColumnInfo (name = "new_start_time")
     private String newStartTime; // ISO format: HH:mm
 
     @Nullable
-    @ColumnInfo(name = "new_end_time")
+    @ColumnInfo (name = "new_end_time")
     private String newEndTime; // ISO format: HH:mm
 
     @Nullable
-    @ColumnInfo(name = "duration_minutes")
+    @ColumnInfo (name = "duration_minutes")
     private Integer durationMinutes;
 
     // ==================== SWAP AND COLLABORATION DATA ====================
 
     @Nullable
-    @ColumnInfo(name = "swap_with_user_id")
-    private Long swapWithUserId;
+    @ColumnInfo (name = "swap_with_user_id")
+    private String swapWithUserId;
 
     @Nullable
-    @ColumnInfo(name = "swap_with_user_name")
+    @ColumnInfo (name = "swap_with_user_name")
     private String swapWithUserName;
 
     @Nullable
-    @ColumnInfo(name = "replacement_user_id")
-    private Long replacementUserId;
+    @ColumnInfo (name = "replacement_user_id")
+    private String replacementUserId;
 
     @Nullable
-    @ColumnInfo(name = "replacement_user_name")
+    @ColumnInfo (name = "replacement_user_name")
     private String replacementUserName;
 
     // ==================== APPROVAL WORKFLOW ====================
 
     @NonNull
-    @ColumnInfo(name = "status", defaultValue = "DRAFT")
+    @ColumnInfo (name = "status", defaultValue = "DRAFT")
     private String status; // DRAFT, PENDING, APPROVED, REJECTED, CANCELLED, EXPIRED
 
-    @ColumnInfo(name = "requires_approval", defaultValue = "0")
+    @ColumnInfo (name = "requires_approval", defaultValue = "0")
     private boolean requiresApproval;
 
     @Nullable
-    @ColumnInfo(name = "approved_by_user_id")
-    private Long approvedByUserId;
+    @ColumnInfo (name = "approved_by_user_id")
+    private String approvedByUserId;
 
     @Nullable
-    @ColumnInfo(name = "approved_by_user_name")
+    @ColumnInfo (name = "approved_by_user_name")
     private String approvedByUserName;
 
     @Nullable
-    @ColumnInfo(name = "approved_date")
+    @ColumnInfo (name = "approved_date")
     private String approvedDate; // ISO format: yyyy-MM-dd
 
     @Nullable
-    @ColumnInfo(name = "rejection_reason")
+    @ColumnInfo (name = "rejection_reason")
     private String rejectionReason;
 
     // ==================== PRIORITY AND METADATA ====================
 
     @NonNull
-    @ColumnInfo(name = "priority", defaultValue = "NORMAL")
+    @ColumnInfo (name = "priority", defaultValue = "NORMAL")
     private String priority; // LOW, NORMAL, HIGH, URGENT
 
-    @ColumnInfo(name = "is_recurring", defaultValue = "0")
+    @ColumnInfo (name = "is_recurring", defaultValue = "0")
     private boolean isRecurring;
 
     @Nullable
-    @ColumnInfo(name = "recurrence_rule_id")
+    @ColumnInfo (name = "recurrence_rule_id")
     private String recurrenceRuleId;
 
     @Nullable
-    @ColumnInfo(name = "metadata_json")
+    @ColumnInfo (name = "metadata_json")
     private String metadataJson; // JSON key-value pairs
 
     // ==================== SYSTEM DATA ====================
 
-    @ColumnInfo(name = "active", defaultValue = "1")
+    @ColumnInfo (name = "active", defaultValue = "1")
     private boolean active;
 
-    @ColumnInfo(name = "created_at")
+    @ColumnInfo (name = "created_at")
     private long createdAt;
 
-    @ColumnInfo(name = "updated_at")
+    @ColumnInfo (name = "updated_at")
     private long updatedAt;
 
     @Nullable
-    @ColumnInfo(name = "created_by_user_id")
-    private Long createdByUserId;
+    @ColumnInfo (name = "created_by_user_id")
+    private String createdByUserId;
 
     @Nullable
-    @ColumnInfo(name = "last_modified_by_user_id")
-    private Long lastModifiedByUserId;
+    @ColumnInfo (name = "last_modified_by_user_id")
+    private String lastModifiedByUserId;
 
     // ==================== CONSTRUCTORS ====================
 
@@ -207,7 +207,7 @@ public class ShiftExceptionEntity {
      * Constructor with required fields.
      */
     public ShiftExceptionEntity(@NonNull String id, @NonNull String exceptionType,
-                                @NonNull Long userId, @NonNull String targetDate) {
+                                @NonNull String userId, @NonNull String targetDate) {
         this.id = id;
         this.exceptionType = exceptionType;
         this.userId = userId;
@@ -225,126 +225,286 @@ public class ShiftExceptionEntity {
     // ==================== GETTERS AND SETTERS ====================
 
     @NonNull
-    public String getId() { return id; }
-    public void setId(@NonNull String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(@NonNull String id) {
+        this.id = id;
+    }
 
     @Nullable
-    public String getTitle() { return title; }
-    public void setTitle(@Nullable String title) { this.title = title; }
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(@Nullable String title) {
+        this.title = title;
+    }
 
     @Nullable
-    public String getDescription() { return description; }
-    public void setDescription(@Nullable String description) { this.description = description; }
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
 
     @Nullable
-    public String getNotes() { return notes; }
-    public void setNotes(@Nullable String notes) { this.notes = notes; }
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(@Nullable String notes) {
+        this.notes = notes;
+    }
 
     @NonNull
-    public String getExceptionType() { return exceptionType; }
-    public void setExceptionType(@NonNull String exceptionType) { this.exceptionType = exceptionType; }
+    public String getExceptionType() {
+        return exceptionType;
+    }
+
+    public void setExceptionType(@NonNull String exceptionType) {
+        this.exceptionType = exceptionType;
+    }
 
     @NonNull
-    public Long getUserId() { return userId; }
-    public void setUserId(@NonNull Long userId) { this.userId = userId; }
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(@NonNull String userId) {
+        this.userId = userId;
+    }
 
     @NonNull
-    public String getTargetDate() { return targetDate; }
-    public void setTargetDate(@NonNull String targetDate) { this.targetDate = targetDate; }
+    public String getTargetDate() {
+        return targetDate;
+    }
 
-    public boolean isFullDay() { return isFullDay; }
-    public void setFullDay(boolean fullDay) { isFullDay = fullDay; }
+    public void setTargetDate(@NonNull String targetDate) {
+        this.targetDate = targetDate;
+    }
 
-    @Nullable
-    public String getOriginalShiftId() { return originalShiftId; }
-    public void setOriginalShiftId(@Nullable String originalShiftId) { this.originalShiftId = originalShiftId; }
+    public boolean isFullDay() {
+        return isFullDay;
+    }
 
-    @Nullable
-    public String getNewShiftId() { return newShiftId; }
-    public void setNewShiftId(@Nullable String newShiftId) { this.newShiftId = newShiftId; }
-
-    @Nullable
-    public String getNewStartTime() { return newStartTime; }
-    public void setNewStartTime(@Nullable String newStartTime) { this.newStartTime = newStartTime; }
+    public void setFullDay(boolean fullDay) {
+        isFullDay = fullDay;
+    }
 
     @Nullable
-    public String getNewEndTime() { return newEndTime; }
-    public void setNewEndTime(@Nullable String newEndTime) { this.newEndTime = newEndTime; }
+    public String getOriginalShiftId() {
+        return originalShiftId;
+    }
+
+    public void setOriginalShiftId(@Nullable String originalShiftId) {
+        this.originalShiftId = originalShiftId;
+    }
 
     @Nullable
-    public Integer getDurationMinutes() { return durationMinutes; }
-    public void setDurationMinutes(@Nullable Integer durationMinutes) { this.durationMinutes = durationMinutes; }
+    public String getNewShiftId() {
+        return newShiftId;
+    }
+
+    public void setNewShiftId(@Nullable String newShiftId) {
+        this.newShiftId = newShiftId;
+    }
 
     @Nullable
-    public Long getSwapWithUserId() { return swapWithUserId; }
-    public void setSwapWithUserId(@Nullable Long swapWithUserId) { this.swapWithUserId = swapWithUserId; }
+    public String getNewStartTime() {
+        return newStartTime;
+    }
+
+    public void setNewStartTime(@Nullable String newStartTime) {
+        this.newStartTime = newStartTime;
+    }
 
     @Nullable
-    public String getSwapWithUserName() { return swapWithUserName; }
-    public void setSwapWithUserName(@Nullable String swapWithUserName) { this.swapWithUserName = swapWithUserName; }
+    public String getNewEndTime() {
+        return newEndTime;
+    }
+
+    public void setNewEndTime(@Nullable String newEndTime) {
+        this.newEndTime = newEndTime;
+    }
 
     @Nullable
-    public Long getReplacementUserId() { return replacementUserId; }
-    public void setReplacementUserId(@Nullable Long replacementUserId) { this.replacementUserId = replacementUserId; }
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(@Nullable Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
 
     @Nullable
-    public String getReplacementUserName() { return replacementUserName; }
-    public void setReplacementUserName(@Nullable String replacementUserName) { this.replacementUserName = replacementUserName; }
+    public String getSwapWithUserId() {
+        return swapWithUserId;
+    }
+
+    public void setSwapWithUserId(@Nullable String swapWithUserId) {
+        this.swapWithUserId = swapWithUserId;
+    }
+
+    @Nullable
+    public String getSwapWithUserName() {
+        return swapWithUserName;
+    }
+
+    public void setSwapWithUserName(@Nullable String swapWithUserName) {
+        this.swapWithUserName = swapWithUserName;
+    }
+
+    @Nullable
+    public String getReplacementUserId() {
+        return replacementUserId;
+    }
+
+    public void setReplacementUserId(@Nullable String replacementUserId) {
+        this.replacementUserId = replacementUserId;
+    }
+
+    @Nullable
+    public String getReplacementUserName() {
+        return replacementUserName;
+    }
+
+    public void setReplacementUserName(@Nullable String replacementUserName) {
+        this.replacementUserName = replacementUserName;
+    }
 
     @NonNull
-    public String getStatus() { return status; }
-    public void setStatus(@NonNull String status) { this.status = status; }
+    public String getStatus() {
+        return status;
+    }
 
-    public boolean isRequiresApproval() { return requiresApproval; }
-    public void setRequiresApproval(boolean requiresApproval) { this.requiresApproval = requiresApproval; }
+    public void setStatus(@NonNull String status) {
+        this.status = status;
+    }
 
-    @Nullable
-    public Long getApprovedByUserId() { return approvedByUserId; }
-    public void setApprovedByUserId(@Nullable Long approvedByUserId) { this.approvedByUserId = approvedByUserId; }
+    public boolean isRequiresApproval() {
+        return requiresApproval;
+    }
 
-    @Nullable
-    public String getApprovedByUserName() { return approvedByUserName; }
-    public void setApprovedByUserName(@Nullable String approvedByUserName) { this.approvedByUserName = approvedByUserName; }
-
-    @Nullable
-    public String getApprovedDate() { return approvedDate; }
-    public void setApprovedDate(@Nullable String approvedDate) { this.approvedDate = approvedDate; }
+    public void setRequiresApproval(boolean requiresApproval) {
+        this.requiresApproval = requiresApproval;
+    }
 
     @Nullable
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(@Nullable String rejectionReason) { this.rejectionReason = rejectionReason; }
+    public String getApprovedByUserId() {
+        return approvedByUserId;
+    }
+
+    public void setApprovedByUserId(@Nullable String approvedByUserId) {
+        this.approvedByUserId = approvedByUserId;
+    }
+
+    @Nullable
+    public String getApprovedByUserName() {
+        return approvedByUserName;
+    }
+
+    public void setApprovedByUserName(@Nullable String approvedByUserName) {
+        this.approvedByUserName = approvedByUserName;
+    }
+
+    @Nullable
+    public String getApprovedDate() {
+        return approvedDate;
+    }
+
+    public void setApprovedDate(@Nullable String approvedDate) {
+        this.approvedDate = approvedDate;
+    }
+
+    @Nullable
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(@Nullable String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
 
     @NonNull
-    public String getPriority() { return priority; }
-    public void setPriority(@NonNull String priority) { this.priority = priority; }
+    public String getPriority() {
+        return priority;
+    }
 
-    public boolean isRecurring() { return isRecurring; }
-    public void setRecurring(boolean recurring) { isRecurring = recurring; }
+    public void setPriority(@NonNull String priority) {
+        this.priority = priority;
+    }
 
-    @Nullable
-    public String getRecurrenceRuleId() { return recurrenceRuleId; }
-    public void setRecurrenceRuleId(@Nullable String recurrenceRuleId) { this.recurrenceRuleId = recurrenceRuleId; }
+    public boolean isRecurring() {
+        return isRecurring;
+    }
 
-    @Nullable
-    public String getMetadataJson() { return metadataJson; }
-    public void setMetadataJson(@Nullable String metadataJson) { this.metadataJson = metadataJson; }
-
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
-
-    public long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
-
-    public long getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+    public void setRecurring(boolean recurring) {
+        isRecurring = recurring;
+    }
 
     @Nullable
-    public Long getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(@Nullable Long createdByUserId) { this.createdByUserId = createdByUserId; }
+    public String getRecurrenceRuleId() {
+        return recurrenceRuleId;
+    }
+
+    public void setRecurrenceRuleId(@Nullable String recurrenceRuleId) {
+        this.recurrenceRuleId = recurrenceRuleId;
+    }
 
     @Nullable
-    public Long getLastModifiedByUserId() { return lastModifiedByUserId; }
-    public void setLastModifiedByUserId(@Nullable Long lastModifiedByUserId) { this.lastModifiedByUserId = lastModifiedByUserId; }
+    public String getMetadataJson() {
+        return metadataJson;
+    }
+
+    public void setMetadataJson(@Nullable String metadataJson) {
+        this.metadataJson = metadataJson;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @Nullable
+    public String getCreatedByUserId() {
+        return createdByUserId;
+    }
+
+    public void setCreatedByUserId(@Nullable String createdByUserId) {
+        this.createdByUserId = createdByUserId;
+    }
+
+    @Nullable
+    public String getLastModifiedByUserId() {
+        return lastModifiedByUserId;
+    }
+
+    public void setLastModifiedByUserId(@Nullable String lastModifiedByUserId) {
+        this.lastModifiedByUserId = lastModifiedByUserId;
+    }
 
     // ==================== DOMAIN MODEL CONVERSION ====================
 
@@ -354,86 +514,86 @@ public class ShiftExceptionEntity {
     @NonNull
     public ShiftException toDomainModel() {
         ShiftException.Builder builder = ShiftException.builder()
-                .id(this.id)
-                .title(this.title)
-                .description(this.description)
-                .notes(this.notes)
-                .type(ShiftException.ExceptionType.valueOf(this.exceptionType))
-                .userId(this.userId)
-                .targetDate(LocalDate.parse(this.targetDate))
-                .isFullDay(this.isFullDay)
-                .status(ShiftException.ApprovalStatus.valueOf(this.status))
-                .requiresApproval(this.requiresApproval)
-                .priority(ShiftException.Priority.valueOf(this.priority))
-                .isRecurring(this.isRecurring)
-                .active(this.active)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt);
+                .id( this.id )
+                .title( this.title )
+                .description( this.description )
+                .notes( this.notes )
+                .type( ShiftException.ExceptionType.valueOf( this.exceptionType ) )
+                .userId( this.userId )
+                .targetDate( LocalDate.parse( this.targetDate ) )
+                .isFullDay( this.isFullDay )
+                .status( ShiftException.ApprovalStatus.valueOf( this.status ) )
+                .requiresApproval( this.requiresApproval )
+                .priority( ShiftException.Priority.valueOf( this.priority ) )
+                .isRecurring( this.isRecurring )
+                .active( this.active )
+                .createdAt( this.createdAt )
+                .updatedAt( this.updatedAt );
 
         // Optional shift references
         if (this.originalShiftId != null) {
-            builder.originalShiftId(this.originalShiftId);
+            builder.originalShiftId( this.originalShiftId );
         }
         if (this.newShiftId != null) {
-            builder.newShiftId(this.newShiftId);
+            builder.newShiftId( this.newShiftId );
         }
 
         // Optional timing
         if (this.newStartTime != null) {
-            builder.newStartTime(LocalTime.parse(this.newStartTime));
+            builder.newStartTime( LocalTime.parse( this.newStartTime ) );
         }
         if (this.newEndTime != null) {
-            builder.newEndTime(LocalTime.parse(this.newEndTime));
+            builder.newEndTime( LocalTime.parse( this.newEndTime ) );
         }
         if (this.durationMinutes != null) {
-            builder.durationMinutes(this.durationMinutes);
+            builder.durationMinutes( this.durationMinutes );
         }
 
         // Optional collaboration
         if (this.swapWithUserId != null) {
-            builder.swapWithUserId(this.swapWithUserId);
+            builder.swapWithUserId( this.swapWithUserId );
         }
         if (this.swapWithUserName != null) {
-            builder.swapWithUserName(this.swapWithUserName);
+            builder.swapWithUserName( this.swapWithUserName );
         }
         if (this.replacementUserId != null) {
-            builder.replacementUserId(this.replacementUserId);
+            builder.replacementUserId( this.replacementUserId );
         }
         if (this.replacementUserName != null) {
-            builder.replacementUserName(this.replacementUserName);
+            builder.replacementUserName( this.replacementUserName );
         }
 
         // Optional approval data
         if (this.approvedByUserId != null) {
-            builder.approvedByUserId(this.approvedByUserId);
+            builder.approvedByUserId( this.approvedByUserId );
         }
         if (this.approvedByUserName != null) {
-            builder.approvedByUserName(this.approvedByUserName);
+            builder.approvedByUserName( this.approvedByUserName );
         }
         if (this.approvedDate != null) {
-            builder.approvedDate(LocalDate.parse(this.approvedDate));
+            builder.approvedDate( LocalDate.parse( this.approvedDate ) );
         }
         if (this.rejectionReason != null) {
-            builder.rejectionReason(this.rejectionReason);
+            builder.rejectionReason( this.rejectionReason );
         }
 
         // Optional recurrence
         if (this.recurrenceRuleId != null) {
-            builder.recurrenceRuleId(this.recurrenceRuleId);
+            builder.recurrenceRuleId( this.recurrenceRuleId );
         }
 
         // Optional metadata (JSON deserialization)
         if (this.metadataJson != null) {
-            Map<String, String> metadata = QDueTypeConverters.toStringMap(this.metadataJson);
-            builder.metadata(metadata);
+            Map<String, String> metadata = QDueTypeConverters.toStringMap( this.metadataJson );
+            builder.metadata( metadata );
         }
 
         // Optional system data
         if (this.createdByUserId != null) {
-            builder.createdByUserId(this.createdByUserId);
+            builder.createdByUserId( this.createdByUserId );
         }
         if (this.lastModifiedByUserId != null) {
-            builder.lastModifiedByUserId(this.lastModifiedByUserId);
+            builder.lastModifiedByUserId( this.lastModifiedByUserId );
         }
 
         return builder.build();
@@ -447,59 +607,59 @@ public class ShiftExceptionEntity {
         ShiftExceptionEntity entity = new ShiftExceptionEntity();
 
         // Basic fields
-        entity.setId(domainModel.getId());
-        entity.setTitle(domainModel.getTitle());
-        entity.setDescription(domainModel.getDescription());
-        entity.setNotes(domainModel.getNotes());
-        entity.setExceptionType(domainModel.getType().name());
-        entity.setUserId(domainModel.getUserId());
-        entity.setTargetDate(domainModel.getTargetDate().toString());
-        entity.setFullDay(domainModel.isFullDay());
-        entity.setStatus(domainModel.getStatus().name());
-        entity.setRequiresApproval(domainModel.requiresApproval());
-        entity.setPriority(domainModel.getPriority().name());
-        entity.setRecurring(domainModel.isRecurring());
-        entity.setActive(domainModel.isActive());
-        entity.setCreatedAt(domainModel.getCreatedAt());
-        entity.setUpdatedAt(domainModel.getUpdatedAt());
+        entity.setId( domainModel.getId() );
+        entity.setTitle( domainModel.getTitle() );
+        entity.setDescription( domainModel.getDescription() );
+        entity.setNotes( domainModel.getNotes() );
+        entity.setExceptionType( domainModel.getType().name() );
+        entity.setUserId( domainModel.getUserId() );
+        entity.setTargetDate( domainModel.getTargetDate().toString() );
+        entity.setFullDay( domainModel.isFullDay() );
+        entity.setStatus( domainModel.getStatus().name() );
+        entity.setRequiresApproval( domainModel.requiresApproval() );
+        entity.setPriority( domainModel.getPriority().name() );
+        entity.setRecurring( domainModel.isRecurring() );
+        entity.setActive( domainModel.isActive() );
+        entity.setCreatedAt( domainModel.getCreatedAt() );
+        entity.setUpdatedAt( domainModel.getUpdatedAt() );
 
         // Optional fields
-        entity.setOriginalShiftId(domainModel.getOriginalShiftId());
-        entity.setNewShiftId(domainModel.getNewShiftId());
+        entity.setOriginalShiftId( domainModel.getOriginalShiftId() );
+        entity.setNewShiftId( domainModel.getNewShiftId() );
 
         if (domainModel.getNewStartTime() != null) {
-            entity.setNewStartTime(domainModel.getNewStartTime().toString());
+            entity.setNewStartTime( domainModel.getNewStartTime().toString() );
         }
         if (domainModel.getNewEndTime() != null) {
-            entity.setNewEndTime(domainModel.getNewEndTime().toString());
+            entity.setNewEndTime( domainModel.getNewEndTime().toString() );
         }
-        entity.setDurationMinutes(domainModel.getDurationMinutes());
+        entity.setDurationMinutes( domainModel.getDurationMinutes() );
 
         // Collaboration
-        entity.setSwapWithUserId(domainModel.getSwapWithUserId());
-        entity.setSwapWithUserName(domainModel.getSwapWithUserName());
-        entity.setReplacementUserId(domainModel.getReplacementUserId());
-        entity.setReplacementUserName(domainModel.getReplacementUserName());
+        entity.setSwapWithUserId( domainModel.getSwapWithUserId() );
+        entity.setSwapWithUserName( domainModel.getSwapWithUserName() );
+        entity.setReplacementUserId( domainModel.getReplacementUserId() );
+        entity.setReplacementUserName( domainModel.getReplacementUserName() );
 
         // Approval
-        entity.setApprovedByUserId(domainModel.getApprovedByUserId());
-        entity.setApprovedByUserName(domainModel.getApprovedByUserName());
+        entity.setApprovedByUserId( domainModel.getApprovedByUserId() );
+        entity.setApprovedByUserName( domainModel.getApprovedByUserName() );
         if (domainModel.getApprovedDate() != null) {
-            entity.setApprovedDate(domainModel.getApprovedDate().toString());
+            entity.setApprovedDate( domainModel.getApprovedDate().toString() );
         }
-        entity.setRejectionReason(domainModel.getRejectionReason());
+        entity.setRejectionReason( domainModel.getRejectionReason() );
 
         // Recurrence
-        entity.setRecurrenceRuleId(domainModel.getRecurrenceRuleId());
+        entity.setRecurrenceRuleId( domainModel.getRecurrenceRuleId() );
 
         // Metadata (JSON serialization)
         if (!domainModel.getMetadata().isEmpty()) {
-            entity.setMetadataJson(QDueTypeConverters.fromStringMap(domainModel.getMetadata()));
+            entity.setMetadataJson( QDueTypeConverters.fromStringMap( domainModel.getMetadata() ) );
         }
 
         // System data
-        entity.setCreatedByUserId(domainModel.getCreatedByUserId());
-        entity.setLastModifiedByUserId(domainModel.getLastModifiedByUserId());
+        entity.setCreatedByUserId( domainModel.getCreatedByUserId() );
+        entity.setLastModifiedByUserId( domainModel.getLastModifiedByUserId() );
 
         return entity;
     }
@@ -517,28 +677,28 @@ public class ShiftExceptionEntity {
      * Check if this is an absence type exception.
      */
     public boolean isAbsence() {
-        return exceptionType.startsWith("ABSENCE_");
+        return exceptionType.startsWith( "ABSENCE_" );
     }
 
     /**
      * Check if this is a shift change type exception.
      */
     public boolean isShiftChange() {
-        return exceptionType.startsWith("CHANGE_");
+        return exceptionType.startsWith( "CHANGE_" );
     }
 
     /**
      * Check if this is a time reduction type exception.
      */
     public boolean isTimeReduction() {
-        return exceptionType.startsWith("REDUCTION_");
+        return exceptionType.startsWith( "REDUCTION_" );
     }
 
     /**
      * Check if exception is currently effective.
      */
     public boolean isEffective() {
-        return "APPROVED".equals(status) || (!requiresApproval && "DRAFT".equals(status));
+        return "APPROVED".equals( status ) || (!requiresApproval && "DRAFT".equals( status ));
     }
 
     /**
@@ -556,7 +716,7 @@ public class ShiftExceptionEntity {
         return "ShiftExceptionEntity{" +
                 "id='" + id + '\'' +
                 ", exceptionType='" + exceptionType + '\'' +
-                ", userId=" + userId +
+                ", userID=" + userId +
                 ", targetDate='" + targetDate + '\'' +
                 ", status='" + status + '\'' +
                 ", priority='" + priority + '\'' +

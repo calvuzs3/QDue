@@ -14,6 +14,8 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
+import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
@@ -58,7 +60,7 @@ import java.time.LocalDate;
  * startActivity(intent);
  *
  * // Launch with user context:
- * Intent intent = SwipeCalendarActivity.createIntent(context, null, userId);
+ * Intent intent = SwipeCalendarActivity.createIntent(context, null, userID);
  * startActivity(intent);
  * </pre>
  *
@@ -95,7 +97,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
     // ==================== CONFIGURATION ====================
 
     private LocalDate mInitialDate;
-    private Long mUserId;
+    private String mUserId;
 
     // ==================== STATIC FACTORY METHODS ====================
 
@@ -164,6 +166,9 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
 
         // Initialize dependency injection
         initializeDependencyInjection();
+
+        // Check for Default User
+        checkDefaultUser();
 
         // Parse intent parameters
         parseIntentParameters();
@@ -254,6 +259,25 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
         return mServiceProvider;
     }
 
+    // ==================== USER MANAGEMENT ====================
+
+    private void checkDefaultUser() {
+
+        QDueUserService userService = mServiceProvider.getQDueUserService();
+        QDueUser user = userService.getPrimaryUser().join().getData();
+        if (user == null) {
+            // create a new default user (no welcome needed)
+            QDueUser newUser = userService.createUser( "User","" )
+                    .thenApply( result -> {
+                        if (result.isSuccess() && result.getData() != null) {
+                            return result.getData();
+                        } else {
+                            throw new RuntimeException( "Failed to create default user" );
+                        }
+                    }).join();
+            Log.i(TAG, "Created default user: " + newUser.getId());
+        }
+    }
     // ==================== MAIN ACTIVITY LOGIC ====================
 
     /**
@@ -306,8 +330,8 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
 
         // Parse user ID
         if (intent.hasExtra(EXTRA_USER_ID)) {
-            long userId = intent.getLongExtra(EXTRA_USER_ID, -1);
-            if (userId > 0) {
+            String userId = intent.getStringExtra(EXTRA_USER_ID);
+            if (!userId.isEmpty()) {
                 mUserId = userId;
                 Log.d(TAG, "Parsed user ID: " + mUserId);
             }
@@ -417,7 +441,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      */
     private String getLocalizedString(String key, String fallback) {
         if (mLocaleManager != null) {
-            return mLocaleManager.getLocalizedString(this, key, fallback);
+            return LocaleManager.getLocalizedString(this, key, fallback);
         }
         return fallback;
     }

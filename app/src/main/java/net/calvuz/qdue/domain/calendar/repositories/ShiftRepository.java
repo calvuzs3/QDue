@@ -153,7 +153,7 @@ public interface ShiftRepository {
      * Find shifts by time range.
      *
      * @param startTime Minimum start time
-     * @param endTime Maximum end time
+     * @param endTime   Maximum end time
      * @return CompletableFuture with List of Shift objects in time range
      */
     @NonNull
@@ -261,7 +261,7 @@ public interface ShiftRepository {
      * Get shifts compatible with specific time requirements.
      *
      * @param requiredStartTime Required start time
-     * @param requiredEndTime Required end time
+     * @param requiredEndTime   Required end time
      * @param allowTimeVariance Whether to allow small time variances
      * @return CompletableFuture with List of compatible Shift objects
      */
@@ -276,9 +276,9 @@ public interface ShiftRepository {
      * <p>Creates a temporary shift template for exception handling without
      * persisting it to the database.</p>
      *
-     * @param name Shift name
+     * @param name      Shift name
      * @param startTime Start time
-     * @param endTime End time
+     * @param endTime   End time
      * @param shiftType Optional shift type
      * @return CompletableFuture with created Shift template
      */
@@ -292,7 +292,7 @@ public interface ShiftRepository {
      * Duplicate shift with modifications.
      *
      * @param sourceShiftId Source shift ID to duplicate
-     * @param newName New name for duplicated shift
+     * @param newName       New name for duplicated shift
      * @param modifications Optional modifications to apply
      * @return CompletableFuture with duplicated Shift
      */
@@ -352,7 +352,7 @@ public interface ShiftRepository {
     /**
      * Import shifts from external source.
      *
-     * @param shifts List of shifts to import
+     * @param shifts            List of shifts to import
      * @param overwriteExisting Whether to overwrite existing shifts
      * @return CompletableFuture with ImportResult
      */
@@ -364,11 +364,7 @@ public interface ShiftRepository {
     /**
      * Shift validation result.
      */
-    class ValidationResult {
-        public final boolean isValid;
-        public final List<String> errors;
-        public final List<String> warnings;
-
+    record ValidationResult(boolean isValid, List<String> errors, List<String> warnings) {
         public ValidationResult(boolean isValid, @NonNull List<String> errors, @NonNull List<String> warnings) {
             this.isValid = isValid;
             this.errors = errors;
@@ -387,40 +383,18 @@ public interface ShiftRepository {
     /**
      * Shift modifications for duplication.
      */
-    class ShiftModifications {
-        @Nullable public final LocalTime newStartTime;
-        @Nullable public final LocalTime newEndTime;
-        @Nullable public final String newColorHex;
-        @Nullable public final Duration newBreakDuration;
-        @Nullable public final Shift.ShiftType newShiftType;
-
-        public ShiftModifications(@Nullable LocalTime newStartTime,
-                                  @Nullable LocalTime newEndTime,
-                                  @Nullable String newColorHex,
-                                  @Nullable Duration newBreakDuration,
-                                  @Nullable Shift.ShiftType newShiftType) {
-            this.newStartTime = newStartTime;
-            this.newEndTime = newEndTime;
-            this.newColorHex = newColorHex;
-            this.newBreakDuration = newBreakDuration;
-            this.newShiftType = newShiftType;
-        }
+    record ShiftModifications(@Nullable LocalTime newStartTime, @Nullable LocalTime newEndTime,
+                              @Nullable String newColorHex, @Nullable Duration newBreakDuration,
+                              @Nullable Shift.ShiftType newShiftType) {
     }
 
     /**
      * Shift usage statistics.
      */
-    class ShiftStatistics {
-        public final int totalShifts;
-        public final int systemShifts;
-        public final int customShifts;
-        public final int shiftsWithBreaks;
-        public final int midnightCrossingShifts;
-        public final long averageDurationMinutes;
-        public final Shift mostUsedShift;
-        public final Shift longestShift;
-        public final Shift shortestShift;
-
+    record ShiftStatistics(int totalShifts, int systemShifts, int customShifts,
+                           int shiftsWithBreaks, int midnightCrossingShifts,
+                           long averageDurationMinutes, Shift mostUsedShift, Shift longestShift,
+                           Shift shortestShift) {
         public ShiftStatistics(int totalShifts, int systemShifts, int customShifts,
                                int shiftsWithBreaks, int midnightCrossingShifts,
                                long averageDurationMinutes,
@@ -441,13 +415,8 @@ public interface ShiftRepository {
     /**
      * Shift import result.
      */
-    class ImportResult {
-        public final int totalShifts;
-        public final int successfulImports;
-        public final int skippedShifts;
-        public final int failedImports;
-        public final List<String> errors;
-
+    record ImportResult(int totalShifts, int successfulImports, int skippedShifts,
+                        int failedImports, List<String> errors) {
         public ImportResult(int totalShifts, int successfulImports, int skippedShifts,
                             int failedImports, @NonNull List<String> errors) {
             this.totalShifts = totalShifts;

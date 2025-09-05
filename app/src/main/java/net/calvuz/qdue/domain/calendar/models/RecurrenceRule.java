@@ -30,29 +30,18 @@ import java.util.UUID;
  *   <li><strong>MONTHLY</strong>: Every N months on specific dates</li>
  *   <li><strong>QUATTRODUE_CYCLE</strong>: Custom 42-day QuattroDue pattern</li>
  * </ul>
- *
- * <h3>Usage Examples:</h3>
- * <pre>
- * // Every weekday (Monday to Friday)
- * RecurrenceRule weekdays = RecurrenceRule.builder()
- *     .frequency(Frequency.WEEKLY)
- *     .interval(1)
- *     .byDay(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
- *            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
- *     .build();
- *
- * // QuattroDue 4-2 cycle pattern
- * RecurrenceRule quattroDue = RecurrenceRule.builder()
- *     .frequency(Frequency.QUATTRODUE_CYCLE)
- *     .interval(1)
- *     .cycleLength(42)
- *     .startDate(LocalDate.of(2024, 1, 1))
- *     .build();
+ * <h3>Supported End Conditions:</h3>
+ * <ul>
+ *     <li><strong>NEVER</strong>: No end date</li>
+ *     <li><strong>COUNT</strong>: End after N occurrences</li>
+ *     <li><strong>UNTIL_DATE</strong>: End on specific date</li>
+ * </ul>
+ * <h3>Supported Weekdays for WeekStart:</h3>
+ * <ul>
+ *     <li><strong>MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY</strong></li>
+ *     <li><strong>WeekStart</strong>: Default: MONDAY</li>
+ * </ul>
  * </pre>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Calendar Engine Implementation
- * @since Clean Architecture Phase 2
  */
 public class RecurrenceRule extends LocalizableDomainModel {
 
@@ -126,7 +115,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private RecurrenceRule(@NonNull Builder builder) {
-        super(builder.mLocalizer, LOCALIZATION_SCOPE);
+        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
         this.name = builder.name;
@@ -250,7 +239,9 @@ public class RecurrenceRule extends LocalizableDomainModel {
     }
 
     @NonNull
-    public WeekStart getWeekStart() { return weekStart; }
+    public WeekStart getWeekStart() {
+        return weekStart;
+    }
 
     @NonNull
     public List<Integer> getByMonthDay() {
@@ -362,7 +353,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
         }
 
         // Calculate position in 18-day cycle (1-based)
-        int cyclePosition = (int) ((daysBetween % cycleLength) );
+        int cyclePosition = (int) ((daysBetween % cycleLength));
         if (cyclePosition < 0) {
             cyclePosition += cycleLength;
         }
@@ -385,9 +376,9 @@ public class RecurrenceRule extends LocalizableDomainModel {
         if (name != null && !name.trim().isEmpty()) {
             return name;
         }
-        return localize("frequency." + frequency.name().toLowerCase(),
+        return localize( "frequency." + frequency.name().toLowerCase(),
                 frequency.name(), // fallback
-                frequency.name());
+                frequency.name() );
     }
 
     /**
@@ -399,10 +390,9 @@ public class RecurrenceRule extends LocalizableDomainModel {
         if (description != null && !description.trim().isEmpty()) {
             return description;
         }
-        return localize("frequency." + frequency.name().toLowerCase() + ".description",
+        return localize( "frequency." + frequency.name().toLowerCase() + ".description",
                 "Every " + interval + " " + frequency.name().toLowerCase(), // fallback
-                interval, frequency.name().toLowerCase());
-
+                interval, frequency.name().toLowerCase() );
     }
 
     /**
@@ -412,13 +402,13 @@ public class RecurrenceRule extends LocalizableDomainModel {
     public String getEndConditionDescription() {
         switch (endType) {
             case NEVER:
-                return localize("end.never", "Never");
+                return localize( "end.never", "Never" );
             case COUNT:
-                return localize("end.count", "After {0} occurrences", count);
+                return localize( "end.count", "After {0} occurrences", count );
             case UNTIL_DATE:
-                return localize("end.until", "Until {0}", endDate);
+                return localize( "end.until", "Until {0}", endDate );
             default:
-                return localizeOrKey("end." + endType.name().toLowerCase());
+                return localizeOrKey( "end." + endType.name().toLowerCase() );
         }
     }
 
@@ -496,12 +486,12 @@ public class RecurrenceRule extends LocalizableDomainModel {
     public static RecurrenceRule createQuattroDueCycle(@NonNull LocalDate startDate,
                                                        @Nullable DomainLocalizer localizer) {
         return builder()
-                .frequency(Frequency.QUATTRODUE_CYCLE)
-                .startDate(startDate)
-                .cycleLength(18)
-                .workDays(4)
-                .restDays(2)
-                .localizer(localizer)
+                .frequency( Frequency.QUATTRODUE_CYCLE )
+                .startDate( startDate )
+                .cycleLength( 18 )
+                .workDays( 4 )
+                .restDays( 2 )
+                .localizer( localizer )
                 .build();
     }
 
@@ -518,8 +508,8 @@ public class RecurrenceRule extends LocalizableDomainModel {
     @NonNull
     public RecurrenceRule withLocalizer(@NonNull DomainLocalizer localizer) {
         return builder()
-                .copyFrom(this)
-                .localizer(localizer)
+                .copyFrom( this )
+                .localizer( localizer )
                 .build();
     }
 
@@ -574,7 +564,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
             this.createdAt = source.createdAt;
             this.updatedAt = source.updatedAt;
 
-            return copyLocalizableFrom(source);
+            return copyLocalizableFrom( source );
         }
 
         @NonNull
@@ -706,7 +696,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
         @Override
         @NonNull
         public RecurrenceRule build() {
-            return new RecurrenceRule(this);
+            return new RecurrenceRule( this );
         }
     }
 

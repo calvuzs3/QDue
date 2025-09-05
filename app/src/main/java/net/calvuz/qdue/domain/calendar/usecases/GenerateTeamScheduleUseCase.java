@@ -76,7 +76,7 @@ public class GenerateTeamScheduleUseCase {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG,"Generating team schedule for date: " + date +
-                        (teamId != null ? ", teamId: " + teamId : " (all teams)"));
+                        (teamId != null ? ", teamID: " + teamId : " (all teams)"));
 
                 // Validate input
                 OperationResult<Void> validation = validateInput(date, teamId);
@@ -138,7 +138,7 @@ public class GenerateTeamScheduleUseCase {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG,"Generating team schedule range: " + startDate + " to " + endDate +
-                        (teamId != null ? ", teamId: " + teamId : " (all teams)"));
+                        (teamId != null ? ", teamID: " + teamId : " (all teams)"));
 
                 // Validate input
                 OperationResult<Void> validation = validateDateRange(startDate, endDate);

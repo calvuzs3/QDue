@@ -98,12 +98,12 @@ public interface ShiftExceptionRepository {
      * Used during schedule generation to apply exceptions.</p>
      *
      * @param userId User identifier
-     * @param date Target date for exceptions
+     * @param date   Target date for exceptions
      * @return CompletableFuture with OperationResult containing List of effective ShiftException objects
      */
     @NonNull
     CompletableFuture<OperationResult<List<ShiftException>>> getEffectiveExceptionsForUserOnDate(
-            @NonNull Long userId, @NonNull LocalDate date);
+            @NonNull String userId, @NonNull LocalDate date);
 
     /**
      * Get all exceptions for user in date range.
@@ -111,14 +111,14 @@ public interface ShiftExceptionRepository {
      * <p>Retrieves all exceptions (regardless of status) for a user within
      * the specified date range. Useful for user interface displays and reporting.</p>
      *
-     * @param userId User identifier
+     * @param userId    User identifier
      * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
+     * @param endDate   End date (inclusive)
      * @return CompletableFuture with OperationResult containing List of ShiftException objects
      */
     @NonNull
     CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsForUserInDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
 
     /**
      * Get all effective exceptions for specific date across all users.
@@ -139,7 +139,7 @@ public interface ShiftExceptionRepository {
      * date range for all users. Useful for management reporting and analysis.</p>
      *
      * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
+     * @param endDate   End date (inclusive)
      * @return CompletableFuture with OperationResult containing List of ShiftException objects
      */
     @NonNull
@@ -154,13 +154,13 @@ public interface ShiftExceptionRepository {
      * <p>Retrieves all exceptions of a specific type for a user. Useful for
      * analyzing patterns in vacation requests, sick leave, etc.</p>
      *
-     * @param userId User identifier
+     * @param userId        User identifier
      * @param exceptionType Type of exception to retrieve
      * @return CompletableFuture with OperationResult containing List of ShiftException objects
      */
     @NonNull
     CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsByTypeForUser(
-            @NonNull Long userId, @NonNull ShiftException.ExceptionType exceptionType);
+            @NonNull String userId, @NonNull ShiftException.ExceptionType exceptionType);
 
     /**
      * Get exceptions by approval status.
@@ -195,7 +195,7 @@ public interface ShiftExceptionRepository {
      * Used for workflow state transitions.</p>
      *
      * @param exceptionId Exception identifier
-     * @param newStatus New approval status
+     * @param newStatus   New approval status
      * @return CompletableFuture with OperationResult containing success boolean
      */
     @NonNull
@@ -208,8 +208,8 @@ public interface ShiftExceptionRepository {
      * <p>Approves an exception by setting status to APPROVED and recording
      * approver information and approval date.</p>
      *
-     * @param exceptionId Exception identifier
-     * @param approverId Approver user identifier
+     * @param exceptionId  Exception identifier
+     * @param approverId   Approver user identifier
      * @param approverName Approver display name
      * @param approvedDate Date of approval
      * @return CompletableFuture with OperationResult containing success boolean
@@ -225,7 +225,7 @@ public interface ShiftExceptionRepository {
      * <p>Rejects an exception by setting status to REJECTED and recording
      * the rejection reason for user feedback.</p>
      *
-     * @param exceptionId Exception identifier
+     * @param exceptionId     Exception identifier
      * @param rejectionReason Reason for rejection (user-facing message)
      * @return CompletableFuture with OperationResult containing success boolean
      */
@@ -245,7 +245,7 @@ public interface ShiftExceptionRepository {
      * @return CompletableFuture with OperationResult containing exception count
      */
     @NonNull
-    CompletableFuture<OperationResult<Integer>> getExceptionCountForUser(@NonNull Long userId);
+    CompletableFuture<OperationResult<Integer>> getExceptionCountForUser(@NonNull String userId);
 
     // ==================== FUTURE EXTENSIONS ====================
 

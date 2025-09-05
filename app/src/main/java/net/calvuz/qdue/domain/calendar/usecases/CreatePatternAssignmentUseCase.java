@@ -1,5 +1,7 @@
 package net.calvuz.qdue.domain.calendar.usecases;
 
+import static net.calvuz.qdue.QDue.Defaults.DEFAULT_QD_RRULE_NAME;
+
 import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.core.services.models.OperationResult;
@@ -78,11 +80,11 @@ public class CreatePatternAssignmentUseCase {
 
     @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getTeamsWithQuattroDueOffset() {
-        return mTeamRepository.getTeamsWithQuattroDueOffset();
+        return mTeamRepository.getTeamsForQuattroDue();
     }
 
     @NonNull
-    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull String userId) {
         return mUserScheduleAssignmentRepository.getUserActiveAssignments(userId);
     }
 
@@ -99,7 +101,7 @@ public class CreatePatternAssignmentUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<UserScheduleAssignment>> createQuattroDueAssignment(
-            @NonNull Long userId,
+            @NonNull String userId,
             @NonNull String teamName,
             @NonNull LocalDate assignmentDate,
             int cycleDayPosition) {
@@ -122,12 +124,12 @@ public class CreatePatternAssignmentUseCase {
                 //OperationResult<Team> teamResult = mTeamRepository.getTeamByName(teamName).join();
                 Team teamResult = mTeamRepository.getTeamByName(teamName).join();
 
-                if (teamResult != null) {
+                if (teamResult == null) {
                     return OperationResult.failure("Team not found: " + teamName,
                             OperationResult.OperationType.VALIDATION);
                 }
 
-                if ((teamResult.getQdueOffset() < 0) || (teamResult.getQdueOffset() > 16)) {
+                if ((teamResult.getQdueOffset() < 0) || (teamResult.getQdueOffset() > 17)) {
                     return OperationResult.failure("Team " + teamName + " is not configured for QuattroDue patterns",
                             OperationResult.OperationType.VALIDATION);
                 }
@@ -198,7 +200,7 @@ public class CreatePatternAssignmentUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<UserScheduleAssignment>> createCustomPatternAssignment(
-            @NonNull Long userId,
+            @NonNull String userId,
             @NonNull String customPatternId,
             @NonNull String teamName,
             @NonNull LocalDate assignmentDate,
@@ -297,18 +299,18 @@ public class CreatePatternAssignmentUseCase {
     // ==================== VALIDATION ====================
 
     @NonNull
-    private OperationResult<Void> validateQuattroDueInputs(@NonNull Long userId, @NonNull String teamName,
+    private OperationResult<Void> validateQuattroDueInputs(@NonNull String userId, @NonNull String teamName,
                                                            @NonNull LocalDate assignmentDate, int cycleDayPosition) {
-        if (userId <= 0) {
-            return OperationResult.failure("Invalid user ID", OperationResult.OperationType.VALIDATION);
+        if (userId.trim().isEmpty()) {
+            return OperationResult.failure("User ID cannot be empty", OperationResult.OperationType.VALIDATION);
         }
 
         if (teamName.trim().isEmpty()) {
             return OperationResult.failure("Team name cannot be empty", OperationResult.OperationType.VALIDATION);
         }
 
-        if (assignmentDate.isBefore(LocalDate.now())) {
-            return OperationResult.failure("Assignment date cannot be in the past", OperationResult.OperationType.VALIDATION);
+        if (assignmentDate.isBefore(LocalDate.now().minusYears( 50 ))) {
+            return OperationResult.failure("Assignment date cannot be more than 50 years ago", OperationResult.OperationType.VALIDATION);
         }
 
         if (cycleDayPosition < 1 || cycleDayPosition > 16) {
@@ -316,14 +318,14 @@ public class CreatePatternAssignmentUseCase {
                     OperationResult.OperationType.VALIDATION);
         }
 
-        return OperationResult.success(null, OperationResult.OperationType.VALIDATION);
+        return OperationResult.success("QuattroDue Input validation successful", OperationResult.OperationType.VALIDATION);
     }
 
     @NonNull
-    private OperationResult<Void> validateCustomPatternInputs(@NonNull Long userId, @NonNull String customPatternId,
+    private OperationResult<Void> validateCustomPatternInputs(@NonNull String userId, @NonNull String customPatternId,
                                                               @NonNull LocalDate assignmentDate, int cycleDayPosition) {
-        if (userId <= 0) {
-            return OperationResult.failure("Invalid user ID", OperationResult.OperationType.VALIDATION);
+        if (userId.trim().isEmpty()) {
+            return OperationResult.failure("User ID cannot be empty", OperationResult.OperationType.VALIDATION);
         }
 
         if (customPatternId.trim().isEmpty()) {
@@ -338,7 +340,7 @@ public class CreatePatternAssignmentUseCase {
             return OperationResult.failure("Cycle position must be positive", OperationResult.OperationType.VALIDATION);
         }
 
-        return OperationResult.success(null, OperationResult.OperationType.VALIDATION);
+        return OperationResult.success("Custom Input validation successful", OperationResult.OperationType.VALIDATION);
     }
 
     // ==================== GAP-FILLING STRATEGY ====================
@@ -348,7 +350,7 @@ public class CreatePatternAssignmentUseCase {
      * Implements gap-filling strategy by ending existing assignments.
      */
     @NonNull
-    private OperationResult<Void> closeConflictingAssignments(@NonNull Long userId, @NonNull LocalDate newAssignmentDate) {
+    private OperationResult<Void> closeConflictingAssignments(@NonNull String userId, @NonNull LocalDate newAssignmentDate) {
         try {
             Log.d(TAG, "Applying gap-filling strategy for user: " + userId + ", new assignment date: " + newAssignmentDate);
 
@@ -364,7 +366,7 @@ public class CreatePatternAssignmentUseCase {
             List<UserScheduleAssignment> activeAssignments = activeResult.getData();
             if (activeAssignments.isEmpty()) {
                 Log.d(TAG, "No existing active assignments to close");
-                return OperationResult.success(null, OperationResult.OperationType.UPDATE);
+                return OperationResult.success("No existing active assignments to close", OperationResult.OperationType.UPDATE);
             }
 
             // Close conflicting assignments
@@ -410,8 +412,8 @@ public class CreatePatternAssignmentUseCase {
      * @return
      */
     @NonNull
-    public CompletableFuture<OperationResult<List<RecurrenceRule>>> getActiveUserRecurrenceRules( Long userId) {
-        // Ignoring userId
+    public CompletableFuture<OperationResult<List<RecurrenceRule>>> getActiveUserRecurrenceRules( String userId) {
+        // Ignoring userID
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Getting active user recurrence rules");
@@ -430,7 +432,8 @@ public class CreatePatternAssignmentUseCase {
                             .collect(Collectors.toList());
 
                     Log.d(TAG, "Found " + userRules.size() + " active rules for user");
-                    return OperationResult.success(userRules, OperationResult.OperationType.READ);
+                    return OperationResult.success(userRules,
+                            OperationResult.OperationType.READ);
                 } else {
                     return OperationResult.failure("Failed to load recurrence rules: " + result.getErrorMessage(),
                             OperationResult.OperationType.READ);
@@ -438,7 +441,8 @@ public class CreatePatternAssignmentUseCase {
 
             } catch (Exception e) {
                 Log.e(TAG, "Error getting active user recurrence rules", e);
-                return OperationResult.failure("Error getting active user recurrence rules", e.getMessage(), OperationResult.OperationType.READ);
+                return OperationResult.failure("Error getting active user recurrence rules", e.getMessage(),
+                        OperationResult.OperationType.READ);
 
             }
         });
@@ -448,9 +452,7 @@ public class CreatePatternAssignmentUseCase {
     @NonNull
     private OperationResult<RecurrenceRule> getQuattroDueRecurrenceRule() {
         // Look for QuattroDue pattern in recurrence rules
-        return mRecurrenceRuleRepository.getRecurrenceRuleByName("QuattroDue").join()
-                .or( mRecurrenceRuleRepository.getRecurrenceRuleByName("4-2 Cycle").join())
-                .or( mRecurrenceRuleRepository.getRecurrenceRuleByName("QD_STANDARD").join());
+        return mRecurrenceRuleRepository.getRecurrenceRuleByName(DEFAULT_QD_RRULE_NAME).join();
     }
 
     @NonNull

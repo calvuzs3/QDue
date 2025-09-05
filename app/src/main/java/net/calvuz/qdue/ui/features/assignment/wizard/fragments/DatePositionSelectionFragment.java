@@ -222,7 +222,7 @@ public class DatePositionSelectionFragment extends Fragment {
         );
 
         // Set minimum date to today
-        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        //datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
 
         datePickerDialog.show();
     }
@@ -230,7 +230,7 @@ public class DatePositionSelectionFragment extends Fragment {
     private void onDateSelected(DatePicker view, int year, int month, int dayOfMonth) {
         LocalDate selectedDate = LocalDate.of(year, month + 1, dayOfMonth); // Calendar months are 0-based
 
-        if (selectedDate.isBefore(LocalDate.now())) {
+        if (selectedDate.isBefore(LocalDate.now().minusYears( 50 ))) {
             showError(getString(R.string.error_date_in_past));
             return;
         }
@@ -321,7 +321,7 @@ public class DatePositionSelectionFragment extends Fragment {
         } else {
             mBinding.txtCyclePositionDescription.setText(R.string.cycle_position_description_custom);
             // TODO: Get actual cycle length from selected custom pattern
-            mMaxCyclePosition = 14; // Default fallback
+            mMaxCyclePosition = 17; // Default fallback
         }
 
         mBinding.editCyclePositionInput.setHint(getString(R.string.cycle_position_hint, mMaxCyclePosition));
@@ -340,7 +340,7 @@ public class DatePositionSelectionFragment extends Fragment {
     }
 
     private String getQuattroDuePositionDescription(int position) {
-        // QuattroDue cycle: 4M, 2R, 4N, 2R, 4P, 2R (16 days)
+        // QuattroDue cycle: 4M, 2R, 4N, 2R, 4P, 2R (18 days)
         if (position >= 1 && position <= 4) {
             return getString(R.string.cycle_day_morning);
         } else if (position >= 5 && position <= 6) {
@@ -351,6 +351,8 @@ public class DatePositionSelectionFragment extends Fragment {
             return getString(R.string.cycle_day_rest);
         } else if (position >= 13 && position <= 16) {
             return getString(R.string.cycle_day_afternoon);
+        }  else if (position >= 17 && position <= 18) {
+            return getString( R.string.cycle_day_rest );
         } else {
             return getString(R.string.cycle_day_work);
         }

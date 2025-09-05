@@ -138,7 +138,6 @@ public class QDueMainActivity extends BaseActivity {
             return;
         }
 
-        // TODO: Handle view mode changes from settings onl first time
         // Verify navigation state matches preferences
         verifyNavigationStateMatchesPreferences();
     }

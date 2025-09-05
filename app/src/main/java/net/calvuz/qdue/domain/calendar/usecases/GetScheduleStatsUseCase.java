@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
@@ -74,12 +75,12 @@ public class GetScheduleStatsUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<ScheduleStats>> executeAnalysis(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId) {
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId) {
 
         return CompletableFuture.supplyAsync( () -> {
             try {
                 Log.d( TAG, "Generating schedule statistics for period: " + startDate + " to " + endDate +
-                        (userId != null ? ", userId: " + userId : " (all users)") );
+                        (userId != null ? ", userID: " + userId : " (all users)") );
 
                 // Validate input
                 OperationResult<Void> validation = validateAnalysisInput( startDate, endDate, userId );
@@ -126,11 +127,11 @@ public class GetScheduleStatsUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<ScheduleValidationResult>> validateScheduleChanges(
-            @NonNull Long userId, @NonNull LocalDate originalDate, @NonNull String proposedChanges) {
+            @NonNull String userId, @NonNull LocalDate originalDate, @NonNull String proposedChanges) {
 
         return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d( TAG, "Validating schedule changes for userId: " + userId +
+                Log.d( TAG, "Validating schedule changes for userID: " + userId +
                         ", date: " + originalDate );
 
                 // Create validation result
@@ -190,7 +191,7 @@ public class GetScheduleStatsUseCase {
     private ScheduleStats calculateComprehensiveStatistics(@NonNull Map<LocalDate, WorkScheduleDay> scheduleMap,
                                                            @NonNull LocalDate startDate,
                                                            @NonNull LocalDate endDate,
-                                                           @Nullable Long userId) {
+                                                           @Nullable String userId) {
         ScheduleStats stats = new ScheduleStats();
 
         // Basic metrics
@@ -294,7 +295,7 @@ public class GetScheduleStatsUseCase {
                     }
                 }
 
-                stats.trendAnalysis = String.format( "First week avg: %.1f hrs, Last week avg: %.1f hrs",
+                stats.trendAnalysis = String.format( QDue.getLocale(), "First week avg: %.1f hrs, Last week avg: %.1f hrs",
                         firstWeekHours / weekSize, lastWeekHours / weekSize );
             }
         } catch (Exception e) {
@@ -366,7 +367,7 @@ public class GetScheduleStatsUseCase {
     }
 
     private ScheduleValidationResult applyComplianceValidations(@NonNull ScheduleValidationResult result,
-                                                                @NonNull Long userId,
+                                                                @NonNull String userId,
                                                                 @NonNull LocalDate targetDate) {
         try {
             // Compliance Rule 1: Future date validation
@@ -419,7 +420,7 @@ public class GetScheduleStatsUseCase {
 
     private OperationResult<Void> validateAnalysisInput(@NonNull LocalDate startDate,
                                                         @NonNull LocalDate endDate,
-                                                        @Nullable Long userId) {
+                                                        @Nullable String userId) {
         if (startDate.isAfter( endDate )) {
             return OperationResult.failure( "Start date cannot be after end date", OperationResult.OperationType.VALIDATION );
         }
@@ -435,8 +436,8 @@ public class GetScheduleStatsUseCase {
         }
 
         // Validate user ID if provided
-        if (userId != null && userId <= 0) {
-            return OperationResult.failure( "User ID must be positive", OperationResult.OperationType.VALIDATION );
+        if (userId.trim().isEmpty()) {
+            return OperationResult.failure( "User ID cannot be empty", OperationResult.OperationType.VALIDATION );
         }
 
         return OperationResult.success( "validateAnalysisInput success", OperationResult.OperationType.VALIDATION );
@@ -464,7 +465,7 @@ public class GetScheduleStatsUseCase {
         // Analysis parameters
         public LocalDate analysisStartDate;
         public LocalDate analysisEndDate;
-        public Long userId; // null for all users
+        public String userId; // null for all users
 
         // Basic metrics
         public int totalDays;
@@ -504,7 +505,7 @@ public class GetScheduleStatsUseCase {
      */
     public static class ScheduleValidationResult {
         public boolean isValid = true;
-        public Long userId;
+        public String userId;
         public LocalDate targetDate;
         public String proposedChanges;
         public List<String> validationErrors = new ArrayList<>();
@@ -543,7 +544,7 @@ public class GetScheduleStatsUseCase {
 
         @Override
         public String toString() {
-            return String.format( "ScheduleValidationResult{valid=%s, errors=%d, warnings=%d}",
+            return String.format( QDue.getLocale(), "ScheduleValidationResult{valid=%s, errors=%d, warnings=%d}",
                     isValid, validationErrors.size(), warnings.size() );
         }
     }

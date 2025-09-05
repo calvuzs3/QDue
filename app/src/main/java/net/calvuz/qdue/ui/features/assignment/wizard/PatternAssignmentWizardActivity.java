@@ -22,6 +22,7 @@ import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.adapters.PatternAssignmentWizardAdapter;
 import net.calvuz.qdue.ui.features.assignment.wizard.di.AssignmentWizardModule;
@@ -74,6 +75,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     private static final String EXTRA_IS_FIRST_ASSIGNMENT = "is_first_assignment";
     private static final String EXTRA_EDIT_ASSIGNMENT_ID = "edit_assignment_id";
+    private static final String DEFAULT_CUSTOM_PATTERN_TEAM = "A";
 
     // ==================== UI COMPONENTS ====================
 
@@ -90,20 +92,21 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     // ==================== DEPENDENCIES ====================
 
     private CreatePatternAssignmentUseCase mAssignmentUseCase;
+    private UserTeamAssignmentUseCases mUserTeamAssignmentUseCase;
 
     // ==================== FACTORY METHODS ====================
 
     @NonNull
     public static Intent createIntent(@NonNull Context context, boolean isFirstAssignment) {
-        Intent intent = new Intent(context, PatternAssignmentWizardActivity.class);
-        intent.putExtra(EXTRA_IS_FIRST_ASSIGNMENT, isFirstAssignment);
+        Intent intent = new Intent( context, PatternAssignmentWizardActivity.class );
+        intent.putExtra( EXTRA_IS_FIRST_ASSIGNMENT, isFirstAssignment );
         return intent;
     }
 
     @NonNull
     public static Intent createEditIntent(@NonNull Context context, @NonNull String assignmentId) {
-        Intent intent = new Intent(context, PatternAssignmentWizardActivity.class);
-        intent.putExtra(EXTRA_EDIT_ASSIGNMENT_ID, assignmentId);
+        Intent intent = new Intent( context, PatternAssignmentWizardActivity.class );
+        intent.putExtra( EXTRA_EDIT_ASSIGNMENT_ID, assignmentId );
         return intent;
     }
 
@@ -111,11 +114,11 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
 
         // Initialize data binding
-        mBinding = ActivityPatternAssignmentWizardBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
+        mBinding = ActivityPatternAssignmentWizardBinding.inflate( getLayoutInflater() );
+        setContentView( mBinding.getRoot() );
 
         // Setup toolbar
         setupToolbar();
@@ -142,7 +145,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
             onBackPressed();
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected( item );
     }
 
     @Override
@@ -165,9 +168,9 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     // ==================== INITIALIZATION ====================
 
     private void setupToolbar() {
-        setSupportActionBar(mBinding.toolbar);
+        setSupportActionBar( mBinding.toolbar );
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled( true );
             getSupportActionBar().setTitle(
                     isFirstAssignment() ?
                             R.string.title_first_assignment_wizard :
@@ -177,70 +180,71 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     }
 
     private void initializeDependencies() {
-        AssignmentWizardModule wizardModule = AssignmentWizardModule.create(this);
+        AssignmentWizardModule wizardModule = AssignmentWizardModule.create( this );
         mAssignmentUseCase = wizardModule.getCreatePatternAssignmentUseCase();
+        mUserTeamAssignmentUseCase = wizardModule.getUserTeamAssignmentUseCases();
     }
 
     private void initializeWizardData() {
         mWizardData = new AssignmentWizardData();
-        mWizardData.setUserId(QDuePreferences.getUserId(this));
-        mWizardData.setFirstAssignment(isFirstAssignment());
+        mWizardData.setUserId( QDuePreferences.getUserId( this ) );
+        mWizardData.setFirstAssignment( isFirstAssignment() );
 
-        String editAssignmentId = getIntent().getStringExtra(EXTRA_EDIT_ASSIGNMENT_ID);
+        String editAssignmentId = getIntent().getStringExtra( EXTRA_EDIT_ASSIGNMENT_ID );
         if (editAssignmentId != null) {
-            mWizardData.setEditingAssignmentId(editAssignmentId);
-            loadExistingAssignmentForEdit(editAssignmentId);
+            mWizardData.setEditingAssignmentId( editAssignmentId );
+            loadExistingAssignmentForEdit( editAssignmentId );
         }
     }
 
     private void setupWizard() {
         // Create adapter
-        mWizardAdapter = new PatternAssignmentWizardAdapter(this, mWizardData);
-        mBinding.viewPager.setAdapter(mWizardAdapter);
+        mWizardAdapter = new PatternAssignmentWizardAdapter( this, mWizardData );
+        mBinding.viewPager.setAdapter( mWizardAdapter );
 
         // Setup ViewPager change listener
-        mBinding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        mBinding.viewPager.registerOnPageChangeCallback( new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 mCurrentStep = position;
                 updateUI();
             }
-        });
+        } );
 
         // Connect TabLayout with ViewPager
         setupTabIndicators();
     }
 
     private void setupTabIndicators() {
-        mTabMediator = new TabLayoutMediator(mBinding.tabIndicator, mBinding.viewPager,
+        mTabMediator = new TabLayoutMediator( mBinding.tabIndicator, mBinding.viewPager,
                 (tab, position) -> {
                     switch (position) {
                         case 0: // Pattern Type Selection
-                            tab.setIcon(R.drawable.ic_rounded_category_24);
-                            tab.setContentDescription(getString(R.string.wizard_step_pattern_type));
+                            tab.setIcon( R.drawable.ic_rounded_category_24 );
+                            tab.setContentDescription( getString( R.string.wizard_step_pattern_type ) );
                             break;
                         case 1: // Team/Custom Selection
-                            tab.setIcon(mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE ?
-                                    R.drawable.ic_rounded_group_24 : R.drawable.ic_rounded_edit_24);
-                            tab.setContentDescription(getString(R.string.wizard_step_selection));
+                            tab.setIcon( mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE ?
+                                    R.drawable.ic_rounded_group_24 : R.drawable.ic_rounded_edit_24 );
+                            tab.setContentDescription( getString( R.string.wizard_step_selection ) );
                             break;
                         case 2: // Date & Position
-                            tab.setIcon(R.drawable.ic_rounded_calendar_month_24);
-                            tab.setContentDescription(getString(R.string.wizard_step_date_position));
+                            tab.setIcon( R.drawable.ic_rounded_calendar_month_24 );
+                            tab.setContentDescription( getString( R.string.wizard_step_date_position ) );
                             break;
                         case 3: // Confirmation
-                            tab.setIcon(R.drawable.ic_rounded_check_circle_24);
-                            tab.setContentDescription(getString(R.string.wizard_step_confirmation));
+                            tab.setIcon( R.drawable.ic_rounded_check_circle_24 );
+                            tab.setContentDescription( getString( R.string.wizard_step_confirmation ) );
                             break;
                     }
-                });
+                } );
         mTabMediator.attach();
     }
 
     private void setupNavigationButtons() {
-        mBinding.btnNext.setOnClickListener(v -> navigateToNextStep());
-        mBinding.btnPrevious.setOnClickListener(v -> navigateToPreviousStep());
-        mBinding.btnCancel.setOnClickListener(v -> finish());
+        mBinding.btnNext.setOnClickListener( v -> navigateToNextStep() );
+        mBinding.btnPrevious.setOnClickListener( v -> navigateToPreviousStep() );
+        mBinding.btnCancel.setOnClickListener( v -> finish() );
     }
 
     // ==================== NAVIGATION ====================
@@ -249,7 +253,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
         if (mCurrentStep < mTotalSteps - 1) {
             if (validateCurrentStep()) {
                 mCurrentStep++;
-                mBinding.viewPager.setCurrentItem(mCurrentStep, true);
+                mBinding.viewPager.setCurrentItem( mCurrentStep, true );
             }
         } else {
             // Final step - create assignment
@@ -260,7 +264,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     private void navigateToPreviousStep() {
         if (mCurrentStep > 0) {
             mCurrentStep--;
-            mBinding.viewPager.setCurrentItem(mCurrentStep, true);
+            mBinding.viewPager.setCurrentItem( mCurrentStep, true );
         }
     }
 
@@ -286,30 +290,30 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     private void updateUI() {
         // Update progress text
-        mBinding.progressText.setText(getString(R.string.wizard_progress, mCurrentStep + 1, mTotalSteps));
+        mBinding.progressText.setText( getString( R.string.wizard_progress, mCurrentStep + 1, mTotalSteps ) );
 
         // Update button states
-        mBinding.btnPrevious.setVisibility(mCurrentStep > 0 ? View.VISIBLE : View.GONE);
+        mBinding.btnPrevious.setVisibility( mCurrentStep > 0 ? View.VISIBLE : View.GONE );
 
         if (mCurrentStep == mTotalSteps - 1) {
-            mBinding.btnNext.setText(R.string.wizard_create_assignment);
-            mBinding.btnNext.setIcon( AppCompatResources.getDrawable(this, R.drawable.ic_rounded_check_24));
+            mBinding.btnNext.setText( R.string.wizard_create_assignment );
+            mBinding.btnNext.setIcon( AppCompatResources.getDrawable( this, R.drawable.ic_rounded_check_24 ) );
         } else {
-            mBinding.btnNext.setText(R.string.wizard_next);
-            mBinding.btnNext.setIcon(AppCompatResources.getDrawable(this, R.drawable.ic_rounded_arrow_forward_24));
+            mBinding.btnNext.setText( R.string.wizard_next );
+            mBinding.btnNext.setIcon( AppCompatResources.getDrawable( this, R.drawable.ic_rounded_arrow_forward_24 ) );
         }
 
         // Update step validation
-        mBinding.btnNext.setEnabled(validateCurrentStep());
+        mBinding.btnNext.setEnabled( validateCurrentStep() );
 
-        Log.d(TAG, "UI updated for step " + (mCurrentStep + 1) + "/" + mTotalSteps);
+        Log.d( TAG, "UI updated for step " + (mCurrentStep + 1) + "/" + mTotalSteps );
     }
 
     // ==================== ASSIGNMENT CREATION ====================
 
     private void createAssignment() {
-        mBinding.progressBar.setVisibility(View.VISIBLE);
-        mBinding.btnNext.setEnabled(false);
+        mBinding.progressBar.setVisibility( View.VISIBLE );
+        mBinding.btnNext.setEnabled( false );
 
         if (mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
             createQuattroDueAssignment();
@@ -319,36 +323,60 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     }
 
     private void createQuattroDueAssignment() {
+        assert mWizardData.getUserId() != null;
+        assert mWizardData.getAssignmentDate() != null;
+        assert mWizardData.getSelectedTeam() != null;
+
         mAssignmentUseCase.createQuattroDueAssignment(
                 mWizardData.getUserId(),
                 mWizardData.getSelectedTeam().getName(),
                 mWizardData.getAssignmentDate(),
                 mWizardData.getCycleDayPosition()
-        ).thenAccept(result -> runOnUiThread(() -> handleAssignmentResult(result)));
+        ).thenAccept( result -> runOnUiThread( () -> handleAssignmentResult( result ) ) );
     }
 
     private void createCustomPatternAssignment() {
+        assert mWizardData.getUserId() != null;
+        assert mWizardData.getSelectedTeam() != null;
+        assert mWizardData.getAssignmentDate() != null;
+        assert mWizardData.getSelectedCustomPattern() != null;
+
+        // Create Team Assignment
+        mUserTeamAssignmentUseCase.getCreateUserTeamAssignmentUseCase().execute(
+                mWizardData.getUserId(),
+                mWizardData.getSelectedTeam().getId(),
+                mWizardData.getAssignmentDate(),
+                null,
+                "Wizard Pattern Assignment",
+                mWizardData.getUserId()
+        ).thenAccept( result -> runOnUiThread( () ->
+                Log.d( TAG, "Team assignment result: " + result.isSuccess() )
+        ) );
+
+        // Create Pattern Assignment
         mAssignmentUseCase.createCustomPatternAssignment(
                 mWizardData.getUserId(),
                 mWizardData.getSelectedCustomPattern().getId(),
-                "A", // Default team A for custom patterns
+                DEFAULT_CUSTOM_PATTERN_TEAM, // Default team A for custom patterns
                 mWizardData.getAssignmentDate(),
                 mWizardData.getCycleDayPosition()
-        ).thenAccept(result -> runOnUiThread(() -> handleAssignmentResult(result)));
+        ).thenAccept( result -> runOnUiThread( () ->
+                handleAssignmentResult( result )
+        ) );
     }
 
     private void handleAssignmentResult(@NonNull OperationResult<UserScheduleAssignment> result) {
-        mBinding.progressBar.setVisibility(View.GONE);
-        mBinding.btnNext.setEnabled(true);
+        mBinding.progressBar.setVisibility( View.GONE );
+        mBinding.btnNext.setEnabled( true );
 
         if (result.isSuccess()) {
-            Toast.makeText(this, R.string.success_assignment_created, Toast.LENGTH_SHORT).show();
-            setResult(RESULT_OK);
+            Toast.makeText( this, R.string.success_assignment_created, Toast.LENGTH_SHORT ).show();
+            setResult( RESULT_OK );
             finish();
         } else {
-            Toast.makeText(this, getString(R.string.error_assignment_creation_failed, result.getErrorMessage()),
-                    Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Assignment creation failed: " + result.getErrorMessage());
+            Toast.makeText( this, getString( R.string.error_assignment_creation_failed, result.getErrorMessage() ),
+                    Toast.LENGTH_LONG ).show();
+            Log.e( TAG, "Assignment creation failed: " + result.getErrorMessage() );
         }
     }
 
@@ -356,46 +384,46 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     @Override
     public void onPatternTypeSelected(@NonNull AssignmentWizardData.PatternType patternType) {
-        mWizardData.setPatternType(patternType);
+        mWizardData.setPatternType( patternType );
 
         // Reset selections when pattern type changes
-        mWizardData.setSelectedTeam(null);
-        mWizardData.setSelectedCustomPattern(null);
+        mWizardData.setSelectedTeam( null );
+        mWizardData.setSelectedCustomPattern( null );
 
         // Update adapter and UI
         mWizardAdapter.notifyPatternTypeChanged();
         updateTabIndicators();
         updateUI();
 
-        Log.d(TAG, "Pattern type selected: " + patternType);
+        Log.d( TAG, "Pattern type selected: " + patternType );
     }
 
     @Override
     public void onTeamSelected(@NonNull Team team) {
-        mWizardData.setSelectedTeam(team);
+        mWizardData.setSelectedTeam( team );
         updateUI();
-        Log.d(TAG, "Team selected: " + team.getName() + " (offset: " + team.getQdueOffset() + ")");
+        Log.d( TAG, "Team selected: " + team.getName() + " (offset: " + team.getQdueOffset() + ")" );
     }
 
     @Override
     public void onCustomPatternSelected(@NonNull RecurrenceRule customPattern) {
-        mWizardData.setSelectedCustomPattern(customPattern);
+        mWizardData.setSelectedCustomPattern( customPattern );
         updateUI();
-        Log.d(TAG, "Custom pattern selected: " + customPattern.getName());
+        Log.d( TAG, "Custom pattern selected: " + customPattern.getName() );
     }
 
     @Override
     public void onDateSelected(@NonNull LocalDate assignmentDate) {
-        mWizardData.setAssignmentDate(assignmentDate);
+        mWizardData.setAssignmentDate( assignmentDate );
         updateUI();
-        Log.d(TAG, "Assignment date selected: " + assignmentDate);
+        Log.d( TAG, "Assignment date selected: " + assignmentDate );
     }
 
     @Override
     public void onCycleDayPositionSelected(int cycleDayPosition) {
-        mWizardData.setCycleDayPosition(cycleDayPosition);
+        mWizardData.setCycleDayPosition( cycleDayPosition );
         updateUI();
-        Log.d(TAG, "Cycle day position selected: " + cycleDayPosition);
+        Log.d( TAG, "Cycle day position selected: " + cycleDayPosition );
     }
 
     @Override
@@ -424,7 +452,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     @Override
     public boolean isFirstAssignment() {
-        return getIntent().getBooleanExtra(EXTRA_IS_FIRST_ASSIGNMENT, false);
+        return getIntent().getBooleanExtra( EXTRA_IS_FIRST_ASSIGNMENT, false );
     }
 
     private void updateTabIndicators() {
@@ -436,6 +464,6 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     private void loadExistingAssignmentForEdit(@NonNull String assignmentId) {
         // TODO: Load existing assignment data for editing
-        Log.d(TAG, "Loading assignment for edit: " + assignmentId);
+        Log.d( TAG, "Loading assignment for edit: " + assignmentId );
     }
 }

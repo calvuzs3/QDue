@@ -225,7 +225,7 @@ public class QuickEventTemplate {
         }
 
         // Delegate to QuickEventLogicAdapter for actual creation
-        //LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userId);
+        //LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userID);
         EventAction eventAction = ToolbarActionBridge.mapToEventAction(sourceAction);
         LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, userId);
 
@@ -240,7 +240,7 @@ public class QuickEventTemplate {
     }
 
     /**
-     * Create LocalEvent with default user (when userId not available)
+     * Create LocalEvent with default user (when userID not available)
      */
     public LocalEvent createEvent(LocalDate date) {
         return createEvent(date, null);

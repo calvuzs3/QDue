@@ -11,24 +11,18 @@ import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 
 /**
  * AssignmentWizardModule - Dependency Injection module for Pattern Assignment Wizard
  *
  * <p>Provides all dependencies needed by the Pattern Assignment Wizard components.
  * Integrates with existing ServiceProvider pattern while maintaining clean separation.</p>
- *
- * @author QDue Development Team
- * @version 1.0.0
- * @since Clean Architecture Phase 2
  */
 public class AssignmentWizardModule {
 
     private final Context mContext;
     private final CalendarServiceProvider mCalendarServiceProvider;
-
-    // Lazy-loaded dependencies
-    private CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
 
     // ==================== CONSTRUCTOR ====================
 
@@ -45,6 +39,11 @@ public class AssignmentWizardModule {
     @NonNull
     public CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase() {
         return mCalendarServiceProvider.getCreatePatternAssignmentUseCase();
+    }
+
+    @NonNull
+    public UserTeamAssignmentUseCases getUserTeamAssignmentUseCases() {
+        return mCalendarServiceProvider.getUserTeamAssignmentUseCases();
     }
 
     // ==================== REPOSITORIES ====================

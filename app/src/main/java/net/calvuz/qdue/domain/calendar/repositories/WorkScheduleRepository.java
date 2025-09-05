@@ -67,7 +67,7 @@ public interface WorkScheduleRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<WorkScheduleDay>> getWorkScheduleForDate(@NonNull LocalDate date,
-                                                                               @Nullable Long userId);
+                                                                               @Nullable String userId);
 
     /**
      * Get work schedule for a date range.
@@ -80,7 +80,7 @@ public interface WorkScheduleRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForDateRange(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId);
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId);
 
     /**
      * Get work schedule for a complete month.
@@ -92,7 +92,7 @@ public interface WorkScheduleRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForMonth(
-            @NonNull YearMonth month, @Nullable Long userId);
+            @NonNull YearMonth month, @Nullable String userId);
 
     /**
      * Generate work schedule events for date range.
@@ -105,7 +105,7 @@ public interface WorkScheduleRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<List<WorkScheduleEvent>>> generateWorkScheduleEvents(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Long userId);
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId);
 
     // ==================== TEAM MANAGEMENT ====================
 
@@ -125,7 +125,7 @@ public interface WorkScheduleRepository {
      * @return CompletableFuture with Team object wrapped in OperationResult (null data if not found)
      */
     @NonNull
-    CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId);
+    CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull String userId);
 
     /**
      * Set team for user.
@@ -135,7 +135,7 @@ public interface WorkScheduleRepository {
      * @return CompletableFuture with operation result
      */
     @NonNull
-    CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull Long userId, @NonNull Team team);
+    CompletableFuture<OperationResult<Void>> setTeamForUser(@NonNull String userId, @NonNull Team team);
 
     /**
      * Get teams working on specific date.
@@ -303,7 +303,7 @@ public interface WorkScheduleRepository {
      * @return CompletableFuture with color hex string wrapped in OperationResult (null data if no schedule)
      */
     @NonNull
-    CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable Long userId);
+    CompletableFuture<OperationResult<String>> getWorkScheduleColor(@NonNull LocalDate date, @Nullable String userId);
 
     /**
      * Get work schedule summary for date.
@@ -314,7 +314,7 @@ public interface WorkScheduleRepository {
      * @return CompletableFuture with summary string wrapped in OperationResult (null data if no schedule)
      */
     @NonNull
-    CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable Long userId);
+    CompletableFuture<OperationResult<String>> getWorkScheduleSummary(@NonNull LocalDate date, @Nullable String userId);
 
     // ==================== DATA MANAGEMENT ====================
 

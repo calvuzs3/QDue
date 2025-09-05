@@ -63,10 +63,6 @@ import java.util.UUID;
  *   <li>Team performance metrics</li>
  *   <li>Team contact information</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Localization Implementation
- * @since Clean Architecture Phase 2
  */
 public class Team extends LocalizableDomainModel {
 
@@ -120,9 +116,15 @@ public class Team extends LocalizableDomainModel {
     private final String displayName;
     private final String description;
     private final String colorHex;
-    private final TeamType teamType;
     private final int qdueOffset;
+
+    private final TeamType teamType;
+
+    // ==================== METADATA ======================
+
     private final boolean active;
+    private final long createdAt;
+    private final long updatedAt;
 
     // ==================== CACHED VALUES ====================
 
@@ -158,8 +160,12 @@ public class Team extends LocalizableDomainModel {
         this.description = builder.description != null ? builder.description.trim() : "";
         this.colorHex = builder.colorHex != null ? builder.colorHex.trim() : null;
         this.qdueOffset = builder.qdueOffset;
+
         this.teamType = builder.teamType;
+
         this.active = builder.active;
+        this.createdAt = builder.createdAt;
+        this.updatedAt = builder.updatedAt;
 
         // Cache hash code
         this.hashCodeCache = Objects.hash( this.id );
@@ -167,82 +173,54 @@ public class Team extends LocalizableDomainModel {
 
     // ==================== GETTERS ====================
 
-    /**
-     * Get the unique team identifier.
-     *
-     * @return Team ID
-     */
     @NonNull
     public String getId() {
         return id;
     }
 
-    /**
-     * Get the team name (used in schedules and business logic).
-     *
-     * @return Team name
-     */
     @NonNull
     public String getName() {
         return name;
     }
 
-    /**
-     * Get the display name for UI presentation.
-     *
-     * @return Human-readable team name
-     */
     @NonNull
     public String getDisplayName() {
         return displayName;
     }
 
-    /**
-     * Get the team description.
-     *
-     * @return Team description or empty string
-     */
     @NonNull
     public String getDescription() {
         return description;
     }
 
-    /**
-     * Get the team color hex code.
-     *
-     * @return Team color hex code or null if not set
-     */
     @Nullable
     public String getColorHex() {
         return colorHex;
     }
 
-    /**
-     * Get the QuattroDue pattern offset in days.
-     *
-     * @return QuattroDue pattern offset in days
-     */
     public int getQdueOffset() {
         return qdueOffset;
     }
 
-    /**
-     * Get the team type classification.
-     *
-     * @return TeamType or null if not classified
-     */
-    @Nullable
+    @NonNull
     public TeamType getTeamType() {
         return teamType;
     }
 
-    /**
-     * Check if team is currently active.
-     *
-     * @return true if team is active
-     */
     public boolean isActive() {
         return active;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public int getHashCodeCache() {
+        return hashCodeCache;
     }
 
     // ==================== BUSINESS LOGIC ====================
@@ -561,14 +539,16 @@ public class Team extends LocalizableDomainModel {
      * Builder class for creating Team instances with localization support.
      */
     public static class Builder extends LocalizableBuilder<Team, Builder> {
-        private final String id;
+        private String id;
         private String name;
         private String displayName;
         private String description = "";
         private String colorHex = "#4CAF50";
         private int qdueOffset = 0;
-        private TeamType teamType;
+        private TeamType teamType = TeamType.STANDARD;
         private boolean active = true;
+        private long createdAt = System.currentTimeMillis();
+        private long updatedAt = System.currentTimeMillis();
 
         private Builder() {
             this.id = UUID.randomUUID().toString();
@@ -594,6 +574,8 @@ public class Team extends LocalizableDomainModel {
             this.qdueOffset = existingTeam.qdueOffset;
             this.teamType = existingTeam.teamType;
             this.active = existingTeam.active;
+            this.createdAt = existingTeam.createdAt;
+            this.updatedAt = existingTeam.updatedAt;
         }
 
         /**
@@ -608,8 +590,22 @@ public class Team extends LocalizableDomainModel {
             this.qdueOffset = source.qdueOffset;
             this.teamType = source.teamType;
             this.active = source.active;
+            this.createdAt = source.createdAt;
+            this.updatedAt = source.updatedAt;
 
             return copyLocalizableFrom( source );
+        }
+
+        /**
+         * Set id
+         *
+         * @param id Team ID
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder id(@NonNull String id) {
+            this.id = Objects.requireNonNull( id, "Team ID cannot be null" ).trim();
+            return this;
         }
 
         /**
@@ -670,6 +666,7 @@ public class Team extends LocalizableDomainModel {
          * Set QuattroDue pattern offset in days.
          * Determines this team's position in the 18-day QuattroDue cycle.
          * Range: 0-17 (0 = base pattern, others are phase shifts)
+         *
          * @param qdueOffset QuattroDue pattern offset in days
          * @return Builder instance for chaining
          */
@@ -704,6 +701,30 @@ public class Team extends LocalizableDomainModel {
         }
 
         /**
+         * Set team creation timestamp.
+         *
+         * @param createdAt Team creation timestamp
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder createdAt(long createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        /**
+         * Set team update timestamp.
+         *
+         * @param updatedAt Team update timestamp
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder updatedAt(long updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        /**
          * Mark team as inactive.
          *
          * @return Builder instance for chaining
@@ -714,6 +735,11 @@ public class Team extends LocalizableDomainModel {
             return this;
         }
 
+        /**
+         * Set localizer for localization support.
+         *
+         * @return Builder instance for chaining
+         */
         @Override
         @NonNull
         protected Builder self() {
@@ -790,6 +816,24 @@ public class Team extends LocalizableDomainModel {
                 .build();
     }
 
+    /**
+     * Create a support team with localization support.
+     *
+     * @param teamName  Team name
+     * @param localizer Optional domain localizer for i18n
+     * @return Support team
+     */
+    @NonNull
+    public static Team createSupportTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+        return builder( teamName )
+                .name( teamName )
+                .displayName( teamName )
+                .colorHex( colorHex )
+                .teamType( TeamType.SUPPORT )
+                .localizer( localizer )
+                .build();
+    }
+
     // ==================== FACTORY METHODS (Legacy Support) ====================
 
     /**
@@ -804,7 +848,6 @@ public class Team extends LocalizableDomainModel {
         String cleanName = name.trim();
         return builder( cleanName ).name( cleanName ).build();
     }
-
 
     // ==================== OBJECT METHODS ====================
 
@@ -849,6 +892,9 @@ public class Team extends LocalizableDomainModel {
                 ", teamType=" + teamType +
                 ", active=" + active +
                 ", hasLocalizationSupport=" + hasLocalizationSupport() +
+                ", hashCodeCache=" + hashCodeCache +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }

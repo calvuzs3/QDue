@@ -156,7 +156,7 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getEffectiveExceptionsForUserOnDate(
-            @NonNull Long userId, @NonNull LocalDate date) {
+            @NonNull String userId, @NonNull LocalDate date) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 List<ShiftExceptionEntity> entities =
@@ -177,7 +177,7 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsForUserInDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 List<ShiftExceptionEntity> entities =
@@ -247,7 +247,7 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<ShiftException>>> getExceptionsByTypeForUser(
-            @NonNull Long userId, @NonNull ShiftException.ExceptionType exceptionType) {
+            @NonNull String userId, @NonNull ShiftException.ExceptionType exceptionType) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 Log.d( TAG, "Getting exceptions by type " + exceptionType + " for user " + userId );
@@ -412,7 +412,7 @@ public class ShiftExceptionRepositoryImpl implements ShiftExceptionRepository {
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<Integer>> getExceptionCountForUser(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<Integer>> getExceptionCountForUser(@NonNull String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 Log.d( TAG, "Getting exception count for user: " + userId );

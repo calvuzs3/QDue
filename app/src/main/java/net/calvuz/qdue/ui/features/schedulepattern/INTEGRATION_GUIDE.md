@@ -217,7 +217,7 @@ module.getShiftRepository().getAllShifts()
 
 // 3. Team Integration  
 // Custom patterns can be assigned to specific teams
-// Set teamId when creating UserScheduleAssignment
+// Set teamID when creating UserScheduleAssignment
 
 // 4. Localization
 // All strings are in Italian - add other languages to strings_schedule_pattern.xml

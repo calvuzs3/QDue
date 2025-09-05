@@ -22,8 +22,8 @@ import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.data.di.CalendarServiceProviderImpl;
-import net.calvuz.qdue.data.qdueuser.dao.QDueUserDao;
-import net.calvuz.qdue.data.qdueuser.repositories.QDueUserRepositoryImpl;
+import net.calvuz.qdue.data.dao.QDueUserDao;
+import net.calvuz.qdue.data.repositories.QDueUserRepositoryImpl;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
@@ -328,7 +328,7 @@ public class ServiceProviderImpl implements ServiceProvider {
 
                     // Create QDueUserRepository
                     QDueUserDao qDueUserDao = mCalendarDatabase.qDueUserDao();
-                    QDueUserRepository qDueUserRepository = new QDueUserRepositoryImpl( qDueUserDao );
+                    QDueUserRepository qDueUserRepository = new QDueUserRepositoryImpl( getCalendarDatabase() );
 
                     // Create QDueUserUseCases
                     QDueUserUseCases qDueUserUseCases = new QDueUserUseCases( qDueUserRepository );

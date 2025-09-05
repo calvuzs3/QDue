@@ -629,9 +629,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         try {
             // Simple hash-based offset for demonstration
             // In practice, this would be a proper field or calculated value
-//            String teamId = assignment.getTeamId();
-//            if (teamId != null) {
-//                return Math.abs( teamId.hashCode() ) % 6; // 0-5 days offset
+//            String teamID = assignment.getTeamId();
+//            if (teamID != null) {
+//                return Math.abs( teamID.hashCode() ) % 6; // 0-5 days offset
 //            }
 
             // TODO: rethink this logic

@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.UUID;
 
 /**
  * ShiftEntity - Database entity for shift types persistence.
@@ -92,6 +93,9 @@ public class ShiftEntity {
     @ColumnInfo(name = "break_time_duration_minutes")
     private long breakTimeDurationMinutes;
 
+    @ColumnInfo(name = "display_order")
+    private int displayOrder;
+
     @ColumnInfo(name = "active")
     private boolean active;
 
@@ -101,16 +105,23 @@ public class ShiftEntity {
     @ColumnInfo(name = "updated_at")
     private long updatedAt;
 
-    @ColumnInfo(name = "display_order")
-    private int displayOrder;
-
     // ==================== CONSTRUCTORS ====================
 
     /**
      * Default constructor for Room.
      */
     public ShiftEntity() {
+        this.id = UUID.randomUUID().toString();
+        this.name = "New Shift";
+        this.shiftType = ShiftTypes.CUSTOM;
+        this.startTime = "08:00";
+        this.endTime = "17:00";
         this.active = true;
+        this.crossesMidnight = false;
+        this.isUserRelevant = false;
+        this.hasBreakTime = true;
+        this.isBreakTimeIncluded = false;
+        this.breakTimeDurationMinutes = 60;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
         this.displayOrder = 0;
@@ -366,12 +377,12 @@ public class ShiftEntity {
 
         if (crossesMidnight) {
             // For shifts crossing midnight
-            long minutesToMidnight = 24 * 60 - (start.getHour() * 60 + start.getMinute());
-            long minutesFromMidnight = end.getHour() * 60 + end.getMinute();
+            long minutesToMidnight = 24 * 60 - (start.getHour() * 60L + start.getMinute());
+            long minutesFromMidnight = end.getHour() * 60L + end.getMinute();
             return minutesToMidnight + minutesFromMidnight;
         } else {
             // For normal shifts within same day
-            return (end.getHour() * 60 + end.getMinute()) - (start.getHour() * 60 + start.getMinute());
+            return (end.getHour() * 60L + end.getMinute()) - (start.getHour() * 60L + start.getMinute());
         }
     }
 

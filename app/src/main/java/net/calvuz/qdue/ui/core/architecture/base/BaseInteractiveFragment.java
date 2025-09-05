@@ -770,7 +770,7 @@ public abstract class BaseInteractiveFragment extends BaseFragment implements
         // Subclasses should override with specific user management logic
         mCurrentUserId = getCurrentUserId();
 
-        Log.d(TAG, "User context initialized: userId=" + mCurrentUserId);
+        Log.d(TAG, "User context initialized: userID=" + mCurrentUserId);
     }
 
     /**

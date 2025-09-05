@@ -111,7 +111,7 @@
  * startActivity(intent);
  *
  * // Launch with user context:
- * Intent intent = SwipeCalendarActivity.createIntent(context, null, userId);
+ * Intent intent = SwipeCalendarActivity.createIntent(context, null, userID);
  * startActivity(intent);
  * </pre>
  *

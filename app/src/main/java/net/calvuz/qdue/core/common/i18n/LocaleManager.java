@@ -815,6 +815,7 @@ public class LocaleManager {
     /**
      * Get localized recurrence rule name.
      */
+    @Deprecated
     @NonNull
     public static String getRecurrenceRuleName(@Nullable Context context, @NonNull String ruleTypeKey) {
         // Italian examples:
@@ -827,6 +828,7 @@ public class LocaleManager {
     /**
      * Get localized recurrence rule description.
      */
+    @Deprecated
     @NonNull
     public static String getRecurrenceRuleDescription(@Nullable Context context, @NonNull String ruleTypeKey) {
         return getLocalizedString(context, "recurrence_rule_desc_" + ruleTypeKey.toLowerCase(), "Regola di ricorrenza: " + ruleTypeKey);

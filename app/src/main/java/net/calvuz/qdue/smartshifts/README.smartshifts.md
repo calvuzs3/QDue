@@ -86,7 +86,7 @@ public class UserShiftAssignment {
 
 @Entity(tableName = "smart_shift_events",
         indices = {
-            @Index(value = {"userId", "eventDate"}),
+            @Index(value = {"userID", "eventDate"}),
             @Index(value = {"shiftPatternId", "eventDate"}),
             @Index(value = {"masterEventId"})
         })

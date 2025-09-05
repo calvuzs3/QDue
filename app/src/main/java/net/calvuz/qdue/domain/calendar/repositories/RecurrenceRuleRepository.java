@@ -16,55 +16,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface RecurrenceRuleRepository {
 
-    /**
-     * Get active RecurrenceRules created by specific user.
-     * @param userId User ID to filter by
-     * @return CompletableFuture with user's active patterns
-     */
-    @NonNull
-    CompletableFuture<OperationResult<List<RecurrenceRule>>> getActiveUserRecurrenceRules(@NonNull Long userId);
-
-    /**
-     * Get RecurrenceRule by name with fallback alternatives.
-     * @param name Primary name to search
-     * @return OperationResult that supports .or() chaining
-     */
-    @NonNull
-    CompletableFuture<OperationResult<RecurrenceRule>> getRecurrenceRuleByName(@NonNull String name);
-
-    /**
-     * Get all recurrence rules.
-     * @return List of RecurrenceRule objects
-     */
-    @NonNull
-    CompletableFuture<List<RecurrenceRule>> getAllRecurrenceRules();
-
-    /**
-     * Get recurrence rule by ID.
-     *
-     * @param ruleId Recurrence rule ID
-     * @return CompletableFuture with RecurrenceRule or null if not found
-     */
-    @NonNull
-    CompletableFuture<RecurrenceRule> getRecurrenceRuleById(@NonNull String ruleId);
-
-    /**
-     * Get all active recurrence rules.
-     *
-     * @return CompletableFuture with List of active RecurrenceRule objects
-     */
-    @NonNull
-    CompletableFuture<List<RecurrenceRule>> getAllActiveRecurrenceRules();
-
-    /**
-     * Get recurrence rules by frequency type.
-     *
-     * @param frequency Frequency type (DAILY, WEEKLY, etc.)
-     * @return CompletableFuture with List of matching RecurrenceRule objects
-     */
-    @NonNull
-    CompletableFuture<List<RecurrenceRule>> getRecurrenceRulesByFrequency(
-            @NonNull RecurrenceRule.Frequency frequency);
+    // ==================== RECURRENCE RULE CRUD OPERATIONS ====================
 
     /**
      * Save recurrence rule.
@@ -73,7 +25,28 @@ public interface RecurrenceRuleRepository {
      * @return CompletableFuture with saved RecurrenceRule
      */
     @NonNull
-    CompletableFuture<RecurrenceRule> saveRecurrenceRule(@NonNull RecurrenceRule recurrenceRule);
+    CompletableFuture<RecurrenceRule>
+    saveRecurrenceRule(@NonNull RecurrenceRule recurrenceRule);
+
+    /**
+     * Insert recurrence rule.
+     *
+     * @param recurrenceRule RecurrenceRule to insert
+     * @return CompletableFuture with boolean indicating success
+    */
+    @NonNull
+    CompletableFuture<Boolean>
+    insertRecurrenceRule(@NonNull RecurrenceRule recurrenceRule);
+
+    /**
+     * Update recurrence rule.
+     *
+     * @param recurrenceRule RecurrenceRule to update
+     * @return CompletableFuture with boolean indicating success
+     */
+    @NonNull
+    CompletableFuture<Boolean>
+    updateRecurrenceRule(@NonNull RecurrenceRule recurrenceRule);
 
     /**
      * Delete recurrence rule by ID.
@@ -82,7 +55,8 @@ public interface RecurrenceRuleRepository {
      * @return CompletableFuture with boolean indicating success
      */
     @NonNull
-    CompletableFuture<Boolean> deleteRecurrenceRule(@NonNull String ruleId);
+    CompletableFuture<Boolean>
+    deleteRecurrenceRule(@NonNull String ruleId);
 
     /**
      * Check if recurrence rule is in use by any assignments.
@@ -91,5 +65,66 @@ public interface RecurrenceRuleRepository {
      * @return CompletableFuture with boolean indicating usage
      */
     @NonNull
-    CompletableFuture<Boolean> isRecurrenceRuleInUse(@NonNull String ruleId);
+    CompletableFuture<Boolean>
+    isRecurrenceRuleInUse(@NonNull String ruleId);
+
+    // ==================== RECURRENCE RULE QUERY OPERATIONS ====================
+
+    /**
+     * Get all active recurrence rules.
+     *
+     * @return CompletableFuture with List of active RecurrenceRule objects
+     */
+    @NonNull
+    CompletableFuture<List<RecurrenceRule>>
+    getAllActiveRecurrenceRules();
+
+    /**
+     * Get active RecurrenceRules created by specific user.
+     *
+     * @param userId User ID to filter by
+     * @return CompletableFuture with user's active patterns
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<RecurrenceRule>>>
+    getActiveUserRecurrenceRules(@NonNull String userId);
+
+    /**
+     * Get all recurrence rules.
+     *
+     * @return List of RecurrenceRule objects
+     */
+    @NonNull
+    CompletableFuture<List<RecurrenceRule>>
+    getAllRecurrenceRules();
+
+    /**
+     * Get recurrence rule by ID.
+     *
+     * @param ruleId Recurrence rule ID
+     * @return CompletableFuture with RecurrenceRule or null if not found
+     */
+    @NonNull
+    CompletableFuture<RecurrenceRule>
+    getRecurrenceRuleById(@NonNull String ruleId);
+
+    /**
+     * Get RecurrenceRule by name with fallback alternatives.
+     *
+     * @param name Primary name to search
+     * @return OperationResult that supports .or() chaining
+     */
+    @NonNull
+    CompletableFuture<OperationResult<RecurrenceRule>>
+    getRecurrenceRuleByName(@NonNull String name);
+
+    /**
+     * Get recurrence rules by frequency type.
+     *
+     * @param frequency Frequency type (DAILY, WEEKLY, etc.)
+     * @return CompletableFuture with List of matching RecurrenceRule objects
+     */
+    @NonNull
+    CompletableFuture<List<RecurrenceRule>>
+    getRecurrenceRulesByFrequency(@NonNull RecurrenceRule.Frequency frequency);
 }

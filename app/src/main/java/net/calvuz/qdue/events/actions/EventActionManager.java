@@ -162,7 +162,7 @@ public class EventActionManager {
      */
     public static boolean hasConflictingEvents(EventAction action, LocalDate date, Long userId, EventDao eventDao) {
         try {
-            List<LocalEvent> existingEvents = eventDao.getEventsForDate(date.atStartOfDay(), date.atTime(23, 59, 59)); // .getEventsByDateAndUser(date, userId);
+            List<LocalEvent> existingEvents = eventDao.getEventsForDate(date.atStartOfDay(), date.atTime(23, 59, 59)); // .getEventsByDateAndUser(date, userID);
             return hasActionConflicts(action, existingEvents);
         } catch (Exception e) {
             Log.e(TAG, "Error checking conflicting events: " + e.getMessage());

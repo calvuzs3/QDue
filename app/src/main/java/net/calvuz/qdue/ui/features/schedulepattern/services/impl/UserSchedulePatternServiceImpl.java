@@ -381,14 +381,13 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 
     @NonNull
     @Override
-    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserPatterns() {
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserPatterns(@NonNull String userId) {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 Log.d( TAG, "Loading user patterns" );
 
-                // TODO: remove hardcoded user ID
                 OperationResult<List<UserScheduleAssignment>> assignmentResult = mUserScheduleAssignmentRepository
-                        .getActiveAssignmentsForUser( 1L ).join();
+                        .getActiveAssignmentsForUser( userId ).join();
                 if (assignmentResult.isFailure()) {
                     return OperationResult.failure( "No user patterns found", OperationResult.OperationType.READ );
                 }
@@ -715,7 +714,7 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 
         try {
             // Get current user ID from preferences (single-user app)
-            long userId = QDuePreferences.getUserId( mContext );
+            String userId = QDuePreferences.getUserId( mContext );
 
             // Get selected team name from preferences
             String teamName = QDuePreferences.getSelectedTeamNameForRepository( mContext );
@@ -734,12 +733,12 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 //            // Create assignment with proper user ID
 //            return UserScheduleAssignment.builder()
 //                    .id(UUID.randomUUID().toString())
-//                    .userId(userId)                             // Use actual user ID from preferences
-//                    .teamId(selectedTeamName)                   // Use selected team name from preferences
+//                    .userID(userID)                             // Use actual user ID from preferences
+//                    .teamID(selectedTeamName)                   // Use selected team name from preferences
 //                    .title(patternName)                         // Use pattern name as title
 //                    .recurrenceRuleId(recurrenceRuleId)
 //                    .startDate(startDate)                       // No end date means isPermanent
-//                    .assignedByUserId( String.valueOf(userId) ) // Use actual user ID from preferences
+//                    .assignedByUserID( String.valueOf(userID) ) // Use actual user ID from preferences
 //                    .assignedByUserName("default")              // Use pattern name as assignment name
 //                    .priority(UserScheduleAssignment.Priority.NORMAL)
 //                    .build();
@@ -768,7 +767,7 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
             @NonNull String patternName) {
 
         try {
-            long userId = QDuePreferences.getUserId( mContext );
+            String userId = QDuePreferences.getUserId( mContext );
             String selectedTeamName = QDuePreferences.getSelectedTeamNameForRepository( mContext );
 
             Log.d( TAG, "Creating temporary UserScheduleAssignment for user: " + userId +
@@ -862,8 +861,8 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
 
 //                        UserScheduleAssignment.builder()
 //                        .id( "temp_preview_assignment" )
-//                        .userId( 0L ) // Temp user ID
-//                        .teamId( "temp_team" )
+//                        .userID( 0L ) // Temp user ID
+//                        .teamID( "temp_team" )
 //                        .recurrenceRuleId( tempRule.getId() )
 //                        .startDate( startDate )
 //                        .status( UserScheduleAssignment.Status.ACTIVE )

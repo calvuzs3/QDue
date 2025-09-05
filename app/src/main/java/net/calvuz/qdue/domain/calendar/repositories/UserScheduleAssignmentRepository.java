@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.common.enums.Status;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -120,7 +121,7 @@ public interface UserScheduleAssignmentRepository {
      * @return CompletableFuture with OperationResult containing active assignments
      */
     @NonNull
-    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull Long userId);
+    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull String userId);
 
     /**
      * Get active assignment for user on specific date.
@@ -135,7 +136,7 @@ public interface UserScheduleAssignmentRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<UserScheduleAssignment>> getActiveAssignmentForUser(
-            @NonNull Long userId, @NonNull LocalDate date);
+            @NonNull String userId, @NonNull LocalDate date);
 
     /**
      * Get all active assignments for user (all time periods).
@@ -147,7 +148,7 @@ public interface UserScheduleAssignmentRepository {
      * @return CompletableFuture with OperationResult containing List of active UserScheduleAssignment objects
      */
     @NonNull
-    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getActiveAssignmentsForUser(@NonNull Long userId);
+    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getActiveAssignmentsForUser(@NonNull String userId);
 
     /**
      * Get assignments for user in date range.
@@ -162,7 +163,7 @@ public interface UserScheduleAssignmentRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getAssignmentsForUserInDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
 
     // ==================== DATE-BASED QUERIES ====================
 
@@ -228,7 +229,7 @@ public interface UserScheduleAssignmentRepository {
      * @return CompletableFuture with OperationResult containing List of active user IDs
      */
     @NonNull
-    CompletableFuture<OperationResult<List<Long>>> getAllActiveUserIds();
+    CompletableFuture<OperationResult<List<String>>> getAllActiveUserIds();
 
     // ==================== UPDATE OPERATIONS ====================
 
@@ -244,7 +245,7 @@ public interface UserScheduleAssignmentRepository {
      */
     @NonNull
     CompletableFuture<OperationResult<Boolean>> updateAssignmentStatus(
-            @NonNull String assignmentId, @NonNull UserScheduleAssignment.Status newStatus);
+            @NonNull String assignmentId, @NonNull Status newStatus);
 
     /**
      * End assignment on specific date.
@@ -271,7 +272,7 @@ public interface UserScheduleAssignmentRepository {
      * @return CompletableFuture with OperationResult containing boolean indicating active assignments
      */
     @NonNull
-    CompletableFuture<OperationResult<Boolean>> hasActiveAssignments(@NonNull Long userId);
+    CompletableFuture<OperationResult<Boolean>> hasActiveAssignments(@NonNull String userId);
 
     /**
      * Check if team has any active assignments.

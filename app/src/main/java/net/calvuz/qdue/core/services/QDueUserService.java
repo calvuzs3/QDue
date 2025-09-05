@@ -37,10 +37,6 @@ import java.util.concurrent.CompletableFuture;
  *   <li><strong>Validation</strong>: Business rule validation and error handling</li>
  *   <li><strong>Statistics</strong>: User count and profile completion metrics</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Clean Architecture Application Service
- * @since Clean Architecture Phase 3
  */
 public interface QDueUserService {
 
@@ -56,14 +52,6 @@ public interface QDueUserService {
     CompletableFuture<OperationResult<QDueUser>> createUser(@NonNull String nickname, @NonNull String email);
 
     /**
-     * Get QDueUser by ID.
-     *
-     * @param userId User ID to retrieve
-     * @return CompletableFuture with found user or failure if not exists
-     */
-    CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull Long userId);
-
-    /**
      * Update existing QDueUser with complete profile replacement.
      *
      * @param userId   User ID to update
@@ -71,7 +59,7 @@ public interface QDueUserService {
      * @param email    New email (can be empty, validated if present)
      * @return CompletableFuture with updated user
      */
-    CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull Long userId, @NonNull String nickname, @NonNull String email);
+    CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull String userId, @NonNull String nickname, @NonNull String email);
 
     /**
      * Delete QDueUser by ID.
@@ -79,9 +67,17 @@ public interface QDueUserService {
      * @param userId User ID to delete
      * @return CompletableFuture with success message or failure
      */
-    CompletableFuture<OperationResult<String>> deleteUser(@NonNull Long userId);
+    CompletableFuture<OperationResult<String>> deleteUser(@NonNull String userId);
 
     // ==================== BUSINESS QUERIES ====================
+
+    /**
+     * Get QDueUser by ID.
+     *
+     * @param userId User ID to retrieve
+     * @return CompletableFuture with found user or failure if not exists
+     */
+    CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull String userId);
 
     /**
      * Find QDueUser by email address.
@@ -124,27 +120,8 @@ public interface QDueUserService {
      */
     CompletableFuture<OperationResult<Boolean>> isOnboardingNeeded();
 
-    /**
-     * Complete user profile after initial onboarding.
-     *
-     * @param userId   User ID to complete profile for
-     * @param nickname Complete nickname
-     * @param email    Complete email address
-     * @return CompletableFuture with completed user profile
-     */
-    CompletableFuture<OperationResult<QDueUser>> completeUserProfile(@NonNull Long userId, @NonNull String nickname, @NonNull String email);
 
     // ==================== VALIDATION OPERATIONS ====================
-
-    /**
-     * Validate user data without persisting.
-     * Useful for real-time form validation.
-     *
-     * @param nickname User nickname to validate
-     * @param email    User email to validate (format checked if not empty)
-     * @return OperationResult with validation status and errors
-     */
-    OperationResult<Void> validateUserData(@NonNull String nickname, @NonNull String email);
 
     /**
      * Check if email format is valid (if not empty).
@@ -153,54 +130,6 @@ public interface QDueUserService {
      * @return OperationResult with validation status
      */
     OperationResult<Boolean> isEmailValid(@NonNull String email);
-
-    // ==================== EXISTENCE CHECKS ====================
-
-    /**
-     * Check if user exists by ID.
-     *
-     * @param userId User ID to check
-     * @return CompletableFuture with true if user exists
-     */
-    CompletableFuture<OperationResult<Boolean>> userExists(@NonNull Long userId);
-
-    /**
-     * Check if user exists by email.
-     *
-     * @param email Email to check (must not be empty)
-     * @return CompletableFuture with true if user with email exists
-     */
-    CompletableFuture<OperationResult<Boolean>> userExistsByEmail(@NonNull String email);
-
-    // ==================== STATISTICS AND ANALYTICS ====================
-
-    /**
-     * Get total count of QDueUsers.
-     *
-     * @return CompletableFuture with user count
-     */
-    CompletableFuture<OperationResult<Integer>> getUsersCount();
-
-    /**
-     * Get count of users with complete profiles (both nickname and email).
-     *
-     * @return CompletableFuture with complete profile count
-     */
-    CompletableFuture<OperationResult<Integer>> getCompleteProfilesCount();
-
-    /**
-     * Get users with incomplete profiles for UI notifications.
-     *
-     * @return CompletableFuture with list of users needing profile completion
-     */
-    CompletableFuture<OperationResult<List<QDueUser>>> getIncompleteProfiles();
-
-    /**
-     * Get profile completion percentage.
-     *
-     * @return CompletableFuture with percentage (0-100) of complete profiles
-     */
-    CompletableFuture<OperationResult<Integer>> getProfileCompletionPercentage();
 
     // ==================== MAINTENANCE OPERATIONS ====================
 

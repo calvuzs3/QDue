@@ -208,7 +208,7 @@
     <string name="error_invalid_cycle_position">La posizione nel ciclo deve essere tra 1 e %1$d</string>
     <string name="error_no_team_selected">Devi selezionare una squadra</string>
     <string name="error_no_custom_pattern_selected">Devi selezionare un pattern personalizzato</string>
-    <string name="error_date_in_past">La data di inizio non può essere nel passato</string>
+    <string name="error_date_in_past">La data di inizio non può essere troppo nel passato</string>
 
     <!-- Validation Messages -->
     <string name="validation_pattern_type_required">Seleziona un tipo di pattern</string>

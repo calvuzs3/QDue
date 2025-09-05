@@ -5,16 +5,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.common.enums.Status;
 
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Test examples demonstrating the fixed UserScheduleAssignment architecture.
  * These tests verify that status is correctly computed and assignments work for future dates.
  */
 public class UserScheduleAssignmentArchitectureTest {
+
+    // Create a UserID for testing purposes
+    private static final String userID = UUID.randomUUID().toString();
 
     /**
      * Test the core fix: Future assignments should work without validation errors.
@@ -26,12 +31,12 @@ public class UserScheduleAssignmentArchitectureTest {
         // BEFORE: This would fail with validation error
         // AFTER: This should work perfectly
         UserScheduleAssignment futureAssignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", futureDate, "Future Pattern"
+                userID, "TeamA", "rule123", futureDate, "Future Pattern"
         );
 
         // Verify computed status is correct
-        assertEquals(UserScheduleAssignment.Status.PENDING, futureAssignment.getStatus());
-        assertEquals(UserScheduleAssignment.Status.PENDING, futureAssignment.getEffectiveStatus());
+        assertEquals(Status.PENDING, futureAssignment.getStatus());
+        assertEquals( Status.PENDING, futureAssignment.getEffectiveStatus());
 
         // Verify administrative flags
         assertTrue(futureAssignment.isAdministrativelyEnabled());
@@ -61,12 +66,12 @@ public class UserScheduleAssignmentArchitectureTest {
         LocalDate today = LocalDate.now();
 
         UserScheduleAssignment currentAssignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", today, "Current Pattern"
+                userID, "TeamA", "rule123", today, "Current Pattern"
         );
 
         // Verify computed status
-        assertEquals(UserScheduleAssignment.Status.ACTIVE, currentAssignment.getStatus());
-        assertEquals(UserScheduleAssignment.Status.ACTIVE, currentAssignment.getEffectiveStatus());
+        assertEquals(Status.ACTIVE, currentAssignment.getStatus());
+        assertEquals(Status.ACTIVE, currentAssignment.getEffectiveStatus());
 
         // Verify business logic
         assertFalse(currentAssignment.isFuture());
@@ -91,12 +96,12 @@ public class UserScheduleAssignmentArchitectureTest {
         LocalDate pastEnd = LocalDate.now().minusDays(1);
 
         UserScheduleAssignment expiredAssignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", pastStart, pastEnd, "Expired Pattern"
+                userID, "TeamA", "rule123", pastStart, pastEnd, "Expired Pattern"
         );
 
         // Verify computed status
-        assertEquals(UserScheduleAssignment.Status.EXPIRED, expiredAssignment.getStatus());
-        assertEquals(UserScheduleAssignment.Status.EXPIRED, expiredAssignment.getEffectiveStatus());
+        assertEquals(Status.EXPIRED, expiredAssignment.getStatus());
+        assertEquals(Status.EXPIRED, expiredAssignment.getEffectiveStatus());
 
         // Verify business logic
         assertFalse(expiredAssignment.isFuture());
@@ -121,15 +126,15 @@ public class UserScheduleAssignmentArchitectureTest {
 
         // Create a normal assignment first
         UserScheduleAssignment normalAssignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", futureDate, "Future Pattern"
+                userID, "TeamA", "rule123", futureDate, "Future Pattern"
         );
 
         // Create disabled version
         UserScheduleAssignment disabledAssignment = UserScheduleAssignment.createDisabledAssignment(normalAssignment);
 
         // Verify computed status
-        assertEquals(UserScheduleAssignment.Status.CANCELLED, disabledAssignment.getStatus());
-        assertEquals(UserScheduleAssignment.Status.CANCELLED, disabledAssignment.getEffectiveStatus());
+        assertEquals(Status.CANCELLED, disabledAssignment.getStatus());
+        assertEquals(Status.CANCELLED, disabledAssignment.getEffectiveStatus());
 
         // Verify administrative flags
         assertFalse(disabledAssignment.isAdministrativelyEnabled());
@@ -166,12 +171,12 @@ public class UserScheduleAssignmentArchitectureTest {
             if (i == 0) {
                 // Past assignment (with end date)
                 assignment = UserScheduleAssignment.createPatternAssignment(
-                        1L, "TeamA", "rule123", testDate, testDate.plusDays(1), "Test Pattern"
+                        userID, "TeamA", "rule123", testDate, testDate.plusDays(1), "Test Pattern"
                 );
             } else {
                 // Current or future assignment
                 assignment = UserScheduleAssignment.createPatternAssignment(
-                        1L, "TeamA", "rule123", testDate, "Test Pattern"
+                        userID, "TeamA", "rule123", testDate, "Test Pattern"
                 );
             }
 
@@ -194,7 +199,7 @@ public class UserScheduleAssignmentArchitectureTest {
     public void testBuilderStatusRestriction() {
         // This should compile and work (status computed automatically)
         UserScheduleAssignment assignment = UserScheduleAssignment.builder()
-                .userId(1L)
+                .userId(userID)
                 .teamId("TeamA")
                 .recurrenceRuleId("rule123")
                 .startDate(LocalDate.now().plusDays(5))
@@ -203,7 +208,7 @@ public class UserScheduleAssignmentArchitectureTest {
                 .build();
 
         // Status should be computed as PENDING (future date)
-        assertEquals(UserScheduleAssignment.Status.PENDING, assignment.getStatus());
+        assertEquals(Status.PENDING, assignment.getStatus());
 
         System.out.println("✅ Builder restriction test passed!");
         System.out.println("   Auto-computed status: " + assignment.getStatus());
@@ -218,7 +223,7 @@ public class UserScheduleAssignmentArchitectureTest {
         LocalDate endDate = LocalDate.now().plusDays(10);
 
         UserScheduleAssignment assignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", startDate, endDate, "Test Pattern"
+                userID, "TeamA", "rule123", startDate, endDate, "Test Pattern"
         );
 
         // Test dates before start
@@ -259,7 +264,7 @@ public class UserScheduleAssignmentArchitectureTest {
 
         // AFTER: This works perfectly
         UserScheduleAssignment futureAssignment = UserScheduleAssignment.createPatternAssignment(
-                1L, "TeamA", "rule123", futureDate, "Future Pattern"
+                userID, "TeamA", "rule123", futureDate, "Future Pattern"
         );
 
         System.out.println("Future assignment created successfully!");

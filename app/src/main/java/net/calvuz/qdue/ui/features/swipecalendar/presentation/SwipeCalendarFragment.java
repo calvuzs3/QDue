@@ -28,13 +28,13 @@ import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.UserService;
+import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.diagnosis.UIDataFlowTest;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
-import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
@@ -85,9 +85,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
     // ==================== DEPENDENCIES ====================
 
+    private CalendarServiceProvider mCalendarServiceProvider;
     private SwipeCalendarModule mCalendarModule;
     private EventsService mEventsService;
-    private UserService mUserService;
+    private QDueUserService mQDueUserService;
     private WorkScheduleRepository mWorkScheduleRepository;
     private LocaleManager mLocaleManager;
 
@@ -119,7 +120,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     private Handler mMainHandler;
 
     // User configuration
-    private Long mUserId;
+    private String mUserId;
     private LocalDate mInitialDate;
 
     // ==================== FRAGMENT LIFECYCLE ====================
@@ -132,7 +133,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * @return New fragment instance
      */
     @NonNull
-    public static SwipeCalendarFragment newInstance(@Nullable LocalDate initialDate, @Nullable Long userId) {
+    public static SwipeCalendarFragment newInstance(@Nullable LocalDate initialDate, @Nullable String userId) {
         SwipeCalendarFragment fragment = new SwipeCalendarFragment();
         Bundle args = new Bundle();
 
@@ -140,7 +141,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             args.putString( ARG_INITIAL_DATE, initialDate.toString() );
         }
         if ( userId != null ) {
-            args.putLong( ARG_USER_ID, userId );
+            args.putString( ARG_USER_ID, userId );
         }
 
         fragment.setArguments( args );
@@ -175,10 +176,9 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         super.onViewCreated( view, savedInstanceState );
 
         // Initialize dependency injection
-        //initializeDependencyInjection();
-
-        // ✅ NEW: Separate injection and feature initialization
         initializeDependencyInjection();
+
+        // Initialize feature components
         initializeFeatureComponents();
 
         // Initialize UI components
@@ -216,8 +216,6 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
         // Cleanup resources
         cleanup();
-
-        Log.d( TAG, "SwipeCalendarFragment view destroyed" );
     }
 
     // ==================== DEPENDENCY INJECTION ====================
@@ -227,8 +225,9 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     @Override
     public void inject(ServiceProvider serviceProvider) {
+        mCalendarServiceProvider = serviceProvider.getCalendarServiceProvider();
         mEventsService = serviceProvider.getEventsService();
-        mUserService = serviceProvider.getUserService();
+        mQDueUserService = serviceProvider.getQDueUserService();
         mWorkScheduleRepository = serviceProvider
                 .getCalendarService()
                 .getCalendarServiceProvider()
@@ -243,7 +242,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     @Override
     public boolean areDependenciesReady() {
         return mEventsService != null
-                && mUserService != null
+                && mQDueUserService != null
                 && mWorkScheduleRepository != null;
     }
 
@@ -280,13 +279,14 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
             mCalendarModule = new SwipeCalendarModule(
                     requireActivity(),  // Activity context for theming
+                    mCalendarServiceProvider, // Injected service
                     mEventsService,     // Injected service
-                    mUserService,       // Injected service
+                    mQDueUserService,       // Injected service
                     mWorkScheduleRepository // Injected service
             );
 
             if (mUserId != null) {
-                mCalendarModule.setCurrentUserId(mUserId);
+                throw new IllegalStateException("User ID not ready");
             }
 
             if (!mCalendarModule.areDependenciesReady()) {
@@ -296,65 +296,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             Log.d(TAG, "✅ Feature components initialized successfully");
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to initialize feature components", e);
+            Log.e(TAG, "Failed to initialize feature components", e);
             throw new RuntimeException("Feature components initialization failed", e);
         }
     }
-
-//    /**
-//     * Initialize dependency injection using ServiceProvider pattern.
-//     */
-//    private void initializeDependencyInjection() {
-//        try {
-//            // Get service provider from application
-//            ServiceProvider serviceProvider = getServiceProvider();
-//
-//            // Inject services
-//            mEventsService = serviceProvider.getEventsService();
-//            mUserService = serviceProvider.getUserService();
-//            mWorkScheduleRepository = serviceProvider.getWorkScheduleService();
-//
-//            // Create locale manager
-//            mLocaleManager = new LocaleManager( requireContext() );
-//
-//            // Create calendar module with dependencies
-//            mCalendarModule = new SwipeCalendarModule(
-//                    requireActivity(),  // pass the ActivityContext for theme resolution
-//                    mEventsService,
-//                    mUserService,
-//                    mWorkScheduleRepository
-//            );
-//
-//            // Configure user ID if provided
-//            if ( mUserId != null ) {
-//                mCalendarModule.setCurrentUserId( mUserId );
-//            }
-//
-//            Log.d( TAG, "Dependency injection completed successfully" );
-//
-//        } catch (Exception e) {
-//            Log.e( TAG, "Failed to initialize dependency injection", e );
-//            showError( getString( R.string.error_calendar_initialization_failed ) );
-//        }
-//    }
-//
-//    /**
-//     * Get ServiceProvider from hosting activity.
-//     */
-//    @NonNull
-//    private ServiceProvider getServiceProvider() {
-//        Context context = requireActivity(); // requireContext();
-//        if ( context instanceof Injectable ) {
-//            // Activity implements Injectable, get ServiceProvider from it
-//            //return ((Injectable) context).getServiceProvider(); // Activity doesnt provide ServiceProvider
-//            Log.e(TAG, "Activity doesn't provide ServiceProvider");
-//            throw new RuntimeException("Activity doesn't provide ServiceProvider");
-//        }
-//
-//        // Fallback to application-level ServiceProvider
-//        Log.w(TAG, "Fallback to ServiceProviderImpl.getInstance( context.getApplicationContext() )");
-//        return ServiceProviderImpl.getInstance( context.getApplicationContext() );
-//    }
 
     // ==================== UI INITIALIZATION ====================
 
@@ -377,7 +322,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
             // Parse user ID
             if ( args.containsKey( ARG_USER_ID ) ) {
-                mUserId = args.getLong( ARG_USER_ID );
+                mUserId = args.getString( ARG_USER_ID );
             }
         }
     }

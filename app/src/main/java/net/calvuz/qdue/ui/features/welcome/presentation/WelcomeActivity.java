@@ -46,9 +46,10 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * <p></p>
  * Features:
  * - Animated logo introduction with clock-like Q and 2 rotation
- * - Team selection (9 teams available)
- * - View mode selection (Calendar vs DaysList)
  * - Feature overview with expandable functionality
+ * - User information input
+ * - Team selection (9 teams available)
+ * - First Assignment Wizard if no assignments (optional)
  * - Dynamic colors configuration
  * - Smooth transitions between steps
  */
@@ -75,7 +76,7 @@ public class WelcomeActivity extends AppCompatActivity implements WelcomeInterfa
 
     // Current step tracking
     private int currentStep = 0;
-    private final int totalSteps = 5; // Welcome, QDueUser, View, Features, Colors, Complete
+    private final int totalSteps = 5; // Welcome, Features, QDueUser, Assignment, Colors, Complete
 
     // Email validation pattern
     private static final java.util.regex.Pattern EMAIL_PATTERN = java.util.regex.Pattern.compile(

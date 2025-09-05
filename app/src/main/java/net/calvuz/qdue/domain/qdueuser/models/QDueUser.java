@@ -3,7 +3,15 @@ package net.calvuz.qdue.domain.qdueuser.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
+import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -23,10 +31,9 @@ import java.util.regex.Pattern;
  *
  * <h3>Business Rules:</h3>
  * <ul>
- *   <li>ID is auto-generated, starting from 1L</li>
+ *   <li>ID is UUID</li>
  *   <li>Nickname can be empty string (user choice in onboarding)</li>
  *   <li>Email can be empty string but must be valid format if provided</li>
- *   <li>No complex profile data or authentication providers</li>
  * </ul>
  *
  * @author QDue Development Team
@@ -37,66 +44,63 @@ public class QDueUser {
 
     private static final String TAG = "QDueUser";
 
+    // ==================== DOMAIN PROPERTIES ====================
+
+    private final String id;
+    private final String nickname;
+    private final String email;
+
+    // ==================== METADATA ====================
+
+    private final long createdAt;
+    private final long updatedAt;
+
     // ==================== EMAIL VALIDATION ====================
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     );
 
-    // ==================== DOMAIN PROPERTIES ====================
-
-    private final Long mId;
-    private final String mNickname;
-    private final String mEmail;
-
     // ==================== CONSTRUCTORS ====================
 
     /**
      * Constructor for existing user (with ID from database).
      *
-     * @param id       User ID (auto-generated)
-     * @param nickname User nickname (can be empty)
-     * @param email    User email (can be empty, must be valid if present)
+     * @param builder Builder object for user initialization
      */
-    public QDueUser(Long id, @NonNull String nickname, @NonNull String email) {
-        this.mId = id;
-        this.mNickname = nickname;
-        this.mEmail = email;
-    }
-
-    /**
-     * Constructor for new user (without ID for creation).
-     *
-     * @param nickname User nickname (can be empty)
-     * @param email    User email (can be empty, must be valid if present)
-     */
-    public QDueUser(@NonNull String nickname, @NonNull String email) {
-        this(null, nickname, email);
-    }
-
-    /**
-     * Constructor for onboarding with empty defaults.
-     * Creates user with empty nickname and email for minimal onboarding.
-     */
-    public QDueUser() {
-        this("", "");
+    public QDueUser(@NonNull Builder builder) {
+        this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
+        this.nickname = builder.nickname;
+        this.email = builder.email;
+        this.createdAt = builder.createdAt >0 ? builder.createdAt : System.currentTimeMillis();
+        this.updatedAt = builder.updatedAt >0 ? builder.updatedAt : System.currentTimeMillis();
     }
 
     // ==================== GETTERS ====================
 
-    @Nullable
-    public Long getId() {
-        return mId;
+    @NonNull
+    public String getId() {
+        return id;
     }
 
     @NonNull
     public String getNickname() {
-        return mNickname;
+        return nickname;
     }
 
     @NonNull
     public String getEmail() {
-        return mEmail;
+        return email;
+    }
+
+    @NonNull
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    @NonNull
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
 
     // ==================== BUSINESS LOGIC ====================
@@ -107,7 +111,7 @@ public class QDueUser {
      * @return true if nickname is not empty
      */
     public boolean hasNickname() {
-        return !mNickname.isEmpty();
+        return !nickname.isEmpty();
     }
 
     /**
@@ -116,7 +120,7 @@ public class QDueUser {
      * @return true if email is not empty
      */
     public boolean hasEmail() {
-        return !mEmail.isEmpty();
+        return !email.isEmpty();
     }
 
     /**
@@ -125,19 +129,10 @@ public class QDueUser {
      * @return true if email is empty or valid format
      */
     public boolean isEmailValid() {
-        if (mEmail.isEmpty()) {
+        if (email.isEmpty()) {
             return true; // Empty email is valid (optional field)
         }
-        return EMAIL_PATTERN.matcher(mEmail).matches();
-    }
-
-    /**
-     * Check if user profile is complete (has both nickname and email).
-     *
-     * @return true if both nickname and email are provided
-     */
-    public boolean isProfileComplete() {
-        return hasNickname() && hasEmail() && isEmailValid();
+        return EMAIL_PATTERN.matcher( email ).matches();
     }
 
     /**
@@ -148,53 +143,69 @@ public class QDueUser {
     @NonNull
     public String getDisplayName() {
         if (hasNickname()) {
-            return mNickname;
+            return nickname;
         }
-        return "User" + (mId != null ? " " + mId : "");
+        return "User" + (id != null ? " " + id : "");
     }
 
-    // ==================== BUILDER PATTERN FOR UPDATES ====================
+    // ==================== BUILDER ====================
 
-    /**
-     * Create builder for updating user properties.
-     *
-     * @return QDueUserBuilder for fluent updates
-     */
-    public QDueUserBuilder toBuilder() {
-        return new QDueUserBuilder()
-                .setId(mId)
-                .setNickname(mNickname)
-                .setEmail(mEmail);
+    @NonNull
+    public static QDueUser.Builder builder() {
+        return new Builder();
     }
 
-    /**
-     * Builder pattern for creating/updating QDueUser instances.
-     */
-    public static class QDueUserBuilder {
-        private Long mId;
-        private String mNickname = "";
-        private String mEmail = "";
+    public static class Builder {
 
-        public QDueUserBuilder setId(Long id) {
-            this.mId = id;
+        private String id;
+        private String nickname;
+        private String email;
+        private long createdAt;
+        private long updatedAt;
+
+        @NonNull
+        public QDueUser.Builder copyFrom(@NonNull QDueUser source) {
+            this.id = source.id;
+            this.nickname = source.nickname;
+            this.email = source.email;
+            this.createdAt = source.createdAt;
+            this.updatedAt = source.updatedAt;
             return this;
         }
 
-        public QDueUserBuilder setNickname(@NonNull String nickname) {
-            this.mNickname = nickname.trim();
+        @NonNull
+        public QDueUser.Builder id(@Nullable String id) {
+            this.id = id;
             return this;
         }
 
-        public QDueUserBuilder setEmail(@NonNull String email) {
-            if (!email.trim().isEmpty() && !EMAIL_PATTERN.matcher(email.trim()).matches()) {
-                return this;
-            }
-            this.mEmail = email.trim();
+        @NonNull
+        public QDueUser.Builder nickname(@Nullable String nickname) {
+            this.nickname = nickname;
             return this;
         }
 
+        @NonNull
+        public QDueUser.Builder email(@Nullable String email) {
+            this.email = email;
+            return this;
+        }
+
+        @NonNull
+        public QDueUser.Builder createdAt(long createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        @NonNull
+        public QDueUser.Builder updatedAt(long updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+
+        @NonNull
         public QDueUser build() {
-            return new QDueUser(mId, mNickname, mEmail);
+            return new QDueUser( this );
         }
     }
 
@@ -206,24 +217,25 @@ public class QDueUser {
         if (obj == null || getClass() != obj.getClass()) return false;
 
         QDueUser qDueUser = (QDueUser) obj;
-        return Objects.equals(mId, qDueUser.mId) &&
-                Objects.equals(mNickname, qDueUser.mNickname) &&
-                Objects.equals(mEmail, qDueUser.mEmail);
+        return Objects.equals( id, qDueUser.id ) &&
+                Objects.equals( nickname, qDueUser.nickname ) &&
+                Objects.equals( email, qDueUser.email );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mId, mNickname, mEmail);
+        return Objects.hash( id, nickname, email );
     }
 
     @NonNull
     @Override
     public String toString() {
         return "QDueUser{" +
-                "id=" + mId +
-                ", nickname='" + mNickname + '\'' +
-                ", email='" + mEmail + '\'' +
-                ", profileComplete=" + isProfileComplete() +
+                "id=" + id +
+                ", nickname='" + nickname + '\'' +
+                ", email='" + email + '\'' +
+                ", createdAt=" + LocalDateTime.ofInstant( Instant.ofEpochMilli( createdAt ), ZoneId.systemDefault() ) +
+                ", updatedAt=" + LocalDateTime.ofInstant( Instant.ofEpochMilli( updatedAt ), ZoneId.systemDefault() ) +
                 '}';
     }
 }

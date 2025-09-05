@@ -113,7 +113,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
      * @param assignment        User schedule assignment
      * @param recurrenceRule    Recurrence rule for base schedule
      * @param exceptions        List of exceptions to apply
-     * @param userTeamMappings  Map of userId to Team for team lookups
+     * @param userTeamMappings  Map of userID to Team for team lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Complete WorkScheduleDay with all shifts and exceptions applied
      */
@@ -122,7 +122,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
                                                     @NonNull UserScheduleAssignment assignment,
                                                     @NonNull RecurrenceRule recurrenceRule,
                                                     @NonNull List<ShiftException> exceptions,
-                                                    @NonNull Map<Long, Team> userTeamMappings,
+                                                    @NonNull Map<String, Team> userTeamMappings,
                                                     @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
             Log.d( TAG, "Generating complete schedule for date: " + date +
@@ -159,7 +159,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
      * @param assignment        User schedule assignment
      * @param recurrenceRule    Recurrence rule for base schedule
      * @param exceptions        List of exceptions to apply across range
-     * @param userTeamMappings  Map of userId to Team for team lookups
+     * @param userTeamMappings  Map of userID to Team for team lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Map of dates to complete WorkScheduleDay objects
      */
@@ -169,7 +169,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
             @NonNull UserScheduleAssignment assignment,
             @NonNull RecurrenceRule recurrenceRule,
             @NonNull List<ShiftException> exceptions,
-            @NonNull Map<Long, Team> userTeamMappings,
+            @NonNull Map<String, Team> userTeamMappings,
             @NonNull Map<String, WorkScheduleShift> replacementShifts) {
 
         Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
@@ -219,7 +219,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
      * @param assignments       List of user assignments for the team
      * @param recurrenceRules   Map of ruleId to RecurrenceRule
      * @param exceptions        List of exceptions across all users
-     * @param userTeamMappings  Map of userId to Team
+     * @param userTeamMappings  Map of userID to Team
      * @param replacementShifts Map of shiftId to WorkScheduleShift
      * @return Combined team WorkScheduleDay
      */
@@ -228,7 +228,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
                                                 @NonNull List<UserScheduleAssignment> assignments,
                                                 @NonNull Map<String, RecurrenceRule> recurrenceRules,
                                                 @NonNull List<ShiftException> exceptions,
-                                                @NonNull Map<Long, Team> userTeamMappings,
+                                                @NonNull Map<String, Team> userTeamMappings,
                                                 @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
             Log.d( TAG, "Generating team schedule for date: " + date +
@@ -371,7 +371,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
     }
 
     private List<ShiftException> filterExceptionsForUser(@NonNull List<ShiftException> exceptions,
-                                                         @NonNull Long userId) {
+                                                         @NonNull String userId) {
         return exceptions.stream()
                 .filter( exception -> userId.equals( exception.getUserId() ) )
                 .collect( java.util.stream.Collectors.toList() );

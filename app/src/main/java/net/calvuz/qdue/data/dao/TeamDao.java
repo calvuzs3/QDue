@@ -37,10 +37,6 @@ import java.util.List;
  *   <li><strong>Conflict Resolution</strong>: Smart handling of duplicate entries</li>
  *   <li><strong>Soft Deletes</strong>: Mark teams inactive instead of hard deletion</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Initial Implementation
- * @since Clean architecture
  */
 @Dao
 public interface TeamDao {

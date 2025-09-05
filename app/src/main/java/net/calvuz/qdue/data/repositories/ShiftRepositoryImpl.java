@@ -767,20 +767,20 @@ public class ShiftRepositoryImpl implements ShiftRepository {
 
                 // Apply modifications if provided
                 if (modifications != null) {
-                    if (modifications.newStartTime != null) {
-                        builder.setStartTime(modifications.newStartTime);
+                    if (modifications.newStartTime() != null) {
+                        builder.setStartTime( modifications.newStartTime() );
                     }
-                    if (modifications.newEndTime != null) {
-                        builder.setEndTime(modifications.newEndTime);
+                    if (modifications.newEndTime() != null) {
+                        builder.setEndTime( modifications.newEndTime() );
                     }
-                    if (modifications.newColorHex != null) {
-                        builder.setColorHex(modifications.newColorHex);
+                    if (modifications.newColorHex() != null) {
+                        builder.setColorHex( modifications.newColorHex() );
                     }
-                    if (modifications.newBreakDuration != null) {
-                        builder.setBreakTimeDuration(modifications.newBreakDuration);
+                    if (modifications.newBreakDuration() != null) {
+                        builder.setBreakTimeDuration( modifications.newBreakDuration() );
                     }
-                    if (modifications.newShiftType != null) {
-                        builder.setShiftType(modifications.newShiftType);
+                    if (modifications.newShiftType() != null) {
+                        builder.setShiftType( modifications.newShiftType() );
                     }
                 }
 

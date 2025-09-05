@@ -125,7 +125,7 @@ public interface UserSchedulePatternService {
      * @return CompletableFuture with OperationResult containing list of UserScheduleAssignments
      */
     @NonNull
-    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserPatterns();
+    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserPatterns(@NonNull String userId);
 
     // ==================== PATTERN VALIDATION ====================
 

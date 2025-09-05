@@ -70,7 +70,7 @@ public class GenerateUserScheduleUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<WorkScheduleDay>> executeForDate(
-            @NonNull Long userId, @NonNull LocalDate date) {
+            @NonNull String userId, @NonNull LocalDate date) {
 
         return mWorkScheduleRepository.getWorkScheduleForDate( date, userId )
                 .thenApply( result -> {
@@ -108,7 +108,7 @@ public class GenerateUserScheduleUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> executeForDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
 
         // Validate date range
         if (startDate.isAfter( endDate )) {
@@ -160,12 +160,12 @@ public class GenerateUserScheduleUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> executeForMonth(
-            @NonNull Long userId, @NonNull YearMonth month) {
+            @NonNull String userId, @NonNull YearMonth month) {
 
         LocalDate startDate = month.atDay( 1 );
         LocalDate endDate = month.atEndOfMonth();
 
-        Log.v( TAG, "Executing user schedule month generation for userId: " + userId +
+        Log.v( TAG, "Executing user schedule month generation for userID: " + userId +
                 ", month: " + month );
 
         return executeForDateRange( userId, startDate, endDate );
@@ -181,7 +181,7 @@ public class GenerateUserScheduleUseCase {
      * @return Processed WorkScheduleDay
      */
     private WorkScheduleDay applyUserSpecificBusinessRules(@NonNull WorkScheduleDay schedule,
-                                                           @NonNull Long userId) {
+                                                           @NonNull String userId) {
         try {
             // Apply user-specific business logic
             // Examples:

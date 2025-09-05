@@ -4,14 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.UserService;
+import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
-import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
+import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
@@ -41,7 +41,6 @@ import java.util.Map;
  *
  * <h3>Module Features:</h3>
  * <ul>
- *   <li><strong>Single User Application</strong>: Optimized for single user workflow</li>
  *   <li><strong>Default User Support</strong>: Automatic default user management</li>
  *   <li><strong>Lazy Initialization</strong>: Components created on-demand for performance</li>
  *   <li><strong>Lifecycle Management</strong>: Proper cleanup and resource disposal</li>
@@ -57,33 +56,21 @@ import java.util.Map;
  *   <li>AsyncDataLoader implementation for events and work schedule</li>
  *   <li>GenerateUserScheduleUseCase for work schedule operations</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 2.1.0 - Single User Implementation
- * @since Database Version 6
  */
 public class SwipeCalendarModule {
 
     private static final String TAG = "SwipeCalendarModule";
 
-    // ==================== SINGLE USER CONFIGURATION ====================
-
-    /**
-     * Default user ID for single user application.
-     * Uses 1L as conventional default user identifier.
-     */
-    private static final Long DEFAULT_USER_ID = 1L;
-
     // ==================== DEPENDENCIES ====================
 
     private final Context mContext;
+    private final CalendarServiceProvider mCalendarServiceProvider;
     private final EventsService mEventsService;
-    private final UserService mUserService;
+    private final QDueUserService mUserService;
     private final WorkScheduleRepository mWorkScheduleRepository;
 
     // ==================== CLEAN ARCHITECTURE COMPONENTS ====================
 
-    private UseCaseFactory mUseCaseFactory;
     private GenerateUserScheduleUseCase mGenerateUserScheduleUseCase;
 
     // ==================== CACHED INSTANCES ====================
@@ -94,7 +81,7 @@ public class SwipeCalendarModule {
 
     // ==================== CONFIGURATION ====================
 
-    private Long mCurrentUserId = DEFAULT_USER_ID;
+    private QDueUser mQDueUser;
     private boolean mIsDestroyed = false;
 
     // ==================== CONSTRUCTOR ====================
@@ -108,24 +95,31 @@ public class SwipeCalendarModule {
      * @param workScheduleRepository Repository for work schedule operations
      */
     public SwipeCalendarModule(@NonNull Context context,
+                               @NonNull CalendarServiceProvider calendarServiceProvider,
                                @NonNull EventsService eventsService,
-                               @NonNull UserService userService,
+                               @NonNull QDueUserService userService,
                                @NonNull WorkScheduleRepository workScheduleRepository) {
 
         // Validate context for proper theming capabilities
         if (!(context instanceof Activity)) {
-            Log.w(TAG, "Warning: Context is not an Activity - theme resolution may fail");
+            Log.w( TAG, "Warning: Context is not an Activity - theme resolution may fail" );
         }
 
         this.mContext = context;
+        this.mCalendarServiceProvider = calendarServiceProvider;
         this.mEventsService = eventsService;
         this.mUserService = userService;
         this.mWorkScheduleRepository = workScheduleRepository;
 
+        this.mQDueUser = mUserService.getPrimaryUser().join().getData();
+        if (mQDueUser == null) {
+            throw new RuntimeException("Primary User is null");
+        }
+
         // Initialize clean architecture components
         initializeCleanArchitecture();
 
-        Log.d(TAG, "SwipeCalendarModule created with clean architecture support (single user: " + mCurrentUserId + ")");
+        Log.d( TAG, "SwipeCalendarModule created" );
     }
 
     // ==================== CLEAN ARCHITECTURE INITIALIZATION ====================
@@ -136,17 +130,13 @@ public class SwipeCalendarModule {
      */
     private void initializeCleanArchitecture() {
         try {
-            // Create use case factory with repository dependency
-            this.mUseCaseFactory = new UseCaseFactory(mWorkScheduleRepository);
-
             // Get user schedule use case instance for work schedule operations
-            this.mGenerateUserScheduleUseCase = mUseCaseFactory.getUserScheduleUseCase();
+            this.mGenerateUserScheduleUseCase = mCalendarServiceProvider.getUserScheduleUseCase();
 
-            Log.d(TAG, "✅ Clean architecture components initialized successfully");
-
+            Log.d( TAG, "✅ Clean architecture components initialized successfully" );
         } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to initialize clean architecture components", e);
-            throw new RuntimeException("Clean architecture initialization failed", e);
+            Log.e( TAG, "❌ Failed to initialize clean architecture components", e );
+            throw new RuntimeException( "Clean architecture initialization failed", e );
         }
     }
 
@@ -162,23 +152,9 @@ public class SwipeCalendarModule {
     @NonNull
     public GenerateUserScheduleUseCase getUserScheduleUseCase() {
         if (mIsDestroyed) {
-            throw new IllegalStateException("Module has been destroyed");
+            throw new IllegalStateException( "Module has been destroyed" );
         }
         return mGenerateUserScheduleUseCase;
-    }
-
-    /**
-     * Get use case factory for additional use case creation.
-     *
-     * @return UseCaseFactory instance
-     * @throws IllegalStateException if module has been destroyed
-     */
-    @NonNull
-    public UseCaseFactory getUseCaseFactory() {
-        if (mIsDestroyed) {
-            throw new IllegalStateException("Module has been destroyed");
-        }
-        return mUseCaseFactory;
     }
 
     // ==================== COMPONENT PROVIDERS ====================
@@ -193,12 +169,12 @@ public class SwipeCalendarModule {
     @NonNull
     public synchronized SwipeCalendarStateManager provideStateManager() {
         if (mIsDestroyed) {
-            throw new IllegalStateException("Module has been destroyed");
+            throw new IllegalStateException( "Module has been destroyed" );
         }
 
         if (mStateManager == null) {
-            mStateManager = new SwipeCalendarStateManager(mContext);
-            Log.d(TAG, "Created SwipeCalendarStateManager");
+            mStateManager = new SwipeCalendarStateManager( mContext );
+            Log.d( TAG, "Created SwipeCalendarStateManager" );
         }
 
         return mStateManager;
@@ -214,13 +190,13 @@ public class SwipeCalendarModule {
     @NonNull
     public synchronized MonthPagerAdapter providePagerAdapter() {
         if (mIsDestroyed) {
-            throw new IllegalStateException("Module has been destroyed");
+            throw new IllegalStateException( "Module has been destroyed" );
         }
 
         if (mPagerAdapter == null) {
             AsyncDataLoader dataLoader = provideDataLoader();
-            mPagerAdapter = new MonthPagerAdapter(mContext, dataLoader);
-            Log.d(TAG, "Created MonthPagerAdapter with clean architecture data loading");
+            mPagerAdapter = new MonthPagerAdapter( mContext, dataLoader );
+            Log.d( TAG, "Created MonthPagerAdapter with clean architecture data loading" );
         }
 
         return mPagerAdapter;
@@ -236,7 +212,7 @@ public class SwipeCalendarModule {
     private synchronized AsyncDataLoader provideDataLoader() {
         if (mDataLoader == null) {
             mDataLoader = new AsyncDataLoader();
-            Log.d(TAG, "Created AsyncDataLoader");
+            Log.d( TAG, "Created AsyncDataLoader" );
         }
 
         return mDataLoader;
@@ -260,49 +236,48 @@ public class SwipeCalendarModule {
          * Load events for specified month using EventsService.
          * Maintains direct service usage for events as they don't require complex business logic.
          *
-         * @param month Target month
+         * @param month    Target month
          * @param callback Callback for async result delivery
          */
         @Override
         public void loadEventsForMonth(@NonNull YearMonth month,
                                        @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, List<LocalEvent>>> callback) {
 
-            Log.d(TAG, "Loading events for month: " + month);
+            Log.d( TAG, "Loading events for month: " + month );
 
             try {
-                LocalDate startDate = month.atDay(1);
+                LocalDate startDate = month.atDay( 1 );
                 LocalDate endDate = month.atEndOfMonth();
 
-                mEventsService.getEventsForDateRange(startDate, endDate)
-                        .thenAccept(result -> {
+                mEventsService.getEventsForDateRange( startDate, endDate )
+                        .thenAccept( result -> {
                             if (result.isSuccess() && result.getData() != null) {
                                 try {
                                     // Group events by date for calendar display
-                                    Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(result.getData());
+                                    Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate( result.getData() );
 
-                                    callback.onSuccess(eventsMap);
-                                    Log.d(TAG, "✅ Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)");
-
+                                    callback.onSuccess( eventsMap );
+                                    Log.d( TAG, "✅ Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)" );
                                 } catch (Exception e) {
-                                    Log.e(TAG, "❌ Failed to process events for " + month, e);
-                                    callback.onError(e);
+                                    Log.e( TAG, "❌ Failed to process events for " + month, e );
+                                    callback.onError( e );
                                 }
                             } else {
-                                String errorMsg = result.getErrorMessage() != null ? result.getErrorMessage() : "Unknown error";
-                                Exception error = new RuntimeException("Failed to load events: " + errorMsg);
-                                Log.w(TAG, "❌ Events service returned error for " + month + ": " + errorMsg);
-                                callback.onError(error);
+                                result.getErrorMessage();
+                                String errorMsg = result.getErrorMessage();
+                                Exception error = new RuntimeException( "Failed to load events: " + errorMsg );
+                                Log.w( TAG, "❌ Events service returned error for " + month + ": " + errorMsg );
+                                callback.onError( error );
                             }
-                        })
-                        .exceptionally(throwable -> {
-                            Log.e(TAG, "❌ Exception in async events loading for " + month, throwable);
-                            callback.onError(new RuntimeException("Async events loading failed", throwable));
+                        } )
+                        .exceptionally( throwable -> {
+                            Log.e( TAG, "❌ Exception in async events loading for " + month, throwable );
+                            callback.onError( new RuntimeException( "Async events loading failed", throwable ) );
                             return null;
-                        });
-
+                        } );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Failed to initiate events loading for " + month, e);
-                callback.onError(e);
+                Log.e( TAG, "❌ Failed to initiate events loading for " + month, e );
+                callback.onError( e );
             }
         }
 
@@ -311,39 +286,39 @@ public class SwipeCalendarModule {
          * Delegates to GenerateUserScheduleUseCase for proper business logic separation.
          * Uses default user ID for single user application workflow.
          *
-         * @param month Target month
+         * @param month    Target month
          * @param callback Callback for async result delivery
          */
         @Override
         public void loadWorkScheduleForMonth(@NonNull YearMonth month,
                                              @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, WorkScheduleDay>> callback) {
 
-            Log.d(TAG, "Loading work schedule for month: " + month + " (userId: " + mCurrentUserId + ")");
+            Log.d( TAG, "Loading work schedule for month: " + month + " (userID: " + mQDueUser + ")" );
 
             try {
                 // Use GenerateUserScheduleUseCase.executeForMonth with current user ID
-                mGenerateUserScheduleUseCase.executeForMonth(mCurrentUserId, month)
-                        .thenAccept(result -> {
+                mGenerateUserScheduleUseCase.executeForMonth( mQDueUser.getId(), month )
+                        .thenAccept( result -> {
                             if (result.isSuccess() && result.getData() != null) {
-                                callback.onSuccess(result.getData());
-                                Log.d(TAG, "✅ Work schedule loaded successfully via GenerateUserScheduleUseCase for " + month +
-                                        " (user: " + mCurrentUserId + ", " + result.getData().size() + " days)");
+                                callback.onSuccess( result.getData() );
+                                Log.d( TAG, "✅ Work schedule loaded successfully via GenerateUserScheduleUseCase for " + month +
+                                        " (user: " + mQDueUser + ", " + result.getData().size() + " days)" );
                             } else {
-                                String errorMsg = result.getErrorMessage() != null ? result.getErrorMessage() : "Unknown error";
-                                Exception error = new RuntimeException("Failed to load work schedule: " + errorMsg);
-                                Log.w(TAG, "❌ GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg);
-                                callback.onError(error);
+                                result.getErrorMessage();
+                                String errorMsg = result.getErrorMessage();
+                                Exception error = new RuntimeException( "Failed to load work schedule: " + errorMsg );
+                                Log.w( TAG, "❌ GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
+                                callback.onError( error );
                             }
-                        })
-                        .exceptionally(throwable -> {
-                            Log.e(TAG, "❌ Exception in async work schedule loading for " + month, throwable);
-                            callback.onError(new RuntimeException("Async work schedule loading failed", throwable));
+                        } )
+                        .exceptionally( throwable -> {
+                            Log.e( TAG, "❌ Exception in async work schedule loading for " + month, throwable );
+                            callback.onError( new RuntimeException( "Async work schedule loading failed", throwable ) );
                             return null;
-                        });
-
+                        } );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Failed to initiate work schedule loading for " + month, e);
-                callback.onError(e);
+                Log.e( TAG, "❌ Failed to initiate work schedule loading for " + month, e );
+                callback.onError( e );
             }
         }
 
@@ -361,11 +336,10 @@ public class SwipeCalendarModule {
             for (LocalEvent event : events) {
                 if (event != null) {
                     try {
-                        LocalDate eventDate = extractEventDate(event);
-                        eventsMap.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
-
+                        LocalDate eventDate = extractEventDate( event );
+                        eventsMap.computeIfAbsent( eventDate, k -> new ArrayList<>() ).add( event );
                     } catch (Exception e) {
-                        Log.w(TAG, "Failed to extract date from event: " + event.getTitle(), e);
+                        Log.w( TAG, "Failed to extract date from event: " + event.getTitle(), e );
                         // Skip malformed events rather than failing entire operation
                     }
                 }
@@ -405,56 +379,13 @@ public class SwipeCalendarModule {
                 }
 
                 // Last resort: Use today (this should rarely happen)
-                Log.w(TAG, "Event has no valid date, using today: " + event.getTitle());
+                Log.w( TAG, "Event has no valid date, using today: " + event.getTitle() );
                 return LocalDate.now();
-
             } catch (Exception e) {
-                Log.e(TAG, "Error extracting event date for: " + event.getTitle(), e);
+                Log.e( TAG, "Error extracting event date for: " + event.getTitle(), e );
                 return LocalDate.now();
             }
         }
-    }
-
-    // ==================== SINGLE USER CONFIGURATION ====================
-
-    /**
-     * Set current user ID for data operations.
-     * For single user applications, this typically remains the default user.
-     *
-     * @param userId User ID, or null to use default user
-     */
-    public synchronized void setCurrentUserId(@Nullable Long userId) {
-        this.mCurrentUserId = userId != null ? userId : DEFAULT_USER_ID;
-        Log.d(TAG, "Current user ID updated to: " + this.mCurrentUserId);
-    }
-
-    /**
-     * Get current user ID being used for data operations.
-     *
-     * @return Current user ID (always non-null, defaults to DEFAULT_USER_ID)
-     */
-    @NonNull
-    public Long getCurrentUserId() {
-        return mCurrentUserId;
-    }
-
-    /**
-     * Get default user ID for single user application.
-     *
-     * @return Default user ID constant
-     */
-    @NonNull
-    public static Long getDefaultUserId() {
-        return DEFAULT_USER_ID;
-    }
-
-    /**
-     * Reset to default user configuration.
-     * Useful for debugging or application reset scenarios.
-     */
-    public synchronized void resetToDefaultUser() {
-        setCurrentUserId(DEFAULT_USER_ID);
-        Log.d(TAG, "Reset to default user: " + DEFAULT_USER_ID);
     }
 
     // ==================== DEPENDENCY VALIDATION ====================
@@ -467,10 +398,10 @@ public class SwipeCalendarModule {
      */
     public boolean areDependenciesReady() {
         return !mIsDestroyed &&
+                mCalendarServiceProvider != null &&
                 mEventsService != null &&
                 mUserService != null &&
                 mWorkScheduleRepository != null &&
-                mUseCaseFactory != null &&
                 mGenerateUserScheduleUseCase != null;
     }
 
@@ -484,7 +415,7 @@ public class SwipeCalendarModule {
         if (mStateManager != null) {
             mStateManager.markSessionInactive();
         }
-        Log.d(TAG, "Fragment paused, session marked inactive");
+        Log.d( TAG, "Fragment paused, session marked inactive" );
     }
 
     /**
@@ -492,7 +423,7 @@ public class SwipeCalendarModule {
      * Can be used to refresh data or update state as needed.
      */
     public void onFragmentResume() {
-        Log.d(TAG, "Fragment resumed");
+        Log.d( TAG, "Fragment resumed" );
         // Future: Add any necessary resume logic here
     }
 
@@ -505,7 +436,7 @@ public class SwipeCalendarModule {
             return;
         }
 
-        Log.d(TAG, "Destroying SwipeCalendarModule");
+        Log.d( TAG, "Destroying SwipeCalendarModule" );
 
         try {
             // Cleanup pager adapter
@@ -517,12 +448,6 @@ public class SwipeCalendarModule {
             // Clear data loader reference
             mDataLoader = null;
 
-            // Cleanup use case infrastructure
-            if (mUseCaseFactory != null) {
-                mUseCaseFactory.cleanup();
-                mUseCaseFactory = null;
-            }
-
             // Clear use case references
             mGenerateUserScheduleUseCase = null;
 
@@ -530,13 +455,12 @@ public class SwipeCalendarModule {
             mStateManager = null;
 
             // Reset to default user configuration
-            mCurrentUserId = DEFAULT_USER_ID;
+            mQDueUser = null;
 
             mIsDestroyed = true;
-            Log.d(TAG, "✅ SwipeCalendarModule destroyed successfully");
-
+            Log.d( TAG, "✅ SwipeCalendarModule destroyed successfully" );
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error during SwipeCalendarModule destruction", e);
+            Log.e( TAG, "❌ Error during SwipeCalendarModule destruction", e );
             mIsDestroyed = true; // Mark as destroyed even if cleanup failed
         }
     }
@@ -552,23 +476,21 @@ public class SwipeCalendarModule {
     @NonNull
     public String getModuleInfo() {
         StringBuilder info = new StringBuilder();
-        info.append("SwipeCalendarModule Status (Single User):\n");
-        info.append("──────────────────────────────────────────\n");
-        info.append("• Destroyed: ").append(mIsDestroyed).append("\n");
-        info.append("• Dependencies Ready: ").append(areDependenciesReady()).append("\n");
-        info.append("• Current User ID: ").append(mCurrentUserId).append("\n");
-        info.append("• Default User ID: ").append(DEFAULT_USER_ID).append("\n");
-        info.append("\nComponents:\n");
-        info.append("• State Manager: ").append(mStateManager != null ? "✅ Created" : "❌ Not Created").append("\n");
-        info.append("• Pager Adapter: ").append(mPagerAdapter != null ? "✅ Created" : "❌ Not Created").append("\n");
-        info.append("• Data Loader: ").append(mDataLoader != null ? "✅ Created" : "❌ Not Created").append("\n");
-        info.append("\nClean Architecture:\n");
-        info.append("• Use Case Factory: ").append(mUseCaseFactory != null ? "✅ Ready" : "❌ Not Ready").append("\n");
-        info.append("• GenerateUserScheduleUseCase: ").append(mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready").append("\n");
-        info.append("\nServices:\n");
-        info.append("• Events Service: ").append(mEventsService != null ? "✅ Available" : "❌ Unavailable").append("\n");
-        info.append("• User Service: ").append(mUserService != null ? "✅ Available" : "❌ Unavailable").append("\n");
-        info.append("• WorkSchedule Repository: ").append(mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable");
+        info.append( "SwipeCalendarModule Status (Single User):\n" );
+        info.append( "──────────────────────────────────────────\n" );
+        info.append( "• Destroyed: " ).append( mIsDestroyed ).append( "\n" );
+        info.append( "• Dependencies Ready: " ).append( areDependenciesReady() ).append( "\n" );
+        info.append( "• Current User ID: " ).append( mUserService.getPrimaryUser() ).append( "\n" );
+        info.append( "\nComponents:\n" );
+        info.append( "• State Manager: " ).append( mStateManager != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
+        info.append( "• Pager Adapter: " ).append( mPagerAdapter != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
+        info.append( "• Data Loader: " ).append( mDataLoader != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
+        info.append( "\nClean Architecture:\n" );
+        info.append( "• GenerateUserScheduleUseCase: " ).append( mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready" ).append( "\n" );
+        info.append( "\nServices:\n" );
+        info.append( "• Events Service: " ).append( mEventsService != null ? "✅ Available" : "❌ Unavailable" ).append( "\n" );
+        info.append( "• User Service: " ).append( "✅ Available" ).append( "\n" );
+        info.append( "• WorkSchedule Repository: " ).append( mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable" );
 
         return info.toString();
     }
@@ -583,18 +505,17 @@ public class SwipeCalendarModule {
     public Map<String, Object> validateModuleState() {
         Map<String, Object> validation = new HashMap<>();
 
-        validation.put("module_destroyed", mIsDestroyed);
-        validation.put("dependencies_ready", areDependenciesReady());
-        validation.put("events_service_available", mEventsService != null);
-        validation.put("user_service_available", mUserService != null);
-        validation.put("work_schedule_repository_available", mWorkScheduleRepository != null);
-        validation.put("use_case_factory_ready", mUseCaseFactory != null);
-        validation.put("generate_user_schedule_use_case_ready", mGenerateUserScheduleUseCase != null);
-        validation.put("state_manager_created", mStateManager != null);
-        validation.put("pager_adapter_created", mPagerAdapter != null);
-        validation.put("data_loader_created", mDataLoader != null);
-        validation.put("current_user_id", mCurrentUserId);
-        validation.put("default_user_id", DEFAULT_USER_ID);
+        validation.put( "module_destroyed", mIsDestroyed );
+        validation.put( "dependencies_ready", areDependenciesReady() );
+        validation.put( "events_service_available", mEventsService != null );
+        validation.put( "user_service_available", mUserService != null );
+        validation.put( "work_schedule_repository_available", mWorkScheduleRepository != null );
+        validation.put( "generate_user_schedule_use_case_ready", mGenerateUserScheduleUseCase != null );
+        validation.put( "state_manager_created", mStateManager != null );
+        validation.put( "pager_adapter_created", mPagerAdapter != null );
+        validation.put( "data_loader_created", mDataLoader != null );
+        assert mUserService != null;
+        validation.put( "current_user_id", mUserService.getPrimaryUser() );
 
         return validation;
     }

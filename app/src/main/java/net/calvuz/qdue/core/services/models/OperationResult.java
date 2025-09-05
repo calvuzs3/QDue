@@ -244,6 +244,7 @@ public class OperationResult<T> {
         BULK_CREATE("Bulk Create"),
 
         // Special operations
+        DEACTIVATE("Deactivate"),
         DUPLICATE("Duplicate"),
         VALIDATION("Validation"),
         SEARCH("Search"),

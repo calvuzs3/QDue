@@ -73,7 +73,7 @@ public interface TeamRepository {
      * @return CompletableFuture with teams that have qdue_offset defined
      */
     @NonNull
-    CompletableFuture<OperationResult<List<Team>>> getTeamsWithQuattroDueOffset();
+    CompletableFuture<OperationResult<List<Team>>> getTeamsForQuattroDue();
 
     /**
      * Get all teams (active and inactive).
@@ -99,7 +99,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating success
      */
     @NonNull
-    CompletableFuture<Boolean> deleteTeam(@NonNull String teamId);
+    CompletableFuture<Boolean> deleteTeam(@NonNull Team team);
 
     // ==================== USER-TEAM ASSIGNMENT OPERATIONS ====================
 
@@ -114,7 +114,7 @@ public interface TeamRepository {
      * @return CompletableFuture with Team or null if user has no team assignment
      */
     @NonNull
-    CompletableFuture<Team> getTeamForUser(@NonNull Long userId);
+    CompletableFuture<Team> getTeamForUser(@NonNull String userId);
 
     /**
      * Get all teams for user.
@@ -126,7 +126,7 @@ public interface TeamRepository {
      * @return CompletableFuture with List of Team objects
      */
     @NonNull
-    CompletableFuture<List<Team>> getTeamsForUser(@NonNull Long userId);
+    CompletableFuture<List<Team>> getTeamsForUser(@NonNull String userId);
 
     /**
      * Get all users in team.
@@ -135,7 +135,7 @@ public interface TeamRepository {
      * @return CompletableFuture with List of user IDs
      */
     @NonNull
-    CompletableFuture<List<Long>> getUsersInTeam(@NonNull String teamId);
+    CompletableFuture<List<String>> getUsersInTeam(@NonNull String teamId);
 
     /**
      * Get all users in team by team name.
@@ -144,7 +144,7 @@ public interface TeamRepository {
      * @return CompletableFuture with List of user IDs
      */
     @NonNull
-    CompletableFuture<List<Long>> getUsersInTeamByName(@NonNull String teamName);
+    CompletableFuture<List<String>> getUsersInTeamByName(@NonNull String teamName);
 
     /**
      * Assign user to team.
@@ -155,7 +155,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating success
      */
     @NonNull
-    CompletableFuture<Boolean> assignUserToTeam(@NonNull Long userId, @NonNull String teamId, boolean isPrimary);
+    CompletableFuture<Boolean> assignUserToTeam(@NonNull String userId, @NonNull String teamId, boolean isPrimary);
 
     /**
      * Remove user from team.
@@ -165,7 +165,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating success
      */
     @NonNull
-    CompletableFuture<Boolean> removeUserFromTeam(@NonNull Long userId, @NonNull String teamId);
+    CompletableFuture<Boolean> removeUserFromTeam(@NonNull String userId, @NonNull String teamId);
 
     /**
      * Set user's primary team.
@@ -175,7 +175,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating success
      */
     @NonNull
-    CompletableFuture<Boolean> setPrimaryTeamForUser(@NonNull Long userId, @NonNull String teamId);
+    CompletableFuture<Boolean> setPrimaryTeamForUser(@NonNull String userId, @NonNull String teamId);
 
     // ==================== BUSINESS QUERY OPERATIONS ====================
 
@@ -187,7 +187,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating membership
      */
     @NonNull
-    CompletableFuture<Boolean> isUserInTeam(@NonNull Long userId, @NonNull String teamId);
+    CompletableFuture<Boolean> isUserInTeam(@NonNull String userId, @NonNull String teamId);
 
     /**
      * Check if user is member of team by team name.
@@ -197,7 +197,7 @@ public interface TeamRepository {
      * @return CompletableFuture with boolean indicating membership
      */
     @NonNull
-    CompletableFuture<Boolean> isUserInTeamByName(@NonNull Long userId, @NonNull String teamName);
+    CompletableFuture<Boolean> isUserInTeamByName(@NonNull String userId, @NonNull String teamName);
 
     /**
      * Get teams by name pattern.
@@ -266,7 +266,7 @@ public interface TeamRepository {
      * @return CompletableFuture with List of eligible Team objects
      */
     @NonNull
-    CompletableFuture<List<Team>> getEligibleTeamsForUser(@NonNull Long userId);
+    CompletableFuture<List<Team>> getEligibleTeamsForUser(@NonNull String userId);
 
     /**
      * Bulk assign users to team.
@@ -276,7 +276,7 @@ public interface TeamRepository {
      * @return CompletableFuture with count of successful assignments
      */
     @NonNull
-    CompletableFuture<Integer> bulkAssignUsersToTeam(@NonNull List<Long> userIds, @NonNull String teamId);
+    CompletableFuture<Integer> bulkAssignUsersToTeam(@NonNull List<String> userIds, @NonNull String teamId);
 
     /**
      * Transfer users between teams.
@@ -287,7 +287,7 @@ public interface TeamRepository {
      * @return CompletableFuture with count of successful transfers
      */
     @NonNull
-    CompletableFuture<Integer> transferUsersBetweenTeams(@NonNull List<Long> userIds,
+    CompletableFuture<Integer> transferUsersBetweenTeams(@NonNull List<String> userIds,
                                                          @NonNull String fromTeamId,
                                                          @NonNull String toTeamId);
 

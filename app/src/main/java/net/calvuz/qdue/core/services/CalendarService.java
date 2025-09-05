@@ -52,12 +52,8 @@ import java.util.concurrent.CompletableFuture;
  *
  * // Get user schedule for today
  * CompletableFuture&lt;OperationResult&lt;WorkScheduleDay&gt;&gt; result =
- *     calendarService.getUserScheduleForDate(userId, LocalDate.now());
+ *     calendarService.getUserScheduleForDate(userID, LocalDate.now());
  * </pre>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Simplified for Domain Models
- * @since Clean Architecture Phase 2
  */
 public interface CalendarService {
 
@@ -85,7 +81,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<WorkScheduleDay>> getUserScheduleForDate(
-            @NonNull Long userId, @NonNull LocalDate date);
+            @NonNull String userId, @NonNull LocalDate date);
 
     /**
      * Get work schedule for specific user over date range.
@@ -97,7 +93,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
 
     /**
      * Get work schedule for specific user for complete month.
@@ -108,7 +104,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForMonth(
-            @NonNull Long userId, @NonNull YearMonth month);
+            @NonNull String userId, @NonNull YearMonth month);
 
     /**
      * Get team schedule for specific date.
@@ -133,7 +129,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<List<WorkScheduleEvent>>> getCalendarEventsForUser(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
 
     /**
      * Generate volatile calendar events for team in date range.
@@ -174,7 +170,7 @@ public interface CalendarService {
      * @return CompletableFuture with Team assignment or null if not assigned
      */
     @NonNull
-    CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull Long userId, @NonNull LocalDate date);
+    CompletableFuture<OperationResult<Team>> getTeamForUser(@NonNull String userId, @NonNull LocalDate date);
 
     // ==================== SHIFT TEMPLATES MANAGEMENT ====================
 
@@ -206,7 +202,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<UserScheduleAssignment>> getUserAssignmentForDate(
-            @NonNull Long userId, @NonNull LocalDate date);
+            @NonNull String userId, @NonNull LocalDate date);
 
     /**
      * Get all users with active schedule assignments.
@@ -214,7 +210,7 @@ public interface CalendarService {
      * @return CompletableFuture with List of active user IDs
      */
     @NonNull
-    CompletableFuture<OperationResult<List<Long>>> getActiveUsers();
+    CompletableFuture<OperationResult<List<String>>> getActiveUsers();
 
     // ==================== EXCEPTION MANAGEMENT ====================
 
@@ -227,7 +223,7 @@ public interface CalendarService {
      */
     @NonNull
     CompletableFuture<OperationResult<List<ShiftException>>> getShiftExceptionsForUser(
-            @NonNull Long userId, @NonNull LocalDate date);
+            @NonNull String userId, @NonNull LocalDate date);
 
     /**
      * Create a new shift exception.

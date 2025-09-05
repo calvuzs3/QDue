@@ -37,10 +37,6 @@ import java.util.List;
  *   <li>JSON storage for arrays minimizes table complexity</li>
  *   <li>Timestamp fields for efficient sorting and filtering</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Calendar Engine Database
- * @since Clean Architecture Phase 2
  */
 @Entity(
         tableName = "recurrence_rules",
@@ -119,15 +115,15 @@ public class RecurrenceRuleEntity {
 
     @Nullable
     @ColumnInfo(name = "cycle_length")
-    private Integer cycleLength; // 42 for QuattroDue
+    private Integer cycleLength; // 18 for QuattroDue
 
     @Nullable
     @ColumnInfo(name = "work_days")
-    private Integer workDays; // 28 for QuattroDue
+    private Integer workDays; // 6*3 for QuattroDue
 
     @Nullable
     @ColumnInfo(name = "rest_days")
-    private Integer restDays; // 14 for QuattroDue
+    private Integer restDays; // 2*3 for QuattroDue
 
     // ==================== METADATA ====================
 

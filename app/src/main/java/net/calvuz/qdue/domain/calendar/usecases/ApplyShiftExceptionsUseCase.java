@@ -35,7 +35,7 @@ public class ApplyShiftExceptionsUseCase {
      */
     @NonNull
     public CompletableFuture<OperationResult<WorkScheduleDay>> executeForUser(
-            @NonNull Long userId, @NonNull LocalDate date) {
+            @NonNull String userId, @NonNull LocalDate date) {
 
         // Get current schedule with exceptions already applied
         return mWorkScheduleRepository.getWorkScheduleForDate(date, userId)
@@ -62,12 +62,16 @@ public class ApplyShiftExceptionsUseCase {
     }
 
     private ExceptionValidationResult validateExceptionApplication(@NonNull WorkScheduleDay schedule,
-                                                                   @NonNull Long userId) {
+                                                                   @NonNull String userId) {
         ExceptionValidationResult result = new ExceptionValidationResult();
         result.isValid = true;
 
         // Implement business validation rules for exceptions
         // Example: Check for overtime limits, consecutive work days, etc.
+        if (userId.trim().isEmpty()) {
+            result.isValid = false;
+            result.errorMessage = "User ID is empty";
+        }
 
         return result;
     }

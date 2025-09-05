@@ -22,7 +22,7 @@
  * // Direct usage for month operations
  * GenerateUserScheduleUseCase useCase = new GenerateUserScheduleUseCase(repository);
  * CompletableFuture&lt;OperationResult&lt;Map&lt;LocalDate, WorkScheduleDay&gt;&gt;&gt; result =
- *     useCase.executeForMonth(userId, YearMonth.now());
+ *     useCase.executeForMonth(userID, YearMonth.now());
  *
  * // Factory usage (recommended)
  * UseCaseFactory factory = new UseCaseFactory(repository);

@@ -7,6 +7,8 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.util.UUID;
+
 /**
  * Modern QDue preferences management
  * <p>
@@ -30,26 +32,23 @@ public class QDuePreferences {
 
     // ==================== USER ID MANAGEMENT (SINGLE USER APP) ====================
 
-    /**
-     * Default User ID for single-user application.
-     * Fixed at 1L to ensure consistency throughout the app.
-     */
-    public static final long DEFAULT_USER_ID = 1L;
+    // Default User ID for single-user application.
+    public static final String DEFAULT_USER_ID = UUID.randomUUID().toString();
 
     /**
      * Get the current user ID.
-     * For single-user app, this always returns 1L or user-customized ID.
+     * For single-user app, this always returns a valid ID.
      *
      * @param context Application context
-     * @return User ID (default: 1L)
+     * @return User ID
      */
-    public static long getUserId(Context context) {
+    public static String getUserId(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
-        long userId = prefs.getLong(QDue.Settings.QD_KEY_USER_ID, DEFAULT_USER_ID);
+        String userId = prefs.getString(QDue.Settings.QD_KEY_USER_ID, DEFAULT_USER_ID);
 
         // Safety check: never return 0 or negative IDs
-        if (userId <= 0) {
-            Log.w(TAG, "Invalid user ID found: " + userId + ". Resetting to default: " + DEFAULT_USER_ID);
+        if (userId.trim().isEmpty()) {
+            Log.w(TAG, "Invalid User ID found: " + userId + ". Resetting to default: " + DEFAULT_USER_ID);
             setUserId(context, DEFAULT_USER_ID);
             return DEFAULT_USER_ID;
         }
@@ -59,20 +58,20 @@ public class QDuePreferences {
 
     /**
      * Set the user ID.
-     * For single-user app, this allows customization but defaults to 1L.
+     * For single-user app, this allows customization.
      *
      * @param context Application context
-     * @param userId User ID to set (must be > 0)
+     * @param userId User ID to set
      */
-    public static void setUserId(Context context, long userId) {
+    public static void setUserId(Context context, String userId) {
         // Validate user ID
-        if (userId <= 0) {
+        if (userId.trim().isEmpty()) {
             Log.w(TAG, "Invalid user ID provided: " + userId + ". Using default: " + DEFAULT_USER_ID);
             userId = DEFAULT_USER_ID;
         }
 
         SharedPreferences prefs = context.getSharedPreferences(QDue.Settings.QD_PREF_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putLong(QDue.Settings.QD_KEY_USER_ID, userId).apply();
+        prefs.edit().putString(QDue.Settings.QD_KEY_USER_ID, userId).apply();
 
         Log.d(TAG, "User ID set to: " + userId);
     }

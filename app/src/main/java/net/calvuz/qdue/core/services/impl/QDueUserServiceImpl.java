@@ -67,7 +67,7 @@ public class QDueUserServiceImpl implements QDueUserService {
 
     // ==================== STATE MANAGEMENT ====================
 
-    private volatile boolean mIsInitialized = false;
+    private final boolean mIsInitialized;
     private volatile boolean mIsShutdown = false;
 
     // ==================== CONSTRUCTOR FOR DEPENDENCY INJECTION ====================
@@ -87,92 +87,93 @@ public class QDueUserServiceImpl implements QDueUserService {
         this.mDomainLocalizer = domainLocalizer;
 
         // Initialize performance components
-        this.mExecutorService = Executors.newFixedThreadPool(3);
+        this.mExecutorService = Executors.newFixedThreadPool( 1 );
         this.mCache = new ConcurrentHashMap<>();
 
         // Mark as initialized
         this.mIsInitialized = true;
 
-        Log.d(TAG, "QDueUserServiceImpl initialized via dependency injection");
+        Log.d( TAG, "QDueUserServiceImpl initialized via dependency injection" );
     }
 
     // ==================== CRUD OPERATIONS ====================
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> createUser(@NonNull String nickname, @NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        Log.d(TAG, "Service: Creating user with nickname: '" + nickname + "', email: '" + email + "'");
+        Log.d( TAG, "Service: Creating user with nickname: '" + nickname + "', email: '" + email + "'" );
 
-        return mQDueUserUseCases.getCreateUserUseCase().execute(nickname, email)
-                .thenApply(result -> {
+        return mQDueUserUseCases.getCreateUserUseCase().execute( nickname, email )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Clear cache on successful creation
                         mCache.clear();
-                        Log.d(TAG, "✅ Service: User created successfully");
+                        Log.d( TAG, "✅ Service: User created successfully" );
                     }
                     return result;
-                });
+                } );
     }
 
     @Override
-    public CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull Long userId) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+    public CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull String userId) {
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
         // Check cache first
         String cacheKey = "user_id_" + userId;
-        QDueUser cachedUser = (QDueUser) mCache.get(cacheKey);
+        QDueUser cachedUser = (QDueUser) mCache.get( cacheKey );
         if (cachedUser != null) {
-            Log.d(TAG, "✅ Service: User found in cache for ID: " + userId);
+            Log.d( TAG, "✅ Service: User found in cache for ID: " + userId );
             return CompletableFuture.completedFuture(
-                    OperationResult.success(cachedUser, OperationResult.OperationType.READ)
+                    OperationResult.success( cachedUser, OperationResult.OperationType.READ )
             );
         }
 
-        return mQDueUserUseCases.getUserUseCase().execute(userId)
-                .thenApply(result -> {
+        return mQDueUserUseCases.getUserUseCase().execute( userId )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Cache successful result
-                        mCache.put(cacheKey, result.getData());
+                        if (result.getData() != null)
+                            mCache.put( cacheKey, result.getData() );
                     }
                     return result;
-                });
+                } );
     }
 
     @Override
-    public CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull Long userId, @NonNull String nickname, @NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+    public CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull String userId, @NonNull String nickname, @NonNull String email) {
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        Log.d(TAG, "Service: Updating user ID: " + userId);
+        Log.d( TAG, "Service: Updating user ID: " + userId );
 
-        return mQDueUserUseCases.getUpdateUserUseCase().execute(userId, nickname, email)
-                .thenApply(result -> {
+        return mQDueUserUseCases.getUpdateUserUseCase().execute( userId, nickname, email, System.currentTimeMillis() )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Clear cache on successful update
                         mCache.clear();
-                        Log.d(TAG, "✅ Service: User updated successfully");
+                        Log.d( TAG, "✅ Service: User updated successfully" );
                     }
                     return result;
-                });
+                } );
     }
 
     @Override
-    public CompletableFuture<OperationResult<String>> deleteUser(@NonNull Long userId) {
-        if (!ensureInitialized()) {
+    public CompletableFuture<OperationResult<String>> deleteUser(@NonNull String userId) {
+        if (notInitialized()) {
             return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.DELETE)
+                    OperationResult.failure( "Service is shutdown", OperationResult.OperationType.DELETE )
             );
         }
 
         // Note: We would need to add delete use case to QDueUserUseCases
         // For now, we'll indicate this needs to be implemented
-        Log.w(TAG, "Delete user operation not yet implemented in use cases");
+        Log.w( TAG, "Delete user operation not yet implemented in use cases" );
 
         return CompletableFuture.completedFuture(
                 OperationResult.failure(
@@ -186,8 +187,8 @@ public class QDueUserServiceImpl implements QDueUserService {
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> getUserByEmail(@NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
         if (email.trim().isEmpty()) {
@@ -201,34 +202,34 @@ public class QDueUserServiceImpl implements QDueUserService {
 
         // Check cache first
         String cacheKey = "user_email_" + email.trim().toLowerCase();
-        QDueUser cachedUser = (QDueUser) mCache.get(cacheKey);
+        QDueUser cachedUser = (QDueUser) mCache.get( cacheKey );
         if (cachedUser != null) {
-            Log.d(TAG, "✅ Service: User found in cache for email: " + email);
+            Log.d( TAG, "✅ Service: User found in cache for email: " + email );
             return CompletableFuture.completedFuture(
-                    OperationResult.success(cachedUser, OperationResult.OperationType.READ)
+                    OperationResult.success( cachedUser, OperationResult.OperationType.READ )
             );
         }
 
-        return mQDueUserUseCases.getUserUseCase().executeByEmail(email)
-                .thenApply(result -> {
+        return mQDueUserUseCases.getUserUseCase().executeByEmail( email )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Cache successful result
-                        mCache.put(cacheKey, result.getData());
+                        if (result.getData() != null)
+                            mCache.put( cacheKey, result.getData() );
                     }
                     return result;
-                });
+                } );
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public CompletableFuture<OperationResult<List<QDueUser>>> getAllUsers() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
         // Note: We would need to add getAllUsers to use cases
         // For now, we'll use the repository through use case factory
-        Log.w(TAG, "Get all users operation needs to be implemented in use cases");
+        Log.w( TAG, "Get all users operation needs to be implemented in use cases" );
 
         return CompletableFuture.completedFuture(
                 OperationResult.failure(
@@ -240,109 +241,59 @@ public class QDueUserServiceImpl implements QDueUserService {
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> getPrimaryUser() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        return mQDueUserUseCases.getUserUseCase().getPrimaryUser();
+        return mQDueUserUseCases.getUserUseCase().execute();
     }
 
     // ==================== ONBOARDING OPERATIONS ====================
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> onboardUser(@NonNull String nickname, @NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
+        if (notInitialized()) {
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        Log.d(TAG, "Service: Starting user onboarding");
+        Log.d( TAG, "Service: Starting user onboarding" );
 
-        return mQDueUserUseCases.getOnboardingUseCase().execute(nickname, email)
-                .thenApply(result -> {
+        return mQDueUserUseCases.getOnboardingUseCase().execute( nickname, email )
+                .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Clear cache on successful onboarding
                         mCache.clear();
-                        Log.d(TAG, "✅ Service: User onboarding completed");
+                        Log.d( TAG, "✅ Service: User onboarding completed" );
                     }
                     return result;
-                });
+                } );
     }
 
     @Override
     public CompletableFuture<OperationResult<Boolean>> isOnboardingNeeded() {
-        if (!ensureInitialized()) {
+        if (notInitialized()) {
             return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
+                    OperationResult.failure( "Service is shutdown", OperationResult.OperationType.READ )
             );
         }
 
         return mQDueUserUseCases.getOnboardingUseCase().isOnboardingNeeded();
     }
 
-    @Override
-    public CompletableFuture<OperationResult<QDueUser>> completeUserProfile(@NonNull Long userId, @NonNull String nickname, @NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
-        }
-
-        Log.d(TAG, "Service: Completing user profile for ID: " + userId);
-
-        // Validate that both fields are provided for completion
-        if (nickname.trim().isEmpty() || email.trim().isEmpty()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure(
-                            "Both nickname and email are required for profile completion",
-                            OperationResult.OperationType.VALIDATION
-                    )
-            );
-        }
-
-        return updateUser(userId, nickname, email);
-    }
-
     // ==================== VALIDATION OPERATIONS ====================
-
-    @Override
-    public OperationResult<Void> validateUserData(@NonNull String nickname, @NonNull String email) {
-        try {
-            Log.d(TAG, "Service: Validating user data");
-
-            // Create temporary user for validation
-            QDueUser tempUser = new QDueUser(nickname, email);
-
-            // Check email format if provided
-            if (!tempUser.isEmailValid()) {
-                return OperationResult.failure(
-                        "Invalid email format: " + email,
-                        OperationResult.OperationType.VALIDATION
-                );
-            }
-
-            Log.d(TAG, "✅ Service: User data validation passed");
-            return OperationResult.success(null, OperationResult.OperationType.VALIDATION);
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Service: User data validation failed", e);
-            return OperationResult.failure(
-                    "Validation error: " + e.getMessage(),
-                    OperationResult.OperationType.VALIDATION
-            );
-        }
-    }
 
     @Override
     public OperationResult<Boolean> isEmailValid(@NonNull String email) {
         try {
             if (email.trim().isEmpty()) {
                 // Empty email is valid (optional field)
-                return OperationResult.success(true, OperationResult.OperationType.VALIDATION);
+                return OperationResult.success( true, OperationResult.OperationType.VALIDATION );
             }
 
-            boolean isValid = EMAIL_PATTERN.matcher(email.trim()).matches();
-            return OperationResult.success(isValid, OperationResult.OperationType.VALIDATION);
-
+            boolean isValid = EMAIL_PATTERN.matcher( email.trim() ).matches();
+            return OperationResult.success( isValid, OperationResult.OperationType.VALIDATION );
         } catch (Exception e) {
-            Log.e(TAG, "❌ Service: Email validation error", e);
+            Log.e( TAG, "❌ Service: Email validation error", e );
             return OperationResult.failure(
                     "Email validation error: " + e.getMessage(),
                     OperationResult.OperationType.VALIDATION
@@ -350,132 +301,17 @@ public class QDueUserServiceImpl implements QDueUserService {
         }
     }
 
-    // ==================== EXISTENCE CHECKS ====================
-
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> userExists(@NonNull Long userId) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
-            );
-        }
-
-        // Note: We would need to add existence check to use cases
-        Log.w(TAG, "User existence check needs to be implemented in use cases");
-
-        return CompletableFuture.completedFuture(
-                OperationResult.failure(
-                        "User existence check not yet implemented",
-                        OperationResult.OperationType.READ
-                )
-        );
-    }
-
-    @Override
-    public CompletableFuture<OperationResult<Boolean>> userExistsByEmail(@NonNull String email) {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
-            );
-        }
-
-        if (email.trim().isEmpty()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure(
-                            "Email cannot be empty for existence check",
-                            OperationResult.OperationType.VALIDATION
-                    )
-            );
-        }
-
-        // Check by trying to get user by email
-        return getUserByEmail(email).thenApply(result ->
-                OperationResult.success(result.isSuccess(), OperationResult.OperationType.READ)
-        );
-    }
-
-    // ==================== STATISTICS AND ANALYTICS ====================
-
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getUsersCount() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
-            );
-        }
-
-        // Note: We would need to add statistics to use cases
-        Log.w(TAG, "Statistics operations need to be implemented in use cases");
-
-        return CompletableFuture.completedFuture(
-                OperationResult.failure(
-                        "Statistics operations not yet implemented",
-                        OperationResult.OperationType.READ
-                )
-        );
-    }
-
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getCompleteProfilesCount() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
-            );
-        }
-
-        // Implementation would go here
-        return CompletableFuture.completedFuture(
-                OperationResult.failure(
-                        "Complete profiles count not yet implemented",
-                        OperationResult.OperationType.READ
-                )
-        );
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public CompletableFuture<OperationResult<List<QDueUser>>> getIncompleteProfiles() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(getShutdownResult());
-        }
-
-        // Implementation would go here
-        return CompletableFuture.completedFuture(
-                OperationResult.failure(
-                        "Incomplete profiles query not yet implemented",
-                        OperationResult.OperationType.READ
-                )
-        );
-    }
-
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getProfileCompletionPercentage() {
-        if (!ensureInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.READ)
-            );
-        }
-
-        // Implementation would calculate percentage from counts
-        return CompletableFuture.completedFuture(
-                OperationResult.failure(
-                        "Profile completion percentage not yet implemented",
-                        OperationResult.OperationType.READ
-                )
-        );
-    }
-
     // ==================== MAINTENANCE OPERATIONS ====================
 
     @Override
     public CompletableFuture<OperationResult<Integer>> deleteAllUsers() {
-        if (!ensureInitialized()) {
+        if (notInitialized()) {
             return CompletableFuture.completedFuture(
-                    OperationResult.failure("Service is shutdown", OperationResult.OperationType.DELETE)
+                    OperationResult.failure( "Service is shutdown", OperationResult.OperationType.DELETE )
             );
         }
 
-        Log.w(TAG, "⚠️ Delete all users requested - use with extreme caution");
+        Log.w( TAG, "⚠️ Delete all users requested - not yet implemented" );
 
         // Implementation would go here
         return CompletableFuture.completedFuture(
@@ -488,41 +324,39 @@ public class QDueUserServiceImpl implements QDueUserService {
 
     @Override
     public CompletableFuture<OperationResult<String>> getServiceStatus() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                StringBuilder status = new StringBuilder();
-                status.append("QDueUserService Status:\n");
-                status.append("- Initialized: ").append(mIsInitialized).append("\n");
-                status.append("- Shutdown: ").append(mIsShutdown).append("\n");
-                status.append("- Cache size: ").append(mCache.size()).append("\n");
-                status.append("- Executor shutdown: ").append(mExecutorService.isShutdown()).append("\n");
+                String status = "QDueUserService Status:\n" +
+                        "- Initialized: " + mIsInitialized + "\n" +
+                        "- Shutdown: " + mIsShutdown + "\n" +
+                        "- Cache size: " + mCache.size() + "\n" +
+                        "- Executor shutdown: " + mExecutorService.isShutdown() + "\n";
 
-                return OperationResult.success(status.toString(), OperationResult.OperationType.READ);
-
+                return OperationResult.success( status, OperationResult.OperationType.READ );
             } catch (Exception e) {
+                Log.e(TAG, "❌ Failed to get service status", e);
                 return OperationResult.failure(
-                        "Failed to get service status: " + e.getMessage(),
-                        OperationResult.OperationType.READ
+                        "Failed to get service status",
+                        OperationResult.OperationType.SYSTEM
                 );
             }
-        });
+        } );
     }
 
     // ==================== UTILITY METHODS ====================
 
-    private boolean ensureInitialized() {
+    private boolean notInitialized() {
         if (mIsShutdown) {
-            Log.e(TAG, "❌ Service operation attempted after shutdown");
-            return false;
+            Log.e( TAG, "❌ Service operation attempted after shutdown" );
+            return true;
         }
-        return mIsInitialized;
+        return !mIsInitialized;
     }
 
-    @SuppressWarnings("unchecked")
     private <T> OperationResult<T> getShutdownResult() {
-        return (OperationResult<T>) OperationResult.failure(
+        return OperationResult.failure(
                 "Service is shutdown",
-                OperationResult.OperationType.READ
+                OperationResult.OperationType.SYSTEM
         );
     }
 
@@ -532,7 +366,7 @@ public class QDueUserServiceImpl implements QDueUserService {
      * Shutdown service and cleanup resources.
      */
     public void shutdown() {
-        Log.d(TAG, "Shutting down QDueUserService");
+        Log.d( TAG, "Shutting down QDueUserService" );
 
         mIsShutdown = true;
         mCache.clear();
@@ -541,6 +375,6 @@ public class QDueUserServiceImpl implements QDueUserService {
             mExecutorService.shutdown();
         }
 
-        Log.d(TAG, "✅ QDueUserService shutdown completed");
+        Log.d( TAG, "✅ QDueUserService shutdown completed" );
     }
 }

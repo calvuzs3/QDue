@@ -217,7 +217,7 @@ public class LocaleManagerExtensions {
 
     /**
      * Get localized default shift swap title with user reference.
-     * Template: "Shift swap with user {userId}"
+     * Template: "Shift swap with user {userID}"
      */
     @NonNull
     public static String getDefaultShiftSwapTitle(@Nullable Context context, @NonNull Long swapWithUserId) {
@@ -247,7 +247,7 @@ public class LocaleManagerExtensions {
 
     /**
      * Get localized user display name template.
-     * Template: "User {userId}"
+     * Template: "User {userID}"
      */
     @NonNull
     public static String getUserDisplayNameTemplate(@Nullable Context context, @NonNull Long userId) {

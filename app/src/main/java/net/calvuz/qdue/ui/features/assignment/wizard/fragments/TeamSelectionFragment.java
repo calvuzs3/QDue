@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.databinding.FragmentTeamSelectionBinding;
@@ -26,28 +27,9 @@ import java.util.List;
  *
  * <p>Second step of assignment wizard for QuattroDue patterns, allowing users
  * to select their team with proper qdue_offset configuration.</p>
- *
- * <h3>Team Requirements:</h3>
- * <ul>
- *   <li><strong>QuattroDue Compatible</strong>: Teams must have qdue_offset defined</li>
- *   <li><strong>Offset Range</strong>: Valid offset values for 16-day cycle positioning</li>
- *   <li><strong>Active Teams</strong>: Only active/enabled teams are selectable</li>
- * </ul>
- *
- * <h3>User Interface:</h3>
- * <ul>
- *   <li><strong>RecyclerView List</strong>: Scrollable list of available teams</li>
- *   <li><strong>Team Information</strong>: Name, offset, and cycle position details</li>
- *   <li><strong>Single Selection</strong>: Radio button selection model</li>
- *   <li><strong>Empty State</strong>: Fallback for no teams available</li>
- * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Team Selection Fragment
- * @since Clean Architecture Phase 2
  */
 public class TeamSelectionFragment extends Fragment {
-
+    // TAG
     private static final String TAG = "TeamSelectionFragment";
 
     // ==================== UI COMPONENTS ====================
@@ -127,10 +109,15 @@ public class TeamSelectionFragment extends Fragment {
         mBinding.txtLoadingMessage.setText(R.string.loading_teams);
 
         // Setup contact admin button
-        mBinding.btnContactAdmin.setOnClickListener(v -> {
-            // TODO: Implement contact admin functionality
-            Log.d(TAG, "Contact admin button clicked");
-        });
+        if (QDue.Settings.FEATURE_CONTACT_ADMIN) {
+            mBinding.btnContactAdmin.setVisibility(View.VISIBLE);
+            mBinding.btnContactAdmin.setOnClickListener( v -> {
+                // TODO: Implement contact admin functionality
+                Log.d( TAG, "Contact admin button clicked" );
+            } );
+        } else {
+            mBinding.btnContactAdmin.setVisibility(View.GONE);
+        }
 
         // Set accessibility
         mBinding.recyclerViewTeams.setContentDescription(getString(R.string.accessibility_team_selection));

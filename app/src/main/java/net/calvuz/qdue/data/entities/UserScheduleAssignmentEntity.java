@@ -8,8 +8,11 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.common.enums.Priority;
+import net.calvuz.qdue.domain.common.enums.Status;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * UserScheduleAssignmentEntity - Room database entity for user-to-team schedule assignments.
@@ -77,7 +80,7 @@ public class UserScheduleAssignmentEntity {
 
     @NonNull
     @ColumnInfo (name = "user_id")
-    private Long userId;
+    private String userId;
 
     @Nullable
     @ColumnInfo (name = "user_name")
@@ -160,11 +163,11 @@ public class UserScheduleAssignmentEntity {
 
     @Nullable
     @ColumnInfo (name = "created_by_user_id")
-    private Long createdByUserId;
+    private String createdByUserId;
 
     @Nullable
     @ColumnInfo (name = "last_modified_by_user_id")
-    private Long lastModifiedByUserId;
+    private String lastModifiedByUserId;
 
     // ==================== CONSTRUCTORS ====================
 
@@ -173,27 +176,17 @@ public class UserScheduleAssignmentEntity {
      */
     public UserScheduleAssignmentEntity() {
         // Room requires a no-argument constructor
-        this.cycleDayPosition = 1; // Default to first day of cycle
-    }
-
-    /**
-     * Constructor with required fields.
-     */
-    public UserScheduleAssignmentEntity(@NonNull String id, @NonNull Long userId,
-                                        @NonNull String teamId, @NonNull String recurrenceRuleId,
-                                        @NonNull String startDate) {
-        this.id = id;
-        this.userId = userId;
-        this.teamId = teamId;
-        this.recurrenceRuleId = recurrenceRuleId;
-        this.cycleDayPosition = 1; // Default to first day of cycle
-        this.startDate = startDate;
-        this.isPermanent = true; // Default to permanent if no end date
-        this.priority = "NORMAL";
-        this.status = "ACTIVE";
+        this.id = UUID.randomUUID().toString();
+        this.userId = "";
+        this.teamId = "";
+        this.recurrenceRuleId = "";
+        this.startDate = LocalDate.now().toString();
+        this.priority = Priority.NORMAL.name();
+        this.status = Status.ACTIVE.name();
         this.active = true;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        this.cycleDayPosition = 1; // Default to first day of cycle
     }
 
     // ==================== GETTERS AND SETTERS ====================
@@ -235,11 +228,11 @@ public class UserScheduleAssignmentEntity {
     }
 
     @NonNull
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(@NonNull Long userId) {
+    public void setUserId(@NonNull String userId) {
         this.userId = userId;
     }
 
@@ -410,20 +403,20 @@ public class UserScheduleAssignmentEntity {
     }
 
     @Nullable
-    public Long getCreatedByUserId() {
+    public String getCreatedByUserId() {
         return createdByUserId;
     }
 
-    public void setCreatedByUserId(@Nullable Long createdByUserId) {
+    public void setCreatedByUserId(@Nullable String createdByUserId) {
         this.createdByUserId = createdByUserId;
     }
 
     @Nullable
-    public Long getLastModifiedByUserId() {
+    public String getLastModifiedByUserId() {
         return lastModifiedByUserId;
     }
 
-    public void setLastModifiedByUserId(@Nullable Long lastModifiedByUserId) {
+    public void setLastModifiedByUserId(@Nullable String lastModifiedByUserId) {
         this.lastModifiedByUserId = lastModifiedByUserId;
     }
 
@@ -446,7 +439,7 @@ public class UserScheduleAssignmentEntity {
                 .recurrenceRuleId( this.recurrenceRuleId )
                 .cycleDayPosition( this.cycleDayPosition )
                 .startDate( LocalDate.parse( this.startDate ) )
-                .priority( UserScheduleAssignment.Priority.valueOf( this.priority ) )
+                .priority( Priority.valueOf( this.priority ) )
                 .active( this.active )
                 .createdAt( this.createdAt )
                 .updatedAt( this.updatedAt );
@@ -536,7 +529,7 @@ public class UserScheduleAssignmentEntity {
      *
      * @param userId User ID to set.
      */
-    public void updateModifiedByUserId(Long userId) {
+    public void updateModifiedByUserId(String userId) {
         this.lastModifiedByUserId = userId;
     }
 
@@ -556,11 +549,7 @@ public class UserScheduleAssignmentEntity {
         }
 
         // Check if ended (if not permanent)
-        if (!isPermanent && endDate != null && endDate.compareTo( today ) < 0) {
-            return false; // Past assignment
-        }
-
-        return true;
+        return isPermanent || endDate == null || endDate.compareTo( today ) >= 0; // Past assignment
     }
 
     /**
@@ -621,18 +610,13 @@ public class UserScheduleAssignmentEntity {
      * Get priority level as integer for comparison.
      */
     public int getPriorityLevel() {
-        switch (priority) {
-            case "LOW":
-                return 1;
-            case "NORMAL":
-                return 5;
-            case "HIGH":
-                return 8;
-            case "OVERRIDE":
-                return 10;
-            default:
-                return 5; // Default to NORMAL
-        }
+        return switch (priority) {
+            case "LOW" -> 1;
+            case "NORMAL" -> 5;
+            case "HIGH" -> 8;
+            case "OVERRIDE" -> 10;
+            default -> 5; // Default to NORMAL
+        };
     }
 
     // ==================== TOSTRING ====================
@@ -642,8 +626,8 @@ public class UserScheduleAssignmentEntity {
     public String toString() {
         return "UserScheduleAssignmentEntity{" +
                 "id='" + id + '\'' +
-                ", userId=" + userId +
-                ", teamId='" + teamId + '\'' +
+                ", userID=" + userId +
+                ", teamID='" + teamId + '\'' +
                 ", recurrenceRuleId='" + recurrenceRuleId + '\'' +
                 ", cycleDayPosition=" + cycleDayPosition +
                 ", startDate='" + startDate + '\'' +

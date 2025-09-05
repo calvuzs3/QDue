@@ -18,10 +18,6 @@ import java.util.List;
  *
  * <p>Optimized for pattern lookup, frequency filtering, and date range queries.
  * Supports both simple CRUD operations and complex pattern matching queries.</p>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Calendar Engine Database
- * @since Clean architecture
  */
 @Dao
 public interface RecurrenceRuleDao {
@@ -39,6 +35,9 @@ public interface RecurrenceRuleDao {
 
     @Delete
     int deleteRecurrenceRule(@NonNull RecurrenceRuleEntity rule);
+
+    @Query("DELETE FROM recurrence_rules")
+    int deleteAllRecurrenceRules();
 
     @Query("DELETE FROM recurrence_rules WHERE id = :ruleId")
     int deleteRecurrenceRuleById(@NonNull String ruleId);

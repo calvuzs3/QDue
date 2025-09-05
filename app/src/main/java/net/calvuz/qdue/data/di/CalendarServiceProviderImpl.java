@@ -1,5 +1,6 @@
 package net.calvuz.qdue.data.di;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
@@ -7,11 +8,14 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.db.CalendarDatabase;
+import net.calvuz.qdue.data.dao.UserTeamAssignmentDao;
+import net.calvuz.qdue.data.repositories.QDueUserRepositoryImpl;
 import net.calvuz.qdue.data.repositories.RecurrenceRuleRepositoryImpl;
 import net.calvuz.qdue.data.repositories.ShiftExceptionRepositoryImpl;
 import net.calvuz.qdue.data.repositories.ShiftRepositoryImpl;
 import net.calvuz.qdue.data.repositories.TeamRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserScheduleAssignmentRepositoryImpl;
+import net.calvuz.qdue.data.repositories.UserTeamAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
@@ -21,15 +25,17 @@ import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
+import net.calvuz.qdue.domain.calendar.repositories.UserTeamAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.ApplyShiftExceptionsUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
-import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
+import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.core.common.i18n.impl.DomainLocalizerImpl;
+import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -57,10 +63,6 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  *       ├── Use Cases
  *       └── WorkScheduleRepository
  * </pre>
- *
- * @author QDue Development Team
- * @version 2.0.0 - ServiceProvider Integration
- * @since Clean Architecture Phase 3
  */
 public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
@@ -68,20 +70,23 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== SINGLETON MANAGEMENT ====================
 
+    @SuppressLint ("StaticFieldLeak")
     private static volatile CalendarServiceProviderImpl INSTANCE;
     private static final Object INSTANCE_LOCK = new Object();
 
     /**
      * Get singleton instance with ServiceProvider integration.
-     *
+     * <p>
      * //@param coreServiceProvider Core ServiceProvider for infrastructure dependencies
+     *
      * @return CalendarServiceProviderImpl singleton instance
      */
     @NonNull
-    public static CalendarServiceProviderImpl getInstance(//@NonNull ServiceProvider coreServiceProvider,
+    public static CalendarServiceProviderImpl getInstance(
                                                           @NonNull Context context,
                                                           @NonNull CalendarDatabase database,
-                                                          @NonNull CoreBackupManager backupManager) {
+                                                          @NonNull CoreBackupManager backupManager
+    ) {
         if (INSTANCE == null) {
             synchronized (INSTANCE_LOCK) {
                 if (INSTANCE == null) {
@@ -105,10 +110,12 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== REPOSITORY INSTANCES ====================
 
-    private volatile RecurrenceRuleRepository mRecurrenceRuleRepository;
-    private volatile ShiftExceptionRepository mShiftExceptionRepository;
+    private volatile QDueUserRepository mQDueUserRepository;
     private volatile TeamRepository mTeamRepository;
     private volatile ShiftRepository mShiftRepository;
+    private volatile UserTeamAssignmentRepository mUserTeamAssignmentRepository;
+    private volatile RecurrenceRuleRepository mRecurrenceRuleRepository;
+    private volatile ShiftExceptionRepository mShiftExceptionRepository;
     private volatile UserScheduleAssignmentRepository mUserScheduleAssignmentRepository;
     private volatile WorkScheduleRepository mWorkScheduleRepository;
 
@@ -120,12 +127,12 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== USE CASE INSTANCES ====================
 
+    private volatile UserTeamAssignmentUseCases mUserTeamAssignmentUseCases;
     private volatile CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
     private volatile GenerateUserScheduleUseCase mGenerateUserScheduleUseCase;
     private volatile GenerateTeamScheduleUseCase mGenerateTeamScheduleUseCase;
     private volatile ApplyShiftExceptionsUseCase mApplyShiftExceptionsUseCase;
     private volatile GetScheduleStatsUseCase mGetScheduleStatsUseCase;
-    private volatile UseCaseFactory mUseCaseFactory;
 
     // ==================== INFRASTRUCTURE INSTANCES ====================
 
@@ -135,20 +142,23 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     // ==================== SYNCHRONIZATION LOCKS ====================
 
     private final Object mInitializationLock = new Object();
+    private final Object mQDueUserRepositoryLock = new Object();
     private final Object mRecurrenceRepositoryLock = new Object();
     private final Object mShiftExceptionRepositoryLock = new Object();
     private final Object mTeamRepositoryLock = new Object();
     private final Object mShiftRepositoryLock = new Object();
     private final Object mUserAssignmentRepositoryLock = new Object();
+    private final Object mUserTeamAssignmentRepositoryLock = new Object();
     private final Object mWorkScheduleRepositoryLock = new Object();
+    private final Object mCreatePatternAssignmentUseCaseLock = new Object();
     private final Object mRecurrenceCalculatorLock = new Object();
     private final Object mExceptionResolverLock = new Object();
     private final Object mSchedulingEngineLock = new Object();
+    private final Object mUserTeamAssignmentUseCasesLock = new Object();
     private final Object mUserScheduleUseCaseLock = new Object();
     private final Object mTeamScheduleUseCaseLock = new Object();
     private final Object mShiftExceptionsUseCaseLock = new Object();
     private final Object mScheduleStatsUseCaseLock = new Object();
-    private final Object mUseCaseFactoryLock = new Object();
 
     // ==================== STATE TRACKING ====================
 
@@ -160,19 +170,17 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     /**
      * Private constructor for singleton pattern with ServiceProvider integration.
-     *
+     * <p>
      * //@param coreServiceProvider Core ServiceProvider for infrastructure dependencies
      */
-    private CalendarServiceProviderImpl(//@NonNull ServiceProvider coreServiceProvider,
-                                        @NonNull Context context,
-                                        @NonNull CalendarDatabase database,
-                                        @NonNull CoreBackupManager backupManager) {
-        //this.mCoreServiceProvider = coreServiceProvider;
+    private CalendarServiceProviderImpl(
+            @NonNull Context context,
+            @NonNull CalendarDatabase database,
+            @NonNull CoreBackupManager backupManager
+    ) {
         this.mContext = context;
         this.mDatabase = database;
         this.mCoreBackupManager = backupManager;
-        //this.mCoreBackupManager = coreServiceProvider.getCoreBackupManager();
-        Log.i(TAG, "CalendarServiceProviderImpl created with ServiceProvider integration");
     }
 
     // ==================== INFRASTRUCTURE HELPERS ====================
@@ -183,11 +191,6 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     @NonNull
     private Context getContext() {
         return mContext;
-        // Access package-private method from ServiceProviderImpl
-//        if (mCoreServiceProvider instanceof ServiceProviderImpl) {
-//            return ((ServiceProviderImpl) mCoreServiceProvider).getContext();
-//        }
-//        throw new IllegalStateException("ServiceProvider must be ServiceProviderImpl for infrastructure access");
     }
 
     /**
@@ -196,11 +199,6 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     @NonNull
     private CalendarDatabase getDatabase() {
         return mDatabase;
-        // Access package-private method from ServiceProviderImpl
-//        if (mCoreServiceProvider instanceof ServiceProviderImpl) {
-//            return ((ServiceProviderImpl) mCoreServiceProvider).getDatabase();
-//        }
-//        throw new IllegalStateException("ServiceProvider must be ServiceProviderImpl for database access");
     }
 
     /**
@@ -211,7 +209,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         if (mLocaleManager == null) {
             synchronized (this) {
                 if (mLocaleManager == null) {
-                    mLocaleManager = new LocaleManager(getContext());
+                    mLocaleManager = new LocaleManager( getContext() );
                 }
             }
         }
@@ -226,7 +224,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         if (mDomainLocalizer == null) {
             synchronized (this) {
                 if (mDomainLocalizer == null) {
-                    mDomainLocalizer = new DomainLocalizerImpl(getContext(), getLocaleManager());
+                    mDomainLocalizer = new DomainLocalizerImpl( getContext(), getLocaleManager() );
                 }
             }
         }
@@ -239,10 +237,26 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     @NonNull
     private CoreBackupManager getCoreBackupManager() {
         return mCoreBackupManager;
-//        return mCoreServiceProvider.getCoreBackupManager();
     }
 
     // ==================== DOMAIN REPOSITORIES ====================
+
+    @Override
+    @NonNull
+    public QDueUserRepository getQDueUserRepository() {
+        if (mQDueUserRepository == null) {
+            synchronized (mQDueUserRepositoryLock) {
+                if (mQDueUserRepository == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating QDueUserRepository instance" );
+                    mQDueUserRepository = new QDueUserRepositoryImpl(
+                            getDatabase()
+                    );
+                }
+            }
+        }
+        return mQDueUserRepository;
+    }
 
     @Override
     @NonNull
@@ -251,7 +265,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mRecurrenceRepositoryLock) {
                 if (mRecurrenceRuleRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating RecurrenceRuleRepository instance");
+                    Log.d( TAG, "Creating RecurrenceRuleRepository instance" );
                     mRecurrenceRuleRepository = new RecurrenceRuleRepositoryImpl(
                             getContext(),
                             getDatabase(),
@@ -271,7 +285,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mShiftExceptionRepositoryLock) {
                 if (mShiftExceptionRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating ShiftExceptionRepository instance with i18n workflow support");
+                    Log.d( TAG, "Creating ShiftExceptionRepository instance" );
                     mShiftExceptionRepository = new ShiftExceptionRepositoryImpl(
                             getDatabase()
                             //getDomainLocalizer()
@@ -289,7 +303,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mTeamRepositoryLock) {
                 if (mTeamRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating TeamRepository instance with i18n team messaging");
+                    Log.d( TAG, "Creating TeamRepository instance" );
                     mTeamRepository = new TeamRepositoryImpl(
                             getContext(),
                             getDatabase(),
@@ -310,7 +324,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mShiftRepositoryLock) {
                 if (mShiftRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating ShiftRepository instance with i18n shift descriptions");
+                    Log.d( TAG, "Creating ShiftRepository instance" );
                     mShiftRepository = new ShiftRepositoryImpl(
                             getContext(),
                             getDatabase(),
@@ -331,7 +345,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mUserAssignmentRepositoryLock) {
                 if (mUserScheduleAssignmentRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating UserScheduleAssignmentRepository instance with i18n assignment messaging");
+                    Log.d( TAG, "Creating UserScheduleAssignmentRepository instance" );
                     mUserScheduleAssignmentRepository = new UserScheduleAssignmentRepositoryImpl(
                             getDatabase()
                             //getDomainLocalizer()
@@ -349,7 +363,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mWorkScheduleRepositoryLock) {
                 if (mWorkScheduleRepository == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating WorkScheduleRepository instance with CalendarServiceProvider DI");
+                    Log.d( TAG, "Creating WorkScheduleRepository instance" );
 
                     // WorkScheduleRepository uses this CalendarServiceProvider for all dependencies
                     mWorkScheduleRepository = new WorkScheduleRepositoryImpl(
@@ -362,6 +376,30 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         return mWorkScheduleRepository;
     }
 
+    /**
+     * Get UserTeamAssignmentRepository for user-team assignment management.
+     *
+     * @return UserTeamAssignmentRepository instance
+     */
+    @NonNull
+    @Override
+    public UserTeamAssignmentRepository getUserTeamAssignmentRepository() {
+        if (mUserTeamAssignmentRepository == null) {
+            synchronized (mUserTeamAssignmentRepositoryLock) {
+                if (mUserTeamAssignmentRepository == null) {
+                    Log.d( TAG, "Creating UserTeamAssignmentRepository instance" );
+
+                    UserTeamAssignmentDao assignmentDao = mDatabase.userTeamAssignmentDao();
+                    mUserTeamAssignmentRepository = new UserTeamAssignmentRepositoryImpl(
+                            mContext,
+                            assignmentDao
+                    );
+                }
+            }
+        }
+        return mUserTeamAssignmentRepository;
+    }
+
     // ==================== DOMAIN ENGINES ====================
 
     @Override
@@ -371,8 +409,8 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mRecurrenceCalculatorLock) {
                 if (mRecurrenceCalculator == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating RecurrenceCalculator instance with localization support");
-                    mRecurrenceCalculator = new RecurrenceCalculator(getDomainLocalizer());
+                    Log.d( TAG, "Creating RecurrenceCalculator instance with localization support" );
+                    mRecurrenceCalculator = new RecurrenceCalculator( getDomainLocalizer() );
                 }
             }
         }
@@ -386,8 +424,8 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mExceptionResolverLock) {
                 if (mExceptionResolver == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating ExceptionResolver instance with localization support");
-                    mExceptionResolver = new ExceptionResolver(getDomainLocalizer());
+                    Log.d( TAG, "Creating ExceptionResolver instance with localization support" );
+                    mExceptionResolver = new ExceptionResolver( getDomainLocalizer() );
                 }
             }
         }
@@ -401,7 +439,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mSchedulingEngineLock) {
                 if (mSchedulingEngine == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating SchedulingEngine instance with coordinated domain engines");
+                    Log.d( TAG, "Creating SchedulingEngine instance with coordinated domain engines" );
                     mSchedulingEngine = new SchedulingEngine(
                             getRecurrenceCalculator(),
                             getExceptionResolver(),
@@ -417,13 +455,34 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     @NonNull
     @Override
+    public UserTeamAssignmentUseCases getUserTeamAssignmentUseCases() {
+        if (mUserTeamAssignmentUseCases == null) {
+            synchronized (mUserTeamAssignmentUseCasesLock) {
+                if (mUserTeamAssignmentUseCases == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating UserTeamAssignmentUseCases instance" );
+                    mUserTeamAssignmentUseCases = new UserTeamAssignmentUseCases(
+                            getQDueUserRepository(),
+                            getUserTeamAssignmentRepository(),
+                            getTeamRepository()
+                    );
+                }
+            }
+        }
+        return mUserTeamAssignmentUseCases;
+    }
+
+    @NonNull
+    @Override
     public CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase() {
         if (mCreatePatternAssignmentUseCase == null) {
-            mCreatePatternAssignmentUseCase = new CreatePatternAssignmentUseCase(
-                    getTeamRepository(),
-                    getRecurrenceRuleRepository(),
-                    getUserScheduleAssignmentRepository()
-            );
+            synchronized (mCreatePatternAssignmentUseCaseLock) {
+                mCreatePatternAssignmentUseCase = new CreatePatternAssignmentUseCase(
+                        getTeamRepository(),
+                        getRecurrenceRuleRepository(),
+                        getUserScheduleAssignmentRepository()
+                );
+            }
         }
         return mCreatePatternAssignmentUseCase;
     }
@@ -435,7 +494,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mUserScheduleUseCaseLock) {
                 if (mGenerateUserScheduleUseCase == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating GenerateUserScheduleUseCase instance");
+                    Log.d( TAG, "Creating GenerateUserScheduleUseCase instance" );
                     mGenerateUserScheduleUseCase = new GenerateUserScheduleUseCase(
                             getWorkScheduleRepository()
                     );
@@ -452,7 +511,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mTeamScheduleUseCaseLock) {
                 if (mGenerateTeamScheduleUseCase == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating GenerateTeamScheduleUseCase instance");
+                    Log.d( TAG, "Creating GenerateTeamScheduleUseCase instance" );
                     mGenerateTeamScheduleUseCase = new GenerateTeamScheduleUseCase(
                             getWorkScheduleRepository()
                     );
@@ -469,7 +528,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mShiftExceptionsUseCaseLock) {
                 if (mApplyShiftExceptionsUseCase == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating ApplyShiftExceptionsUseCase instance");
+                    Log.d( TAG, "Creating ApplyShiftExceptionsUseCase instance" );
                     mApplyShiftExceptionsUseCase = new ApplyShiftExceptionsUseCase(
                             getWorkScheduleRepository()
                     );
@@ -486,7 +545,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             synchronized (mScheduleStatsUseCaseLock) {
                 if (mGetScheduleStatsUseCase == null) {
                     ensureInitialized();
-                    Log.d(TAG, "Creating GetScheduleStatsUseCase instance");
+                    Log.d( TAG, "Creating GetScheduleStatsUseCase instance" );
                     mGetScheduleStatsUseCase = new GetScheduleStatsUseCase(
                             getWorkScheduleRepository()
                     );
@@ -496,19 +555,176 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         return mGetScheduleStatsUseCase;
     }
 
-    @Override
+//    @Override
+//    @NonNull
+//    public UseCaseFactory getUseCaseFactory() {
+//        if (mUseCaseFactory == null) {
+//            synchronized (mUseCaseFactoryLock) {
+//                if (mUseCaseFactory == null) {
+//                    ensureInitialized();
+//                    Log.d( TAG, "Creating UseCaseFactory instance with all use cases" );
+//                    mUseCaseFactory = new UseCaseFactory( getWorkScheduleRepository() );
+//                }
+//            }
+//        }
+//        return mUseCaseFactory;
+//    }
+//
+//    /**
+//     * Get ManageUserTeamAssignmentsUseCase for assignment creation/management.
+//     *
+//     * @return ManageUserTeamAssignmentsUseCase instance
+//     */
+//    @NonNull
+//    @Override
+//    public ManageUserTeamAssignmentsUseCase getManageUserTeamAssignmentsUseCase() {
+//        if (mManageUserTeamAssignmentsUseCase == null) {
+//            synchronized (mManageUserTeamAssignmentsUseCaseLock) {
+//                if (mManageUserTeamAssignmentsUseCase == null) {
+//                    Log.d( TAG, "Creating ManageUserTeamAssignmentsUseCase instance" );
+//
+//                    mManageUserTeamAssignmentsUseCase = new ManageUserTeamAssignmentsUseCase(
+//                            getUserTeamAssignmentRepository(),
+//                            getQDueUserRepository(), // Assuming this exists
+//                            getTeamRepository()  // Assuming this exists
+//                    );
+//                }
+//            }
+//        }
+//        return mManageUserTeamAssignmentsUseCase;
+//    }
+//
+//    /**
+//     * Get GetTeamMembersUseCase for team member queries.
+//     *
+//     * @return GetTeamMembersUseCase instance
+//     */
+//    @NonNull
+//    @Override
+//    public GetTeamMembersUseCase getGetTeamMembersUseCase() {
+//        if (mGetTeamMembersUseCase == null) {
+//            synchronized (mGetTeamMembersUseCaseLock) {
+//                if (mGetTeamMembersUseCase == null) {
+//                    Log.d( TAG, "Creating GetTeamMembersUseCase instance" );
+//
+//                    mGetTeamMembersUseCase = new GetTeamMembersUseCase(
+//                            getUserTeamAssignmentRepository(),
+//                            getQDueUserRepository(),
+//                            getTeamRepository()
+//                    );
+//                }
+//            }
+//        }
+//        return mGetTeamMembersUseCase;
+//    }
+//
+//    /**
+//     * Get ValidateAssignmentUseCase for assignment validation.
+//     *
+//     * @return ValidateAssignmentUseCase instance
+//     */
+//    @NonNull
+//    @Override
+//    public ValidateAssignmentUseCase getValidateAssignmentUseCase() {
+//        if (mValidateAssignmentUseCase == null) {
+//            synchronized (mValidateAssignmentUseCaseLock) {
+//                if (mValidateAssignmentUseCase == null) {
+//                    Log.d( TAG, "Creating ValidateAssignmentUseCase instance" );
+//
+//                    mValidateAssignmentUseCase = new ValidateAssignmentUseCase(
+//                            getUserTeamAssignmentRepository()
+//                    );
+//                }
+//            }
+//        }
+//        return mValidateAssignmentUseCase;
+//    }
+
+    // ==================== USE CASE PROVIDERS ====================
+
+    /**
+     * Get GenerateUserScheduleUseCase for individual user schedule operations.
+     *
+     * <p>Provides comprehensive user schedule generation with recurrence rules,
+     * exception handling, team assignments, and business rule validation.</p>
+     *
+     * @return GenerateUserScheduleUseCase instance (cached)
+     */
     @NonNull
-    public UseCaseFactory getUseCaseFactory() {
-        if (mUseCaseFactory == null) {
-            synchronized (mUseCaseFactoryLock) {
-                if (mUseCaseFactory == null) {
-                    ensureInitialized();
-                    Log.d(TAG, "Creating UseCaseFactory instance with all use cases");
-                    mUseCaseFactory = new UseCaseFactory(getWorkScheduleRepository());
+    public GenerateUserScheduleUseCase getUserScheduleUseCase() {
+        if (mGenerateUserScheduleUseCase == null) {
+            synchronized (mUserScheduleUseCaseLock) {
+                if (mGenerateUserScheduleUseCase == null) {
+                    mGenerateUserScheduleUseCase = new GenerateUserScheduleUseCase( getWorkScheduleRepository() );
+                    Log.d( TAG, "Created GenerateUserScheduleUseCase instance" );
                 }
             }
         }
-        return mUseCaseFactory;
+        return mGenerateUserScheduleUseCase;
+    }
+
+    /**
+     * Get GenerateTeamScheduleUseCase for team coordination operations.
+     *
+     * <p>Provides team-wide schedule generation with coverage analysis,
+     * resource optimization, conflict detection, and multi-team coordination.</p>
+     *
+     * @return GenerateTeamScheduleUseCase instance (cached)
+     */
+    @NonNull
+    public GenerateTeamScheduleUseCase getTeamScheduleUseCase() {
+        if (mGenerateTeamScheduleUseCase == null) {
+            synchronized (mTeamScheduleUseCaseLock) {
+                if (mGenerateTeamScheduleUseCase == null) {
+                    mGenerateTeamScheduleUseCase = new GenerateTeamScheduleUseCase( getWorkScheduleRepository() );
+                    Log.d( TAG, "Created GenerateTeamScheduleUseCase instance" );
+                }
+            }
+        }
+        return mGenerateTeamScheduleUseCase;
+    }
+
+    /**
+     * Get ApplyShiftExceptionsUseCase for exception handling workflow.
+     *
+     * <p>Provides comprehensive shift exception processing with approval
+     * workflows, conflict resolution, and business rule validation.</p>
+     *
+     * @return ApplyShiftExceptionsUseCase instance (cached)
+     */
+    @NonNull
+    public ApplyShiftExceptionsUseCase getShiftExceptionsUseCase() {
+        if (mApplyShiftExceptionsUseCase == null) {
+            synchronized (mShiftExceptionsUseCaseLock) {
+                if (mApplyShiftExceptionsUseCase == null) {
+                    mApplyShiftExceptionsUseCase = new ApplyShiftExceptionsUseCase( getWorkScheduleRepository() );
+                    Log.d( TAG, "Created ApplyShiftExceptionsUseCase instance" );
+                }
+            }
+        }
+        return mApplyShiftExceptionsUseCase;
+    }
+
+    /**
+     * Get GetScheduleStatsUseCase for analytics and reporting.
+     *
+     * <p>Provides comprehensive schedule analytics, statistics generation,
+     * validation capabilities, and reporting for management and planning.</p>
+     *
+     * @return GetScheduleStatsUseCase instance (cached)
+     */
+    @NonNull
+    @Override
+    public GetScheduleStatsUseCase getScheduleStatsUseCase() {
+        if (mGetScheduleStatsUseCase == null) {
+            synchronized (mScheduleStatsUseCaseLock) {
+                if (mGetScheduleStatsUseCase == null) {
+                    mGetScheduleStatsUseCase = new GetScheduleStatsUseCase( getWorkScheduleRepository() );
+                    Log.d( TAG, "Created GetScheduleStatsUseCase instance" );
+                }
+            }
+        }
+        return mGetScheduleStatsUseCase;
     }
 
     // ==================== LIFECYCLE MANAGEMENT ====================
@@ -517,60 +733,50 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     public void initializeCalendarServices() {
         synchronized (mInitializationLock) {
             if (mCalendarServicesInitialized) {
-                Log.d(TAG, "Calendar services already initialized");
+                Log.d( TAG, "Calendar services already initialized" );
                 return;
             }
 
-            Log.i(TAG, "Initializing calendar services...");
+            Log.d( TAG, "Initializing calendar services..." );
             long startTime = System.currentTimeMillis();
 
             try {
-                // Verify infrastructure is available
-                if (mDatabase == null) {
-                    throw new RuntimeException("Database not available in CalendarServiceProvider");
-                }
-
-                if (mContext == null) {
-                    throw new RuntimeException("Context not available in CalendarServiceProvider");
-                }
-
-                if (mCoreBackupManager == null) {
-                    throw new RuntimeException("CoreBackupManager not available in CalendarServiceProvider");
-                }
-
                 // Mark as initialized
                 mCalendarServicesInitialized = true;
                 mInitializationTime = System.currentTimeMillis() - startTime;
 
-                Log.i(TAG, "Calendar services initialized successfully in " + mInitializationTime + "ms");
-
+                Log.i( TAG, "Calendar services initialized successfully (" + mInitializationTime + "ms)" );
             } catch (Exception e) {
-                Log.e(TAG, "Failed to initialize calendar services", e);
+                Log.e( TAG, "Failed to initialize calendar services", e );
                 mCalendarServicesInitialized = false;
-                throw new RuntimeException("Calendar service initialization failed", e);
+                throw new RuntimeException( "Calendar services initialization failed", e );
             }
         }
     }
 
     @Override
     public boolean areCalendarServicesReady() {
-        return mCalendarServicesInitialized && !mCalendarServicesShutdown &&
-                mDatabase != null && mContext != null && mCoreBackupManager != null;
+        return
+                mCalendarServicesInitialized &&
+                !mCalendarServicesShutdown;
     }
 
     @Override
     public void shutdownCalendarServices() {
         synchronized (mInitializationLock) {
             if (mCalendarServicesShutdown) {
-                Log.d(TAG, "Calendar services already shutdown");
+                Log.w( TAG, "Calendar services already shutdown" );
                 return;
             }
 
-            Log.i(TAG, "Shutting down calendar services...");
+            Log.i( TAG, "Shutting down calendar services..." );
 
             try {
+                // ManageUserTeamAssignmentUseCase
+                if (mUserTeamAssignmentUseCases != null)
+                    mUserTeamAssignmentUseCases.shutdown();
+
                 // Shutdown use cases
-                mUseCaseFactory = null;
                 mGetScheduleStatsUseCase = null;
                 mApplyShiftExceptionsUseCase = null;
                 mGenerateTeamScheduleUseCase = null;
@@ -581,11 +787,25 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
                 mExceptionResolver = null;
                 mRecurrenceCalculator = null;
 
-                // Shutdown repositories
+                // Shutdown WorkScheduleRepository
                 if (mWorkScheduleRepository != null && mWorkScheduleRepository instanceof WorkScheduleRepositoryImpl) {
                     ((WorkScheduleRepositoryImpl) mWorkScheduleRepository).cleanup();
                 }
+
+                // Cleanup UserTeamAssignmentRepository
+                if (mUserTeamAssignmentRepository != null && mUserTeamAssignmentRepository instanceof UserTeamAssignmentRepositoryImpl) {
+                    ((UserTeamAssignmentRepositoryImpl) mUserTeamAssignmentRepository).shutdown();
+                }
+
+                // QDueUser repository
+                if (mQDueUserRepository != null && mQDueUserRepository instanceof QDueUserRepositoryImpl) {
+                    ((QDueUserRepositoryImpl) mQDueUserRepository).shutdown();
+                }
+
+                // Shutdown repositories
                 mWorkScheduleRepository = null;
+                mUserTeamAssignmentRepository = null;
+                mQDueUserRepository = null;
                 mUserScheduleAssignmentRepository = null;
                 mShiftRepository = null;
                 mTeamRepository = null;
@@ -597,10 +817,9 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
                 mLocaleManager = null;
 
                 mCalendarServicesShutdown = true;
-                Log.i(TAG, "Calendar services shutdown completed");
-
+                Log.i( TAG, "Calendar services shutdown completed" );
             } catch (Exception e) {
-                Log.e(TAG, "Error during calendar service shutdown", e);
+                Log.e( TAG, "Error during calendar service shutdown", e );
             }
         }
     }
@@ -617,7 +836,8 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
                 countActiveRepositories(),
                 countActiveEngines(),
                 countActiveUseCases(),
-                mCalendarServicesInitialized ? "Calendar services ready with ServiceProvider integration" :
+                mCalendarServicesInitialized ?
+                        "Calendar services ready with ServiceProvider integration" :
                         "Calendar services not initialized"
         );
     }
@@ -638,12 +858,14 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
      */
     private int countActiveRepositories() {
         int count = 0;
+        if (mQDueUserRepository != null) count++;
         if (mRecurrenceRuleRepository != null) count++;
         if (mShiftExceptionRepository != null) count++;
         if (mTeamRepository != null) count++;
         if (mShiftRepository != null) count++;
         if (mUserScheduleAssignmentRepository != null) count++;
         if (mWorkScheduleRepository != null) count++;
+        if (mUserTeamAssignmentRepository != null) count++;
         return count;
     }
 
@@ -663,23 +885,12 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
      */
     private int countActiveUseCases() {
         int count = 0;
+        if (mUserTeamAssignmentUseCases != null) count++;
+        if (mCreatePatternAssignmentUseCase != null) count++;
         if (mGenerateUserScheduleUseCase != null) count++;
         if (mGenerateTeamScheduleUseCase != null) count++;
         if (mApplyShiftExceptionsUseCase != null) count++;
         if (mGetScheduleStatsUseCase != null) count++;
-        if (mUseCaseFactory != null) count++;
         return count;
-    }
-
-    /**
-     * Reset singleton instance (for testing purposes).
-     */
-    public static void resetInstance() {
-        synchronized (INSTANCE_LOCK) {
-            if (INSTANCE != null) {
-                INSTANCE.shutdownCalendarServices();
-                INSTANCE = null;
-            }
-        }
     }
 }

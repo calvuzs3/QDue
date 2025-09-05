@@ -277,7 +277,7 @@ public class SmartShiftsRepository {
                 exportData.shiftTypes = getAllShiftTypes();
                 exportData.shiftPatterns = getAllShiftPatterns();
                 exportData.userAssignments = getAllUserAssignments();
-                // Note: Team contacts require userId, so not included in bulk export
+                // Note: Team contacts require userID, so not included in bulk export
                 return exportData;
             } catch (Exception e) {
                 Log.e(TAG, "Error getting all data for export", e);

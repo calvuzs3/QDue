@@ -7,7 +7,6 @@ import android.os.Build;
 
 import com.google.android.material.color.DynamicColors;
 
-import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlerFactory;
 import net.calvuz.qdue.ui.core.architecture.di.BackHandlingModule;
@@ -65,25 +64,6 @@ public class QDue extends Application {
         // Locale
         locale = new Locale( Locale.US.getLanguage() ); //getSystemLocale();
         Log.d( TAG, "=== SystemLocale initialized" );
-
-        // Enable Material You Dynamic Colors (Android 12+)
-//        enableDynamicColors();
-//        Log.d( TAG, "=== DynamicColors initialized" );
-
-        // Initialize unified database
-        QDueDatabase.getInstance( this );
-        Log.d( TAG, "=== QDueDatabase initialized" );
-
-        // Initialize QuattroDue
-//        quattrodue = QuattroDue.getInstance( this );
-//        Log.d( TAG, "=== QuattroDue initialized" );
-
-        // 🆕 Initialize back handling services early
-//        BackHandlingModule.initialize( this );
-//        Log.d( TAG, "=== BackHandling services initialized" );
-
-        // ✅ AGGIUNTO: Initialize SmartShifts database
-        //initializeSmartShifts();
     }
 
     /**
@@ -138,58 +118,13 @@ public class QDue extends Application {
         return quattrodue;
     }
 
-    /// ////////////////////////// SMARTSHIFTS STARTS HERE //////////////////////////////////
-
-    /**
-     * Initialize SmartShifts components
-     * Runs in background to avoid blocking UI
-     */
-//    private void initializeSmartShifts() {
-//        SmartShiftsDatabase.databaseWriteExecutor.execute( () -> {
-//            try {
-//                SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase( this );
-//                DatabaseInitializer.initializeWithLocalizedStrings( database, this );
-//                android.util.Log.d( TAG, "=== SmartShifts database initialized successfully" );
-//            } catch (Exception e) {
-//                Log.e( TAG, "Error initializing SmartShifts database", e );
-//            }
-//        } );
-//    }
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
-
-        // === EXISTING QDUE CLEANUP ===
-        // (Mantieni tutto il cleanup QDue esistente qui)
-
-        // === SMARTSHIFTS CLEANUP ===
-//        try {
-//            SmartShiftsDatabase.closeDatabase();
-//            android.util.Log.d( TAG, "=== SmartShifts resources cleaned up" );
-//        } catch (Exception e) {
-//            android.util.Log.e( TAG, "Error cleaning up SmartShifts resources", e );
-//        }
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-
-//        // Cleanup SmartShifts cache in low memory situations
-//        try {
-//            SmartShiftsDatabase database = SmartShiftsDatabase.getDatabase( this );
-//            // Could add cache clearing logic here if needed
-//        } catch (Exception e) {
-//            Log.w( TAG, "Could not clear SmartShifts cache", e );
-//        }
-    }
-
-    /// ////////////////////////// SMARTSHIFTS ENDS HERE //////////////////////////////////
-
     /**
      * Settings - app wide
      */
     public static class Settings {
+
+        // Features
+        public static final boolean FEATURE_CONTACT_ADMIN = false;
 
         // Animation constants
         public static final long QD_WELCOME_LOGO_ANIMATION_DURATION = 1500; // 3 seconds
@@ -230,6 +165,20 @@ public class QDue extends Application {
         public static final String VIEW_MODE_CALENDAR = ViewMode.CALENDAR.getName();
         public static final String VIEW_MODE_DAYSLIST = ViewMode.DAYS.getName();
         public static final String VIEW_MODE_SWIPE_CALENDAR = ViewMode.SWIPE_CALENDAR.getName();
+    }
+
+    public static class Defaults {
+
+        public static final String DEFAULT_QD_RRULE_ID = "quattrodue_default";
+        public static final String DEFAULT_QD_RRULE_NAME = "QuattroDue Default";
+        public static final String DEFAULT_QD_RRULE_DESCRIPTION = "QuattroDue Default Recurrence Rule";
+        public static final String DEFAULT_WEEKDAYS_RRULE_ID = "weekdays_only_default";
+        public static final String DEFAULT_WEEKDAYS_RRULE_NAME = "Weekdays Default";
+        public static final String DEFAULT_WEEKDAYS_RRULE_DESCRIPTION = "Weekdays Only Recurrence Rule";
+        public static final String DEFAULT_DAILY_RULE_ID = "daily_pattern_default";
+        public static final String DEFAULT_DAILY_RULE_NAME = "Daily Pattern Default";
+        public static final String DEFAULT_DAILY_RULE_DESCRIPTION = "Daily Pattern Recurrence Rule";
+
     }
 
     public static final class Debug {

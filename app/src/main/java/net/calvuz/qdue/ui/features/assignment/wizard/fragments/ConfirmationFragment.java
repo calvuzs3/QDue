@@ -250,7 +250,7 @@ public class ConfirmationFragment extends Fragment {
 
         Log.d(TAG, "Checking for existing assignments");
 
-        Long userId = mWizardInterface.getWizardData().getUserId();
+        String userId = mWizardInterface.getWizardData().getUserId();
         if (userId == null) return;
 
         mWizardInterface.getAssignmentUseCase()

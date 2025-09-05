@@ -894,7 +894,7 @@ public class EventsServiceImpl implements EventsService {
                         .filter(event -> "true".equals(event.getCustomProperty("quick_event")))
                         .filter(event -> userId == null ||
                                 userId.toString().equals(event.getCustomProperty("creator_user_id")))
-                        //.filter(event -> userId == null || userId.equals(event.getUserId()))
+                        //.filter(event -> userID == null || userID.equals(event.getUserId()))
                         .collect(java.util.stream.Collectors.toList());
 
                 Map<ToolbarAction, Integer> eventsByAction = quickEvents.stream()
@@ -950,7 +950,7 @@ public class EventsServiceImpl implements EventsService {
                         .stream()
                         .filter(event -> "true".equals(event.getCustomProperty("quick_event")))
                         // TODO: getUserId() ?
-                        //.filter(event -> userId == null || userId.equals(event.getUserId()))
+                        //.filter(event -> userID == null || userID.equals(event.getUserId()))
                         .collect(java.util.stream.Collectors.toList());
 
                 Map<ToolbarAction, Integer> actionCounts = quickEvents.stream()

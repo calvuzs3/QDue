@@ -1,12 +1,14 @@
-package net.calvuz.qdue.data.qdueuser.repositories;
+package net.calvuz.qdue.data.repositories;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.core.db.CalendarDatabase;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.data.qdueuser.dao.QDueUserDao;
-import net.calvuz.qdue.data.qdueuser.entities.QDueUserEntity;
+import net.calvuz.qdue.data.dao.QDueUserDao;
+import net.calvuz.qdue.data.entities.QDueUserEntity;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
+import net.calvuz.qdue.domain.qdueuser.usecases.QDueUserUseCases;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.util.List;
@@ -55,373 +57,324 @@ public class QDueUserRepositoryImpl implements QDueUserRepository {
     /**
      * Constructor for dependency injection.
      *
-     * @param qDueUserDao DAO for database operations
+     * @param database for QDueUserDao access
      */
-    public QDueUserRepositoryImpl(@NonNull QDueUserDao qDueUserDao) {
-        this.mQDueUserDao = qDueUserDao;
-        this.mExecutorService = Executors.newFixedThreadPool(3);
-        Log.d(TAG, "QDueUserRepositoryImpl initialized with DAO dependency");
+    public QDueUserRepositoryImpl(@NonNull CalendarDatabase database) {
+        this.mQDueUserDao = database.qDueUserDao();
+        this.mExecutorService = Executors.newSingleThreadExecutor();
+
+        // Initialize standard recurrence rules if needed
+//        initializeDefaultUserIfNeeded();
+
+        Log.d( TAG, "QDueUserRepositoryImpl initialized" );
+    }
+
+    // ==================== INITIALIZATION ====================
+
+    // Doesn't work, this cause an IllegalStateException to to the work on the main thread
+    // Let the CalendarDatabase populate the default user
+    private void initializeDefaultUserIfNeeded() {
+        QDueUserEntity existingUser  = mQDueUserDao.getPrimaryUser();
+
+        if (existingUser != null) {
+            return;
+        }
+
+        QDueUserUseCases useCase = new QDueUserUseCases( this );
+        OperationResult<QDueUser> defaultUserCreation = useCase.getCreateUserUseCase().execute(null, null).join();
+
+        if ( defaultUserCreation.isSuccess() ) {
+            Log.d(TAG, "Default User created: " + defaultUserCreation.getData().getDisplayName() );
+        } else {
+            Log.e(TAG, "Failed to create default User" );
+        }
     }
 
     // ==================== CRUD OPERATIONS ====================
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> createUser(@NonNull QDueUser qDueUser) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Creating QDueUser: " + qDueUser );
+                Log.d( TAG, "Creating QDueUser: " + qDueUser );
 
                 // Convert domain model to entity
-                QDueUserEntity entity = QDueUserEntity.fromDomainModel(qDueUser);
+                QDueUserEntity entity = QDueUserEntity.fromDomainModel( qDueUser );
 
-                // Insert entity and get generated ID
-                long generatedId = mQDueUserDao.insertUser(entity);
+                long result = mQDueUserDao.insertUser( entity );
 
-                if (generatedId > 0) {
-                    // Create domain model with generated ID
-                    QDueUser createdUser = new QDueUser(generatedId, qDueUser.getNickname(), qDueUser.getEmail());
-
-                    Log.d(TAG, "✅ Successfully created QDueUser with ID: " + generatedId);
+                if (result == 1 ) {
                     return OperationResult.success(
-                            createdUser,
-                            "User created successfully with ID: " + generatedId,
+                            entity.toDomainModel(),
+                            "User created successfully with ID: " + entity.toDomainModel().getId(),
                             OperationResult.OperationType.CREATE
                     );
                 } else {
-                    Log.e(TAG, "❌ Failed to create QDueUser - no ID generated");
+                    Log.w( TAG, "⚠️ Failed to create QDueUser" );
                     return OperationResult.failure(
-                            "Failed to create user - no ID generated",
+                            "Failed to create user",
                             OperationResult.OperationType.CREATE
                     );
                 }
 
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception creating QDueUser", e);
+                Log.e( TAG, "❌ Exception creating QDueUser", e );
                 return OperationResult.failure(
-                        "Database error creating user: " + e.getMessage(),
+                        "Database error creating user: " + qDueUser.getDisplayName(),
                         OperationResult.OperationType.CREATE
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
-    public CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull String userId) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting QDueUser by ID: " + userId);
+                Log.d( TAG, "Getting QDueUser by ID: " + userId );
 
-                QDueUserEntity entity = mQDueUserDao.getUserById(userId);
+                QDueUserEntity entity = mQDueUserDao.getUserById( userId );
 
                 if (entity != null) {
                     QDueUser user = entity.toDomainModel();
-                    Log.d(TAG, "✅ Found QDueUser: " + user.getDisplayName());
-                    return OperationResult.success(user, OperationResult.OperationType.READ);
+                    return OperationResult.success( user, OperationResult.OperationType.READ );
                 } else {
-                    Log.w(TAG, "⚠️ QDueUser not found with ID: " + userId);
+                    Log.w( TAG, "⚠️ QDueUser not found with ID: " + userId );
                     return OperationResult.failure(
                             "User not found with ID: " + userId,
                             OperationResult.OperationType.READ
                     );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting QDueUser by ID: " + userId, e);
+                Log.e( TAG, "❌ Exception getting QDueUser by ID: " + userId, e );
                 return OperationResult.failure(
                         "Database error retrieving user: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull QDueUser qDueUser) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                if (qDueUser.getId() == null) {
-                    return OperationResult.failure(
-                            "Cannot update user without ID",
-                            OperationResult.OperationType.UPDATE
-                    );
-                }
-
-                Log.d(TAG, "Updating QDueUser ID: " + qDueUser.getId());
+                Log.d( TAG, "Updating QDueUser ID: " + qDueUser.getId() );
 
                 // Convert domain model to entity
-                QDueUserEntity entity = QDueUserEntity.fromDomainModel(qDueUser);
+                QDueUserEntity entity = QDueUserEntity.fromDomainModel( qDueUser );
 
                 // Update entity
-                int rowsUpdated = mQDueUserDao.updateUser(entity);
+                int rowsUpdated = mQDueUserDao.updateUser( entity );
 
                 if (rowsUpdated > 0) {
-                    Log.d(TAG, "✅ Successfully updated QDueUser ID: " + qDueUser.getId());
                     return OperationResult.success(
                             qDueUser,
                             "User updated successfully",
                             OperationResult.OperationType.UPDATE
                     );
                 } else {
-                    Log.w(TAG, "⚠️ No rows updated for QDueUser ID: " + qDueUser.getId());
+                    Log.w( TAG, "⚠️ No rows updated for QDueUser ID: " + qDueUser.getId() );
                     return OperationResult.failure(
                             "User not found or no changes made: ID " + qDueUser.getId(),
                             OperationResult.OperationType.UPDATE
                     );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception updating QDueUser", e);
+                Log.e( TAG, "❌ Exception updating QDueUser", e );
                 return OperationResult.failure(
                         "Database error updating user: " + e.getMessage(),
                         OperationResult.OperationType.UPDATE
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
-    public CompletableFuture<OperationResult<String>> deleteUser(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<OperationResult<String>> deleteUser(@NonNull QDueUser user) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Deleting QDueUser ID: " + userId);
+                Log.d( TAG, "Deleting QDueUser ID: " + user.getId() );
 
-                int rowsDeleted = mQDueUserDao.deleteUserById(userId);
+                int rowsDeleted = mQDueUserDao.deleteUserById( user.getId() );
 
                 if (rowsDeleted > 0) {
-                    Log.d(TAG, "✅ Successfully deleted QDueUser ID: " + userId);
                     return OperationResult.success(
                             "User deleted successfully",
                             OperationResult.OperationType.DELETE
                     );
                 } else {
-                    Log.w(TAG, "⚠️ No user found to delete with ID: " + userId);
+                    Log.w( TAG, "⚠️ No user found to delete with ID: " + user.getId() );
                     return OperationResult.failure(
-                            "User not found with ID: " + userId,
+                            "User not found with ID: " + user.getId(),
                             OperationResult.OperationType.DELETE
                     );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception deleting QDueUser ID: " + userId, e);
+                Log.e( TAG, "Exception deleting QDueUser ID: " + user.getId(), e );
                 return OperationResult.failure(
                         "Database error deleting user: " + e.getMessage(),
                         OperationResult.OperationType.DELETE
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     public CompletableFuture<OperationResult<Integer>> deleteAllUsers() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Deleting all QDueUsers");
+                Log.d( TAG, "Deleting all QDueUsers" );
 
                 int rowsDeleted = mQDueUserDao.deleteAllUsers();
 
-                Log.d(TAG, "✅ Deleted " + rowsDeleted + " QDueUsers");
                 return OperationResult.success(
                         rowsDeleted,
                         "Deleted " + rowsDeleted + " users",
                         OperationResult.OperationType.DELETE
                 );
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception deleting all QDueUsers", e);
+                Log.e( TAG, "❌ Exception deleting all QDueUsers", e );
                 return OperationResult.failure(
                         "Database error deleting all users: " + e.getMessage(),
                         OperationResult.OperationType.DELETE
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== BUSINESS QUERIES ====================
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> getUserByEmail(@NonNull String email) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting QDueUser by email: " + email);
+                Log.d( TAG, "Getting QDueUser by email: " + email );
 
-                QDueUserEntity entity = mQDueUserDao.getUserByEmail(email);
+                QDueUserEntity entity = mQDueUserDao.getUserByEmail( email );
 
                 if (entity != null) {
                     QDueUser user = entity.toDomainModel();
-                    Log.d(TAG, "✅ Found QDueUser by email: " + user.getDisplayName());
-                    return OperationResult.success(user, OperationResult.OperationType.READ);
+                    return OperationResult.success( user, OperationResult.OperationType.READ );
                 } else {
-                    Log.w(TAG, "⚠️ QDueUser not found with email: " + email);
+                    Log.w( TAG, "⚠️ QDueUser not found with email: " + email );
                     return OperationResult.failure(
                             "User not found with email: " + email,
                             OperationResult.OperationType.READ
                     );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting QDueUser by email: " + email, e);
+                Log.e( TAG, "❌ Exception getting QDueUser by email: " + email, e );
                 return OperationResult.failure(
                         "Database error retrieving user by email: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     public CompletableFuture<OperationResult<List<QDueUser>>> getAllUsers() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting all QDueUsers");
+                Log.d( TAG, "Getting all QDueUsers" );
 
                 List<QDueUserEntity> entities = mQDueUserDao.getAllUsers();
                 List<QDueUser> users = entities.stream()
-                        .map(QDueUserEntity::toDomainModel)
-                        .collect(Collectors.toList());
+                        .map( QDueUserEntity::toDomainModel )
+                        .collect( Collectors.toList() );
 
-                Log.d(TAG, "✅ Retrieved " + users.size() + " QDueUsers");
-                return OperationResult.success(users, OperationResult.OperationType.READ);
-
+                return OperationResult.success( users, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting all QDueUsers", e);
+                Log.e( TAG, "❌ Exception getting all QDueUsers", e );
                 return OperationResult.failure(
-                        "Database error retrieving all users: " + e.getMessage(),
+                        "Database error retrieving all users",
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     public CompletableFuture<OperationResult<QDueUser>> getPrimaryUser() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG, "Getting primary QDueUser");
+                Log.d( TAG, "Getting primary QDueUser" );
 
                 QDueUserEntity entity = mQDueUserDao.getPrimaryUser();
 
                 if (entity != null) {
                     QDueUser user = entity.toDomainModel();
-                    Log.d(TAG, "✅ Found primary QDueUser: " + user.getDisplayName());
-                    return OperationResult.success(user, OperationResult.OperationType.READ);
+                    return OperationResult.success( user, OperationResult.OperationType.READ );
                 } else {
-                    Log.w(TAG, "⚠️ No primary QDueUser found");
+                    Log.w( TAG, "⚠️ No primary QDueUser found" );
                     return OperationResult.failure(
                             "No primary user found",
                             OperationResult.OperationType.READ
                     );
                 }
-
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting primary QDueUser", e);
+                Log.e( TAG, "❌ Exception getting primary QDueUser", e );
                 return OperationResult.failure(
                         "Database error retrieving primary user: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== EXISTENCE CHECKS ====================
 
     @Override
-    public CompletableFuture<OperationResult<Boolean>> userExists(@NonNull Long userId) {
-        return CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<OperationResult<Boolean>> userExists(@NonNull String userId) {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                int count = mQDueUserDao.getUserCountById(userId);
+                int count = mQDueUserDao.getUserCountById( userId );
                 boolean exists = count > 0;
-                Log.d(TAG, "User exists check for ID " + userId + ": " + exists);
-                return OperationResult.success(exists, OperationResult.OperationType.READ);
-
+                return OperationResult.success( exists, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception checking user existence for ID: " + userId, e);
+                Log.e( TAG, "❌ Exception checking user existence for ID: " + userId, e );
                 return OperationResult.failure(
                         "Database error checking user existence: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     @Override
     public CompletableFuture<OperationResult<Boolean>> userExistsByEmail(@NonNull String email) {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                int count = mQDueUserDao.getUserCountByEmail(email);
+                int count = mQDueUserDao.getUserCountByEmail( email );
                 boolean exists = count > 0;
-                Log.d(TAG, "User exists check for email " + email + ": " + exists);
-                return OperationResult.success(exists, OperationResult.OperationType.READ);
-
+                return OperationResult.success( exists, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception checking user existence for email: " + email, e);
+                Log.e( TAG, "❌ Exception checking user existence for email: " + email, e );
                 return OperationResult.failure(
                         "Database error checking user existence by email: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== STATISTICS ====================
 
     @Override
     public CompletableFuture<OperationResult<Integer>> getUsersCount() {
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
                 int count = mQDueUserDao.getTotalUsersCount();
-                Log.d(TAG, "Total users count: " + count);
-                return OperationResult.success(count, OperationResult.OperationType.READ);
-
+                return OperationResult.success( count, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting users count", e);
+                Log.e( TAG, "❌ Exception getting users count", e );
                 return OperationResult.failure(
                         "Database error getting users count: " + e.getMessage(),
                         OperationResult.OperationType.READ
                 );
             }
-        }, mExecutorService);
-    }
-
-    @Override
-    public CompletableFuture<OperationResult<Integer>> getCompleteProfilesCount() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                int count = mQDueUserDao.getCompleteProfilesCount();
-                Log.d(TAG, "Complete profiles count: " + count);
-                return OperationResult.success(count, OperationResult.OperationType.READ);
-
-            } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting complete profiles count", e);
-                return OperationResult.failure(
-                        "Database error getting complete profiles count: " + e.getMessage(),
-                        OperationResult.OperationType.READ
-                );
-            }
-        }, mExecutorService);
-    }
-
-    @Override
-    public CompletableFuture<OperationResult<List<QDueUser>>> getIncompleteProfiles() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting incomplete profiles");
-
-                List<QDueUserEntity> entities = mQDueUserDao.getIncompleteProfiles();
-                List<QDueUser> users = entities.stream()
-                        .map(QDueUserEntity::toDomainModel)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "✅ Retrieved " + users.size() + " incomplete profiles");
-                return OperationResult.success(users, OperationResult.OperationType.READ);
-
-            } catch (Exception e) {
-                Log.e(TAG, "❌ Exception getting incomplete profiles", e);
-                return OperationResult.failure(
-                        "Database error retrieving incomplete profiles: " + e.getMessage(),
-                        OperationResult.OperationType.READ
-                );
-            }
-        }, mExecutorService);
+        }, mExecutorService );
     }
 
     // ==================== CLEANUP ====================
@@ -433,7 +386,7 @@ public class QDueUserRepositoryImpl implements QDueUserRepository {
     public void shutdown() {
         if (mExecutorService != null && !mExecutorService.isShutdown()) {
             mExecutorService.shutdown();
-            Log.d(TAG, "ExecutorService shutdown completed");
+            Log.d( TAG, "ExecutorService shutdown completed" );
         }
     }
 }

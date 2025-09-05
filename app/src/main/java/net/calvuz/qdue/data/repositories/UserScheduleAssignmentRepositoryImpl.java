@@ -8,6 +8,7 @@ import net.calvuz.qdue.data.dao.UserScheduleAssignmentDao;
 import net.calvuz.qdue.data.entities.UserScheduleAssignmentEntity;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
+import net.calvuz.qdue.domain.common.enums.Status;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -193,7 +194,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserActiveAssignments(@NonNull String userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Getting active assignments for user: " + userId);
@@ -204,11 +205,11 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
                 for (UserScheduleAssignmentEntity entity : entities) {
                     UserScheduleAssignment domainAssignment = entity.toDomainModel(); //convertToDomainModel(entity);
-                    if (domainAssignment != null && domainAssignment.isActive()) {
+                    if (domainAssignment.isActive()) {
                         // Include ACTIVE and PENDING assignments (not EXPIRED or CANCELLED)
-                        UserScheduleAssignment.Status status = domainAssignment.getStatus();
-                        if (status == UserScheduleAssignment.Status.ACTIVE ||
-                                status == UserScheduleAssignment.Status.PENDING) {
+                        Status status = domainAssignment.getStatus();
+                        if (status == Status.ACTIVE ||
+                                status == Status.PENDING) {
                             activeAssignments.add(domainAssignment);
                         }
                     }
@@ -228,7 +229,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
     @Override
     @NonNull
     public CompletableFuture<OperationResult<UserScheduleAssignment>> getActiveAssignmentForUser(
-            @NonNull Long userId, @NonNull LocalDate date) {
+            @NonNull String userId, @NonNull LocalDate date) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 UserScheduleAssignmentEntity entity =
@@ -238,11 +239,13 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
                     // User has an assignment on this date
                     UserScheduleAssignment domain = entity.toDomainModel();
                     Log.v(TAG, "Found active assignment for user " + userId + ": " + entity.getId());
-                    return OperationResult.success(domain, OperationResult.OperationType.READ);
+                    return OperationResult.success(domain,
+                            OperationResult.OperationType.READ);
                 } else {
                     // User has no active assignment on this date (free day?)
                     Log.v(TAG, "No active assignment found for user " + userId + " on date " + date); // Debug level since this is a common case
-                    return OperationResult.success(null, OperationResult.OperationType.READ);
+                    return OperationResult.success("No active assignment found",
+                            OperationResult.OperationType.READ);
                 }
 
             } catch (Exception e) {
@@ -255,7 +258,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getActiveAssignmentsForUser(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getActiveAssignmentsForUser(@NonNull String userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 List<UserScheduleAssignmentEntity> entities =
@@ -277,7 +280,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
     @Override
     @NonNull
     public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getAssignmentsForUserInDateRange(
-            @NonNull Long userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 List<UserScheduleAssignmentEntity> entities =
@@ -412,7 +415,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<List<Long>>> getAllActiveUserIds() {
+    public CompletableFuture<OperationResult<List<String>>> getAllActiveUserIds() {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Getting all active user IDs");
@@ -423,7 +426,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
                 List<UserScheduleAssignmentEntity> entities =
                         mUserScheduleAssignmentDao.getAllActiveAssignmentsOnDate(today);
 
-                List<Long> userIds = entities.stream()
+                List<String> userIds = entities.stream()
                         .map(UserScheduleAssignmentEntity::getUserId)
                         .distinct()
                         .collect(Collectors.toList());
@@ -444,7 +447,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
     @Override
     @NonNull
     public CompletableFuture<OperationResult<Boolean>> updateAssignmentStatus(
-            @NonNull String assignmentId, @NonNull UserScheduleAssignment.Status newStatus) {
+            @NonNull String assignmentId, @NonNull Status newStatus) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Updating assignment status for " + assignmentId + " to " + newStatus);
@@ -504,7 +507,7 @@ public class UserScheduleAssignmentRepositoryImpl implements UserScheduleAssignm
 
     @Override
     @NonNull
-    public CompletableFuture<OperationResult<Boolean>> hasActiveAssignments(@NonNull Long userId) {
+    public CompletableFuture<OperationResult<Boolean>> hasActiveAssignments(@NonNull String userId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Log.d(TAG, "Checking active assignments for user: " + userId);

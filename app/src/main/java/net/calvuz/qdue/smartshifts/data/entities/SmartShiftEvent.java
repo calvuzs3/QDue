@@ -165,7 +165,7 @@ public class SmartShiftEvent {
         return "SmartShiftEvent{" +
                 "id='" + id + '\'' +
                 ", eventType='" + eventType + '\'' +
-                ", userId='" + userId + '\'' +
+                ", userID='" + userId + '\'' +
                 ", eventDate='" + eventDate + '\'' +
                 ", startTime='" + startTime + '\'' +
                 ", endTime='" + endTime + '\'' +

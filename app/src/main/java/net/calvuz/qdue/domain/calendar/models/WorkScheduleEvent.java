@@ -155,7 +155,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
 
     // ==================== USER CONTEXT ====================
 
-    private final Long userId;                        // Optional user ID for filtering
+    private final String userId;                        // Optional user ID for filtering
     private final boolean isUserRelevant;             // True if event is relevant to user's team
 
     // ==================== PATTERN METADATA ====================
@@ -231,7 +231,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
     @NonNull public String getTitle() { return title; }
     @NonNull public String getDescription() { return description; }
     @NonNull public String getColorHex() { return colorHex; }
-    @Nullable public Long getUserId() { return userId; }
+    @Nullable public String getUserId() { return userId; }
     public boolean isUserRelevant() { return isUserRelevant; }
     public int getDayInCycle() { return dayInCycle; }
     public long getDaysFromSchemeStart() { return daysFromSchemeStart; }
@@ -302,7 +302,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
      * @param userId User ID to check
      * @return true if user is in any assigned team
      */
-    public boolean isUserInTeams(long userId) {
+    public boolean isUserInTeams(String userId) {
         // This would need integration with user service to check team membership
         // For now, using simple logic based on current user context
         return isUserRelevant && this.userId != null && this.userId == userId;
@@ -816,7 +816,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         private String title;
         private String description;
         private String colorHex;
-        private Long userId;
+        private String userId;
         private int dayInCycle;
         private long daysFromSchemeStart;
         private String patternName;
@@ -878,7 +878,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
         @NonNull public Builder setId(@Nullable String id) { this.id = id; return this; }
         @NonNull public Builder setWorkScheduleShift(@Nullable WorkScheduleShift shift) { this.workScheduleShift = shift; return this; }
         @NonNull public Builder setEventType(@Nullable EventType eventType) { this.eventType = eventType; return this; }
-        @NonNull public Builder setUserId(@Nullable Long userId) { this.userId = userId; return this; }
+        @NonNull public Builder setUserId(@Nullable String userId) { this.userId = userId; return this; }
         @NonNull public Builder setTitle(@Nullable String title) { this.title = title; return this; }
         @NonNull public Builder setDescription(@Nullable String description) { this.description = description; return this; }
         @NonNull public Builder setColorHex(@Nullable String colorHex) { this.colorHex = colorHex; return this; }
@@ -1031,9 +1031,9 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
      * Calculate user relevance based on team assignments and user context.
      * User is relevant if they are in ANY of the assigned teams.
      */
-    private static boolean calculateUserRelevance(@Nullable Long userId, @NonNull List<Team> teams) {
+    private static boolean calculateUserRelevance(@Nullable String userId, @NonNull List<Team> teams) {
         // Simple logic - can be enhanced with user service integration
-        // User is relevant if userId is provided and there are team assignments
+        // User is relevant if userID is provided and there are team assignments
         return userId != null && !teams.isEmpty();
     }
 
@@ -1152,7 +1152,7 @@ public class WorkScheduleEvent extends LocalizableDomainModel {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", colorHex='" + colorHex + '\'' +
-                ", userId=" + userId +
+                ", userID=" + userId +
                 ", isUserRelevant=" + isUserRelevant +
                 ", dayInCycle=" + dayInCycle +
                 ", daysFromSchemeStart=" + daysFromSchemeStart +

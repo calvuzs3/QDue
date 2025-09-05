@@ -44,17 +44,110 @@ import java.util.List;
  *   <li><strong>Null Safety</strong>: Proper handling of null values in all converters</li>
  *   <li><strong>Version Compatibility</strong>: Forward/backward compatible JSON serialization</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Calendar Engine Database
- * @since Clean Architecture Phase 2
  */
 public class CalendarTypeConverters {
 
     private static final String TAG = "CalendarTypeConverters";
     private static final Gson GSON = new Gson();
 
+    // ==================== TEAMTYPE CONVERTERS ====================
 
+    /**
+     * Convert TeamType enum to String for database storage.
+     *
+     * @param teamType TeamType enum value
+     * @return String representation or null
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromTeamType(@Nullable net.calvuz.qdue.domain.calendar.models.Team.TeamType teamType) {
+        return teamType != null ? teamType.name() : null;
+    }
+
+    /**
+     * Convert String back to TeamType enum from database.
+     *
+     * @param teamTypeString String representation
+     * @return TeamType enum or default value (STANDARD)
+     */
+    @TypeConverter
+    @NonNull
+    public static net.calvuz.qdue.domain.calendar.models.Team.TeamType toTeamType(@Nullable String teamTypeString) {
+        if (teamTypeString == null || teamTypeString.trim().isEmpty()) {
+            return net.calvuz.qdue.domain.calendar.models.Team.TeamType.STANDARD; // Default fallback
+        }
+
+        try {
+            return net.calvuz.qdue.domain.calendar.models.Team.TeamType.valueOf( teamTypeString.trim().toUpperCase() );
+        } catch (IllegalArgumentException e) {
+            // Handle case where enum value doesn't exist (backward compatibility)
+            Log.w( TAG, "Unknown TeamType value: " + teamTypeString + ", using STANDARD as fallback" );
+            return net.calvuz.qdue.domain.calendar.models.Team.TeamType.STANDARD;
+        }
+    }
+
+    // ==================== STATUS ENUM CONVERTERS ====================
+
+    /**
+     * Convert Status enum to String for database storage.
+     * @param status Status enum value
+     * @return String representation or null
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromStatus(@Nullable net.calvuz.qdue.domain.common.enums.Status status) {
+        return status != null ? status.name() : null;
+    }
+
+    /**
+     * Convert String back to Status enum from database.
+     * @param statusString String representation
+     * @return Status enum or default value (ACTIVE)
+     */
+    @TypeConverter
+    @Nullable
+    public static net.calvuz.qdue.domain.common.enums.Status toStatus(@Nullable String statusString) {
+        if (statusString == null || statusString.trim().isEmpty()) {
+            return net.calvuz.qdue.domain.common.enums.Status.ACTIVE; // Default fallback
+        }
+
+        try {
+            return net.calvuz.qdue.domain.common.enums.Status.valueOf(statusString.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Handle case where enum value doesn't exist (backward compatibility)
+            Log.w(TAG, "Unknown Status value: " + statusString + ", using ACTIVE as fallback");
+            return net.calvuz.qdue.domain.common.enums.Status.ACTIVE;
+        }
+    }
+
+    // ==================== PRIORITY ENUM CONVERTERS ====================
+
+    /**
+     * Convert UserScheduleAssignment.Priority enum to string.
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromPriority(@Nullable net.calvuz.qdue.domain.common.enums.Priority priority) {
+        return priority != null ? priority.name() : null;
+    }
+
+    /**
+     * Convert string to UserScheduleAssignment.Priority enum.
+     */
+    @TypeConverter
+    @Nullable
+    public static net.calvuz.qdue.domain.common.enums.Priority toPriority(@Nullable String priorityString) {
+        if (priorityString == null || priorityString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return net.calvuz.qdue.domain.common.enums.Priority.valueOf( priorityString );
+        } catch (IllegalArgumentException e) {
+            Log.e( TAG, "Invalid UserScheduleAssignment.Priority: " + priorityString, e );
+            return net.calvuz.qdue.domain.common.enums.Priority.NORMAL; // Fallback
+        }
+    }
 
     // ==================== DAYOFWEEK LIST CONVERTERS ====================
 
@@ -71,11 +164,11 @@ public class CalendarTypeConverters {
         try {
             List<String> dayNames = new ArrayList<>();
             for (DayOfWeek day : dayOfWeekList) {
-                dayNames.add(day.name());
+                dayNames.add( day.name() );
             }
-            return GSON.toJson(dayNames);
+            return GSON.toJson( dayNames );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to serialize DayOfWeek list", e);
+            Log.e( TAG, "Failed to serialize DayOfWeek list", e );
             return null;
         }
     }
@@ -91,21 +184,22 @@ public class CalendarTypeConverters {
         }
 
         try {
-            Type listType = new TypeToken<List<String>>(){}.getType();
-            List<String> dayNames = GSON.fromJson(json, listType);
+            Type listType = new TypeToken<List<String>>() {
+            }.getType();
+            List<String> dayNames = GSON.fromJson( json, listType );
 
             List<DayOfWeek> dayOfWeekList = new ArrayList<>();
             for (String dayName : dayNames) {
                 try {
-                    dayOfWeekList.add(DayOfWeek.valueOf(dayName));
+                    dayOfWeekList.add( DayOfWeek.valueOf( dayName ) );
                 } catch (IllegalArgumentException e) {
-                    Log.w(TAG, "Invalid DayOfWeek name: " + dayName);
+                    Log.w( TAG, "Invalid DayOfWeek name: " + dayName );
                     // Skip invalid entries rather than failing completely
                 }
             }
             return dayOfWeekList;
         } catch (JsonSyntaxException e) {
-            Log.e(TAG, "Failed to deserialize DayOfWeek list from JSON: " + json, e);
+            Log.e( TAG, "Failed to deserialize DayOfWeek list from JSON: " + json, e );
             return new ArrayList<>();
         }
     }
@@ -123,9 +217,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return GSON.toJson(integerList);
+            return GSON.toJson( integerList );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to serialize Integer list", e);
+            Log.e( TAG, "Failed to serialize Integer list", e );
             return null;
         }
     }
@@ -141,20 +235,21 @@ public class CalendarTypeConverters {
         }
 
         try {
-            Type listType = new TypeToken<List<Integer>>(){}.getType();
-            List<Integer> result = GSON.fromJson(json, listType);
+            Type listType = new TypeToken<List<Integer>>() {
+            }.getType();
+            List<Integer> result = GSON.fromJson( json, listType );
             return result != null ? result : new ArrayList<>();
         } catch (JsonSyntaxException e) {
-            Log.e(TAG, "Failed to deserialize Integer list from JSON: " + json, e);
+            Log.e( TAG, "Failed to deserialize Integer list from JSON: " + json, e );
             return new ArrayList<>();
         }
     }
 
     // ==================== STRING MAP CONVERTERS ====================
 
-    /**
-     * Convert Map&lt;String, String&gt; to JSON string for database storage.
-     */
+//    /**
+//     * Convert Map&lt;String, String&gt; to JSON string for database storage.
+//     */
 //    @TypeConverter
 //    @Nullable
 //    public static String fromStringMap(@Nullable Map<String, String> stringMap) {
@@ -170,9 +265,9 @@ public class CalendarTypeConverters {
 //        }
 //    }
 
-    /**
-     * Convert JSON string from database to Map&lt;String, String&gt;.
-     */
+//    /**
+//     * Convert JSON string from database to Map&lt;String, String&gt;.
+//     */
 //    @TypeConverter
 //    @NonNull
 //    public static Map<String, String> toStringMap(@Nullable String json) {
@@ -212,9 +307,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.Frequency.valueOf(frequencyString);
+            return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.Frequency.valueOf( frequencyString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid RecurrenceRule.Frequency: " + frequencyString, e);
+            Log.e( TAG, "Invalid RecurrenceRule.Frequency: " + frequencyString, e );
             return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.Frequency.DAILY; // Fallback
         }
     }
@@ -239,9 +334,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.EndType.valueOf(endTypeString);
+            return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.EndType.valueOf( endTypeString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid RecurrenceRule.EndType: " + endTypeString, e);
+            Log.e( TAG, "Invalid RecurrenceRule.EndType: " + endTypeString, e );
             return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.EndType.NEVER; // Fallback
         }
     }
@@ -266,9 +361,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return net.calvuz.qdue.domain.calendar.models.ShiftException.ExceptionType.valueOf(exceptionTypeString);
+            return net.calvuz.qdue.domain.calendar.models.ShiftException.ExceptionType.valueOf( exceptionTypeString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid ShiftException.ExceptionType: " + exceptionTypeString, e);
+            Log.e( TAG, "Invalid ShiftException.ExceptionType: " + exceptionTypeString, e );
             return net.calvuz.qdue.domain.calendar.models.ShiftException.ExceptionType.CUSTOM; // Fallback
         }
     }
@@ -293,9 +388,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return net.calvuz.qdue.domain.calendar.models.ShiftException.ApprovalStatus.valueOf(approvalStatusString);
+            return net.calvuz.qdue.domain.calendar.models.ShiftException.ApprovalStatus.valueOf( approvalStatusString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid ShiftException.ApprovalStatus: " + approvalStatusString, e);
+            Log.e( TAG, "Invalid ShiftException.ApprovalStatus: " + approvalStatusString, e );
             return net.calvuz.qdue.domain.calendar.models.ShiftException.ApprovalStatus.DRAFT; // Fallback
         }
     }
@@ -320,66 +415,13 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return net.calvuz.qdue.domain.calendar.models.ShiftException.Priority.valueOf(priorityString);
+            return net.calvuz.qdue.domain.calendar.models.ShiftException.Priority.valueOf( priorityString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid ShiftException.Priority: " + priorityString, e);
+            Log.e( TAG, "Invalid ShiftException.Priority: " + priorityString, e );
             return net.calvuz.qdue.domain.calendar.models.ShiftException.Priority.NORMAL; // Fallback
         }
     }
 
-    /**
-     * Convert UserScheduleAssignment.Priority enum to string.
-     */
-    @TypeConverter
-    @Nullable
-    public static String fromUserAssignmentPriority(@Nullable net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Priority priority) {
-        return priority != null ? priority.name() : null;
-    }
-
-    /**
-     * Convert string to UserScheduleAssignment.Priority enum.
-     */
-    @TypeConverter
-    @Nullable
-    public static net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Priority toUserAssignmentPriority(@Nullable String priorityString) {
-        if (priorityString == null || priorityString.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            return net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Priority.valueOf(priorityString);
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid UserScheduleAssignment.Priority: " + priorityString, e);
-            return net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Priority.NORMAL; // Fallback
-        }
-    }
-
-    /**
-     * Convert UserScheduleAssignment.Status enum to string.
-     */
-    @TypeConverter
-    @Nullable
-    public static String fromUserAssignmentStatus(@Nullable net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Status status) {
-        return status != null ? status.name() : null;
-    }
-
-    /**
-     * Convert string to UserScheduleAssignment.Status enum.
-     */
-    @TypeConverter
-    @Nullable
-    public static net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Status toUserAssignmentStatus(@Nullable String statusString) {
-        if (statusString == null || statusString.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            return net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Status.valueOf(statusString);
-        } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid UserScheduleAssignment.Status: " + statusString, e);
-            return net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment.Status.ACTIVE; // Fallback
-        }
-    }
 
     /**
      * Convert DayOfWeek enum to string.
@@ -401,9 +443,9 @@ public class CalendarTypeConverters {
         }
 
         try {
-            return DayOfWeek.valueOf(dayOfWeekString);
+            return DayOfWeek.valueOf( dayOfWeekString );
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Invalid DayOfWeek: " + dayOfWeekString, e);
+            Log.e( TAG, "Invalid DayOfWeek: " + dayOfWeekString, e );
             return DayOfWeek.MONDAY; // Fallback to Monday
         }
     }
@@ -420,7 +462,7 @@ public class CalendarTypeConverters {
         }
 
         try {
-            GSON.fromJson(json, Object.class);
+            GSON.fromJson( json, Object.class );
             return true;
         } catch (JsonSyntaxException e) {
             return false;
@@ -441,9 +483,9 @@ public class CalendarTypeConverters {
             return new com.google.gson.GsonBuilder()
                     .setPrettyPrinting()
                     .create()
-                    .toJson(object);
+                    .toJson( object );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create pretty JSON", e);
+            Log.e( TAG, "Failed to create pretty JSON", e );
             return object.toString();
         }
     }
@@ -460,10 +502,10 @@ public class CalendarTypeConverters {
 
         try {
             // Parse and re-serialize to ensure valid JSON
-            Object parsed = GSON.fromJson(json, Object.class);
-            return GSON.toJson(parsed);
+            Object parsed = GSON.fromJson( json, Object.class );
+            return GSON.toJson( parsed );
         } catch (JsonSyntaxException e) {
-            Log.e(TAG, "Invalid JSON detected and removed: " + json, e);
+            Log.e( TAG, "Invalid JSON detected and removed: " + json, e );
             return null; // Return null for invalid JSON
         }
     }
@@ -484,26 +526,25 @@ public class CalendarTypeConverters {
         try {
             // Test basic conversions
             LocalDate testDate = LocalDate.now();
-            String dateString = fromLocalDate(testDate);
-            LocalDate parsedDate = toLocalDate(dateString);
+            String dateString = fromLocalDate( testDate );
+            LocalDate parsedDate = toLocalDate( dateString );
 
             LocalTime testTime = LocalTime.now();
-            String timeString = fromLocalTime(testTime);
-            LocalTime parsedTime = toLocalTime(timeString);
+            String timeString = fromLocalTime( testTime );
+            LocalTime parsedTime = toLocalTime( timeString );
 
             // Test JSON conversions
             List<DayOfWeek> testDays = new ArrayList<>();
-            testDays.add(DayOfWeek.MONDAY);
-            String daysJson = fromDayOfWeekList(testDays);
-            List<DayOfWeek> parsedDays = fromDayOfWeekListJson(daysJson);
+            testDays.add( DayOfWeek.MONDAY );
+            String daysJson = fromDayOfWeekList( testDays );
+            List<DayOfWeek> parsedDays = fromDayOfWeekListJson( daysJson );
 
             // Basic validation
-            return testDate.equals(parsedDate) &&
-                    testTime.equals(parsedTime) &&
-                    testDays.equals(parsedDays);
-
+            return testDate.equals( parsedDate ) &&
+                    testTime.equals( parsedTime ) &&
+                    testDays.equals( parsedDays );
         } catch (Exception e) {
-            Log.e(TAG, "Converter availability check failed", e);
+            Log.e( TAG, "Converter availability check failed", e );
             return false;
         }
     }

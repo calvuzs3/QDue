@@ -8,7 +8,6 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
-import net.calvuz.qdue.data.di.CalendarServiceProviderImpl;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;

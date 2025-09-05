@@ -68,7 +68,7 @@ public class PatternAssignmentPreferenceFragment extends PreferenceFragmentCompa
     }
 
     private void loadCurrentAssignment() {
-        long userId = QDuePreferences.getUserId(requireContext());
+        String userId = QDuePreferences.getUserId(requireContext());
         LocalDate today = LocalDate.now();
 
         mAssignmentRepository.getActiveAssignmentForUser(userId, today)

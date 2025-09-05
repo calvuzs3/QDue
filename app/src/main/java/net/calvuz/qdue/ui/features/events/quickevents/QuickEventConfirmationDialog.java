@@ -177,13 +177,13 @@ public class QuickEventConfirmationDialog implements Injectable {
 //    public QuickEventConfirmationDialog(@NonNull Context context,
 //                                        @NonNull ToolbarAction action,
 //                                        @NonNull LocalDate date,
-//                                        Long userId,
+//                                        Long userID,
 //                                        @NonNull QuickEventTemplate template,
 //                                        @NonNull EventCreationListener listener) {
 //        this.mContext = context;
 //        this.mAction = action;
 //        this.mDate = date;
-//        this.mUserId = userId;
+//        this.userID = userID;
 //        this.mTemplate = template;
 //        this.mListener = listener;
 //        this.mPreview = template.getPreview(date);
@@ -1173,12 +1173,12 @@ public class QuickEventConfirmationDialog implements Injectable {
 //    public static void showConfirmationDialog(@NonNull Context context,
 //                                              @NonNull ToolbarAction action,
 //                                              @NonNull LocalDate date,
-//                                              Long userId,
+//                                              Long userID,
 //                                              @NonNull QuickEventTemplate template,
 //                                              @NonNull EventCreationListener listener) {
 //        try {
 //            QuickEventConfirmationDialog dialog = new QuickEventConfirmationDialog(
-//                    context, action, date, userId, template, listener);
+//                    context, action, date, userID, template, listener);
 //            dialog.show();
 //
 //        } catch (Exception e) {

@@ -101,7 +101,7 @@ public class UserShiftAssignment {
     public String toString() {
         return "UserShiftAssignment{" +
                 "id='" + id + '\'' +
-                ", userId='" + userId + '\'' +
+                ", userID='" + userId + '\'' +
                 ", shiftPatternId='" + shiftPatternId + '\'' +
                 ", startDate='" + startDate + '\'' +
                 ", teamName='" + teamName + '\'' +

@@ -133,13 +133,13 @@ public interface AssignmentWizardInterface {
      */
     default boolean isStepValid(int stepIndex) {
         AssignmentWizardData data = getWizardData();
-        switch (stepIndex) {
-            case 0: return data.isStep1Complete();
-            case 1: return data.isStep2Complete();
-            case 2: return data.isStep3Complete();
-            case 3: return data.isWizardComplete();
-            default: return false;
-        }
+        return switch (stepIndex) {
+            case 0 -> data.isStep1Complete();
+            case 1 -> data.isStep2Complete();
+            case 2 -> data.isStep3Complete();
+            case 3 -> data.isWizardComplete();
+            default -> false;
+        };
     }
 
     /**

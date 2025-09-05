@@ -324,7 +324,7 @@ public class TurnException {
     public String toString() {
         return "TurnException{" +
                 "id='" + id + '\'' +
-                ", userId=" + userId +
+                ", userID=" + userId +
                 ", date=" + date +
                 ", exceptionType=" + exceptionType +
                 ", originalShiftType='" + originalShiftType + '\'' +

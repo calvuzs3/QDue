@@ -10,13 +10,15 @@ import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
+import net.calvuz.qdue.domain.calendar.repositories.UserTeamAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.ApplyShiftExceptionsUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
-import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
+import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
+import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 
 /**
  * CalendarServiceProvider - Domain-Specific Dependency Injection Interface
@@ -57,21 +59,26 @@ import net.calvuz.qdue.domain.calendar.usecases.UseCaseFactory;
  *   <li><strong>Thread Safety</strong>: Safe for concurrent access across calendar operations</li>
  *   <li><strong>Resource Cleanup</strong>: Proper disposal and resource management</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Domain-Specific DI for Calendar Services
- * @since Clean Architecture Phase 3
  */
 public interface CalendarServiceProvider {
 
     /**
      * Get CreatePatternAssignmentUseCase for assignment creation operations.
+     *
      * @return CreatePatternAssignmentUseCase instance
      */
     @NonNull
     CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase();
 
     // ==================== DOMAIN REPOSITORIES ====================
+
+    /**
+     * Get QDueUserRepository for user management.
+     *
+     * @return QDueUserRepository instance
+     */
+    @NonNull
+    QDueUserRepository getQDueUserRepository();
 
     /**
      * Get RecurrenceRuleRepository for Google Calendar-style recurrence pattern management.
@@ -139,6 +146,14 @@ public interface CalendarServiceProvider {
     @NonNull
     WorkScheduleRepository getWorkScheduleRepository();
 
+    /**
+     * Get UserTeamAssignmentRepository for user-team assignment management.
+     *
+     * @return UserTeamAssignmentRepository instance
+     */
+    @NonNull
+    UserTeamAssignmentRepository getUserTeamAssignmentRepository();
+
     // ==================== DOMAIN ENGINES ====================
 
     /**
@@ -175,6 +190,14 @@ public interface CalendarServiceProvider {
     SchedulingEngine getSchedulingEngine();
 
     // ==================== USE CASES ====================
+
+    /**
+     * Get UserTeamAssignmentUseCases for user-team assignment operations.
+     *
+     * @return UserTeamAssignmentUseCases instance
+     */
+    @NonNull
+    public UserTeamAssignmentUseCases getUserTeamAssignmentUseCases();
 
     /**
      * Get GenerateUserScheduleUseCase for individual user schedule operations.
@@ -220,16 +243,72 @@ public interface CalendarServiceProvider {
     @NonNull
     GetScheduleStatsUseCase getGetScheduleStatsUseCase();
 
+//    /**
+//     * Get UseCaseFactory for convenient access to all use cases.
+//     *
+//     * <p>Factory providing configured use case instances with proper repository
+//     * dependencies and consistent configuration across all use cases.</p>
+//     *
+//     * @return UseCaseFactory instance with all use cases configured
+//     */
+//    @NonNull
+//    UseCaseFactory getUseCaseFactory();
+
+//    /**
+//     * Get ManageUserTeamAssignmentsUseCase for assignment creation/management.
+//     *
+//     * @return ManageUserTeamAssignmentsUseCase instance
+//     */
+//    @NonNull
+//    ManageUserTeamAssignmentsUseCase getManageUserTeamAssignmentsUseCase();
+//
+//    /**
+//     * Get GetTeamMembersUseCase for team member queries.
+//     *
+//     * @return GetTeamMembersUseCase instance
+//     */
+//    @NonNull
+//    GetTeamMembersUseCase getGetTeamMembersUseCase();
+//
+//    /**
+//     * Get ValidateAssignmentUseCase for assignment validation.
+//     *
+//     * @return ValidateAssignmentUseCase instance
+//     */
+//    @NonNull
+//    ValidateAssignmentUseCase getValidateAssignmentUseCase();
+
     /**
-     * Get UseCaseFactory for convenient access to all use cases.
+     * Get GenerateUserScheduleUseCase for individual user schedule operations.
      *
-     * <p>Factory providing configured use case instances with proper repository
-     * dependencies and consistent configuration across all use cases.</p>
-     *
-     * @return UseCaseFactory instance with all use cases configured
+     * @return GenerateUserScheduleUseCase instance
      */
     @NonNull
-    UseCaseFactory getUseCaseFactory();
+    GenerateUserScheduleUseCase getUserScheduleUseCase();
+
+    /**
+     * Get GenerateTeamScheduleUseCase for team coordination operations.
+     *
+     * @return GenerateTeamScheduleUseCase instance
+     */
+    @NonNull
+    GenerateTeamScheduleUseCase getTeamScheduleUseCase();
+
+    /**
+     * Get ApplyShiftExceptionsUseCase for exception handling workflow.
+     *
+     * @return ApplyShiftExceptionsUseCase instance
+     */
+    @NonNull
+    ApplyShiftExceptionsUseCase getShiftExceptionsUseCase();
+
+    /**
+     * Get GetScheduleStatsUseCase for analytics and reporting.
+     *
+     * @return GetScheduleStatsUseCase instance
+     */
+    @NonNull
+    GetScheduleStatsUseCase getScheduleStatsUseCase();
 
     // ==================== LIFECYCLE MANAGEMENT ====================
 
@@ -272,26 +351,26 @@ public interface CalendarServiceProvider {
     // ==================== SERVICE STATUS ====================
 
     /**
-         * CalendarServiceStatus - Comprehensive calendar service health information.
-         */
-        record CalendarServiceStatus(boolean servicesReady, boolean repositoriesInitialized,
-                                     boolean enginesInitialized, boolean useCasesInitialized,
-                                     long initializationTime, int activeRepositories, int activeEngines,
-                                     int activeUseCases, String statusMessage) {
+     * CalendarServiceStatus - Comprehensive calendar service health information.
+     */
+    record CalendarServiceStatus(boolean servicesReady, boolean repositoriesInitialized,
+                                 boolean enginesInitialized, boolean useCasesInitialized,
+                                 long initializationTime, int activeRepositories, int activeEngines,
+                                 int activeUseCases, String statusMessage) {
 
         @NonNull
-            @Override
-            public String toString() {
-                return "CalendarServiceStatus{" +
-                        "ready=" + servicesReady +
-                        ", repos=" + repositoriesInitialized +
-                        ", engines=" + enginesInitialized +
-                        ", useCases=" + useCasesInitialized +
-                        ", activeRepos=" + activeRepositories +
-                        ", activeEngines=" + activeEngines +
-                        ", activeUseCases=" + activeUseCases +
-                        ", message='" + statusMessage + '\'' +
-                        '}';
-            }
+        @Override
+        public String toString() {
+            return "CalendarServiceStatus{" +
+                    "ready=" + servicesReady +
+                    ", repos=" + repositoriesInitialized +
+                    ", engines=" + enginesInitialized +
+                    ", useCases=" + useCasesInitialized +
+                    ", activeRepos=" + activeRepositories +
+                    ", activeEngines=" + activeEngines +
+                    ", activeUseCases=" + activeUseCases +
+                    ", message='" + statusMessage + '\'' +
+                    '}';
         }
+    }
 }

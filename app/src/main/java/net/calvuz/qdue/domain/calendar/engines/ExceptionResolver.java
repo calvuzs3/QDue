@@ -113,14 +113,14 @@ public class ExceptionResolver extends LocalizableDomainModel {
      *
      * @param baseSchedule      Original work schedule day
      * @param exceptions        List of domain exceptions to apply
-     * @param userTeamMappings  Map of userId to Team for team assignment lookups
+     * @param userTeamMappings  Map of userID to Team for team assignment lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Modified WorkScheduleDay with exceptions applied
      */
     @NonNull
     public WorkScheduleDay applyExceptions(@NonNull WorkScheduleDay baseSchedule,
                                            @NonNull List<ShiftException> exceptions,
-                                           @NonNull Map<Long, Team> userTeamMappings,
+                                           @NonNull Map<String, Team> userTeamMappings,
                                            @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
             Log.d( TAG, "Applying " + exceptions.size() + " exceptions to schedule for: " +
@@ -167,46 +167,33 @@ public class ExceptionResolver extends LocalizableDomainModel {
      *
      * @param schedule          Current work schedule
      * @param exception         Domain exception to apply
-     * @param userTeamMappings  Map of userId to Team for team lookups
+     * @param userTeamMappings  Map of userID to Team for team lookups
      * @param replacementShifts Map of shiftId to WorkScheduleShift for replacements
      * @return Modified work schedule
      */
     @NonNull
     public WorkScheduleDay applyIndividualException(@NonNull WorkScheduleDay schedule,
                                                     @NonNull ShiftException exception,
-                                                    @NonNull Map<Long, Team> userTeamMappings,
+                                                    @NonNull Map<String, Team> userTeamMappings,
                                                     @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         try {
             Log.v( TAG, "Applying exception: " + exception.getType() +
                     " for user: " + exception.getUserId() );
 
-            switch (exception.getType()) {
-                case ABSENCE_VACATION:
-                case ABSENCE_SICK:
-                case ABSENCE_SPECIAL:
-                    return applyAbsenceException( schedule, exception, userTeamMappings );
-
-                case CHANGE_COMPANY:
-                    return applyCompanyChangeException( schedule, exception, userTeamMappings, replacementShifts );
-
-                case CHANGE_SWAP:
-                    return applyShiftSwapException( schedule, exception, userTeamMappings );
-
-                case CHANGE_SPECIAL:
-                    return applySpecialChangeException( schedule, exception, userTeamMappings, replacementShifts );
-
-                case REDUCTION_PERSONAL:
-                case REDUCTION_ROL:
-                case REDUCTION_UNION:
-                    return applyTimeReductionException( schedule, exception, userTeamMappings );
-
-                case CUSTOM:
-                    return applyCustomException( schedule, exception, userTeamMappings, replacementShifts );
-
-                default:
-                    Log.w( TAG, "Unknown exception type: " + exception.getType() );
-                    return schedule;
-            }
+            return switch (exception.getType()) {
+                case ABSENCE_VACATION, ABSENCE_SICK, ABSENCE_SPECIAL ->
+                        applyAbsenceException( schedule, exception, userTeamMappings );
+                case CHANGE_COMPANY ->
+                        applyCompanyChangeException( schedule, exception, userTeamMappings, replacementShifts );
+                case CHANGE_SWAP ->
+                        applyShiftSwapException( schedule, exception, userTeamMappings );
+                case CHANGE_SPECIAL ->
+                        applySpecialChangeException( schedule, exception, userTeamMappings, replacementShifts );
+                case REDUCTION_PERSONAL, REDUCTION_ROL, REDUCTION_UNION ->
+                        applyTimeReductionException( schedule, exception, userTeamMappings );
+                case CUSTOM ->
+                        applyCustomException( schedule, exception, userTeamMappings, replacementShifts );
+            };
         } catch (Exception e) {
             Log.e( TAG, "Error applying individual exception", e );
             return schedule;
@@ -227,11 +214,11 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
         try {
             // Group exceptions by user and check for conflicts
-            Map<Long, List<ShiftException>> exceptionsByUser = exceptions.stream()
+            Map<String, List<ShiftException>> exceptionsByUser = exceptions.stream()
                     .collect( Collectors.groupingBy( ShiftException::getUserId ) );
 
-            for (Map.Entry<Long, List<ShiftException>> entry : exceptionsByUser.entrySet()) {
-                Long userId = entry.getKey();
+            for (Map.Entry<String, List<ShiftException>> entry : exceptionsByUser.entrySet()) {
+                String userId = entry.getKey();
                 List<ShiftException> userExceptions = entry.getValue();
 
                 // Check for conflicts within user's exceptions
@@ -255,9 +242,9 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applyAbsenceException(@NonNull WorkScheduleDay schedule,
                                                   @NonNull ShiftException exception,
-                                                  @NonNull Map<Long, Team> userTeamMappings) {
+                                                  @NonNull Map<String, Team> userTeamMappings) {
         // Remove all shifts for the user on this day
-        Long userId = exception.getUserId();
+        String userId = exception.getUserId();
 
         List<WorkScheduleShift> remainingShifts = schedule.getShifts().stream()
                 .filter( shift -> !isShiftAssignedToUser( shift, userId, userTeamMappings ) )
@@ -279,7 +266,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applyCompanyChangeException(@NonNull WorkScheduleDay schedule,
                                                         @NonNull ShiftException exception,
-                                                        @NonNull Map<Long, Team> userTeamMappings,
+                                                        @NonNull Map<String, Team> userTeamMappings,
                                                         @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         // Replace user's shifts with new shift from company directive
         WorkScheduleDay modifiedSchedule = applyAbsenceException( schedule, exception, userTeamMappings );
@@ -305,10 +292,10 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applyShiftSwapException(@NonNull WorkScheduleDay schedule,
                                                     @NonNull ShiftException exception,
-                                                    @NonNull Map<Long, Team> userTeamMappings) {
+                                                    @NonNull Map<String, Team> userTeamMappings) {
         // Swap shifts between two users
-        Long userId1 = exception.getUserId();
-        Long userId2 = exception.getSwapWithUserId();
+        String userId1 = exception.getUserId();
+        String userId2 = exception.getSwapWithUserId();
 
         if (userId2 == null) {
             Log.w( TAG, "Shift swap exception missing swap target user" );
@@ -355,7 +342,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applySpecialChangeException(@NonNull WorkScheduleDay schedule,
                                                         @NonNull ShiftException exception,
-                                                        @NonNull Map<Long, Team> userTeamMappings,
+                                                        @NonNull Map<String, Team> userTeamMappings,
                                                         @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         // Apply special event coverage changes
         return applyCompanyChangeException( schedule, exception, userTeamMappings, replacementShifts );
@@ -363,9 +350,9 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applyTimeReductionException(@NonNull WorkScheduleDay schedule,
                                                         @NonNull ShiftException exception,
-                                                        @NonNull Map<Long, Team> userTeamMappings) {
+                                                        @NonNull Map<String, Team> userTeamMappings) {
         // Modify existing shift timing for user
-        Long userId = exception.getUserId();
+        String userId = exception.getUserId();
 
         WorkScheduleDay.Builder builder = WorkScheduleDay.builder( schedule.getDate() );
 
@@ -387,7 +374,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private WorkScheduleDay applyCustomException(@NonNull WorkScheduleDay schedule,
                                                  @NonNull ShiftException exception,
-                                                 @NonNull Map<Long, Team> userTeamMappings,
+                                                 @NonNull Map<String, Team> userTeamMappings,
                                                  @NonNull Map<String, WorkScheduleShift> replacementShifts) {
         // Handle custom exception types based on metadata
         String customType = exception.getMetadata( "custom_type" );
@@ -497,12 +484,12 @@ public class ExceptionResolver extends LocalizableDomainModel {
      *
      * @param shift            WorkScheduleShift to check
      * @param userId           User ID to check assignment for
-     * @param userTeamMappings Map of userId to Team for lookups
+     * @param userTeamMappings Map of userID to Team for lookups
      * @return true if shift is assigned to user, false otherwise
      */
     private boolean isShiftAssignedToUser(@NonNull WorkScheduleShift shift,
-                                          @NonNull Long userId,
-                                          @NonNull Map<Long, Team> userTeamMappings) {
+                                          @NonNull String userId,
+                                          @NonNull Map<String, Team> userTeamMappings) {
         Team userTeam = userTeamMappings.get( userId );
         if (userTeam == null) {
             return false;
@@ -513,8 +500,8 @@ public class ExceptionResolver extends LocalizableDomainModel {
     }
 
     private List<WorkScheduleShift> findShiftsForUser(@NonNull WorkScheduleDay schedule,
-                                                      @NonNull Long userId,
-                                                      @NonNull Map<Long, Team> userTeamMappings) {
+                                                      @NonNull String userId,
+                                                      @NonNull Map<String, Team> userTeamMappings) {
         return schedule.getShifts().stream()
                 .filter( shift -> isShiftAssignedToUser( shift, userId, userTeamMappings ) )
                 .collect( Collectors.toList() );
@@ -523,7 +510,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
     @Nullable
     private WorkScheduleShift createReplacementShiftFromException(@NonNull ShiftException exception,
                                                                   @NonNull Map<String, WorkScheduleShift> replacementShifts,
-                                                                  @NonNull Map<Long, Team> userTeamMappings) {
+                                                                  @NonNull Map<String, Team> userTeamMappings) {
         if (exception.getNewShiftId() == null) {
             return null;
         }
@@ -590,7 +577,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
                 .build();
     }
 
-    private List<ExceptionConflict> detectUserConflicts(@NonNull Long userId,
+    private List<ExceptionConflict> detectUserConflicts(@NonNull String userId,
                                                         @NonNull List<ShiftException> userExceptions) {
         List<ExceptionConflict> conflicts = new ArrayList<>();
 
@@ -603,7 +590,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
                 if (areExceptionsConflicting( exception1, exception2 )) {
                     String conflictDescription = localize( "conflict.user_exceptions",
                             "Conflicting exceptions for user " + userId,
-                            userId.toString() );
+                            userId );
 
                     conflicts.add( new ExceptionConflict( exception1, exception2, conflictDescription ) );
                 }
@@ -616,6 +603,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
     private List<ExceptionConflict> detectTeamConflicts(@NonNull List<ShiftException> exceptions) {
         // Implementation would check for team-level conflicts
         // For now, return empty list as this requires more complex team analysis
+        // TODO implement team-level conflict detection
         return new ArrayList<>();
     }
 
@@ -635,11 +623,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
         }
 
         // Multiple time modifications conflict
-        if (exception1.isTimeReduction() && exception2.isTimeReduction()) {
-            return true;
-        }
-
-        return false;
+        return exception1.isTimeReduction() && exception2.isTimeReduction();
     }
 
     private void validateScheduleConsistency(@NonNull WorkScheduleDay schedule) {
@@ -722,6 +706,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
         private final List<ExceptionConflict> conflicts = new ArrayList<>();
 
         public void addConflict(@NonNull ExceptionConflict conflict) {
+
             conflicts.add( conflict );
         }
 
@@ -731,6 +716,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
         @NonNull
         public List<ExceptionConflict> getConflicts() {
+
             return new ArrayList<>( conflicts );
         }
 
@@ -743,20 +729,8 @@ public class ExceptionResolver extends LocalizableDomainModel {
         }
     }
 
-    public static class ExceptionConflict {
-        @NonNull
-        public final ShiftException exception1;
-        @NonNull
-        public final ShiftException exception2;
-        @NonNull
-        public final String description;
-
-        public ExceptionConflict(@NonNull ShiftException exception1,
-                                 @NonNull ShiftException exception2,
-                                 @NonNull String description) {
-            this.exception1 = exception1;
-            this.exception2 = exception2;
-            this.description = description;
-        }
+    public record ExceptionConflict(@NonNull ShiftException exception1,
+                                    @NonNull ShiftException exception2,
+                                    @NonNull String description) {
     }
 }
