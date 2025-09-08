@@ -56,6 +56,85 @@ public class UserTeamAssignmentUseCases {
     }
 
     /**
+     * Get user team assignment use case.
+     */
+    public class GetUserTeamAssignmentUseCase {
+        // TAG
+        private static final String TAG = "getUserTeamAssignmentUseCase";
+
+        /**
+         * Get user team assignment.
+         *
+         * @param assignmentID Assignment ID to get
+         * @return CompletableFuture with user team assignment
+         */
+        public CompletableFuture<OperationResult<UserTeamAssignment>> execute(
+                @NonNull String assignmentID
+        ) {
+            return CompletableFuture.supplyAsync( () -> {
+                try {
+                    Log.d( TAG, "Getting user team assignment: " + assignmentID );
+
+                    OperationResult<UserTeamAssignment> result = mAssignmentRepository.getAssignmentById( assignmentID ).join();
+                    if (result.isSuccess() && result.hasData())  {
+                        assert result.getData() != null;
+                        return OperationResult.success( result.getData(), OperationResult.OperationType.READ );
+                    } else {
+                        throw new IllegalStateException( "Failed to get user team assignment: " + result.getErrorMessage() );
+                    }
+                } catch (Exception e) {
+                    Log.e( TAG, "Error getting user team assignment", e );
+                    return OperationResult.failure( "Failed to get user team assignment: " + e.getMessage(),
+                            OperationResult.OperationType.READ );
+                }
+            }, mExecutorService );
+        }
+    }
+
+    /**
+     * Get user team assignment for date use case.
+     */
+    public class GetUserTeamAssignmentForDateUseCase {
+        //TAG
+        private static final String TAG = "getTeamForUserAssignmentInDateUseCase";
+
+        /**
+         * Get user team assignment for date.
+         *
+         * @param userID User ID to get assignment for
+         * @param date   Date to get assignment for
+         * @return CompletableFuture with user team assignment
+         */
+        public CompletableFuture<OperationResult<UserTeamAssignment>> execute(
+                @NonNull String userID,
+                @NonNull LocalDate date
+        ) {
+            return CompletableFuture.supplyAsync( () -> {
+                try {
+                    Log.d( TAG, "Getting user team assignment for user: " + userID + " on date: " + date );
+
+                    OperationResult<List<UserTeamAssignment>> result = mAssignmentRepository.getCurrentUserAssignments( userID, date ).join();
+
+                    if (result.isSuccess()) {
+                        List<UserTeamAssignment> assignments = result.getData();
+                        if (!assignments.isEmpty()) {
+                            return OperationResult.success( assignments.get( 0 ), OperationResult.OperationType.READ );
+                        } else {
+                            throw new IllegalStateException( "No assignments found for user: " + userID + " on date: " + date );
+                        }
+                    } else {
+                        throw new IllegalStateException( "Failed to get user team assignment: " + result.getErrorMessage() );
+                    }
+                } catch (Exception e) {
+                    Log.e( TAG, "Error getting user team assignment", e );
+                    return OperationResult.failure( "Failed to get user team assignment: " + e.getMessage(),
+                            OperationResult.OperationType.READ );
+                }
+            }, mExecutorService );
+        }
+    }
+
+    /**
      * Create user-team assignment with full validation.
      */
     public class CreateUserTeamAssignmentUseCase {
@@ -85,7 +164,7 @@ public class UserTeamAssignmentUseCases {
                     Log.d( TAG, "Creating assignment: user=" + userID + ", team=" + teamID + ", start=" + startDate );
 
                     // 1. Validate user exists
-                    QDueUser user = mQDueUserRepository.getUserById( userID ).get().getData();
+                    QDueUser user = mQDueUserRepository.readUser( userID ).get().getData();
                     if (user == null) {
                         return OperationResult.failure( "User not found: " + userID,
                                 OperationResult.OperationType.CREATE );
@@ -299,27 +378,27 @@ public class UserTeamAssignmentUseCases {
          * Get complete team member information with user details.
          *
          * @param teamID Team ID to get members for
-         * @param date Date to check assignments for
+         * @param date   Date to check assignments for
          * @return CompletableFuture with team member details
          */
         public CompletableFuture<OperationResult<TeamMembersResult>> execute(
                 @NonNull String teamID,
                 @NonNull LocalDate date) {
 
-            return CompletableFuture.supplyAsync(() -> {
+            return CompletableFuture.supplyAsync( () -> {
                 try {
-                    Log.d(TAG, "Getting team members with details for team: " + teamID + " on date: " + date);
+                    Log.d( TAG, "Getting team members with details for team: " + teamID + " on date: " + date );
 
                     // 1. Get team info
-                    Team team = mTeamRepository.getTeamById(teamID).get();
+                    Team team = mTeamRepository.getTeamById( teamID ).get();
                     if (team == null) {
-                        return OperationResult.failure("Team not found: " + teamID,
-                                OperationResult.OperationType.READ);
+                        return OperationResult.failure( "Team not found: " + teamID,
+                                OperationResult.OperationType.READ );
                     }
 
                     // 2. Get current assignments
                     List<UserTeamAssignment> assignments = mAssignmentRepository
-                            .getCurrentTeamMembers(teamID, date).get().getData();
+                            .getCurrentTeamMembers( teamID, date ).get().getData();
 
                     if (assignments == null) {
                         assignments = new ArrayList<>();
@@ -328,24 +407,23 @@ public class UserTeamAssignmentUseCases {
                     // 3. Get user details for all assignments
                     List<TeamMemberDetail> memberDetails = new ArrayList<>();
                     for (UserTeamAssignment assignment : assignments) {
-                        QDueUser user = mQDueUserRepository.getUserById(assignment.getUserID()).get().getData();
+                        QDueUser user = mQDueUserRepository.readUser( assignment.getUserID() ).get().getData();
                         if (user != null) {
-                            memberDetails.add(new TeamMemberDetail(assignment, user));
+                            memberDetails.add( new TeamMemberDetail( assignment, user ) );
                         }
                     }
 
                     // 4. Build result
-                    TeamMembersResult result = new TeamMembersResult(team, memberDetails, date);
+                    TeamMembersResult result = new TeamMembersResult( team, memberDetails, date );
 
-                    Log.d(TAG, "✅ Found " + memberDetails.size() + " team members for team: " + teamID);
-                    return OperationResult.success(result, OperationResult.OperationType.READ);
-
+                    Log.d( TAG, "✅ Found " + memberDetails.size() + " team members for team: " + teamID );
+                    return OperationResult.success( result, OperationResult.OperationType.READ );
                 } catch (Exception e) {
-                    Log.e(TAG, "Error getting team members with details", e);
-                    return OperationResult.failure("Failed to get team members: " + e.getMessage(),
-                            OperationResult.OperationType.READ);
+                    Log.e( TAG, "Error getting team members with details", e );
+                    return OperationResult.failure( "Failed to get team members: " + e.getMessage(),
+                            OperationResult.OperationType.READ );
                 }
-            }, mExecutorService);
+            }, mExecutorService );
         }
 
         // ==================== INNER CLASSES ====================
@@ -434,13 +512,18 @@ public class UserTeamAssignmentUseCases {
         }
     }
 
-
-
     // ==================== USE CASE INSTANCE PROVIDERS ====================
 
-    /**
-     * Get create user use case instance.
-     */
+    @NonNull
+    public GetUserTeamAssignmentUseCase getGetUserTeamAssignmentUseCase() {
+        return new GetUserTeamAssignmentUseCase();
+    }
+
+    @NonNull
+    public GetUserTeamAssignmentForDateUseCase getGetUserTeamAssignmentForDateUseCase() {
+        return new GetUserTeamAssignmentForDateUseCase();
+    }
+
     @NonNull
     public CreateUserTeamAssignmentUseCase getCreateUserTeamAssignmentUseCase() {
         return new CreateUserTeamAssignmentUseCase();

@@ -140,7 +140,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
             WorkScheduleDay finalSchedule = validateAndOptimizeSchedule( scheduleWithExceptions );
 
             Log.d( TAG, "Successfully generated complete schedule with " +
-                    finalSchedule.getShifts().size() + " shifts" );
+                    finalSchedule.getWorkShifts().size() + " shifts" );
 
             return finalSchedule;
         } catch (Exception e) {
@@ -249,7 +249,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
                             date, assignment, rule, userExceptions, userTeamMappings, replacementShifts );
 
                     // Add user's shifts to team schedule
-                    for (WorkScheduleShift shift : userSchedule.getShifts()) {
+                    for (WorkScheduleShift shift : userSchedule.getWorkShifts()) {
                         teamScheduleBuilder.addShift( shift );
                     }
                 }
@@ -261,7 +261,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
             validateTeamScheduleConsistency( teamSchedule );
 
             Log.d( TAG, "Successfully generated team schedule with " +
-                    teamSchedule.getShifts().size() + " total shifts" );
+                    teamSchedule.getWorkShifts().size() + " total shifts" );
 
             return teamSchedule;
         } catch (Exception e) {
@@ -295,7 +295,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
     }
 
     private void validateScheduleConsistency(@NonNull WorkScheduleDay schedule) {
-        for (WorkScheduleShift shift : schedule.getShifts()) {
+        for (WorkScheduleShift shift : schedule.getWorkShifts()) {
             // Check basic shift validity
             if (shift.getStartTime().isAfter( shift.getEndTime() ) && !isOvernightShift( shift )) {
                 Log.w( TAG, "Invalid shift timing detected: " + shift.getStartTime() +
@@ -313,7 +313,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
         // Check for scheduling conflicts between team members
         Map<String, List<WorkScheduleShift>> shiftsByType = new HashMap<>();
 
-        for (WorkScheduleShift shift : teamSchedule.getShifts()) {
+        for (WorkScheduleShift shift : teamSchedule.getWorkShifts()) {
             String shiftType = shift.getShift().getName();
             shiftsByType.computeIfAbsent( shiftType, k -> new ArrayList<>() ).add( shift );
         }
@@ -400,7 +400,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
      */
     @NonNull
     public String getScheduleGenerationStatus(@NonNull WorkScheduleDay schedule) {
-        int shiftCount = schedule.getShifts().size();
+        int shiftCount = schedule.getWorkShifts().size();
 
         if (shiftCount == 0) {
             return localize( "status.no_shifts", "No shifts scheduled", String.valueOf( shiftCount ) );
@@ -416,7 +416,7 @@ public class SchedulingEngine extends LocalizableDomainModel {
     @NonNull
     public String getValidationStatus(@NonNull WorkScheduleDay schedule) {
         // Simple validation check
-        boolean hasInvalidShifts = schedule.getShifts().stream()
+        boolean hasInvalidShifts = schedule.getWorkShifts().stream()
                 .anyMatch( shift -> shift.getStartTime().isAfter( shift.getEndTime() ) &&
                         !isOvernightShift( shift ) );
 

@@ -3,10 +3,6 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -39,11 +35,9 @@ import java.util.UUID;
  * @version 1.1.0 - i18n Integration
  * @since Clean Architecture Phase 2
  */
-public class ShiftException extends LocalizableDomainModel {
-
+public class ShiftException {
+    // TAG
     private static final String TAG = "ShiftException";
-
-    private static final String LOCALIZATION_SCOPE = "shift_exception";
 
     // ==================== ENUMS ====================
 
@@ -208,7 +202,6 @@ public class ShiftException extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private ShiftException(@NonNull Builder builder) {
-        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Identification
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
@@ -554,157 +547,33 @@ public class ShiftException extends LocalizableDomainModel {
         return metadata.get( key );
     }
 
-    // ==================== LOCALIZED DISPLAY METHODS ====================
-
-    /**
-     * Get localized type display name.
-     */
-    @NonNull
-    public String getTypeDisplayName() {
-        return localize( "type." + type.name().toLowerCase(), type.name() );
-    }
-
-    /**
-     * Get localized type description.
-     */
-    @NonNull
-    public String getTypeDescription() {
-        return localize( "type." + type.name().toLowerCase() + ".description", type.getDescriptionKey() );
-    }
-
-    /**
-     * Get display title for UI with localization support.
-     */
-    @NonNull
-    public String getDisplayTitle() {
-        if (title != null && !title.trim().isEmpty()) {
-            return title;
-        }
-        return getTypeDisplayName();
-    }
-
-    /**
-     * Get localized status display name.
-     */
-    @NonNull
-    public String getStatusDisplayName() {
-        return localize( "status." + status.name().toLowerCase(), status.name() );
-    }
-
-    /**
-     * Get localized status description.
-     */
-    @NonNull
-    public String getStatusDescription() {
-        return localize( "status." + status.name().toLowerCase() + ".description", status.getDescriptionKey() );
-    }
-
-    /**
-     * Get localized priority display name.
-     */
-    @NonNull
-    public String getPriorityDisplayName() {
-        return localize( "priority." + priority.name().toLowerCase(), priority.name() );
-    }
-
-    /**
-     * Get localized duration description.
-     */
-    @NonNull
-    public String getDurationDescription() {
-        if (isFullDay) {
-            return localize( "duration.full_day", "Full Day" );
-        }
-
-        int minutes = getCalculatedDurationMinutes();
-        if (minutes <= 0) {
-            return localize( "duration.unspecified", "Unspecified" );
-        }
-
-        int hours = minutes / 60;
-        int mins = minutes % 60;
-
-        if (hours > 0 && mins > 0) {
-            return localize( "duration.hours_minutes", hours + "h " + mins + "m", hours, mins );
-        } else if (hours > 0) {
-            return localize( "duration.hours_only", hours + "h", hours );
-        } else {
-            return localize( "duration.minutes_only", mins + "m", mins );
-        }
-    }
-
-    /**
-     * Get localized approval status message.
-     */
-    @NonNull
-    public String getApprovalStatusMessage() {
-        if (status == ApprovalStatus.APPROVED && approvedByUserName != null) {
-            return localize( "approval.approved_by", "Approved by " + approvedByUserName, approvedByUserName );
-        } else if (status == ApprovalStatus.REJECTED && rejectionReason != null) {
-            return localize( "approval.rejected_reason", "Rejected: " + rejectionReason, rejectionReason );
-        } else if (status == ApprovalStatus.PENDING) {
-            return localize( "approval.pending_review", "Pending Review" );
-        }
-        return getStatusDisplayName();
-    }
-
     // ==================== FACTORY METHODS ====================
-
-    /**
-     * Create vacation absence exception.
-     */
-    @NonNull
-    public static ShiftException createVacation(@NonNull String userId, @NonNull LocalDate date) {
-        return createVacation( userId, date, null );
-    }
 
     /**
      * Create vacation absence exception with localization support.
      */
     @NonNull
-    public static ShiftException createVacation(@NonNull String userId, @NonNull LocalDate date,
-                                                @Nullable DomainLocalizer localizer) {
+    public static ShiftException createVacation(@NonNull String userId, @NonNull LocalDate date) {
         return builder()
                 .type( ExceptionType.ABSENCE_VACATION )
                 .userId( userId )
                 .targetDate( date )
                 .isFullDay( true )
-                .localizer( localizer )
                 .build();
-    }
-
-    /**
-     * Create sick leave exception.
-     */
-    @NonNull
-    public static ShiftException createSickLeave(@NonNull String userId, @NonNull LocalDate date) {
-        return createSickLeave( userId, date, null );
     }
 
     /**
      * Create sick leave exception with localization support.
      */
     @NonNull
-    public static ShiftException createSickLeave(@NonNull String userId, @NonNull LocalDate date,
-                                                 @Nullable DomainLocalizer localizer) {
+    public static ShiftException createSickLeave(@NonNull String userId, @NonNull LocalDate date)  {
         return builder()
                 .type( ExceptionType.ABSENCE_SICK )
                 .userId( userId )
                 .targetDate( date )
                 .isFullDay( true )
                 .requiresApproval( false )  // Usually no approval needed for sick leave
-                .localizer( localizer )
                 .build();
-    }
-
-    /**
-     * Create shift swap between users.
-     */
-    @NonNull
-    public static ShiftException createShiftSwap(@NonNull String userId, @NonNull String swapWithUserId,
-                                                 @NonNull LocalDate date, @NonNull String originalShiftId,
-                                                 @NonNull String newShiftId) {
-        return createShiftSwap( userId, swapWithUserId, date, originalShiftId, newShiftId, null );
     }
 
     /**
@@ -713,7 +582,7 @@ public class ShiftException extends LocalizableDomainModel {
     @NonNull
     public static ShiftException createShiftSwap(@NonNull String userId, @NonNull String swapWithUserId,
                                                  @NonNull LocalDate date, @NonNull String originalShiftId,
-                                                 @NonNull String newShiftId, @Nullable DomainLocalizer localizer) {
+                                                 @NonNull String newShiftId) {
         return builder()
                 .type( ExceptionType.CHANGE_SWAP )
                 .userId( userId )
@@ -723,18 +592,7 @@ public class ShiftException extends LocalizableDomainModel {
                 .swapWithUserId( swapWithUserId )
                 .isFullDay( false )
                 .requiresApproval( true )
-                .localizer( localizer )
                 .build();
-    }
-
-    /**
-     * Create time reduction exception.
-     */
-    @NonNull
-    public static ShiftException createTimeReduction(@NonNull String userId, @NonNull LocalDate date,
-                                                     @NonNull LocalTime newStartTime, @NonNull LocalTime newEndTime,
-                                                     @NonNull ExceptionType reductionType) {
-        return createTimeReduction( userId, date, newStartTime, newEndTime, reductionType, null );
     }
 
     /**
@@ -743,7 +601,7 @@ public class ShiftException extends LocalizableDomainModel {
     @NonNull
     public static ShiftException createTimeReduction(@NonNull String userId, @NonNull LocalDate date,
                                                      @NonNull LocalTime newStartTime, @NonNull LocalTime newEndTime,
-                                                     @NonNull ExceptionType reductionType, @Nullable DomainLocalizer localizer) {
+                                                     @NonNull ExceptionType reductionType) {
         if (!reductionType.name().startsWith( "REDUCTION_" )) {
             throw new IllegalArgumentException( "reductionType must be a REDUCTION_ type" );
         }
@@ -755,18 +613,6 @@ public class ShiftException extends LocalizableDomainModel {
                 .newStartTime( newStartTime )
                 .newEndTime( newEndTime )
                 .isFullDay( false )
-                .localizer( localizer )
-                .build();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    @Override
-    @NonNull
-    public ShiftException withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder()
-                .copyFrom( this )
-                .localizer( localizer )
                 .build();
     }
 
@@ -777,7 +623,7 @@ public class ShiftException extends LocalizableDomainModel {
         return new Builder();
     }
 
-    public static class Builder extends LocalizableBuilder<ShiftException, Builder> {
+    public static class Builder {
         private String id;
         private String title;
         private String description;
@@ -846,7 +692,7 @@ public class ShiftException extends LocalizableDomainModel {
             this.createdByUserId = source.createdByUserId;
             this.lastModifiedByUserId = source.lastModifiedByUserId;
 
-            return copyLocalizableFrom( source );
+            return this;
         }
 
         // Builder methods for all fields...
@@ -1042,13 +888,6 @@ public class ShiftException extends LocalizableDomainModel {
             return this;
         }
 
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
-
-        @Override
         @NonNull
         public ShiftException build() {
             return new ShiftException( this );

@@ -8,6 +8,7 @@ import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -16,8 +17,8 @@ import java.util.concurrent.CompletableFuture;
  * <p>Domain use cases for QDueUser management following clean architecture principles.
  * Each use case encapsulates specific business logic and coordinates with repository layer.</p>
  */
-public class QDueUserUseCases {
-    // TAG
+public class QDueUserUseCases
+{
     private static final String TAG = "QDueUserUseCases";
 
     // ==================== DEPENDENCIES ====================
@@ -49,27 +50,29 @@ public class QDueUserUseCases {
          * @param email    User email (can be empty, validated if present)
          * @return CompletableFuture with created user result
          */
-        public CompletableFuture<OperationResult<QDueUser>> execute(@Nullable String nickname, @Nullable String email) {
+        public CompletableFuture<OperationResult<QDueUser>> execute(
+                @Nullable String nickname,
+                @Nullable String email
+        ) {
             return CompletableFuture.supplyAsync( () -> {
                 try {
+                    String _id = UUID.randomUUID().toString();
                     String _nickname = nickname == null ? "" : nickname;
                     String _email = email == null ? "" : email;
 
-                    Log.d( TAG, "Creating QDueUser with nickname: '" + _nickname + "', email: '" + _email + "'" );
-
                     // Create user object with business validation
                     QDueUser newUser = QDueUser.builder()
+                            .id( _id )
                             .nickname( _nickname )
                             .email( _email )
                             .build();
 
-                    // Validate email format if provided
+                    // Validate email format if provided (empty is valid)
                     if (!newUser.isEmailValid()) {
                         Log.e( TAG, "Invalid email format: " + _email );
                         return null; // Will be handled as validation failure
                     }
 
-                    Log.d( TAG, "User validation passed, proceeding with creation" );
                     return newUser;
                 } catch (Exception e) {
                     Log.e( TAG, "Failed to validate QDueUser", e );
@@ -90,9 +93,9 @@ public class QDueUserUseCases {
     }
 
     /**
-     * GetQDueUserUseCase - Handle user retrieval operations.
+     * ReadQDueUserUseCase - Handle user retrieval operations.
      */
-    public class GetQDueUserUseCase {
+    public class ReadQDueUserUseCase {
 
         /**
          * Get user by ID with business logic.
@@ -100,9 +103,10 @@ public class QDueUserUseCases {
          * @param userId User ID to retrieve
          * @return CompletableFuture with user result
          */
-        public CompletableFuture<OperationResult<QDueUser>> execute(@NonNull String userId) {
-            Log.d( TAG, "Getting QDueUser by ID: " + userId );
-            return mQDueUserRepository.getUserById( userId );
+        public CompletableFuture<OperationResult<QDueUser>> execute(
+                @NonNull String userId
+        ) {
+            return mQDueUserRepository.readUser( userId );
         }
 
         /**
@@ -111,7 +115,9 @@ public class QDueUserUseCases {
          * @param email Email to search for
          * @return CompletableFuture with user result
          */
-        public CompletableFuture<OperationResult<QDueUser>> executeByEmail(@NonNull String email) {
+        public CompletableFuture<OperationResult<QDueUser>> executeByEmail(
+                @NonNull String email
+        ) {
             if (email.trim().isEmpty()) {
                 return CompletableFuture.completedFuture(
                         OperationResult.failure(
@@ -120,9 +126,7 @@ public class QDueUserUseCases {
                         )
                 );
             }
-
-            Log.d( TAG, "Getting QDueUser by email: " + email );
-            return mQDueUserRepository.getUserByEmail( email.trim() );
+            return mQDueUserRepository.readUserByEmail( email.trim() );
         }
 
         /**
@@ -130,8 +134,8 @@ public class QDueUserUseCases {
          *
          * @return CompletableFuture with primary user result
          */
-        public CompletableFuture<OperationResult<QDueUser>> execute() {
-            Log.d( TAG, "Getting primary QDueUser" );
+        public CompletableFuture<OperationResult<QDueUser>> execute(
+        ) {
             return mQDueUserRepository.getPrimaryUser();
         }
     }
@@ -153,11 +157,10 @@ public class QDueUserUseCases {
                 @NonNull String userId,
                 @NonNull String nickname,
                 @NonNull String email,
-                @NonNull Long createdAt) {
+                @NonNull Long createdAt
+        ) {
             return CompletableFuture.supplyAsync( () -> {
                 try {
-                    Log.d( TAG, "Updating QDueUser ID: " + userId + " with nickname: '" + nickname + "', email: '" + email + "'" );
-
                     // Create updated user object
                     QDueUser updatedUser = QDueUser.builder()
                             .id( userId )
@@ -169,14 +172,12 @@ public class QDueUserUseCases {
 
                     // Validate email format if provided
                     if (!updatedUser.isEmailValid()) {
-                        Log.e( TAG, "❌ Invalid email format: " + email );
+                        Log.e( TAG, "Invalid email format: " + email );
                         return null; // Will be handled as validation failure
                     }
-
-                    Log.d( TAG, "✅ Update validation passed" );
                     return updatedUser;
                 } catch (Exception e) {
-                    Log.e( TAG, "❌ Failed to validate user update", e );
+                    Log.e( TAG, "Failed to validate user update", e );
                     return null; // Will be handled as validation failure
                 }
             } ).thenCompose( validatedUser -> {
@@ -208,9 +209,8 @@ public class QDueUserUseCases {
          */
         public CompletableFuture<OperationResult<QDueUser>> execute(
                 @NonNull String nickname,
-                @NonNull String email) {
-            Log.d( TAG, "Starting minimal onboarding for user" );
-
+                @NonNull String email
+        ) {
             // Ensure strings are not null
             String safeNickname = nickname.trim();
             String safeEmail = email.trim();
@@ -222,32 +222,36 @@ public class QDueUserUseCases {
                             assert result.getData() != null;
                             QDueUser onboardedUser = result.getData();
 
-                            Log.d( TAG, "✅ Onboarding completed for user: " + onboardedUser.getDisplayName() );
-
                             // Return success with onboarding-specific message
                             return OperationResult.success(
                                     onboardedUser,
-                                    "User onboarding completed successfully",
+                                    "OnboardingUseCase completed successfully",
                                     OperationResult.OperationType.CREATE
                             );
                         }
                         return result;
                     } );
         }
+    }
 
+    /**
+     * IsOnboardingNeededUseCase - Handle minimal onboarding flow.
+     */
+    public class IsOnboardingNeededUseCase
+    {
         /**
          * Check if onboarding is needed (no users exist).
          *
          * @return CompletableFuture with true if onboarding needed
          */
-        public CompletableFuture<OperationResult<Boolean>> isOnboardingNeeded() {
+        public CompletableFuture<OperationResult<Boolean>> execute()
+        {
             return mQDueUserRepository.getUsersCount()
                     .thenApply( countResult -> {
                         if (countResult.isSuccess()) {
                             assert countResult.getData() != null;
 
                             boolean needsOnboarding = countResult.getData() == 0;
-                            Log.d( TAG, "Onboarding needed: " + needsOnboarding + " (users count: " + countResult.getData() + ")" );
                             return OperationResult.success( needsOnboarding, OperationResult.OperationType.READ );
                         }
                         return OperationResult.failure(
@@ -272,8 +276,8 @@ public class QDueUserUseCases {
      * Get user retrieval use case instance.
      */
     @NonNull
-    public GetQDueUserUseCase getUserUseCase() {
-        return new GetQDueUserUseCase();
+    public ReadQDueUserUseCase getReadUserUseCase() {
+        return new ReadQDueUserUseCase();
     }
 
     /**
@@ -291,4 +295,10 @@ public class QDueUserUseCases {
     public OnboardingUseCase getOnboardingUseCase() {
         return new OnboardingUseCase();
     }
+
+    /**
+     * Get is onboarding needed use case instance.
+     */
+    @NonNull
+    public IsOnboardingNeededUseCase getIsOnboardingNeededUseCase() { return new IsOnboardingNeededUseCase(); }
 }

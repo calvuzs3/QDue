@@ -16,8 +16,8 @@ import java.util.Objects;
 /**
  * Represents a workScheduleShift type with schedule, duration and associated color.
  * <p>
- * Defines the template for shifts including start time, duration, and visual appearance.
- * Immutable value object that can be reused across multiple shifts.
+ * Defines the template for workShifts including start time, duration, and visual appearance.
+ * Immutable value object that can be reused across multiple workShifts.
  *
  * @author Luke (original)
  * @author Updated 21/05/2025

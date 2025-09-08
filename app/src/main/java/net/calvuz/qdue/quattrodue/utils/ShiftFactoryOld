@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Factory for creating shifts (Shift objects).
+ * Factory for creating workShifts (Shift objects).
  * <p>
  * Updated to work with the new dynamic ShiftTypeFactory.
  * No longer relies on static workScheduleShift types but accesses the
@@ -81,7 +81,7 @@ public final class ShiftFactory {
 
         if (shiftIndex >= availableShifts) {
             throw new IllegalArgumentException(
-                    "Shift type " + type + " not available. Only " + availableShifts + " shifts configured."
+                    "Shift type " + type + " not available. Only " + availableShifts + " workShifts configured."
             );
         }
 
@@ -94,52 +94,52 @@ public final class ShiftFactory {
     }
 
     /**
-     * Creates all configured shifts for a specific date.
+     * Creates all configured workShifts for a specific date.
      * Uses all workScheduleShift types available in the ShiftTypeFactory.
      *
-     * @param date Date for the shifts
-     * @return List of shifts (size depends on factory configuration)
+     * @param date Date for the workShifts
+     * @return List of workShifts (size depends on factory configuration)
      */
     public static List<Shift> createDailyShifts(LocalDate date) {
         int shiftCount = ShiftTypeFactory.getShiftCount();
-        List<Shift> shifts = new ArrayList<>(shiftCount);
+        List<Shift> workShifts = new ArrayList<>(shiftCount);
 
         for (int i = 0; i < shiftCount; i++) {
             Shift workScheduleShift = createShift(i, date);
             if (workScheduleShift != null) {
-                shifts.add(workScheduleShift);
+                workShifts.add(workScheduleShift);
             } else {
                 Log.w(TAG, "Skipped null workScheduleShift at index " + i + " for date " + date);
             }
         }
 
-        if (shifts.isEmpty()) {
-            Log.e(TAG, "No shifts created for date " + date + ". ShiftTypeFactory not initialized?");
+        if (workShifts.isEmpty()) {
+            Log.e(TAG, "No workShifts created for date " + date + ". ShiftTypeFactory not initialized?");
         }
 
-        return shifts;
+        return workShifts;
     }
 
     /**
-     * Creates all shifts with specific names for a date.
+     * Creates all workShifts with specific names for a date.
      *
-     * @param date Date for the shifts
+     * @param date Date for the workShifts
      * @param shiftNames Array of workScheduleShift names to create
-     * @return List of created shifts (may be smaller than input if some names not found)
+     * @return List of created workShifts (may be smaller than input if some names not found)
      */
     public static List<Shift> createNamedShifts(LocalDate date, String... shiftNames) {
-        List<Shift> shifts = new ArrayList<>(shiftNames.length);
+        List<Shift> workShifts = new ArrayList<>(shiftNames.length);
 
         for (String shiftName : shiftNames) {
             Shift workScheduleShift = createShift(shiftName, date);
             if (workScheduleShift != null) {
-                shifts.add(workScheduleShift);
+                workShifts.add(workScheduleShift);
             } else {
                 Log.w(TAG, "Shift not found: " + shiftName);
             }
         }
 
-        return shifts;
+        return workShifts;
     }
 
     /**
@@ -220,7 +220,7 @@ public final class ShiftFactory {
         }
 
         StringBuilder info = new StringBuilder();
-        info.append("Available shifts (").append(ShiftTypeFactory.getShiftCount()).append("):\n");
+        info.append("Available workShifts (").append(ShiftTypeFactory.getShiftCount()).append("):\n");
 
         List<ShiftType> shiftTypes = ShiftTypeFactory.getAllShiftTypes();
         for (int i = 0; i < shiftTypes.size(); i++) {
@@ -235,7 +235,7 @@ public final class ShiftFactory {
     }
 
     /**
-     * Builder pattern for creating shifts with fluent interface.
+     * Builder pattern for creating workShifts with fluent interface.
      */
     public static class Builder {
         private int shiftIndex = -1;

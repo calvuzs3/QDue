@@ -2,7 +2,7 @@ Summary of the New Dynamic ShiftTypeFactory
 🔄 Dynamic Architecture
 
 No static elements - All workScheduleShift types are created and cached dynamically
-Variable workScheduleShift count - Support for 1-8 shifts (configurable)
+Variable workScheduleShift count - Support for 1-8 workShifts (configurable)
 Runtime initialization - Members access cached elements after setup phase
 
 🌐 External JSON API Support
@@ -15,7 +15,7 @@ Fallback mechanisms - API → Local Cache → Defaults
 📊 Expected JSON Format
 ```json
 {
-  "shifts": [
+  "workShifts": [
     {
       "name": "Morning",
       "description": "Morning workScheduleShift (6-14)",
@@ -46,23 +46,23 @@ Automatic persistence after API loading
 
 🚀 Usage Examples
 ```java
-// Initialize with fixed number of shifts
+// Initialize with fixed number of workShifts
 ShiftTypeFactory.initialize(context, 4)
     .thenAccept(success -> {
         if (success) {
-            List<ShiftType> shifts = ShiftTypeFactory.getAllShiftTypes();
-            // Use shifts...
+            List<ShiftType> workShifts = ShiftTypeFactory.getAllShiftTypes();
+            // Use workShifts...
         }
     });
 
 // Initialize from API
-ShiftTypeFactory.initializeFromApi(context, "https://api.example.com/shifts")
+ShiftTypeFactory.initializeFromApi(context, "https://api.example.com/workShifts")
     .thenAccept(success -> {
         int shiftCount = ShiftTypeFactory.getShiftCount();
-        Log.d("Shifts", "Loaded " + shiftCount + " shifts");
+        Log.d("Shifts", "Loaded " + shiftCount + " workShifts");
     });
 
-// Access cached shifts (after initialization)
+// Access cached workShifts (after initialization)
 ShiftType morningShift = ShiftTypeFactory.getShiftType(0);
 ShiftType namedShift = ShiftTypeFactory.getShiftType("Afternoon");
 List<ShiftType> allShifts = ShiftTypeFactory.getAllShiftTypes();
@@ -84,13 +84,13 @@ Default workScheduleShift creation as last resort
 
 🔧 Key Benefits
 
-Flexible configuration - Variable shifts from external sources
+Flexible configuration - Variable workShifts from external sources
 Offline capability - Works without network after initial setup
 Performance optimized - Cached access after initialization
 Thread-safe - Concurrent access support
 Extensible - Easy to add new workScheduleShift types at runtime
 
-This new implementation allows your team to configure shifts dynamically 
+This new implementation allows your team to configure workShifts dynamically 
 through external APIs while maintaining performance through intelligent 
 caching and providing robust fallback mechanisms.
 
@@ -138,7 +138,7 @@ Shift workScheduleShift = new ShiftFactory.Builder()
 ```java
 // Verifica se il factory è pronto
 if (ShiftFactory.isFactoryReady()) {
-    // Crea shifts...
+    // Crea workShifts...
 }
 
 // Informazioni sui turni disponibili
@@ -161,9 +161,9 @@ public static List<Day> generateCycleDays(List<ShiftType> shiftTypes) {
     for (int dayIndex = 0; dayIndex < CYCLE_LENGTH; dayIndex++) {
         Day day = new Day(dayDate);
         
-        // Crea shifts dinamicamente
-        List<Shift> shifts = ShiftFactory.createDailyShifts(dayDate);
-        for (Shift workScheduleShift : shifts) {
+        // Crea workShifts dinamicamente
+        List<Shift> workShifts = ShiftFactory.createDailyShifts(dayDate);
+        for (Shift workScheduleShift : workShifts) {
             // Applica lo schema...
             day.addShift(workScheduleShift);
         }
@@ -173,11 +173,11 @@ public static List<Day> generateCycleDays(List<ShiftType> shiftTypes) {
 7. 📈 Esempio di Utilizzo Completo
 ```java
 // 1. Inizializza ShiftTypeFactory (in Application o Activity)
-ShiftTypeFactory.initializeFromApi(context, "https://api.example.com/shifts", 
+ShiftTypeFactory.initializeFromApi(context, "https://api.example.com/workShifts", 
     new ShiftTypeFactory.ApiCallback() {
         @Override
         public void onSuccess(int shiftCount, String message) {
-            // 2. Ora ShiftFactory può creare shifts dinamicamente
+            // 2. Ora ShiftFactory può creare workShifts dinamicamente
             createShiftsForToday();
         }
         
@@ -193,7 +193,7 @@ private void createShiftsForToday() {
     // Crea tutti i turni configurati
     List<Shift> todayShifts = ShiftFactory.createDailyShifts(today);
     
-    Log.d("Shifts", "Created " + todayShifts.size() + " shifts for today");
+    Log.d("Shifts", "Created " + todayShifts.size() + " workShifts for today");
     
     // Oppure crea turni specifici
     Shift morningShift = ShiftFactory.createShift("Morning", today);

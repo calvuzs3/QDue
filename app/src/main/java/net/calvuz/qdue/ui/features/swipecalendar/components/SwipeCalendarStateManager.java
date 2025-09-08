@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.YearMonth;
@@ -33,10 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *   <li>Synchronized SharedPreferences access</li>
  *   <li>Safe position calculations with bounds checking</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0
- * @since Database Version 6
  */
 public class SwipeCalendarStateManager {
 
@@ -49,16 +46,16 @@ public class SwipeCalendarStateManager {
     private static final String PREF_KEY_SESSION_ACTIVE = "swipe_calendar_session_active";
 
     // Calendar range constants (1900-2100)
-    private static final YearMonth BASE_MONTH = YearMonth.of(1900, 1);
-    private static final YearMonth END_MONTH = YearMonth.of(2100, 12);
-    private static final int TOTAL_MONTHS = (int) ChronoUnit.MONTHS.between(BASE_MONTH, END_MONTH) + 1; // 2401 months
+    private static final YearMonth BASE_MONTH = YearMonth.of( 1900, 1 );
+    private static final YearMonth END_MONTH = YearMonth.of( 2100, 12 );
+    private static final int TOTAL_MONTHS = (int) ChronoUnit.MONTHS.between( BASE_MONTH, END_MONTH ) + 1; // 2401 months
 
     // Dependencies
     private final Context mContext;
     private final SharedPreferences mPreferences;
 
     // State tracking
-    private final AtomicBoolean mIsInitialized = new AtomicBoolean(false);
+    private final AtomicBoolean mIsInitialized = new AtomicBoolean( false );
     private volatile int mCurrentPosition = -1;
     private volatile YearMonth mCurrentMonth;
 
@@ -71,9 +68,9 @@ public class SwipeCalendarStateManager {
      */
     public SwipeCalendarStateManager(@NonNull Context context) {
         this.mContext = context.getApplicationContext();
-        this.mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        this.mPreferences = PreferenceManager.getDefaultSharedPreferences( mContext );
 
-        Log.d(TAG, "SwipeCalendarStateManager initialized");
+        Log.d( TAG, "SwipeCalendarStateManager initialized" );
     }
 
     // ==================== INITIALIZATION ====================
@@ -86,86 +83,83 @@ public class SwipeCalendarStateManager {
      */
     public synchronized int initializeAndGetInitialPosition() {
         if (mIsInitialized.get()) {
-            Log.w(TAG, "StateManager already initialized, returning current position");
+            Log.w( TAG, "StateManager already initialized, returning current position" );
             return mCurrentPosition;
         }
 
         try {
-            boolean isFirstLaunch = mPreferences.getBoolean(PREF_KEY_FIRST_LAUNCH, true);
-            boolean isSessionActive = mPreferences.getBoolean(PREF_KEY_SESSION_ACTIVE, false);
+            boolean isFirstLaunch = mPreferences.getBoolean( PREF_KEY_FIRST_LAUNCH, true );
+            boolean isSessionActive = mPreferences.getBoolean( PREF_KEY_SESSION_ACTIVE, false );
 
             YearMonth targetMonth;
 
             if (isFirstLaunch) {
                 // First time using swipe calendar - go to today
                 targetMonth = YearMonth.now();
-                Log.d(TAG, "First launch detected, navigating to current month: " + targetMonth);
+                Log.d( TAG, "First launch detected, navigating to current month: " + targetMonth );
 
                 // Mark as no longer first launch
                 mPreferences.edit()
-                        .putBoolean(PREF_KEY_FIRST_LAUNCH, false)
-                        .putBoolean(PREF_KEY_SESSION_ACTIVE, true)
+                        .putBoolean( PREF_KEY_FIRST_LAUNCH, false )
+                        .putBoolean( PREF_KEY_SESSION_ACTIVE, true )
                         .apply();
-
             } else if (isSessionActive) {
                 // Returning within session - restore saved position
-                int savedPosition = mPreferences.getInt(PREF_KEY_CURRENT_POSITION, -1);
-                String savedMonthStr = mPreferences.getString(PREF_KEY_LAST_SAVED_MONTH, null);
+                int savedPosition = mPreferences.getInt( PREF_KEY_CURRENT_POSITION, -1 );
+                String savedMonthStr = mPreferences.getString( PREF_KEY_LAST_SAVED_MONTH, null );
 
                 if (savedPosition >= 0 && savedPosition < TOTAL_MONTHS && savedMonthStr != null) {
                     try {
-                        targetMonth = YearMonth.parse(savedMonthStr);
-                        Log.d(TAG, "Session active, restoring saved position: " + targetMonth);
+                        targetMonth = YearMonth.parse( savedMonthStr );
+                        Log.d( TAG, "Session active, restoring saved position: " + targetMonth );
                     } catch (Exception e) {
-                        Log.w(TAG, "Failed to parse saved month, fallback to today", e);
+                        Log.w( TAG, "Failed to parse saved month, fallback to today", e );
                         targetMonth = YearMonth.now();
                     }
                 } else {
-                    Log.w(TAG, "Invalid saved state, fallback to today");
+                    Log.w( TAG, "Invalid saved state, fallback to today" );
                     targetMonth = YearMonth.now();
                 }
-
             } else {
                 // New session - go to today
                 targetMonth = YearMonth.now();
-                Log.d(TAG, "New session, navigating to current month: " + targetMonth);
+                Log.d( TAG, "New session, navigating to current month: " + targetMonth );
 
                 // Mark session as active
                 mPreferences.edit()
-                        .putBoolean(PREF_KEY_SESSION_ACTIVE, true)
+                        .putBoolean( PREF_KEY_SESSION_ACTIVE, true )
                         .apply();
             }
 
             // Convert target month to position
-            mCurrentPosition = getPositionForMonth(targetMonth);
+            mCurrentPosition = getPositionForMonth( targetMonth );
             mCurrentMonth = targetMonth;
 
             // Validate position is within bounds
             if (mCurrentPosition < 0 || mCurrentPosition >= TOTAL_MONTHS) {
-                Log.w(TAG, "Position out of bounds: " + mCurrentPosition + ", fallback to today");
+                Log.w( TAG, "Position out of bounds: " + mCurrentPosition + ", fallback to today" );
                 YearMonth today = YearMonth.now();
-                mCurrentPosition = getPositionForMonth(today);
+                mCurrentPosition = getPositionForMonth( today );
                 mCurrentMonth = today;
             }
 
             // Save initial state
             saveCurrentState();
 
-            mIsInitialized.set(true);
-            Log.d(TAG, "Initialization complete. Position: " + mCurrentPosition + ", Month: " + mCurrentMonth);
+            mIsInitialized.set( true );
+            Log.d( TAG, "Initialization complete. Position: " + mCurrentPosition + ", Month: " + mCurrentMonth );
 
             return mCurrentPosition;
-
         } catch (Exception e) {
-            Log.e(TAG, "Error during initialization, fallback to today", e);
+            Log.e( TAG, "Error during initialization, fallback to today", e );
 
             // Fallback to today
             YearMonth today = YearMonth.now();
-            mCurrentPosition = getPositionForMonth(today);
+            mCurrentPosition = getPositionForMonth( today );
             mCurrentMonth = today;
 
             saveCurrentState();
-            mIsInitialized.set(true);
+            mIsInitialized.set( true );
 
             return mCurrentPosition;
         }
@@ -181,16 +175,16 @@ public class SwipeCalendarStateManager {
      */
     public synchronized void updatePosition(int position) {
         if (position < 0 || position >= TOTAL_MONTHS) {
-            Log.w(TAG, "Invalid position: " + position + ", ignoring update");
+            Log.w( TAG, "Invalid position: " + position + ", ignoring update" );
             return;
         }
 
         mCurrentPosition = position;
-        mCurrentMonth = getMonthForPosition(position);
+        mCurrentMonth = getMonthForPosition( position );
 
         saveCurrentState();
 
-        Log.v(TAG, "Position updated to: " + position + " (" + mCurrentMonth + ")");
+        Log.v( TAG, "Position updated to: " + position + " (" + mCurrentMonth + ")" );
     }
 
     /**
@@ -217,7 +211,7 @@ public class SwipeCalendarStateManager {
      * @return Adapter position for current month
      */
     public int getTodayPosition() {
-        return getPositionForMonth(YearMonth.now());
+        return getPositionForMonth( YearMonth.now() );
     }
 
     /**
@@ -227,11 +221,11 @@ public class SwipeCalendarStateManager {
      */
     public synchronized int navigateToToday() {
         YearMonth today = YearMonth.now();
-        int todayPosition = getPositionForMonth(today);
+        int todayPosition = getPositionForMonth( today );
 
-        updatePosition(todayPosition);
+        updatePosition( todayPosition );
 
-        Log.d(TAG, "Navigated to today: " + today + " (position " + todayPosition + ")");
+        Log.d( TAG, "Navigated to today: " + today + " (position " + todayPosition + ")" );
         return todayPosition;
     }
 
@@ -244,7 +238,7 @@ public class SwipeCalendarStateManager {
      * @return Adapter position (0-based)
      */
     public static int getPositionForMonth(@NonNull YearMonth month) {
-        long months = ChronoUnit.MONTHS.between(BASE_MONTH, month);
+        long months = ChronoUnit.MONTHS.between( BASE_MONTH, month );
         return (int) months;
     }
 
@@ -256,7 +250,7 @@ public class SwipeCalendarStateManager {
      */
     @NonNull
     public static YearMonth getMonthForPosition(int position) {
-        return BASE_MONTH.plusMonths(position);
+        return BASE_MONTH.plusMonths( position );
     }
 
     /**
@@ -286,14 +280,14 @@ public class SwipeCalendarStateManager {
     private void saveCurrentState() {
         try {
             mPreferences.edit()
-                    .putInt(PREF_KEY_CURRENT_POSITION, mCurrentPosition)
-                    .putString(PREF_KEY_LAST_SAVED_MONTH, mCurrentMonth.toString())
-                    .putBoolean(PREF_KEY_SESSION_ACTIVE, true)
+                    .putInt( PREF_KEY_CURRENT_POSITION, mCurrentPosition )
+                    .putString( PREF_KEY_LAST_SAVED_MONTH, mCurrentMonth.toString() )
+                    .putBoolean( PREF_KEY_SESSION_ACTIVE, true )
                     .apply();
 
-            Log.v(TAG, "State saved: position=" + mCurrentPosition + ", month=" + mCurrentMonth);
+            Log.v( TAG, "State saved: position=" + mCurrentPosition + ", month=" + mCurrentMonth );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to save state", e);
+            Log.e( TAG, "Failed to save state", e );
         }
     }
 
@@ -303,12 +297,12 @@ public class SwipeCalendarStateManager {
     public void markSessionInactive() {
         try {
             mPreferences.edit()
-                    .putBoolean(PREF_KEY_SESSION_ACTIVE, false)
+                    .putBoolean( PREF_KEY_SESSION_ACTIVE, false )
                     .apply();
 
-            Log.d(TAG, "Session marked as inactive");
+            Log.d( TAG, "Session marked as inactive" );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to mark session inactive", e);
+            Log.e( TAG, "Failed to mark session inactive", e );
         }
     }
 
@@ -318,19 +312,19 @@ public class SwipeCalendarStateManager {
     public synchronized void clearState() {
         try {
             mPreferences.edit()
-                    .remove(PREF_KEY_CURRENT_POSITION)
-                    .remove(PREF_KEY_LAST_SAVED_MONTH)
-                    .putBoolean(PREF_KEY_FIRST_LAUNCH, true)
-                    .putBoolean(PREF_KEY_SESSION_ACTIVE, false)
+                    .remove( PREF_KEY_CURRENT_POSITION )
+                    .remove( PREF_KEY_LAST_SAVED_MONTH )
+                    .putBoolean( PREF_KEY_FIRST_LAUNCH, true )
+                    .putBoolean( PREF_KEY_SESSION_ACTIVE, false )
                     .apply();
 
             mCurrentPosition = -1;
             mCurrentMonth = null;
-            mIsInitialized.set(false);
+            mIsInitialized.set( false );
 
-            Log.d(TAG, "State cleared, reset to first launch");
+            Log.d( TAG, "State cleared, reset to first launch" );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to clear state", e);
+            Log.e( TAG, "Failed to clear state", e );
         }
     }
 
@@ -352,7 +346,7 @@ public class SwipeCalendarStateManager {
      */
     @NonNull
     public String getRangeInfo() {
-        return String.format("Range: %s to %s (%d months), Current: %s (pos %d)",
-                BASE_MONTH, END_MONTH, TOTAL_MONTHS, mCurrentMonth, mCurrentPosition);
+        return String.format( QDue.getLocale(), "Range: %s to %s (%d months), Current: %s (pos %d)",
+                BASE_MONTH, END_MONTH, TOTAL_MONTHS, mCurrentMonth, mCurrentPosition );
     }
 }

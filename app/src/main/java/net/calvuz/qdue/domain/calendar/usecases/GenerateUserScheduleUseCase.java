@@ -11,6 +11,7 @@ import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,10 +37,6 @@ import java.util.concurrent.CompletableFuture;
  *   <li><strong>Domain Logic</strong>: Business rules encapsulated in use case</li>
  *   <li><strong>Async Operations</strong>: All methods return CompletableFuture</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Clean Architecture Implementation
- * @since Clean Architecture Migration
  */
 public class GenerateUserScheduleUseCase {
 
@@ -59,116 +56,129 @@ public class GenerateUserScheduleUseCase {
         this.mWorkScheduleRepository = workScheduleRepository;
     }
 
-    // ==================== CORE OPERATIONS ====================
+    // ==================== CLASSES ====================
 
     /**
-     * Execute use case for specific date.
-     *
-     * @param userId User ID for schedule generation
-     * @param date   Target date
-     * @return CompletableFuture with user's WorkScheduleDay
+     * GenerateUserScheduleForMonth - Individual User Schedule Generation for a Month
      */
-    @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> executeForDate(
-            @NonNull String userId, @NonNull LocalDate date) {
+    public class GenerateUserScheduleForMonth {
+        /**
+         * Execute use case for complete month.
+         *
+         * @param userId User ID for schedule generation
+         * @param month  Target month
+         * @return CompletableFuture with monthly schedule map
+         */
+        @NonNull
+        public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> execute(
+                @NonNull String userId,
+                @NonNull YearMonth month
+        ) {
+            LocalDate startDate = month.atDay( 1 );
+            LocalDate endDate = month.atEndOfMonth();
 
-        return mWorkScheduleRepository.getWorkScheduleForDate( date, userId )
-                .thenApply( result -> {
-                    if (result.isSuccess()) {
-                        WorkScheduleDay schedule = result.getData();
+            return getGenerateUserScheduleForDateRange().execute( userId, startDate, endDate );
+        }
+    }
 
-                        // Apply user-specific business rules
-                        if (schedule != null) {
-                            schedule = applyUserSpecificBusinessRules( schedule, userId );
+    /**
+     * GenerateUserScheduleForDateRange - Individual User Schedule Generation for a Date Range
+     */
+    public class GenerateUserScheduleForDateRange {
+        /**
+         * Execute use case for date range.
+         *
+         * @param userId    User ID for schedule generation
+         * @param startDate Start date (inclusive)
+         * @param endDate   End date (inclusive)
+         * @return CompletableFuture with Map of dates to WorkScheduleDay
+         */
+        @NonNull
+        public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> execute(
+                @NonNull String userId,
+                @NonNull LocalDate startDate,
+                @NonNull LocalDate endDate
+        ) {
+            // Validate date range
+            if (startDate.isAfter( endDate )) {
+                return CompletableFuture.completedFuture(
+                        OperationResult.failure( "Start date cannot be after end date",
+                                OperationResult.OperationType.VALIDATION ) );
+            }
+
+            // Check for reasonable date range (business rule)
+            long daysDifference = ChronoUnit.DAYS.between( startDate, endDate );
+            if (daysDifference > 365) {
+                return CompletableFuture.completedFuture(
+                        OperationResult.failure( "Date range cannot exceed 365 days",
+                                OperationResult.OperationType.VALIDATION ) );
+            }
+
+            return mWorkScheduleRepository.getUserWorkScheduleForDateRange( startDate, endDate, userId )
+                    .thenApply( result -> {
+                        if (result.isSuccess()) {
+                            Map<LocalDate, WorkScheduleDay> scheduleMap = result.getData();
+
+                            // Apply business rules to each schedule day
+                            if (scheduleMap != null) {
+                                scheduleMap.replaceAll( (date, schedule) ->
+                                        applyUserSpecificBusinessRules( schedule, userId ) );
+                            }
+
+                            return OperationResult.success( scheduleMap,
+                                    OperationResult.OperationType.READ );
+                        } else {
+                            Log.e( TAG, "Failed to get user schedule range: " + result.getErrorMessage(), null );
+                            return result;
                         }
-
-                        Log.v( TAG, MessageFormat.format( "Generated user schedule for {0} on {1}",
-                                userId, date ) );
-                        return OperationResult.success( schedule,
+                    } )
+                    .exceptionally( throwable -> {
+                        Log.e( TAG, "Exception in user schedule range generation: " + throwable.getMessage(), null );
+                        return OperationResult.failure( "Failed to generate user schedule range: " + throwable.getMessage(),
                                 OperationResult.OperationType.READ );
-                    } else {
-                        Log.e( TAG, "Failed to get user schedule: " + result.getErrorMessage(), null );
-                        return result;
-                    }
-                } )
-                .exceptionally( throwable -> {
-                    Log.e( TAG, "Exception in user schedule generation: " + throwable.getMessage(), null );
-                    return OperationResult.failure( "Failed to generate user schedule: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ );
-                } );
+                    } );
+        }
     }
 
-    /**
-     * Execute use case for date range.
-     *
-     * @param userId    User ID for schedule generation
-     * @param startDate Start date (inclusive)
-     * @param endDate   End date (inclusive)
-     * @return CompletableFuture with Map of dates to WorkScheduleDay
-     */
-    @NonNull
-    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> executeForDateRange(
-            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
 
-        // Validate date range
-        if (startDate.isAfter( endDate )) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure( "Start date cannot be after end date",
-                            OperationResult.OperationType.VALIDATION ) );
-        }
+    public class GenerateUserScheduleForDate {
 
-        // Check for reasonable date range (business rule)
-        long daysDifference = java.time.temporal.ChronoUnit.DAYS.between( startDate, endDate );
-        if (daysDifference > 365) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure( "Date range cannot exceed 365 days",
-                            OperationResult.OperationType.VALIDATION ) );
-        }
+        /**
+         * Execute use case for specific date.
+         *
+         * @param userId User ID for schedule generation
+         * @param date   Target date
+         * @return CompletableFuture with user's WorkScheduleDay
+         */
+        @NonNull
+        public CompletableFuture<OperationResult<WorkScheduleDay>> execute(
+                @NonNull String userId, @NonNull LocalDate date) {
 
-        return mWorkScheduleRepository.getWorkScheduleForDateRange( startDate, endDate, userId )
-                .thenApply( result -> {
-                    if (result.isSuccess()) {
-                        Map<LocalDate, WorkScheduleDay> scheduleMap = result.getData();
+            return mWorkScheduleRepository.getWorkScheduleForDate( date, userId )
+                    .thenApply( result -> {
+                        if (result.isSuccess()) {
+                            WorkScheduleDay schedule = result.getData();
 
-                        // Apply business rules to each schedule day
-                        if (scheduleMap != null) {
-                            scheduleMap.replaceAll( (date, schedule) ->
-                                    applyUserSpecificBusinessRules( schedule, userId ) );
+                            // Apply user-specific business rules
+                            if (schedule != null) {
+                                schedule = applyUserSpecificBusinessRules( schedule, userId );
+                            }
+
+                            Log.v( TAG, MessageFormat.format( "Generated user schedule for {0} on {1}",
+                                    userId, date ) );
+                            return OperationResult.success( schedule,
+                                    OperationResult.OperationType.READ );
+                        } else {
+                            Log.e( TAG, "Failed to get user schedule: " + result.getErrorMessage(), null );
+                            return result;
                         }
-
-                        Log.v( TAG, MessageFormat.format("Generated user schedule range for {0} ({1}-{2}) ({3} days)",
-                                userId, startDate, endDate, (scheduleMap != null ? scheduleMap.size() : 0)));
-
-                        return OperationResult.success( scheduleMap, OperationResult.OperationType.READ );
-                    } else {
-                        Log.e( TAG, "Failed to get user schedule range: " + result.getErrorMessage(), null );
-                        return result;
-                    }
-                } )
-                .exceptionally( throwable -> {
-                    Log.e( TAG, "Exception in user schedule range generation: " + throwable.getMessage(), null );
-                    return OperationResult.failure( "Failed to generate user schedule range: " + throwable.getMessage(), OperationResult.OperationType.READ );
-                } );
-    }
-
-    /**
-     * Execute use case for complete month.
-     *
-     * @param userId User ID for schedule generation
-     * @param month  Target month
-     * @return CompletableFuture with monthly schedule map
-     */
-    @NonNull
-    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> executeForMonth(
-            @NonNull String userId, @NonNull YearMonth month) {
-
-        LocalDate startDate = month.atDay( 1 );
-        LocalDate endDate = month.atEndOfMonth();
-
-        Log.v( TAG, "Executing user schedule month generation for userID: " + userId +
-                ", month: " + month );
-
-        return executeForDateRange( userId, startDate, endDate );
+                    } )
+                    .exceptionally( throwable -> {
+                        Log.e( TAG, "Exception in user schedule generation: " + throwable.getMessage(), null );
+                        return OperationResult.failure( "Failed to generate user schedule: " + throwable.getMessage(),
+                                OperationResult.OperationType.READ );
+                    } );
+        }
     }
 
     // ==================== BUSINESS LOGIC ====================
@@ -180,6 +190,7 @@ public class GenerateUserScheduleUseCase {
      * @param userId   User ID for context
      * @return Processed WorkScheduleDay
      */
+    @NonNull
     private WorkScheduleDay applyUserSpecificBusinessRules(@NonNull WorkScheduleDay schedule,
                                                            @NonNull String userId) {
         try {
@@ -203,5 +214,19 @@ public class GenerateUserScheduleUseCase {
             Log.e( TAG, "Error applying user business rules for user " + userId, e );
             return schedule; // Return original schedule on error
         }
+    }
+
+    // ==================== USE CASES ====================
+
+    public GenerateUserScheduleForMonth getGenerateUserScheduleForMonth() {
+        return new GenerateUserScheduleForMonth();
+    }
+
+    public GenerateUserScheduleForDateRange getGenerateUserScheduleForDateRange() {
+        return new GenerateUserScheduleForDateRange();
+    }
+
+    public GenerateUserScheduleForDate getGenerateUserScheduleForDate() {
+        return new GenerateUserScheduleForDate();
     }
 }

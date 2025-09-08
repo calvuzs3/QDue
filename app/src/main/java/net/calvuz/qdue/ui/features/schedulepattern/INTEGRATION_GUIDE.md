@@ -55,7 +55,7 @@ The User Schedule Pattern Creation feature is now **fully implemented** and read
 ### **2. Repository Dependencies**
 ```java
 // Ensure these repositories are available:
-✅ ShiftRepository - For accessing predefined shifts
+✅ ShiftRepository - For accessing predefined workShifts
 ✅ RecurrenceRuleRepository - For storing custom patterns  
 ✅ UserScheduleAssignmentRepository - For user assignments
 ✅ CalendarServiceProvider - For dependency injection
@@ -139,7 +139,7 @@ patternService.createUserPattern(patternDays, startDate)
 // Custom patterns integrate seamlessly with existing WorkScheduleRepository:
 workScheduleRepository.getWorkScheduleForDate(date)
     .thenAccept(workScheduleDay -> {
-        // WorkScheduleDay will include shifts from custom patterns
+        // WorkScheduleDay will include workShifts from custom patterns
         // if user has active UserScheduleAssignment
     });
 ```
@@ -170,13 +170,13 @@ ServiceProvider serviceProvider = getServiceProvider();
 SchedulePatternModule module = new SchedulePatternModule(this, serviceProvider);
 UserSchedulePatternService patternService = module.getUserSchedulePatternService();
 
-// Load available shifts
+// Load available workShifts
 module.getShiftRepository().getAllShifts()
-    .thenAccept(shifts -> {
+    .thenAccept(workShifts -> {
         // Create a simple work pattern
         List<PatternDay> pattern = Arrays.asList(
-            new PatternDay(1, findShiftByName(shifts, "Morning")),
-            new PatternDay(2, findShiftByName(shifts, "Afternoon")),
+            new PatternDay(1, findShiftByName(workShifts, "Morning")),
+            new PatternDay(2, findShiftByName(workShifts, "Afternoon")),
             new PatternDay(3, null) // Rest day
         );
         
@@ -206,10 +206,10 @@ module.getShiftRepository().getAllShifts()
 ### **Customization Points**
 ```java
 // 1. Shift Repository Integration
-// Ensure your ShiftRepository returns shifts with these standard names:
-// - "Morning" / "Mattina" (for morning shifts)
-// - "Afternoon" / "Pomeriggio" (for afternoon shifts)  
-// - "Night" / "Notte" (for night shifts)
+// Ensure your ShiftRepository returns workShifts with these standard names:
+// - "Morning" / "Mattina" (for morning workShifts)
+// - "Afternoon" / "Pomeriggio" (for afternoon workShifts)  
+// - "Night" / "Notte" (for night workShifts)
 
 // 2. User ID Integration
 // PatternService creates assignments for current user
@@ -297,15 +297,15 @@ module.getShiftRepository().getAllShifts()
 
 ### **Common Issues**
 
-**1. "No shifts available" error**
-- Verify ShiftRepository contains predefined shifts
+**1. "No workShifts available" error**
+- Verify ShiftRepository contains predefined workShifts
 - Check shift names match expected patterns (Morning, Night, etc.)
 
 **2. "Dependencies not ready" error**
 - Ensure CalendarService is properly initialized
 - Verify ServiceProvider includes CalendarServiceProvider
 
-**3. Pattern preview shows wrong shifts**
+**3. Pattern preview shows wrong workShifts**
 - Check pattern day numbering (must be sequential 1, 2, 3...)
 - Verify shift IDs exist in database
 

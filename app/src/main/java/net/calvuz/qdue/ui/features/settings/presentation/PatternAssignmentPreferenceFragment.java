@@ -86,7 +86,7 @@ public class PatternAssignmentPreferenceFragment extends PreferenceFragmentCompa
         if (result.isSuccess() && result.getData() != null) {
             UserScheduleAssignment assignment = result.getData();
             String title = "Current Assignment: " + assignment.getDisplayTitle();
-            String summary = assignment.getDisplayPeriod() + "\n" + assignment.getStatusDisplayName();
+            String summary = assignment.getDisplayPeriod() + "\n" + assignment.getStatus().name();
 
             currentAssignmentPref.setTitle(title);
             currentAssignmentPref.setSummary(summary);

@@ -82,6 +82,14 @@ public interface WorkScheduleRepository {
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getWorkScheduleForDateRange(
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId);
 
+    @NonNull
+    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserWorkScheduleForDateRange(
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId);
+
+    @NonNull
+    CompletableFuture<OperationResult<WorkScheduleDay>> getUserWorkScheduleForDate(
+            @NonNull LocalDate date, @Nullable String userId);
+
     /**
      * Get work schedule for a complete month.
      * Convenience method for calendar integration.

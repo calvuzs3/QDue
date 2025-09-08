@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 /**
  * ValidateAssignmentUseCase - Assignment validation business logic
  */
-public class ValidateAssignmentUseCase {
-
-    private static final String TAG = "ValidateAssignmentUseCase";
-
+public class ValidateAssignmentUseCase
+{
     private final UserTeamAssignmentRepository mAssignmentRepository;
 
-    public ValidateAssignmentUseCase(@NonNull UserTeamAssignmentRepository assignmentRepository) {
+    public ValidateAssignmentUseCase(
+            @NonNull UserTeamAssignmentRepository assignmentRepository
+    ) {
         this.mAssignmentRepository = assignmentRepository;
     }
 
@@ -35,25 +35,27 @@ public class ValidateAssignmentUseCase {
      * @param excludeAssignmentId Assignment to exclude from validation
      * @return CompletableFuture with detailed validation result
      */
-    public CompletableFuture<OperationResult<DetailedValidationResult>> validateAssignmentDetailed(
+    public CompletableFuture<OperationResult<DetailedValidationResult>> execute(
             @NonNull String userId,
             @NonNull String teamId,
             @NonNull LocalDate startDate,
             @Nullable LocalDate endDate,
-            @Nullable String excludeAssignmentId) {
+            @Nullable String excludeAssignmentId
+    ) {
 
         return mAssignmentRepository.validateAssignment(
                         userId, teamId, startDate, endDate, excludeAssignmentId )
                 .thenApply( result -> {
                     if (!result.isSuccess()) {
                         return OperationResult.failure( result.getErrorMessage(),
-                                OperationResult.OperationType.VALIDATION );
+                                                        OperationResult.OperationType.VALIDATION );
                     }
 
-                    DetailedValidationResult detailedResult = getDetailedValidationResult( startDate, endDate, result );
+                    DetailedValidationResult detailedResult = getDetailedValidationResult(
+                            startDate, endDate, result );
 
                     return OperationResult.success( detailedResult,
-                            OperationResult.OperationType.VALIDATION );
+                                                    OperationResult.OperationType.VALIDATION );
                 } );
     }
 
@@ -61,7 +63,8 @@ public class ValidateAssignmentUseCase {
     private static DetailedValidationResult getDetailedValidationResult(
             @NonNull LocalDate startDate,
             @Nullable LocalDate endDate,
-            @NonNull OperationResult<UserTeamAssignmentRepository.AssignmentValidationResult> result) {
+            @NonNull OperationResult<UserTeamAssignmentRepository.AssignmentValidationResult> result
+    ) {
         UserTeamAssignmentRepository.AssignmentValidationResult validationResult = result.getData();
         assert validationResult != null;
 
@@ -77,38 +80,42 @@ public class ValidateAssignmentUseCase {
     // ==================== INNER CLASSES ====================
 
     /**
-         * Detailed validation result with additional analysis.
-         */
-        public record DetailedValidationResult(boolean isValid, String message,
-                                               List<UserTeamAssignment> conflicts,
-                                               LocalDate requestedStartDate,
-                                               LocalDate requestedEndDate) {
+     * Detailed validation result with additional analysis.
+     */
+    public record DetailedValidationResult(
+            boolean isValid,
+            String message,
+            List<UserTeamAssignment> conflicts,
+            LocalDate requestedStartDate,
+            LocalDate requestedEndDate
+    )
+    {
 
-            public boolean hasConflicts() {
-                return !conflicts.isEmpty();
-            }
-
-            public int getConflictCount() {
-                return conflicts.size();
-            }
-
-            public List<String> getConflictSummary() {
-                return conflicts.stream()
-                        .map( assignment -> "Assignment " + assignment.getId() +
-                                " from " + assignment.getStartDate() +
-                                " to " + (assignment.getEndDate() != null ? assignment.getEndDate() : "permanent") )
-                        .collect( Collectors.toList() );
-            }
-
-            @NonNull
-            @Override
-            public String toString() {
-                return "DetailedValidationResult{" +
-                        "valid=" + isValid +
-                        ", conflicts=" + getConflictCount() +
-                        ", requestedRange=" + requestedStartDate +
-                        " to " + (requestedEndDate != null ? requestedEndDate : "permanent") +
-                        '}';
-            }
+        public boolean hasConflicts() {
+            return !conflicts.isEmpty();
         }
+
+        public int getConflictCount() {
+            return conflicts.size();
+        }
+
+        public List<String> getConflictSummary() {
+            return conflicts.stream()
+                    .map( assignment -> "Assignment " + assignment.getId() +
+                            " from " + assignment.getStartDate() +
+                            " to " + (assignment.getEndDate() != null ? assignment.getEndDate() : "permanent") )
+                    .collect( Collectors.toList() );
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "DetailedValidationResult{" +
+                    "valid=" + isValid +
+                    ", conflicts=" + getConflictCount() +
+                    ", requestedRange=" + requestedStartDate +
+                    " to " + (requestedEndDate != null ? requestedEndDate : "permanent") +
+                    '}';
+        }
+    }
 }

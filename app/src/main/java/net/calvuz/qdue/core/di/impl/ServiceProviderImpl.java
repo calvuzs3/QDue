@@ -22,7 +22,6 @@ import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.data.di.CalendarServiceProviderImpl;
-import net.calvuz.qdue.data.dao.QDueUserDao;
 import net.calvuz.qdue.data.repositories.QDueUserRepositoryImpl;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
@@ -53,8 +52,10 @@ import java.text.MessageFormat;
  *   ├── Core Services (Events, User, Organization)
  *   └── CalendarService (uses CalendarServiceProvider)
  *      └── CalendarServiceProvider
- *          ├── Domain Repositories
- *          ├── Domain Engines
+ *      |   ├── Domain Repositories
+ *      |   ├── Domain Engines
+ *      |   └── Use Cases
+ *      └── QDueUserService
  *          └── Use Cases
  * </pre>
  *
@@ -140,7 +141,7 @@ public class ServiceProviderImpl implements ServiceProvider {
             }
 
             try {
-                Log.d( TAG, "== Initializing services with CalendarServiceProvider integration..." );
+                Log.d( TAG, "Initializing services" );
 
                 // Initialize database
                 mDatabase = QDueDatabase.getInstance( mContext );
@@ -173,7 +174,6 @@ public class ServiceProviderImpl implements ServiceProvider {
             try {
                 // Shutdown services in reverse dependency order
 
-                // CalendarService first (highest level)
                 if (mCalendarService != null) {
                     mCalendarService.cleanup();
                     mCalendarService = null;
@@ -205,10 +205,12 @@ public class ServiceProviderImpl implements ServiceProvider {
                     mQDueUserService = null;
                     Log.i( TAG, "QDueUserService shutdown" );
                 }
+
                 if (mLocaleManager != null) {
                     mLocaleManager = null;
                     Log.i( TAG, "LocaleManager shutdown" );
                 }
+
                 if (mDomainLocalizer != null) {
                     mDomainLocalizer = null;
                     Log.i( TAG, "DomainLocalizer shutdown" );
@@ -267,6 +269,8 @@ public class ServiceProviderImpl implements ServiceProvider {
         }
         return mDomainLocalizer;
     }
+
+
 
     // ==================== CALENDAR SERVICES ====================
 
@@ -327,20 +331,14 @@ public class ServiceProviderImpl implements ServiceProvider {
                     Log.d( TAG, "Creating QDueUserService instance" );
 
                     // Create QDueUserRepository
-                    QDueUserDao qDueUserDao = mCalendarDatabase.qDueUserDao();
                     QDueUserRepository qDueUserRepository = new QDueUserRepositoryImpl( getCalendarDatabase() );
 
                     // Create QDueUserUseCases
                     QDueUserUseCases qDueUserUseCases = new QDueUserUseCases( qDueUserRepository );
 
-                    // Create DomainLocalizer (or get existing instance)
-                    DomainLocalizer domainLocalizer = getDomainLocalizer().scope( "qdueuser" );
-
                     // Create QDueUserService
                     mQDueUserService = new QDueUserServiceImpl(
-                            mContext,
-                            qDueUserUseCases,
-                            domainLocalizer
+                            qDueUserUseCases
                     );
                 }
             }

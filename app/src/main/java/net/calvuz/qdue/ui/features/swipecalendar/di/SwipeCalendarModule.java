@@ -113,7 +113,7 @@ public class SwipeCalendarModule {
 
         this.mQDueUser = mUserService.getPrimaryUser().join().getData();
         if (mQDueUser == null) {
-            throw new RuntimeException("Primary User is null");
+            throw new RuntimeException( "Primary User is null" );
         }
 
         // Initialize clean architecture components
@@ -257,26 +257,26 @@ public class SwipeCalendarModule {
                                     Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate( result.getData() );
 
                                     callback.onSuccess( eventsMap );
-                                    Log.d( TAG, "✅ Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)" );
+                                    Log.d( TAG, "Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)" );
                                 } catch (Exception e) {
-                                    Log.e( TAG, "❌ Failed to process events for " + month, e );
+                                    Log.e( TAG, "Failed to process events for " + month, e );
                                     callback.onError( e );
                                 }
                             } else {
                                 result.getErrorMessage();
                                 String errorMsg = result.getErrorMessage();
                                 Exception error = new RuntimeException( "Failed to load events: " + errorMsg );
-                                Log.w( TAG, "❌ Events service returned error for " + month + ": " + errorMsg );
+                                Log.w( TAG, "Events service returned error for " + month + ": " + errorMsg );
                                 callback.onError( error );
                             }
                         } )
                         .exceptionally( throwable -> {
-                            Log.e( TAG, "❌ Exception in async events loading for " + month, throwable );
+                            Log.e( TAG, "Exception in async events loading for " + month, throwable );
                             callback.onError( new RuntimeException( "Async events loading failed", throwable ) );
                             return null;
                         } );
             } catch (Exception e) {
-                Log.e( TAG, "❌ Failed to initiate events loading for " + month, e );
+                Log.e( TAG, "Failed to initiate events loading for " + month, e );
                 callback.onError( e );
             }
         }
@@ -290,34 +290,59 @@ public class SwipeCalendarModule {
          * @param callback Callback for async result delivery
          */
         @Override
-        public void loadWorkScheduleForMonth(@NonNull YearMonth month,
-                                             @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, WorkScheduleDay>> callback) {
-
-            Log.d( TAG, "Loading work schedule for month: " + month + " (userID: " + mQDueUser + ")" );
+        public void loadWorkScheduleForMonth(
+                @NonNull YearMonth month,
+                @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, WorkScheduleDay>> callback
+        ) {
+            Log.d( TAG, "Loading work schedule for month {" + month + "} {" + mQDueUser + "}" );
 
             try {
-                // Use GenerateUserScheduleUseCase.executeForMonth with current user ID
-                mGenerateUserScheduleUseCase.executeForMonth( mQDueUser.getId(), month )
+                mCalendarServiceProvider.getUserWorkScheduleService().generateWorkScheduleForUser(
+                                mQDueUser.getId(), month )
                         .thenAccept( result -> {
-                            if (result.isSuccess() && result.getData() != null) {
+                            if (result.isSuccess() && result.hasData()) {
+                                assert result.getData() != null;
                                 callback.onSuccess( result.getData() );
-                                Log.d( TAG, "✅ Work schedule loaded successfully via GenerateUserScheduleUseCase for " + month +
-                                        " (user: " + mQDueUser + ", " + result.getData().size() + " days)" );
+                                Log.d( TAG, "Work schedule loaded successfully via generateWorkScheduleForUser "
+                                        + "{" +  month + "} {" + mQDueUser + "} {" + result.getData().size() + " days}" );
                             } else {
                                 result.getErrorMessage();
                                 String errorMsg = result.getErrorMessage();
                                 Exception error = new RuntimeException( "Failed to load work schedule: " + errorMsg );
-                                Log.w( TAG, "❌ GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
+                                Log.w( TAG, "GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
                                 callback.onError( error );
                             }
                         } )
                         .exceptionally( throwable -> {
-                            Log.e( TAG, "❌ Exception in async work schedule loading for " + month, throwable );
+                            Log.e( TAG, "Exception in async work schedule loading for " + month, throwable );
                             callback.onError( new RuntimeException( "Async work schedule loading failed", throwable ) );
                             return null;
                         } );
+
+                // Old code
+//                // Use GenerateUserScheduleUseCase.executeForMonth with current user ID
+//                mGenerateUserScheduleUseCase.executeForMonth( mQDueUser.getId(), month )
+//                        .thenAccept( result -> {
+//                            if (result.isSuccess() && result.hasData()) {
+//                                assert result.getData() != null;
+//                                callback.onSuccess( result.getData() );
+//                                Log.d( TAG, "Work schedule loaded successfully via GenerateUserScheduleUseCase for " + month +
+//                                        " (user: " + mQDueUser + ", " + result.getData().size() + " days)" );
+//                            } else {
+//                                result.getErrorMessage();
+//                                String errorMsg = result.getErrorMessage();
+//                                Exception error = new RuntimeException( "Failed to load work schedule: " + errorMsg );
+//                                Log.w( TAG, "GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
+//                                callback.onError( error );
+//                            }
+//                        } )
+//                        .exceptionally( throwable -> {
+//                            Log.e( TAG, "Exception in async work schedule loading for " + month, throwable );
+//                            callback.onError( new RuntimeException( "Async work schedule loading failed", throwable ) );
+//                            return null;
+//                        } );
             } catch (Exception e) {
-                Log.e( TAG, "❌ Failed to initiate work schedule loading for " + month, e );
+                Log.e( TAG, "Failed to initiate work schedule loading for " + month, e );
                 callback.onError( e );
             }
         }
@@ -458,9 +483,9 @@ public class SwipeCalendarModule {
             mQDueUser = null;
 
             mIsDestroyed = true;
-            Log.d( TAG, "✅ SwipeCalendarModule destroyed successfully" );
+            Log.d( TAG, "SwipeCalendarModule destroyed successfully" );
         } catch (Exception e) {
-            Log.e( TAG, "❌ Error during SwipeCalendarModule destruction", e );
+            Log.e( TAG, "Error during SwipeCalendarModule destruction", e );
             mIsDestroyed = true; // Mark as destroyed even if cleanup failed
         }
     }
@@ -475,24 +500,22 @@ public class SwipeCalendarModule {
      */
     @NonNull
     public String getModuleInfo() {
-        StringBuilder info = new StringBuilder();
-        info.append( "SwipeCalendarModule Status (Single User):\n" );
-        info.append( "──────────────────────────────────────────\n" );
-        info.append( "• Destroyed: " ).append( mIsDestroyed ).append( "\n" );
-        info.append( "• Dependencies Ready: " ).append( areDependenciesReady() ).append( "\n" );
-        info.append( "• Current User ID: " ).append( mUserService.getPrimaryUser() ).append( "\n" );
-        info.append( "\nComponents:\n" );
-        info.append( "• State Manager: " ).append( mStateManager != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
-        info.append( "• Pager Adapter: " ).append( mPagerAdapter != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
-        info.append( "• Data Loader: " ).append( mDataLoader != null ? "✅ Created" : "❌ Not Created" ).append( "\n" );
-        info.append( "\nClean Architecture:\n" );
-        info.append( "• GenerateUserScheduleUseCase: " ).append( mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready" ).append( "\n" );
-        info.append( "\nServices:\n" );
-        info.append( "• Events Service: " ).append( mEventsService != null ? "✅ Available" : "❌ Unavailable" ).append( "\n" );
-        info.append( "• User Service: " ).append( "✅ Available" ).append( "\n" );
-        info.append( "• WorkSchedule Repository: " ).append( mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable" );
 
-        return info.toString();
+        return "SwipeCalendarModule Status (Single User):\n" +
+                "──────────────────────────────────────────\n" +
+                "• Destroyed: " + mIsDestroyed + "\n" +
+                "• Dependencies Ready: " + areDependenciesReady() + "\n" +
+                "• Current User ID: " + mUserService.getPrimaryUser() + "\n" +
+                "\nComponents:\n" +
+                "• State Manager: " + (mStateManager != null ? "✅ Created" : "❌ Not Created") + "\n" +
+                "• Pager Adapter: " + (mPagerAdapter != null ? "✅ Created" : "❌ Not Created") + "\n" +
+                "• Data Loader: " + (mDataLoader != null ? "✅ Created" : "❌ Not Created") + "\n" +
+                "\nClean Architecture:\n" +
+                "• GenerateUserScheduleUseCase: " + (mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready") + "\n" +
+                "\nServices:\n" +
+                "• Events Service: " + (mEventsService != null ? "✅ Available" : "❌ Unavailable") + "\n" +
+                "• User Service: " + "✅ Available" + "\n" +
+                "• WorkSchedule Repository: " + (mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable");
     }
 
     /**

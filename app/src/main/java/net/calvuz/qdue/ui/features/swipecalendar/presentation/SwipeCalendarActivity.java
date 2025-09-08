@@ -3,6 +3,7 @@ package net.calvuz.qdue.ui.features.swipecalendar.presentation;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
+import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.di.impl.ServiceProviderImpl;
@@ -18,6 +20,7 @@ import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardLauncher;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 
@@ -63,13 +66,9 @@ import java.time.LocalDate;
  * Intent intent = SwipeCalendarActivity.createIntent(context, null, userID);
  * startActivity(intent);
  * </pre>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Debug Activity for SwipeCalendar
- * @since SwipeCalendar Debug Phase
  */
-public class SwipeCalendarActivity extends AppCompatActivity implements Injectable {
-
+public class SwipeCalendarActivity extends AppCompatActivity implements Injectable
+{
     private static final String TAG = "SwipeCalendarActivity";
 
     // ==================== INTENT EXTRAS ====================
@@ -153,13 +152,13 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "SwipeCalendarActivity onCreate() - Debug mode started");
-// Check if user needs to see welcome before setting up main activity
+        Log.d(TAG, "SwipeCalendarActivity onCreate()");
+
+        // Check if user needs to see welcome before setting up main activity
         if (shouldRedirectToWelcome()) {
             redirectToWelcome();
             return;
         }
-
 
         // Set content view
         setContentView(R.layout.activity_swipe_calendar);
@@ -182,35 +181,17 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
         Log.d(TAG, "SwipeCalendarActivity initialization completed successfully");
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "SwipeCalendarActivity onResume() - Debug session active");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "SwipeCalendarActivity onPause() - Debug session paused");
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "SwipeCalendarActivity onDestroy() - Debug session ended");
-        super.onDestroy();
-    }
-
     // ==================== DEPENDENCY INJECTION ====================
 
     /**
      * Initialize dependency injection system.
      */
     private void initializeDependencyInjection() {
-        Log.d(TAG, "Initializing dependency injection for debug activity");
+        Log.d(TAG, "Initializing dependency injection");
 
         try {
             // Get ServiceProvider instance
-            mServiceProvider = ServiceProviderImpl.getInstance(getApplicationContext());
+            DependencyInjector.inject( this, this );
 
             // Initialize services if needed
             if (!mServiceProvider.areServicesReady()) {
@@ -221,7 +202,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
             // Initialize LocaleManager for internationalization
             mLocaleManager = new LocaleManager(getApplicationContext());
 
-            Log.d(TAG, "Dependency injection completed successfully");
+            Log.i(TAG, "Dependency injection completed successfully");
 
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize dependency injection", e);
@@ -232,18 +213,14 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
     @Override
     public void inject(ServiceProvider serviceProvider) {
         // Implementation of Injectable interface
-        // Dependencies are already injected in initializeDependencyInjection()
-        Log.d(TAG, "Injectable.inject() called - dependencies already configured");
+        this.mServiceProvider = serviceProvider;
     }
 
     @Override
     public boolean areDependenciesReady() {
-        boolean ready = mServiceProvider != null &&
+        return mServiceProvider != null &&
                 mServiceProvider.areServicesReady() &&
                 mLocaleManager != null;
-
-        Log.d(TAG, "Dependencies ready check: " + ready);
-        return ready;
     }
 
     /**
@@ -254,7 +231,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
     @NonNull
     public ServiceProvider getServiceProvider() {
         if (mServiceProvider == null) {
-            throw new IllegalStateException("ServiceProvider not initialized - call initializeDependencyInjection() first");
+            throw new IllegalStateException("ServiceProvider not initialized");
         }
         return mServiceProvider;
     }
@@ -287,7 +264,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      */
     private boolean shouldRedirectToWelcome() {
         boolean shouldShow = QDuePreferences.shouldShowWelcome( this );
-        Log.d( TAG, "Should redirect to welcome: " + shouldShow );
+        Log.d( TAG, "--> Should redirect to welcome: " + shouldShow );
         return shouldShow;
     }
 
@@ -295,7 +272,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      * Redirect user to WelcomeActivity for initial setup
      */
     private void redirectToWelcome() {
-        Log.d( TAG, "Redirecting to WelcomeActivity" );
+        Log.d( TAG, "----> Redirecting to WelcomeActivity" );
 
         Intent welcomeIntent = new Intent( this, WelcomeActivity.class );
         startActivity( welcomeIntent );
@@ -357,7 +334,7 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
 
             // Configure toolbar for debug mode
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 getSupportActionBar().setDisplayShowHomeEnabled(true);
 
                 // Set localized title
@@ -423,11 +400,82 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
         // Handle Settings
         if ( itemId == R.id.action_settings ) {
             if (SettingsLauncher.isAvailable()) {
+                Log.d(TAG, "Settings button pressed - launching SettingsActivity");
                 SettingsLauncher.launch( this );
             }
             return true;
         }
+
+        // Handle Assignment
+        if ( itemId == R.id.action_assignment ) {
+            if (PatternAssignmentWizardLauncher.isAvailable()) {
+                Log.d(TAG, "Assignment button pressed - launching AssignmentActivity");
+                PatternAssignmentWizardLauncher.launch( this );
+
+            }
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    // ==================== RESULT HANDLING ====================
+
+    /**
+     * Handle results from launched activities, specifically assignment wizard.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check if result is from assignment wizard
+        if (PatternAssignmentWizardLauncher.isAssignmentUpdated(requestCode, resultCode)) {
+            Log.d(TAG, "Assignment was updated - refreshing calendar data");
+
+            // 🔄 Refresh calendar data
+            refreshCalendarData();
+
+            // Optional: Show confirmation message
+            showAssignmentUpdateConfirmation();
+        } else if (requestCode == PatternAssignmentWizardLauncher.REQUEST_FIRST_ASSIGNMENT ||
+                requestCode == PatternAssignmentWizardLauncher.REQUEST_CHANGE_ASSIGNMENT) {
+            // Assignment wizard was cancelled
+            Log.d(TAG, "Assignment wizard was cancelled");
+        }
+    }
+
+    /**
+     * Refresh calendar data after assignment changes.
+     * This method should reload data from your calendar service.
+     */
+    private void refreshCalendarData() {
+        try {
+            // 🔄 Delega al fragment per il refresh
+            if (mCalendarFragment != null) {
+                mCalendarFragment.refreshData();
+            } else {
+                // Trova il fragment se la referenza non è disponibile
+                mCalendarFragment = (SwipeCalendarFragment) getSupportFragmentManager()
+                        .findFragmentByTag("swipe_calendar");
+                if (mCalendarFragment != null) {
+                    mCalendarFragment.refreshData();
+                }
+            }
+
+            Log.d(TAG, "Calendar data refresh completed");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error refreshing calendar data", e);
+        }
+    }
+
+    /**
+     * Show confirmation that assignment was updated.
+     * Optional user feedback method.
+     */
+    private void showAssignmentUpdateConfirmation() {
+        // Mostra un Toast di conferma
+        Toast.makeText( this, "Assignment updated successfully", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Assignment update confirmation shown");
     }
 
     // ==================== INTERNATIONALIZATION HELPERS ====================

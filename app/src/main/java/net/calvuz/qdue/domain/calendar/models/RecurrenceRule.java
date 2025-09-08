@@ -3,10 +3,6 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +24,7 @@ import java.util.UUID;
  *   <li><strong>DAILY</strong>: Every N days</li>
  *   <li><strong>WEEKLY</strong>: Every N weeks on specific days</li>
  *   <li><strong>MONTHLY</strong>: Every N months on specific dates</li>
- *   <li><strong>QUATTRODUE_CYCLE</strong>: Custom 42-day QuattroDue pattern</li>
+ *   <li><strong>QUATTRODUE_CYCLE</strong>: Custom 18-day QuattroDue pattern</li>
  * </ul>
  * <h3>Supported End Conditions:</h3>
  * <ul>
@@ -43,11 +39,9 @@ import java.util.UUID;
  * </ul>
  * </pre>
  */
-public class RecurrenceRule extends LocalizableDomainModel {
+public class RecurrenceRule  {
 
     private static final String TAG = "RecurrenceRule";
-
-    private static final String LOCALIZATION_SCOPE = "recurrence";
 
     // ==================== ENUMS ====================
 
@@ -115,7 +109,6 @@ public class RecurrenceRule extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private RecurrenceRule(@NonNull Builder builder) {
-        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
         this.name = builder.name;
@@ -365,52 +358,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
         // Rest periods: 4-5, 10-11, 16-17 return FALSE
     }
 
-    // ==================== DISPLAY METHODS ====================
-
-    /**
-     * Get localized display name for UI.
-     * Falls back to name property or generates from frequency if name is null.
-     */
-    @NonNull
-    public String getDisplayName() {
-        if (name != null && !name.trim().isEmpty()) {
-            return name;
-        }
-        return localize( "frequency." + frequency.name().toLowerCase(),
-                frequency.name(), // fallback
-                frequency.name() );
-    }
-
-    /**
-     * Get localized description for UI.
-     * Falls back to description property or generates from frequency if description is null.
-     */
-    @NonNull
-    public String getDisplayDescription() {
-        if (description != null && !description.trim().isEmpty()) {
-            return description;
-        }
-        return localize( "frequency." + frequency.name().toLowerCase() + ".description",
-                "Every " + interval + " " + frequency.name().toLowerCase(), // fallback
-                interval, frequency.name().toLowerCase() );
-    }
-
-    /**
-     * Get localized end condition description.
-     */
-    @NonNull
-    public String getEndConditionDescription() {
-        switch (endType) {
-            case NEVER:
-                return localize( "end.never", "Never" );
-            case COUNT:
-                return localize( "end.count", "After {0} occurrences", count );
-            case UNTIL_DATE:
-                return localize( "end.until", "Until {0}", endDate );
-            default:
-                return localizeOrKey( "end." + endType.name().toLowerCase() );
-        }
-    }
+    // ==================== CONVERSIONS ====================
 
     @NonNull
     public String toRRuleString() {
@@ -460,56 +408,30 @@ public class RecurrenceRule extends LocalizableDomainModel {
     }
 
     private String dayOfWeekToRRule(DayOfWeek dayOfWeek) {
-        switch (dayOfWeek) {
-            case MONDAY:
-                return "MO";
-            case TUESDAY:
-                return "TU";
-            case WEDNESDAY:
-                return "WE";
-            case THURSDAY:
-                return "TH";
-            case FRIDAY:
-                return "FR";
-            case SATURDAY:
-                return "SA";
-            case SUNDAY:
-                return "SU";
-            default:
-                return "";
-        }
+        return switch (dayOfWeek) {
+            case MONDAY -> "MO";
+            case TUESDAY -> "TU";
+            case WEDNESDAY -> "WE";
+            case THURSDAY -> "TH";
+            case FRIDAY -> "FR";
+            case SATURDAY -> "SA";
+            case SUNDAY -> "SU";
+            default -> "";
+        };
     }
 
     // ==================== FACTORY METHODS ====================
 
     @NonNull
-    public static RecurrenceRule createQuattroDueCycle(@NonNull LocalDate startDate,
-                                                       @Nullable DomainLocalizer localizer) {
+    public static RecurrenceRule createQuattroDueCycle(
+            @NonNull LocalDate startDate
+    ) {
         return builder()
                 .frequency( Frequency.QUATTRODUE_CYCLE )
                 .startDate( startDate )
                 .cycleLength( 18 )
                 .workDays( 4 )
                 .restDays( 2 )
-                .localizer( localizer )
-                .build();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    /**
-     * Create a copy of this object with localizer injected.
-     * Useful for adding localization to existing instances.
-     *
-     * @param localizer DomainLocalizer to inject
-     * @return New instance with localizer support
-     */
-    @Override
-    @NonNull
-    public RecurrenceRule withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder()
-                .copyFrom( this )
-                .localizer( localizer )
                 .build();
     }
 
@@ -520,7 +442,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
         return new Builder();
     }
 
-    public static class Builder extends LocalizableBuilder<RecurrenceRule, Builder> {
+    public static class Builder {
 
         private String id;
         private String name;
@@ -564,7 +486,7 @@ public class RecurrenceRule extends LocalizableDomainModel {
             this.createdAt = source.createdAt;
             this.updatedAt = source.updatedAt;
 
-            return copyLocalizableFrom( source );
+            return this;
         }
 
         @NonNull
@@ -687,13 +609,6 @@ public class RecurrenceRule extends LocalizableDomainModel {
             return this;
         }
 
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
-
-        @Override
         @NonNull
         public RecurrenceRule build() {
             return new RecurrenceRule( this );

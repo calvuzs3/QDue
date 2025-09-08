@@ -6,7 +6,7 @@
     Features:
     - Special styling for rest day option
     - Rest icon and descriptive text
-    - Distinct visual appearance from work shifts
+    - Distinct visual appearance from work workShifts
     - Material Design 3 card styling
 -->
 <com.google.android.material.card.MaterialCardView

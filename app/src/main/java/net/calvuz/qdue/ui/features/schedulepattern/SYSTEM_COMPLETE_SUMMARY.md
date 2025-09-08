@@ -80,7 +80,7 @@ The **User Schedule Pattern Creation feature** is now fully implemented and read
 ### **1. Pattern Creation Interface**
 - **Single Page Form**: All functionality accessible in one activity
 - **Visual Pattern Builder**: Add/remove days with real-time preview
-- **Shift Selection**: Choose from database shifts or rest days
+- **Shift Selection**: Choose from database workShifts or rest days
 - **Date Selection**: Start date picker with validation
 - **Pattern Statistics**: Real-time work/rest day calculations
 
@@ -143,7 +143,7 @@ The **User Schedule Pattern Creation feature** is now fully implemented and read
 
 ### **Intuitive Workflow**
 1. **Select Start Date** → DatePicker with validation
-2. **Build Pattern** → Add shifts/rest days in sequence
+2. **Build Pattern** → Add workShifts/rest days in sequence
 3. **Preview Pattern** → See how it looks over time
 4. **Save Pattern** → Store as RecurrenceRule and UserScheduleAssignment
 

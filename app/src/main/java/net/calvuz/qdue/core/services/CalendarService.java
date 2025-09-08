@@ -12,6 +12,7 @@ import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -70,52 +71,6 @@ public interface CalendarService {
     @NonNull
     CompletableFuture<OperationResult<List<RecurrenceRule>>> getAllRecurrenceRules();
 
-    // ==================== WORK SCHEDULE OPERATIONS ====================
-
-    /**
-     * Get work schedule for specific user on specific date.
-     *
-     * @param userId User ID for schedule lookup
-     * @param date Target date for schedule generation
-     * @return CompletableFuture with user's WorkScheduleDay or error
-     */
-    @NonNull
-    CompletableFuture<OperationResult<WorkScheduleDay>> getUserScheduleForDate(
-            @NonNull String userId, @NonNull LocalDate date);
-
-    /**
-     * Get work schedule for specific user over date range.
-     *
-     * @param userId User ID for schedule lookup
-     * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
-     * @return CompletableFuture with Map of dates to WorkScheduleDay objects
-     */
-    @NonNull
-    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForDateRange(
-            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate);
-
-    /**
-     * Get work schedule for specific user for complete month.
-     *
-     * @param userId User ID for schedule lookup
-     * @param month Target month (year and month)
-     * @return CompletableFuture with monthly schedule map
-     */
-    @NonNull
-    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForMonth(
-            @NonNull String userId, @NonNull YearMonth month);
-
-    /**
-     * Get team schedule for specific date.
-     *
-     * @param date Target date for schedule generation
-     * @param teamId Optional team ID for filtering (null for all teams)
-     * @return CompletableFuture with team WorkScheduleDay
-     */
-    @NonNull
-    CompletableFuture<OperationResult<WorkScheduleDay>> getTeamScheduleForDate(
-            @NonNull LocalDate date, @Nullable String teamId);
 
     // ==================== CALENDAR EVENTS OPERATIONS ====================
 

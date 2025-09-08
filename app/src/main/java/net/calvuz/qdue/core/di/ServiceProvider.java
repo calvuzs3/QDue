@@ -6,6 +6,7 @@ import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
+import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 
@@ -13,6 +14,8 @@ import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
  * Dependency injection interface for service providers
  */
 public interface ServiceProvider {
+
+
 
     /**
      * Get QDueUserService for simplified user management.

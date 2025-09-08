@@ -216,12 +216,12 @@ public class GetScheduleStatsUseCase {
 
             if (schedule.hasShifts()) {
                 stats.workingDays++;
-                int dayShifts = schedule.getShifts().size();
+                int dayShifts = schedule.getWorkShifts().size();
                 stats.totalShifts += dayShifts;
 
                 // Calculate working hours for this day
                 double dayHours = 0.0;
-                for (var shift : schedule.getShifts()) {
+                for (var shift : schedule.getWorkShifts()) {
                     double shiftHours = calculateShiftDuration( shift );
                     dayHours += shiftHours;
                     stats.totalWorkingHours += shiftHours;
@@ -304,7 +304,7 @@ public class GetScheduleStatsUseCase {
     }
 
     private double calculateDayHours(@NonNull WorkScheduleDay schedule) {
-        return schedule.getShifts().stream()
+        return schedule.getWorkShifts().stream()
                 .mapToDouble( this::calculateShiftDuration )
                 .sum();
     }

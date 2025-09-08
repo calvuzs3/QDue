@@ -60,7 +60,7 @@ public interface QDueUserRepository {
      * @param userId User ID to find
      * @return CompletableFuture with found user or failure if not exists
      */
-    CompletableFuture<OperationResult<QDueUser>> getUserById(@NonNull String userId);
+    CompletableFuture<OperationResult<QDueUser>> readUser(@NonNull String userId);
 
     /**
      * Update existing QDueUser (complete update).
@@ -71,12 +71,13 @@ public interface QDueUserRepository {
     CompletableFuture<OperationResult<QDueUser>> updateUser(@NonNull QDueUser qDueUser);
 
     /**
-     * Delete QDueUser by ID.
-     *
-     * @param userId User ID to delete
-     * @return CompletableFuture with success message or failure
+     * Delete QDueUser.
+     * @param user User to delete
+     * @return CompletableFuture with true if deleted
      */
-    CompletableFuture<OperationResult<String>> deleteUser(@NonNull QDueUser user);
+    public CompletableFuture<OperationResult<Boolean>> deleteUser(@NonNull QDueUser user);
+
+    // ==================== BULK OPERATIONS ====================
 
     /**
      * Delete all QDueUsers (for testing/reset purposes).
@@ -93,7 +94,7 @@ public interface QDueUserRepository {
      * @param email Email to search for
      * @return CompletableFuture with found user or failure if not exists
      */
-    CompletableFuture<OperationResult<QDueUser>> getUserByEmail(@NonNull String email);
+    CompletableFuture<OperationResult<QDueUser>> readUserByEmail(@NonNull String email);
 
     /**
      * Get all QDueUsers (for admin/management purposes).
@@ -103,7 +104,7 @@ public interface QDueUserRepository {
     CompletableFuture<OperationResult<List<QDueUser>>> getAllUsers();
 
     /**
-     * Get the primary/active user (typically user with ID = 1L).
+     * Get the primary/active user.
      *
      * @return CompletableFuture with primary user or failure if none exists
      */

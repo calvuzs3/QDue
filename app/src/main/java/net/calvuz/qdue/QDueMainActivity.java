@@ -25,7 +25,6 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
-import net.calvuz.qdue.diagnosis.UIDataFlowTest;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.core.common.utils.Library;
@@ -1087,9 +1086,6 @@ public class QDueMainActivity extends BaseActivity {
         try {
             boolean shouldShowMenu = shouldShowAppBar() && getToolbar() != null;
             boolean hasExtendedDrawer = drawerLayout != null && drawerNavigation != null;
-
-            UIDataFlowTest.addDebugMenuOption( this, menu );
-
 
             if (shouldShowMenu) {
                 // Show toolbar menu only if we don't have extended drawer

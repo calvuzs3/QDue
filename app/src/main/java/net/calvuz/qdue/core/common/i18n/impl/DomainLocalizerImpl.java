@@ -44,10 +44,6 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * - domain_calendar_exceptions_type_vacation
  * - domain_calendar_validation_conflict_detected
  * </pre>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Core Layer Bridge Implementation
- * @since Clean Architecture Phase 2
  */
 public class DomainLocalizerImpl implements DomainLocalizer {
 

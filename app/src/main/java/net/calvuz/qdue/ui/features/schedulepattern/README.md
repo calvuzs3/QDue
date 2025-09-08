@@ -22,7 +22,7 @@ startActivity(editIntent);
 
 ```java
 // The feature integrates with existing repositories:
-// - ShiftRepository: Access to predefined shifts (morning, night, afternoon)
+// - ShiftRepository: Access to predefined workShifts (morning, night, afternoon)
 // - UserScheduleAssignmentRepository: Persistence of user patterns
 // - RecurrenceRuleRepository: Pattern rule storage
 // - CalendarService: Main calendar operations
@@ -67,7 +67,7 @@ public void inject(@NonNull ServiceProvider serviceProvider) {
 
 - **Single Page Form**: All functionality in one activity
 - **Start Date Selection**: DatePicker for pattern beginning
-- **Pattern Construction**: Add shifts or rest days in sequence
+- **Pattern Construction**: Add workShifts or rest days in sequence
 - **Real-time Preview**: Visual representation of pattern
 - **Material Design 3**: Modern Android design system
 
@@ -92,8 +92,8 @@ public void inject(@NonNull ServiceProvider serviceProvider) {
 
 - **Pattern Length**: Must have at least one day, max 365 days
 - **Start Date**: Cannot be in the past
-- **Shift Validation**: All shifts must exist in system
-- **Rest Day Handling**: Rest days represented as null shifts
+- **Shift Validation**: All workShifts must exist in system
+- **Rest Day Handling**: Rest days represented as null workShifts
 
 ### Data Flow
 

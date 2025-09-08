@@ -30,7 +30,6 @@ import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
-import net.calvuz.qdue.diagnosis.UIDataFlowTest;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -70,10 +69,6 @@ import java.util.Locale;
  *   <li><strong>Range Limits</strong>: Prevent swiping beyond 1900-2100 range</li>
  *   <li><strong>Smooth Animation</strong>: Hardware-accelerated ViewPager2 transitions</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0
- * @since Database Version 6
  */
 public class SwipeCalendarFragment extends Fragment implements Injectable {
 
@@ -137,10 +132,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         SwipeCalendarFragment fragment = new SwipeCalendarFragment();
         Bundle args = new Bundle();
 
-        if ( initialDate != null ) {
+        if (initialDate != null) {
             args.putString( ARG_INITIAL_DATE, initialDate.toString() );
         }
-        if ( userId != null ) {
+        if (userId != null) {
             args.putString( ARG_USER_ID, userId );
         }
 
@@ -194,7 +189,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     public void onResume() {
         super.onResume();
 
-        if ( mIsInitialized ) {
+        if (mIsInitialized) {
             // Refresh current month data in case events changed
             refreshCurrentMonth();
         }
@@ -205,7 +200,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         super.onPause();
 
         // Mark session as inactive for proper state restoration
-        if ( mCalendarModule != null ) {
+        if (mCalendarModule != null) {
             mCalendarModule.onFragmentPause();
         }
     }
@@ -233,7 +228,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
                 .getCalendarServiceProvider()
                 .getWorkScheduleRepository();
 
-        Log.d(TAG, "✅ Services injected via DependencyInjector");
+        Log.d( TAG, "✅ Services injected via DependencyInjector" );
     }
 
     /**
@@ -241,32 +236,34 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     @Override
     public boolean areDependenciesReady() {
-        return mEventsService != null
-                && mQDueUserService != null
-                && mWorkScheduleRepository != null;
+        return mCalendarServiceProvider != null &&
+                mEventsService != null &&
+                mQDueUserService != null &&
+                mWorkScheduleRepository != null;
     }
+
+    // ==================== INITIALIZATION ====================
 
     /**
      * ✅ NEW: Standardized dependency injection using DependencyInjector
      */
     private void initializeDependencyInjection() {
         try {
-            Log.d(TAG, "Initializing dependencies with DependencyInjector...");
+            Log.d( TAG, "Initializing dependencies with DependencyInjector..." );
 
             // ✅ ONE LINE INJECTION
-            DependencyInjector.inject(this, requireActivity());
+            DependencyInjector.inject( this, requireActivity() );
 
             // ✅ VERIFICATION
-            if (!DependencyInjector.verifyInjection(this, requireActivity())) {
-                throw new RuntimeException("Dependency injection verification failed");
+            if (!DependencyInjector.verifyInjection( this, requireActivity() )) {
+                throw new RuntimeException( "Dependency injection verification failed" );
             }
 
-            Log.d(TAG, "✅ Dependencies injected and verified successfully");
-
+            Log.d( TAG, "✅ Dependencies injected and verified successfully" );
         } catch (Exception e) {
-            Log.e(TAG, "❌ Failed to initialize dependency injection", e);
-            showError(getString(R.string.error_calendar_initialization_failed));
-            throw new RuntimeException("Dependency injection failed", e);
+            Log.e( TAG, "❌ Failed to initialize dependency injection", e );
+            showError( getString( R.string.error_calendar_initialization_failed ) );
+            throw new RuntimeException( "Dependency injection failed", e );
         }
     }
 
@@ -275,7 +272,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     private void initializeFeatureComponents() {
         try {
-            mLocaleManager = new LocaleManager(requireContext());
+            mLocaleManager = new LocaleManager( requireContext() );
 
             mCalendarModule = new SwipeCalendarModule(
                     requireActivity(),  // Activity context for theming
@@ -286,18 +283,17 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             );
 
             if (mUserId != null) {
-                throw new IllegalStateException("User ID not ready");
+                throw new IllegalStateException( "User ID not ready" );
             }
 
             if (!mCalendarModule.areDependenciesReady()) {
-                throw new IllegalStateException("SwipeCalendarModule dependencies not ready");
+                throw new IllegalStateException( "SwipeCalendarModule dependencies not ready" );
             }
 
-            Log.d(TAG, "✅ Feature components initialized successfully");
-
+            Log.d( TAG, "✅ Feature components initialized successfully" );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize feature components", e);
-            throw new RuntimeException("Feature components initialization failed", e);
+            Log.e( TAG, "Failed to initialize feature components", e );
+            throw new RuntimeException( "Feature components initialization failed", e );
         }
     }
 
@@ -308,10 +304,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     private void parseArguments() {
         Bundle args = getArguments();
-        if ( args != null ) {
+        if (args != null) {
             // Parse initial date
             String initialDateStr = args.getString( ARG_INITIAL_DATE );
-            if ( initialDateStr != null ) {
+            if (initialDateStr != null) {
                 try {
                     mInitialDate = LocalDate.parse( initialDateStr );
                 } catch (Exception e) {
@@ -321,7 +317,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             }
 
             // Parse user ID
-            if ( args.containsKey( ARG_USER_ID ) ) {
+            if (args.containsKey( ARG_USER_ID )) {
                 mUserId = args.getString( ARG_USER_ID );
             }
         }
@@ -359,17 +355,17 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     private void setupClickListeners() {
         // Previous month button
-        if ( mPreviousMonthButton != null ) {
+        if (mPreviousMonthButton != null) {
             mPreviousMonthButton.setOnClickListener( v -> navigateToPreviousMonth() );
         }
 
         // Next month button
-        if ( mNextMonthButton != null ) {
+        if (mNextMonthButton != null) {
             mNextMonthButton.setOnClickListener( v -> navigateToNextMonth() );
         }
 
         // Today button
-        if ( mTodayButton != null ) {
+        if (mTodayButton != null) {
             mTodayButton.setOnClickListener( v -> navigateToToday() );
         }
 
@@ -383,7 +379,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Configure ViewPager2 settings.
      */
     private void configureViewPager() {
-        if ( mViewPager != null ) {
+        if (mViewPager != null) {
             // Basic configuration
             mViewPager.setOffscreenPageLimit( 1 ); // Keep 1 page on each side
             mViewPager.setOverScrollMode( View.OVER_SCROLL_NEVER );
@@ -400,7 +396,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
                 public void onPageScrollStateChanged(int state) {
                     super.onPageScrollStateChanged( state );
 
-                    if ( state == ViewPager2.SCROLL_STATE_DRAGGING ) {
+                    if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
                         // Check if we're at boundaries and prevent swipe if needed
                         checkAndHandleBoundaries();
                     }
@@ -415,15 +411,11 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu( menu, inflater );
 
-        // DEBUG menu item
-        UIDataFlowTest.addDebugMenuOption( getActivity(), menu );
-
         inflater.inflate( R.menu.menu_main, menu );
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
 
         return super.onOptionsItemSelected( item );
     }
@@ -434,7 +426,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Setup calendar components and initialize state.
      */
     private void setupCalendar() {
-        if ( mCalendarModule == null ) {
+        if (mCalendarModule == null) {
             Log.e( TAG, "Calendar module not initialized" );
             return;
         }
@@ -448,13 +440,13 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             mPagerAdapter.setOnMonthInteractionListener( new MonthInteractionListener() );
 
             // Set adapter to ViewPager
-            if ( mViewPager != null ) {
+            if (mViewPager != null) {
                 mViewPager.setAdapter( mPagerAdapter );
             }
 
             // Determine initial position
             int initialPosition;
-            if ( mInitialDate != null ) {
+            if (mInitialDate != null) {
                 // Use provided initial date
                 YearMonth initialMonth = YearMonth.from( mInitialDate );
                 initialPosition = SwipeCalendarStateManager.getPositionForMonth( initialMonth );
@@ -470,10 +462,47 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
 
             mIsInitialized = true;
             Log.d( TAG, "Calendar setup completed successfully" );
-
         } catch (Exception e) {
             Log.e( TAG, "Failed to setup calendar", e );
             showError( getString( R.string.error_calendar_setup_failed ) );
+        }
+    }
+
+    // ==================== DATA UPDATES ====================
+
+    /**
+     * Public method to refresh calendar data when called from parent activity.
+     * This method should be called when assignment data changes.
+     */
+    public void refreshData() {
+        Log.d( TAG, "Refreshing calendar data after assignment update" );
+
+        try {
+            // 🔄 Metodo più specifico: refresh del mese corrente usando l'adapter
+            if (mPagerAdapter != null && mCurrentVisibleMonth != null) {
+                // Usa il metodo specifico dell'adapter che gestisce correttamente cache e stato
+                mPagerAdapter.refreshMonth( mCurrentVisibleMonth );
+                Log.d( TAG, "Refreshed current month: " + mCurrentVisibleMonth );
+            }
+
+            // 🔄 Opzionale: refresh anche dei mesi adiacenti se necessario
+            if (mPagerAdapter != null && mCurrentVisibleMonth != null) {
+                YearMonth previousMonth = mCurrentVisibleMonth.minusMonths( 1 );
+                YearMonth nextMonth = mCurrentVisibleMonth.plusMonths( 1 );
+
+                mPagerAdapter.refreshMonth( previousMonth );
+                mPagerAdapter.refreshMonth( nextMonth );
+
+                Log.d( TAG, "Refreshed adjacent months for better UX" );
+            }
+
+            // 🔄 Se hai bisogno di invalidare completamente la cache
+            // mPagerAdapter.clearCache(); // Solo in casi estremi
+
+            Log.d( TAG, "Calendar data refresh completed successfully" );
+        } catch (Exception e) {
+            Log.e( TAG, "Error during calendar data refresh", e );
+            showError( "Failed to refresh calendar data" );
         }
     }
 
@@ -487,7 +516,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         mCurrentVisibleMonth = month;
 
         // Update state manager
-        if ( mStateManager != null ) {
+        if (mStateManager != null) {
             mStateManager.updatePosition( position );
         }
 
@@ -504,7 +533,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Navigate to specific position.
      */
     private void navigateToPosition(int position, boolean smooth) {
-        if ( mViewPager != null && SwipeCalendarStateManager.isValidPosition( position ) ) {
+        if (mViewPager != null && SwipeCalendarStateManager.isValidPosition( position )) {
             mViewPager.setCurrentItem( position, smooth );
         }
     }
@@ -513,9 +542,9 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Navigate to previous month.
      */
     private void navigateToPreviousMonth() {
-        if ( mViewPager != null ) {
+        if (mViewPager != null) {
             int currentPosition = mViewPager.getCurrentItem();
-            if ( currentPosition > 0 ) {
+            if (currentPosition > 0) {
                 navigateToPosition( currentPosition - 1, true );
             } else {
                 showBoundaryMessage( true );
@@ -527,10 +556,10 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Navigate to next month.
      */
     private void navigateToNextMonth() {
-        if ( mViewPager != null ) {
+        if (mViewPager != null) {
             int currentPosition = mViewPager.getCurrentItem();
             int maxPosition = SwipeCalendarStateManager.getTotalMonths() - 1;
-            if ( currentPosition < maxPosition ) {
+            if (currentPosition < maxPosition) {
                 navigateToPosition( currentPosition + 1, true );
             } else {
                 showBoundaryMessage( false );
@@ -542,7 +571,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Navigate to today's month.
      */
     private void navigateToToday() {
-        if ( mStateManager != null ) {
+        if (mStateManager != null) {
             int todayPosition = mStateManager.navigateToToday();
             navigateToPosition( todayPosition, true );
 
@@ -555,19 +584,19 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Check boundaries and handle swipe blocking.
      */
     private void checkAndHandleBoundaries() {
-        if ( mViewPager != null ) {
+        if (mViewPager != null) {
             int currentPosition = mViewPager.getCurrentItem();
             int maxPosition = SwipeCalendarStateManager.getTotalMonths() - 1;
 
             // At start boundary
-            if ( currentPosition == 0 ) {
+            if (currentPosition == 0) {
                 // Prevent further swiping left (previous)
                 // ViewPager2 handles this automatically, but we can show feedback
                 Log.v( TAG, "At start boundary, preventing further left swipe" );
             }
 
             // At end boundary
-            else if ( currentPosition == maxPosition ) {
+            else if (currentPosition == maxPosition) {
                 // Prevent further swiping right (next)
                 // ViewPager2 handles this automatically, but we can show feedback
                 Log.v( TAG, "At end boundary, preventing further right swipe" );
@@ -581,7 +610,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Update header text for current month.
      */
     private void updateHeaderForMonth(@NonNull YearMonth month) {
-        if ( mMonthYearText != null && mLocaleManager != null ) {
+        if (mMonthYearText != null && mLocaleManager != null) {
             // Format month and year according to current locale
             String monthName = month.getMonth().getDisplayName( TextStyle.FULL, mLocaleManager.getCurrentLocale() );
             String yearText = String.valueOf( month.getYear() );
@@ -598,19 +627,19 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         int maxPosition = SwipeCalendarStateManager.getTotalMonths() - 1;
 
         // Previous button
-        if ( mPreviousMonthButton != null ) {
+        if (mPreviousMonthButton != null) {
             mPreviousMonthButton.setEnabled( position > 0 );
             mPreviousMonthButton.setAlpha( position > 0 ? 1.0f : 0.5f );
         }
 
         // Next button
-        if ( mNextMonthButton != null ) {
+        if (mNextMonthButton != null) {
             mNextMonthButton.setEnabled( position < maxPosition );
             mNextMonthButton.setAlpha( position < maxPosition ? 1.0f : 0.5f );
         }
 
         // Today button - enable if not already at current month
-        if ( mTodayButton != null && mStateManager != null ) {
+        if (mTodayButton != null && mStateManager != null) {
             int todayPosition = mStateManager.getTodayPosition();
             boolean isAtToday = position == todayPosition;
             mTodayButton.setEnabled( !isAtToday );
@@ -629,7 +658,6 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         Toast.makeText( requireContext(), message, Toast.LENGTH_SHORT ).show();
     }
 
-
     // ==================== EVENT HANDLING ====================
 
     /**
@@ -642,7 +670,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             // Handle day click - could open day detail view or event creation
             Log.d( TAG, "Day clicked: " + date + ", events count: " + events.size() );
 
-            if ( !events.isEmpty() ) {
+            if (!events.isEmpty()) {
                 // Has events - could show events list or detail
                 openDayEventsView( date, events );
             } else {
@@ -708,7 +736,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Refresh current month data.
      */
     private void refreshCurrentMonth() {
-        if ( mPagerAdapter != null && mCurrentVisibleMonth != null ) {
+        if (mPagerAdapter != null && mCurrentVisibleMonth != null) {
             mPagerAdapter.refreshMonth( mCurrentVisibleMonth );
         }
     }
@@ -717,7 +745,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Show error message to user.
      */
     private void showError(@NonNull String message) {
-        if ( mRootView != null ) {
+        if (mRootView != null) {
             Snackbar.make( mRootView, message, Snackbar.LENGTH_LONG )
                     .setAction( R.string.action_retry, v -> setupCalendar() )
                     .show();
@@ -731,13 +759,13 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      */
     private void cleanup() {
         // Cleanup calendar module
-        if ( mCalendarModule != null ) {
+        if (mCalendarModule != null) {
             mCalendarModule.onDestroy();
             mCalendarModule = null;
         }
 
         // Clear ViewPager adapter
-        if ( mViewPager != null ) {
+        if (mViewPager != null) {
             mViewPager.setAdapter( null );
         }
 
@@ -766,7 +794,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * @param smooth Whether to use smooth animation
      */
     public void navigateToMonth(@NonNull YearMonth month, boolean smooth) {
-        if ( SwipeCalendarStateManager.isValidPosition( SwipeCalendarStateManager.getPositionForMonth( month ) ) ) {
+        if (SwipeCalendarStateManager.isValidPosition( SwipeCalendarStateManager.getPositionForMonth( month ) )) {
             int position = SwipeCalendarStateManager.getPositionForMonth( month );
             navigateToPosition( position, smooth );
         } else {

@@ -73,7 +73,7 @@ public class GetTeamMembersUseCase {
                 // 3. Get user details for all assignments
                 List<TeamMemberDetail> memberDetails = new ArrayList<>();
                 for (UserTeamAssignment assignment : assignments) {
-                    QDueUser user = mQDueUserRepository.getUserById(assignment.getUserID()).get().getData();
+                    QDueUser user = mQDueUserRepository.readUser(assignment.getUserID()).get().getData();
                     if (user != null) {
                         memberDetails.add(new TeamMemberDetail(assignment, user));
                     }

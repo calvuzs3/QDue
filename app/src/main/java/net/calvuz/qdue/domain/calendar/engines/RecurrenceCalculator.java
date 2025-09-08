@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 
+import net.calvuz.qdue.core.common.utils.ColorUtils;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
@@ -352,7 +353,6 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         } catch (Exception e) {
             Log.e( TAG, "Error parsing recurrence pattern, returning an empty default", e );
             return new RecurrencePattern();
-//            return createDefaultPattern();
         }
     }
 
@@ -542,9 +542,9 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                 assignment.shiftType = sequence.shiftType;
                 assignment.startTime = sequence.startTime;
                 assignment.endTime = sequence.endTime;
+                assignment.colorHex = sequence.colorHex;
                 assignment.duration = sequence.duration;
                 assignment.cycleDay = cycleDay;
-
                 assignments.add( assignment );
             }
         }
@@ -561,6 +561,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
                     .shift( shift )
                     .startTime( shift.getStartTime() )
                     .endTime( shift.getEndTime() )
+                    .colorHex( shift.getColorHex() )
                     .description( "QuattroDue shift for team " + assignment.getTeamId() );
 
             // CRITICAL: Add user's team to the shift
@@ -584,15 +585,20 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
             return null; // No shift for rest days
         }
 
+
         try {
             // Parse timing information
             LocalTime startTime = parseTime( assignment.startTime );
             LocalTime endTime = parseTime( assignment.endTime );
 
+            String colorHex = ColorUtils.getTimeBasedColor( startTime );
+
             // Create Shift domain object
             return Shift.builder( assignment.shiftType )
                     .setStartTime( startTime )
                     .setEndTime( endTime )
+                    .setColorHex( colorHex )
+                    .setShiftType( Shift.ShiftType.valueOf( assignment.shiftType.toUpperCase() ) )
                     .setBreakTimeDuration( Duration.ZERO )
                     .build();
         } catch (Exception e) {
@@ -760,6 +766,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         public List<Integer> days;
         public String startTime;
         public String endTime;
+        public String colorHex;
         public int duration;
     }
 
@@ -767,6 +774,7 @@ public class RecurrenceCalculator extends LocalizableDomainModel {
         public String shiftType;
         public String startTime;
         public String endTime;
+        public String colorHex;
         public int duration;
         public int cycleDay;
     }

@@ -3,6 +3,7 @@ package net.calvuz.qdue.core.services.impl;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
@@ -39,10 +40,6 @@ import java.util.regex.Pattern;
  *   <li><strong>Service Provider Integration</strong>: Compatible with existing ServiceProvider</li>
  *   <li><strong>Lifecycle Management</strong>: Proper resource cleanup and shutdown</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Clean Architecture Application Service
- * @since Clean Architecture Phase 3
  */
 public class QDueUserServiceImpl implements QDueUserService {
 
@@ -56,14 +53,13 @@ public class QDueUserServiceImpl implements QDueUserService {
 
     // ==================== DEPENDENCIES ====================
 
-    private final Context mContext;
     private final QDueUserUseCases mQDueUserUseCases;
-    private final DomainLocalizer mDomainLocalizer;
 
     // ==================== PERFORMANCE AND CACHING ====================
 
     private final ExecutorService mExecutorService;
     private final ConcurrentHashMap<String, Object> mCache;
+    private QDueUser mUser;
 
     // ==================== STATE MANAGEMENT ====================
 
@@ -75,36 +71,34 @@ public class QDueUserServiceImpl implements QDueUserService {
     /**
      * Constructor for dependency injection.
      *
-     * @param context          Application context
      * @param qDueUserUseCases Domain use cases for business logic
-     * @param domainLocalizer  Domain localizer for i18n support
      */
-    public QDueUserServiceImpl(@NonNull Context context,
-                               @NonNull QDueUserUseCases qDueUserUseCases,
-                               @NonNull DomainLocalizer domainLocalizer) {
-        this.mContext = context.getApplicationContext();
+    public QDueUserServiceImpl(
+            @NonNull QDueUserUseCases qDueUserUseCases
+    ) {
         this.mQDueUserUseCases = qDueUserUseCases;
-        this.mDomainLocalizer = domainLocalizer;
 
         // Initialize performance components
         this.mExecutorService = Executors.newFixedThreadPool( 1 );
         this.mCache = new ConcurrentHashMap<>();
+        this.mUser = null;
 
         // Mark as initialized
         this.mIsInitialized = true;
 
-        Log.d( TAG, "QDueUserServiceImpl initialized via dependency injection" );
+        Log.d( TAG, "QDueUserServiceImpl initialized" );
     }
 
     // ==================== CRUD OPERATIONS ====================
 
     @Override
-    public CompletableFuture<OperationResult<QDueUser>> createUser(@NonNull String nickname, @NonNull String email) {
+    public CompletableFuture<OperationResult<QDueUser>> createUser(
+            @Nullable String nickname,
+            @Nullable String email
+    ) {
         if (notInitialized()) {
             return CompletableFuture.completedFuture( getShutdownResult() );
         }
-
-        Log.d( TAG, "Service: Creating user with nickname: '" + nickname + "', email: '" + email + "'" );
 
         return mQDueUserUseCases.getCreateUserUseCase().execute( nickname, email )
                 .thenApply( result -> {
@@ -133,7 +127,7 @@ public class QDueUserServiceImpl implements QDueUserService {
             );
         }
 
-        return mQDueUserUseCases.getUserUseCase().execute( userId )
+        return mQDueUserUseCases.getReadUserUseCase().execute( userId )
                 .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Cache successful result
@@ -210,7 +204,7 @@ public class QDueUserServiceImpl implements QDueUserService {
             );
         }
 
-        return mQDueUserUseCases.getUserUseCase().executeByEmail( email )
+        return mQDueUserUseCases.getReadUserUseCase().executeByEmail( email )
                 .thenApply( result -> {
                     if (result.isSuccess()) {
                         // Cache successful result
@@ -245,25 +239,36 @@ public class QDueUserServiceImpl implements QDueUserService {
             return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        return mQDueUserUseCases.getUserUseCase().execute();
+        // Check cache first
+        if (mUser != null) {
+            return CompletableFuture.completedFuture( OperationResult.success( mUser,
+                    OperationResult.OperationType.READ ) );
+        }
+        return mQDueUserUseCases.getReadUserUseCase().execute();
     }
 
     // ==================== ONBOARDING OPERATIONS ====================
 
+    /**
+     * Save the new user
+     *
+     * @param nickname User nickname (optional, empty string if not provided)
+     * @param email    User email (optional, empty string if not provided)
+     * @return CompletableFuture with OperationResult<QDueUser>
+     */
     @Override
     public CompletableFuture<OperationResult<QDueUser>> onboardUser(@NonNull String nickname, @NonNull String email) {
         if (notInitialized()) {
+            Log.e( TAG, "❌ Service operation attempted after shutdown" );
             return CompletableFuture.completedFuture( getShutdownResult() );
         }
-
-        Log.d( TAG, "Service: Starting user onboarding" );
 
         return mQDueUserUseCases.getOnboardingUseCase().execute( nickname, email )
                 .thenApply( result -> {
                     if (result.isSuccess()) {
+                        mUser = result.getData();
                         // Clear cache on successful onboarding
                         mCache.clear();
-                        Log.d( TAG, "✅ Service: User onboarding completed" );
                     }
                     return result;
                 } );
@@ -272,12 +277,10 @@ public class QDueUserServiceImpl implements QDueUserService {
     @Override
     public CompletableFuture<OperationResult<Boolean>> isOnboardingNeeded() {
         if (notInitialized()) {
-            return CompletableFuture.completedFuture(
-                    OperationResult.failure( "Service is shutdown", OperationResult.OperationType.READ )
-            );
+            return CompletableFuture.completedFuture( getShutdownResult() );
         }
 
-        return mQDueUserUseCases.getOnboardingUseCase().isOnboardingNeeded();
+        return mQDueUserUseCases.getIsOnboardingNeededUseCase().execute();
     }
 
     // ==================== VALIDATION OPERATIONS ====================
@@ -311,8 +314,6 @@ public class QDueUserServiceImpl implements QDueUserService {
             );
         }
 
-        Log.w( TAG, "⚠️ Delete all users requested - not yet implemented" );
-
         // Implementation would go here
         return CompletableFuture.completedFuture(
                 OperationResult.failure(
@@ -332,9 +333,9 @@ public class QDueUserServiceImpl implements QDueUserService {
                         "- Cache size: " + mCache.size() + "\n" +
                         "- Executor shutdown: " + mExecutorService.isShutdown() + "\n";
 
-                return OperationResult.success( status, OperationResult.OperationType.READ );
+                return OperationResult.success( status, OperationResult.OperationType.SYSTEM );
             } catch (Exception e) {
-                Log.e(TAG, "❌ Failed to get service status", e);
+                Log.e( TAG, "❌ Failed to get service status", e );
                 return OperationResult.failure(
                         "Failed to get service status",
                         OperationResult.OperationType.SYSTEM

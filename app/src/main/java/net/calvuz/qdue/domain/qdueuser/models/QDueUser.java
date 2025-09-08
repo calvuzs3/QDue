@@ -65,15 +65,16 @@ public class QDueUser {
 
     /**
      * Constructor for existing user (with ID from database).
+     * Validation is in the build()
      *
      * @param builder Builder object for user initialization
      */
     public QDueUser(@NonNull Builder builder) {
-        this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
+        this.id = builder.id;
         this.nickname = builder.nickname;
         this.email = builder.email;
-        this.createdAt = builder.createdAt >0 ? builder.createdAt : System.currentTimeMillis();
-        this.updatedAt = builder.updatedAt >0 ? builder.updatedAt : System.currentTimeMillis();
+        this.createdAt = builder.createdAt;
+        this.updatedAt = builder.updatedAt;
     }
 
     // ==================== GETTERS ====================
@@ -157,11 +158,11 @@ public class QDueUser {
 
     public static class Builder {
 
-        private String id;
-        private String nickname;
-        private String email;
-        private long createdAt;
-        private long updatedAt;
+        private String id = UUID.randomUUID().toString();
+        private String nickname = "";
+        private String email = "";
+        private long createdAt = System.currentTimeMillis();
+        private long updatedAt = System.currentTimeMillis();
 
         @NonNull
         public QDueUser.Builder copyFrom(@NonNull QDueUser source) {
@@ -175,19 +176,19 @@ public class QDueUser {
 
         @NonNull
         public QDueUser.Builder id(@Nullable String id) {
-            this.id = id;
+            if (id != null) this.id = id;
             return this;
         }
 
         @NonNull
         public QDueUser.Builder nickname(@Nullable String nickname) {
-            this.nickname = nickname;
+            if (nickname != null) this.nickname = nickname;
             return this;
         }
 
         @NonNull
         public QDueUser.Builder email(@Nullable String email) {
-            this.email = email;
+            if (email != null) this.email = email;
             return this;
         }
 
@@ -205,6 +206,9 @@ public class QDueUser {
 
         @NonNull
         public QDueUser build() {
+            assert id != null;
+            assert nickname != null;
+            assert email != null;
             return new QDueUser( this );
         }
     }
@@ -230,6 +234,17 @@ public class QDueUser {
     @NonNull
     @Override
     public String toString() {
+        return "QDueUser{" +
+                "id=" + id +
+                ", nickname='" + nickname + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
+
+    // ==================== DEBUG METHODS ====================
+
+    @NonNull
+    public String toDetailedString() {
         return "QDueUser{" +
                 "id=" + id +
                 ", nickname='" + nickname + '\'' +

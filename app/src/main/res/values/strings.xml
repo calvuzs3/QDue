@@ -141,6 +141,8 @@
     <string name="nav_header_other">Altro</string>
     <string name="nav_header_calendars">Visuale</string>
     <string name="nav_header_desc">Menu QDue</string>
+    <string name="nav_user_profile">Profilo</string>
+    <string name="nav_assignment">Assegnazione</string>
     <string name="navigation_drawer_open">Apri il cassetto menu</string>
     <string name="navigation_drawer_close">Chiudi il cassetto menu</string>
     <string name="go_to_today">Vai a oggi</string>
@@ -428,7 +430,6 @@
     <!-- ============================================ -->
 
     <!-- Navigation items -->
-    <string name="nav_user_profile">Profilo</string>
 
     <!-- Header text -->
     <string name="nav_header_menu_extended">Menu principale</string>

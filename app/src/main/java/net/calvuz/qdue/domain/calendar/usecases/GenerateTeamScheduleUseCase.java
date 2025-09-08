@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
@@ -42,7 +43,8 @@ import java.util.concurrent.CompletableFuture;
  * @version 2.0.0 - Complete Implementation
  * @since Clean Architecture Implementation
  */
-public class GenerateTeamScheduleUseCase {
+public class GenerateTeamScheduleUseCase
+{
 
     private static final String TAG = "GenerateTeamScheduleUseCase";
 
@@ -56,7 +58,9 @@ public class GenerateTeamScheduleUseCase {
      *
      * @param workScheduleRepository Repository for work schedule operations
      */
-    public GenerateTeamScheduleUseCase(@NonNull WorkScheduleRepository workScheduleRepository) {
+    public GenerateTeamScheduleUseCase(
+            @NonNull WorkScheduleRepository workScheduleRepository
+    ) {
         this.mWorkScheduleRepository = workScheduleRepository;
     }
 
@@ -65,28 +69,31 @@ public class GenerateTeamScheduleUseCase {
     /**
      * Execute use case for team schedule on specific date.
      *
-     * @param date Target date for schedule generation
+     * @param date   Target date for schedule generation
      * @param teamId Optional team ID for filtering (null for all teams)
      * @return CompletableFuture with team WorkScheduleDay
      */
     @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> executeForDate(
-            @NonNull LocalDate date, @Nullable Integer teamId) {
+    public CompletableFuture<OperationResult<WorkScheduleDay>> execute(
+            @NonNull LocalDate date,
+            @Nullable Integer teamId
+    ) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG,"Generating team schedule for date: " + date +
-                        (teamId != null ? ", teamID: " + teamId : " (all teams)"));
+                Log.d( TAG, "Generating team schedule for date: " + date +
+                        (teamId != null ? ", teamID: " + teamId : " (all teams)") );
 
                 // Validate input
-                OperationResult<Void> validation = validateInput(date, teamId);
+                OperationResult<Void> validation = validateInput( date, teamId );
                 if (!validation.isSuccess()) {
-                    return OperationResult.failure(validation.getErrorMessage() , OperationResult.OperationType.VALIDATION);
+                    return OperationResult.failure( validation.getErrorMessage(),
+                                                    OperationResult.OperationType.VALIDATION );
                 }
 
                 // Get base schedule for all users
                 OperationResult<WorkScheduleDay> scheduleResult =
-                        mWorkScheduleRepository.getWorkScheduleForDate(date, null).join();
+                        mWorkScheduleRepository.getWorkScheduleForDate( date, null ).join();
 
                 if (!scheduleResult.isSuccess()) {
                     return scheduleResult;
@@ -94,61 +101,68 @@ public class GenerateTeamScheduleUseCase {
 
                 WorkScheduleDay schedule = scheduleResult.getData();
                 if (schedule == null) {
-                    return OperationResult.success(createEmptySchedule(date) , OperationResult.OperationType.READ);
+                    return OperationResult.success( createEmptySchedule( date ),
+                                                    OperationResult.OperationType.READ );
                 }
 
                 // Apply team filtering if specified
                 if (teamId != null) {
-                    schedule = filterScheduleByTeam(schedule, teamId);
+                    schedule = filterScheduleByTeam( schedule, teamId );
                 }
 
                 // Apply team-specific business rules
-                schedule = applyTeamBusinessRules(schedule);
+                schedule = applyTeamBusinessRules( schedule );
 
                 // Validate team coverage
-                TeamCoverageResult coverageResult = validateTeamCoverage(schedule);
+                TeamCoverageResult coverageResult = validateTeamCoverage( schedule );
                 if (!coverageResult.isValid) {
-                    Log.w(TAG,"Team coverage validation failed: " + coverageResult.warnings);
+                    Log.w( TAG, "Team coverage validation failed: " + coverageResult.warnings );
                 }
 
-                Log.d(TAG,"Successfully generated team schedule for " + date +
-                        " with " + schedule.getShifts().size() + " shifts");
+                Log.d( TAG, "Successfully generated team schedule for " + date +
+                        " with " + schedule.getWorkShifts().size() + " shifts" );
 
-                return OperationResult.success(schedule, OperationResult.OperationType.READ);
-
+                return OperationResult.success( schedule, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG,"Error generating team schedule for date: " + date, e);
-                return OperationResult.failure("Failed to generate team schedule: " + e.getMessage(), OperationResult.OperationType.READ);
+                Log.e( TAG, "Error generating team schedule for date: " + date, e );
+                return OperationResult.failure(
+                        "Failed to generate team schedule: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        });
+        } );
     }
 
     /**
      * Execute use case for team schedule over date range.
      *
      * @param startDate Start date (inclusive)
-     * @param endDate End date (inclusive)
-     * @param teamId Optional team ID for filtering (null for all teams)
+     * @param endDate   End date (inclusive)
+     * @param teamId    Optional team ID for filtering (null for all teams)
      * @return CompletableFuture with Map of team schedules
      */
     @NonNull
-    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> executeForDateRange(
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable Integer teamId) {
+    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> execute(
+            @NonNull LocalDate startDate,
+            @NonNull LocalDate endDate,
+            @Nullable Integer teamId
+    ) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync( () -> {
             try {
-                Log.d(TAG,"Generating team schedule range: " + startDate + " to " + endDate +
-                        (teamId != null ? ", teamID: " + teamId : " (all teams)"));
+                Log.d( TAG, "Generating team schedule range: " + startDate + " to " + endDate +
+                        (teamId != null ? ", teamID: " + teamId : " (all teams)") );
 
                 // Validate input
-                OperationResult<Void> validation = validateDateRange(startDate, endDate);
+                OperationResult<Void> validation = validateDateRange( startDate, endDate );
                 if (!validation.isSuccess()) {
-                    return OperationResult.failure(validation.getErrorMessage(), OperationResult.OperationType.VALIDATION);
+                    return OperationResult.failure( validation.getErrorMessage(),
+                                                    OperationResult.OperationType.VALIDATION );
                 }
 
                 // Get base schedules for all users in date range
                 OperationResult<Map<LocalDate, WorkScheduleDay>> schedulesResult =
-                        mWorkScheduleRepository.getWorkScheduleForDateRange(startDate, endDate, null).join();
+                        mWorkScheduleRepository.getWorkScheduleForDateRange( startDate, endDate,
+                                                                             null ).join();
 
                 if (!schedulesResult.isSuccess()) {
                     return schedulesResult;
@@ -163,60 +177,64 @@ public class GenerateTeamScheduleUseCase {
 
                 // Process each date in the range
                 LocalDate currentDate = startDate;
-                while (!currentDate.isAfter(endDate)) {
-                    WorkScheduleDay daySchedule = schedules.get(currentDate);
+                while (!currentDate.isAfter( endDate )) {
+                    WorkScheduleDay daySchedule = schedules.get( currentDate );
 
                     if (daySchedule == null) {
-                        daySchedule = createEmptySchedule(currentDate);
+                        daySchedule = createEmptySchedule( currentDate );
                     }
 
                     // Apply team filtering if specified
                     if (teamId != null) {
-                        daySchedule = filterScheduleByTeam(daySchedule, teamId);
+                        daySchedule = filterScheduleByTeam( daySchedule, teamId );
                     }
 
                     // Apply team-specific business rules
-                    daySchedule = applyTeamBusinessRules(daySchedule);
+                    daySchedule = applyTeamBusinessRules( daySchedule );
 
-                    teamSchedules.put(currentDate, daySchedule);
-                    currentDate = currentDate.plusDays(1);
+                    teamSchedules.put( currentDate, daySchedule );
+                    currentDate = currentDate.plusDays( 1 );
                 }
 
                 // Validate overall team coverage for the period
                 TeamPeriodCoverageResult periodCoverage = validateTeamCoverageForPeriod(
-                        teamSchedules, startDate, endDate);
+                        teamSchedules, startDate, endDate );
 
                 if (!periodCoverage.isValid) {
-                    Log.w(TAG,"Team period coverage has issues: " + periodCoverage.summary);
+                    Log.w( TAG, "Team period coverage has issues: " + periodCoverage.summary );
                 }
 
-                Log.d(TAG,"Successfully generated team schedule range with " +
-                        teamSchedules.size() + " days");
+                Log.d( TAG, "Successfully generated team schedule range with " +
+                        teamSchedules.size() + " days" );
 
-                return OperationResult.success(teamSchedules, OperationResult.OperationType.READ);
-
+                return OperationResult.success( teamSchedules, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                Log.e(TAG,"Error generating team schedule range", e);
-                return OperationResult.failure("Failed to generate team schedule range: " + e.getMessage(), OperationResult.OperationType.READ);
+                Log.e( TAG, "Error generating team schedule range", e );
+                return OperationResult.failure(
+                        "Failed to generate team schedule range: " + e.getMessage(),
+                        OperationResult.OperationType.READ );
             }
-        });
+        } );
     }
 
     // ==================== BUSINESS LOGIC ====================
 
-    private WorkScheduleDay filterScheduleByTeam(@NonNull WorkScheduleDay schedule, @NonNull Integer teamId) {
+    private WorkScheduleDay filterScheduleByTeam(
+            @NonNull WorkScheduleDay schedule,
+            @NonNull Integer teamId
+    ) {
         try {
-            WorkScheduleDay.Builder filteredSchedule = WorkScheduleDay.builder(schedule.getDate());
+            WorkScheduleDay.Builder filteredSchedule = WorkScheduleDay.builder(
+                    schedule.getDate() );
 
-            schedule.getShifts().stream()
-                    .filter(shift -> shift.getTeams().stream()
-                            .anyMatch(team -> team.getId().equals(String.valueOf(teamId))))
-                    .forEach(filteredSchedule::addShift);
+            schedule.getWorkShifts().stream()
+                    .filter( shift -> shift.getTeams().stream()
+                            .anyMatch( team -> team.getId().equals( String.valueOf( teamId ) ) ) )
+                    .forEach( filteredSchedule::addShift );
 
             return filteredSchedule.build();
-
         } catch (Exception e) {
-            Log.e(TAG,"Error filtering schedule by team: " + teamId, e);
+            Log.e( TAG, "Error filtering schedule by team: " + teamId, e );
             return schedule; // Return original schedule on error
         }
     }
@@ -237,9 +255,8 @@ public class GenerateTeamScheduleUseCase {
             // - Resource optimization
 
             return schedule;
-
         } catch (Exception e) {
-            Log.e(TAG,"Error applying team business rules", e);
+            Log.e( TAG, "Error applying team business rules", e );
             return schedule; // Return original schedule on error
         }
     }
@@ -249,48 +266,59 @@ public class GenerateTeamScheduleUseCase {
     private OperationResult<Void> validateInput(@NonNull LocalDate date, @Nullable Integer teamId) {
         // Validate date is not too far in the future or past
         LocalDate now = LocalDate.now();
-        LocalDate maxFuture = now.plusYears(2);
-        LocalDate maxPast = now.minusYears(1);
+        LocalDate maxFuture = now.plusYears( 2 );
+        LocalDate maxPast = now.minusYears( 1 );
 
-        if (date.isAfter(maxFuture)) {
-            return OperationResult.failure("Date cannot be more than 2 years in the future", OperationResult.OperationType.VALIDATION);
+        if (date.isAfter( maxFuture )) {
+            return OperationResult.failure( "Date cannot be more than 2 years in the future",
+                                            OperationResult.OperationType.VALIDATION );
         }
 
-        if (date.isBefore(maxPast)) {
-            return OperationResult.failure("Date cannot be more than 1 year in the past", OperationResult.OperationType.VALIDATION);
+        if (date.isBefore( maxPast )) {
+            return OperationResult.failure( "Date cannot be more than 1 year in the past",
+                                            OperationResult.OperationType.VALIDATION );
         }
 
         // Validate team ID if provided
         if (teamId != null && teamId <= 0) {
-            return OperationResult.failure("Team ID must be positive", OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure( "Team ID must be positive",
+                                            OperationResult.OperationType.VALIDATION );
         }
 
-        return OperationResult.success("validateInput success", OperationResult.OperationType.VALIDATION);
+        return OperationResult.success( "validateInput success",
+                                        OperationResult.OperationType.VALIDATION );
     }
 
     private OperationResult<Void> validateDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-        if (startDate.isAfter(endDate)) {
-            return OperationResult.failure("Start date cannot be after end date", OperationResult.OperationType.VALIDATION);
+        if (startDate.isAfter( endDate )) {
+            return OperationResult.failure( "Start date cannot be after end date",
+                                            OperationResult.OperationType.VALIDATION );
         }
 
         // Check for reasonable date range (business rule)
-        long daysDifference = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+        long daysDifference = java.time.temporal.ChronoUnit.DAYS.between( startDate, endDate );
         if (daysDifference > 365) {
-            return OperationResult.failure("Date range cannot exceed 365 days", OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure( "Date range cannot exceed 365 days",
+                                            OperationResult.OperationType.VALIDATION );
         }
 
         // Validate individual dates
-        OperationResult<Void> startValidation = validateInput(startDate, null);
+        OperationResult<Void> startValidation = validateInput( startDate, null );
         if (!startValidation.isSuccess()) {
-            return OperationResult.failure("Start date validation failed: " + startValidation.getErrorMessage(), OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure(
+                    "Start date validation failed: " + startValidation.getErrorMessage(),
+                    OperationResult.OperationType.VALIDATION );
         }
 
-        OperationResult<Void> endValidation = validateInput(endDate, null);
+        OperationResult<Void> endValidation = validateInput( endDate, null );
         if (!endValidation.isSuccess()) {
-            return OperationResult.failure("End date validation failed: " + endValidation.getErrorMessage(), OperationResult.OperationType.VALIDATION);
+            return OperationResult.failure(
+                    "End date validation failed: " + endValidation.getErrorMessage(),
+                    OperationResult.OperationType.VALIDATION );
         }
 
-        return OperationResult.success("validateDateRange success", OperationResult.OperationType.VALIDATION);
+        return OperationResult.success( "validateDateRange success",
+                                        OperationResult.OperationType.VALIDATION );
     }
 
     private TeamCoverageResult validateTeamCoverage(@NonNull WorkScheduleDay schedule) {
@@ -299,31 +327,30 @@ public class GenerateTeamScheduleUseCase {
 
         try {
             // Check minimum coverage requirements
-            int totalShifts = schedule.getShifts().size();
+            int totalShifts = schedule.getWorkShifts().size();
 
             if (totalShifts == 0) {
-                result.warnings.add("No shifts scheduled for " + schedule.getDate());
+                result.warnings.add( "No shifts scheduled for " + schedule.getDate() );
                 // This might be valid for rest days, so don't mark as invalid
             } else {
                 // Check for adequate coverage across shift types
-                Map<String, Integer> shiftTypeCounts = countShiftTypes(schedule);
+                Map<String, Integer> shiftTypeCounts = countShiftTypes( schedule );
 
                 for (Map.Entry<String, Integer> entry : shiftTypeCounts.entrySet()) {
                     String shiftType = entry.getKey();
                     int count = entry.getValue();
-                    int minimumRequired = getMinimumCoverageForShiftType(shiftType);
+                    int minimumRequired = getMinimumCoverageForShiftType( shiftType );
 
                     if (count < minimumRequired) {
-                        result.warnings.add("Insufficient " + shiftType + " coverage: " +
-                                count + "/" + minimumRequired);
+                        result.warnings.add( "Insufficient " + shiftType + " coverage: " +
+                                                     count + "/" + minimumRequired );
                         // Don't mark as invalid for warnings, just log
                     }
                 }
             }
-
         } catch (Exception e) {
             result.isValid = false;
-            result.warnings.add("Coverage validation error: " + e.getMessage());
+            result.warnings.add( "Coverage validation error: " + e.getMessage() );
         }
 
         return result;
@@ -331,7 +358,8 @@ public class GenerateTeamScheduleUseCase {
 
     private TeamPeriodCoverageResult validateTeamCoverageForPeriod(
             @NonNull Map<LocalDate, WorkScheduleDay> schedules,
-            @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+            @NonNull LocalDate startDate, @NonNull LocalDate endDate
+    ) {
 
         TeamPeriodCoverageResult result = new TeamPeriodCoverageResult();
         result.isValid = true;
@@ -344,24 +372,27 @@ public class GenerateTeamScheduleUseCase {
             for (WorkScheduleDay schedule : schedules.values()) {
                 if (schedule.hasShifts()) {
                     daysWithShifts++;
-                    totalShifts += schedule.getShifts().size();
+                    totalShifts += schedule.getWorkShifts().size();
                 }
             }
 
             double coveragePercentage = totalDays > 0 ? (double) daysWithShifts / totalDays * 100 : 0;
             double averageShiftsPerDay = totalDays > 0 ? (double) totalShifts / totalDays : 0;
 
-            result.summary = String.format("Period coverage: %.1f%% (%d/%d days), avg %.1f shifts/day",
-                    coveragePercentage, daysWithShifts, totalDays, averageShiftsPerDay);
+            result.summary = String.format(
+                    QDue.getLocale(),
+                    "Period coverage: %.1f%% (%d/%d days), avg %.1f shifts/day",
+                    coveragePercentage, daysWithShifts, totalDays, averageShiftsPerDay );
 
             // Business rule: warn if coverage is too low
             if (coveragePercentage < 50.0) {
-                result.warnings.add("Low coverage percentage: " + String.format("%.1f%%", coveragePercentage));
+                result.warnings.add( "Low coverage percentage: " + String.format(
+                        QDue.getLocale(),
+                        "%.1f%%", coveragePercentage ) );
             }
-
         } catch (Exception e) {
             result.isValid = false;
-            result.warnings.add("Period coverage validation error: " + e.getMessage());
+            result.warnings.add( "Period coverage validation error: " + e.getMessage() );
         }
 
         return result;
@@ -369,22 +400,28 @@ public class GenerateTeamScheduleUseCase {
 
     // ==================== HELPER METHODS ====================
 
-    private WorkScheduleDay createEmptySchedule(@NonNull LocalDate date) {
-        return WorkScheduleDay.builder(date).build();
+    private WorkScheduleDay createEmptySchedule(
+            @NonNull LocalDate date
+    ) {
+        return WorkScheduleDay.builder( date ).build();
     }
 
-    private Map<String, Integer> countShiftTypes(@NonNull WorkScheduleDay schedule) {
+    private Map<String, Integer> countShiftTypes(
+            @NonNull WorkScheduleDay schedule
+    ) {
         Map<String, Integer> counts = new HashMap<>();
 
-        for (var shift : schedule.getShifts()) {
+        for (var shift : schedule.getWorkShifts()) {
             String shiftType = shift.getShift().getName();
-            counts.merge(shiftType, 1, Integer::sum);
+            counts.merge( shiftType, 1, Integer::sum );
         }
 
         return counts;
     }
 
-    private int getMinimumCoverageForShiftType(@NonNull String shiftType) {
+    private int getMinimumCoverageForShiftType(
+            @NonNull String shiftType
+    ) {
         // Business rules for minimum coverage requirements
         switch (shiftType.toLowerCase()) {
             case "morning":
@@ -401,12 +438,14 @@ public class GenerateTeamScheduleUseCase {
 
     // ==================== RESULT CLASSES ====================
 
-    private static class TeamCoverageResult {
+    private static class TeamCoverageResult
+    {
         boolean isValid = true;
         java.util.List<String> warnings = new java.util.ArrayList<>();
     }
 
-    private static class TeamPeriodCoverageResult {
+    private static class TeamPeriodCoverageResult
+    {
         boolean isValid = true;
         String summary = "";
         java.util.List<String> warnings = new java.util.ArrayList<>();

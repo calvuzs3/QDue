@@ -824,6 +824,7 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
                     .shift( shift )
                     .startTime( shift.getStartTime() )
                     .endTime( shift.getEndTime() )
+                    .colorHex( shift.getColorHex() )
                     .build();
 
             builder.addShift( workShift );

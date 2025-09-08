@@ -37,10 +37,6 @@ import java.time.LocalDate;
  *   <li><strong>AssignmentWizardData</strong>: Shared state across all fragments</li>
  *   <li><strong>CreatePatternAssignmentUseCase</strong>: Business logic for assignment creation</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Assignment Wizard Communication Interface
- * @since Clean Architecture Phase 2
  */
 public interface AssignmentWizardInterface {
 

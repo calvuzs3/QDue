@@ -186,7 +186,7 @@ Core Business Components:
 - **4 Predefined Patterns**: 4-2, 3-2, 5-2, 6-1 workScheduleShift cycles
 - **Continuous Validation**: Ensures no gaps in workScheduleShift coverage
 - **Complex Recurrence**: Handles irregular patterns and exceptions
-- **Future Generation**: Generates shifts months in advance
+- **Future Generation**: Generates workShifts months in advance
 - **Multi-user Support**: Concurrent workScheduleShift assignments
 
 ### 5. **UI/UX Architecture**

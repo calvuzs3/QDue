@@ -2,6 +2,7 @@ package net.calvuz.qdue.data.di;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
 import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
@@ -17,6 +18,7 @@ import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.TeamUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 
@@ -61,6 +63,16 @@ import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
  * </ul>
  */
 public interface CalendarServiceProvider {
+
+    // ==================== SERVICES ====================
+
+    /**
+     * Get UserWorkScheduleService instance.
+     *
+     * @return UserWorkScheduleService instance
+     */
+    @NonNull
+    UserWorkScheduleService getUserWorkScheduleService();
 
     /**
      * Get CreatePatternAssignmentUseCase for assignment creation operations.
@@ -192,23 +204,20 @@ public interface CalendarServiceProvider {
     // ==================== USE CASES ====================
 
     /**
+     * Get TeamUseCases for team-related operations.
+     *
+     * @return TeamUseCases instance
+     */
+    @NonNull
+    public TeamUseCases getTeamUseCases();
+
+    /**
      * Get UserTeamAssignmentUseCases for user-team assignment operations.
      *
      * @return UserTeamAssignmentUseCases instance
      */
     @NonNull
     public UserTeamAssignmentUseCases getUserTeamAssignmentUseCases();
-
-    /**
-     * Get GenerateUserScheduleUseCase for individual user schedule operations.
-     *
-     * <p>Comprehensive user schedule generation with recurrence rules, exception handling,
-     * team assignments, and business rule validation for single-user operations.</p>
-     *
-     * @return GenerateUserScheduleUseCase instance
-     */
-    @NonNull
-    GenerateUserScheduleUseCase getGenerateUserScheduleUseCase();
 
     /**
      * Get GenerateTeamScheduleUseCase for team coordination operations.

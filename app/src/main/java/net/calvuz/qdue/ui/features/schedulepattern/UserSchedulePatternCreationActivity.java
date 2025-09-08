@@ -413,11 +413,11 @@ public class UserSchedulePatternCreationActivity extends AppCompatActivity imple
             previewText.append(day.getDate().format(dateFormatter));
             previewText.append(": ");
 
-            if (day.getShifts().isEmpty()) {
+            if (day.getWorkShifts().isEmpty()) {
                 previewText.append(getString(R.string.pattern_day_rest));
             } else {
                 // Show first shift (assuming one shift per day in pattern)
-                WorkScheduleShift shift = day.getShifts().get(0);
+                WorkScheduleShift shift = day.getWorkShifts().get( 0);
                 previewText.append(shift.getShift().getName());
                 if (shift.getStartTime() != null && shift.getEndTime() != null) {
                     DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");

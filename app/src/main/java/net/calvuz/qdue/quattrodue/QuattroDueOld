@@ -32,7 +32,7 @@ import net.calvuz.qdue.quattrodue.utils.Log;
 /**
  * QuattroDue.
  * Pattern Singleton.
- * Calculate the scheme of shifts
+ * Calculate the scheme of workShifts
  */
 public class QuattroDue {
 
@@ -402,7 +402,7 @@ public class QuattroDue {
     }
 
     /**
-     * Create the shifts scheme
+     * Create the workShifts scheme
      * A list with 18 days
      */
     private void fetchSchemeList() {
@@ -418,7 +418,7 @@ public class QuattroDue {
                 LocalDate dayDate = schemeDate.plusDays(i);
                 Day day = new Day(dayDate);
 
-                // Setup shifts for the day
+                // Setup workShifts for the day
                 for (int shiftIndex = 0; shiftIndex < QD_SHIFTS_PER_DAY; shiftIndex++) {
                     // Create a new Shift
                     Shift workScheduleShift = new Shift(shiftTypes.get(shiftIndex));

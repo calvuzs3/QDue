@@ -211,7 +211,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         mAllShifts.add(afternoonShift);
         mAllShifts.add(nightShift);
 
-        // Cache shifts
+        // Cache workShifts
         for (Shift shift : mAllShifts) {
             mShiftCache.put(shift.getId(), shift);
             mShiftCache.put(shift.getName(), shift);
@@ -267,7 +267,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
      * Convert QuattroDue Day to domain WorkScheduleDay.
      *
      * <p>Converts legacy QuattroDue Day objects to clean architecture domain models.
-     * Maps shifts, teams, and timing information while preserving business logic.</p>
+     * Maps workShifts, teams, and timing information while preserving business logic.</p>
      *
      * @param quattroduDay QuattroDue Day object
      * @return Domain WorkScheduleDay object
@@ -320,7 +320,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 } catch (Exception shiftException) {
                     Log.e(TAG, "Failed to convert shift " + i + " for date " +
                             quattroduDay.getLocalDate(), shiftException);
-                    // Continue with other shifts rather than failing entire day
+                    // Continue with other workShifts rather than failing entire day
                 }
             }
 
@@ -440,7 +440,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 }
 
                 Log.d(TAG, "✅ Successfully calculated work schedule for: " + date +
-                        " (shifts: " + (workScheduleDay != null ? workScheduleDay.getShiftCount() : 0) + ")");
+                        " (workShifts: " + (workScheduleDay != null ? workScheduleDay.getShiftCount() : 0) + ")");
 
                 return OperationResult.success(workScheduleDay, OperationResult.OperationType.READ);
 
@@ -768,7 +768,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             try {
                 return OperationResult.success(new ArrayList<>(mAllShifts), OperationResult.OperationType.READ);
             } catch (Exception e) {
-                String error = "Failed to get all shifts: " + e.getMessage();
+                String error = "Failed to get all workShifts: " + e.getMessage();
                 Log.e(TAG, error, e);
                 return OperationResult.failure(error, OperationResult.OperationType.READ);
             }
@@ -958,7 +958,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         }
 
         Log.d(TAG, "✅ Shift mappings validation passed - " +
-                mAllShifts.size() + " shifts, " +
+                mAllShifts.size() + " workShifts, " +
                 mHalfTeamToTeamMap.size() + " team mappings");
 
         return true;

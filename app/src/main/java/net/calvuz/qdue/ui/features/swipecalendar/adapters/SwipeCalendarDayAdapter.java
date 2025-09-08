@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.common.utils.ColorUtils;
+import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.events.models.LocalEvent;
@@ -57,7 +59,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0.0
  * @since Database Version 6
  */
-public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarDayAdapter.DayViewHolder> {
+public class SwipeCalendarDayAdapter
+        extends RecyclerView.Adapter<SwipeCalendarDayAdapter.DayViewHolder>
+{
 
     private static final String TAG = "SwipeCalendarDayAdapter";
     private static final int GRID_SIZE = 42; // 7 columns x 6 rows
@@ -67,7 +71,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
     /**
      * Interface for day click events.
      */
-    public interface OnDayClickListener {
+    public interface OnDayClickListener
+    {
         /**
          * Called when user clicks on a day cell.
          *
@@ -95,9 +100,12 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      * @param dayData May be null for overflow days
      */
     private record CalendarDayItem(LocalDate date, boolean isCurrentMonth, boolean isToday,
-                                   WorkScheduleDay dayData, List<LocalEvent> events) {
-        private CalendarDayItem(@NonNull LocalDate date, boolean isCurrentMonth, boolean isToday,
-                                @Nullable WorkScheduleDay dayData, @NonNull List<LocalEvent> events) {
+                                   WorkScheduleDay dayData, List<LocalEvent> events)
+    {
+        private CalendarDayItem(
+                @NonNull LocalDate date, boolean isCurrentMonth, boolean isToday,
+                @Nullable WorkScheduleDay dayData, @NonNull List<LocalEvent> events
+        ) {
             this.date = date;
             this.isCurrentMonth = isCurrentMonth;
             this.isToday = isToday;
@@ -174,7 +182,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      * ViewHolder for individual day cells.
      * Reuses existing item_calendar_day.xml layout.
      */
-    class DayViewHolder extends RecyclerView.ViewHolder {
+    class DayViewHolder extends RecyclerView.ViewHolder
+    {
 
         private final MaterialCardView cardView;
         private final TextView dayNumberText;
@@ -241,19 +250,25 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
 
             if (dayItem.isToday) {
                 // Today - highlighted
-                cardView.setCardBackgroundColor( context.getColor( R.color.calendar_day_today_background ) );
+                cardView.setCardBackgroundColor(
+                        context.getColor( R.color.calendar_day_today_background ) );
                 dayNumberText.setTextColor( context.getColor( R.color.calendar_day_today_text ) );
                 cardView.setStrokeColor( context.getColor( R.color.calendar_day_today_stroke ) );
-                cardView.setStrokeWidth( context.getResources().getDimensionPixelSize( R.dimen.calendar_day_today_stroke_width ) );
+                cardView.setStrokeWidth( context.getResources().getDimensionPixelSize(
+                        R.dimen.calendar_day_today_stroke_width ) );
             } else if (!dayItem.isCurrentMonth) {
                 // Previous/next month - muted
-                cardView.setCardBackgroundColor( context.getColor( R.color.calendar_day_other_month_background ) );
-                dayNumberText.setTextColor( context.getColor( R.color.calendar_day_other_month_text ) );
+                cardView.setCardBackgroundColor(
+                        context.getColor( R.color.calendar_day_other_month_background ) );
+                dayNumberText.setTextColor(
+                        context.getColor( R.color.calendar_day_other_month_text ) );
                 cardView.setStrokeWidth( 0 );
             } else {
                 // Current month - normal
-                cardView.setCardBackgroundColor( context.getColor( R.color.calendar_day_current_month_background ) );
-                dayNumberText.setTextColor( context.getColor( R.color.calendar_day_current_month_text ) );
+                cardView.setCardBackgroundColor(
+                        context.getColor( R.color.calendar_day_current_month_background ) );
+                dayNumberText.setTextColor(
+                        context.getColor( R.color.calendar_day_current_month_text ) );
                 cardView.setStrokeWidth( 0 );
             }
 
@@ -276,17 +291,23 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
                 return;
             }
 
-            String userTeam = QDuePreferences.getSelectedTeamName( mContext ); // This Team name is = ID
-            boolean hasWorkSchedule = dayItem.dayData.isTeamWorking( userTeam );
+            boolean hasWorkSchedule = dayItem.dayData.hasShifts();
 
             // WorkSchedule Text
             if (hasWorkSchedule) {
+                // Get data
+                Shift _shift = dayItem.dayData.getWorkShifts().get( 0 ).getShift();
+                String _userTeam = _shift.getShortName();
+                String _colorHex = _shift.getColorHex();
+                int _color = ColorUtils.applyAlphaToColor( _colorHex, 0.55f );
+
                 // Set text
                 workScheduleText.setVisibility( View.VISIBLE );
-                workScheduleText.setText( getWorkScheduleText( dayItem.dayData, userTeam ) );
+                workScheduleText.setText( _userTeam );
+
                 // Set card background color
-                String scheduleColor = getWorkScheduleColor( dayItem.dayData, userTeam );
-                cardView.findViewById( R.id.layout_work_indicators ).setBackgroundColor( Color.parseColor( scheduleColor ) ); //" ) .setCardBackgroundColor( Color.parseColor( scheduleColor ) );
+//                String scheduleColor = getWorkScheduleColor( dayItem.dayData, userTeam );
+                cardView.findViewById( R.id.layout_work_indicators ).setBackgroundColor( _color );
             } else {
                 workScheduleText.setVisibility( View.GONE );
             }
@@ -314,7 +335,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             // Event priority badge
             if (eventPriorityBadge != null) {
                 boolean hasHighPriorityEvent = dayItem.events.stream()
-                        .anyMatch( event -> event.getPriority() != null && event.getPriority().isHigh() );
+                        .anyMatch(
+                                event -> event.getPriority() != null && event.getPriority().isHigh() );
                 eventPriorityBadge.setVisibility( hasHighPriorityEvent ? View.VISIBLE : View.GONE );
             }
 
@@ -336,18 +358,23 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             StringBuilder description = new StringBuilder();
 
             // Date information
-            String dayName = dayItem.date.getDayOfWeek().getDisplayName( TextStyle.FULL, Locale.getDefault() );
-            String monthName = dayItem.date.getMonth().getDisplayName( TextStyle.FULL, Locale.getDefault() );
+            String dayName = dayItem.date.getDayOfWeek().getDisplayName( TextStyle.FULL,
+                                                                         Locale.getDefault() );
+            String monthName = dayItem.date.getMonth().getDisplayName( TextStyle.FULL,
+                                                                       Locale.getDefault() );
 
             // Team information
-            String userTeam = QDuePreferences.getSelectedTeamNameForRepository( mContext ); // QuattroDue.getInstance( mContext ).getUserHalfTeam();
+            String userTeam = QDuePreferences.getSelectedTeamNameForRepository(
+                    mContext ); // QuattroDue.getInstance( mContext ).getUserHalfTeam();
 
             description.append( MessageFormat.format( "{0}, {1} {2} {3}",
-                    dayName, dayItem.date.getDayOfMonth(), monthName, dayItem.date.getYear() ) );
+                                                      dayName, dayItem.date.getDayOfMonth(),
+                                                      monthName, dayItem.date.getYear() ) );
 
             // Today indicator
             if (dayItem.isToday) {
-                description.append( ", " ).append( mContext.getString( R.string.calendar_accessibility_today ) );
+                description.append( ", " ).append(
+                        mContext.getString( R.string.calendar_accessibility_today ) );
             }
 
             // Events information
@@ -360,7 +387,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
 
             // Work schedule information
             if (dayItem.dayData != null && dayItem.dayData.isTeamWorking( userTeam )) {
-                description.append( ", " ).append( mContext.getString( R.string.calendar_accessibility_work_scheduled ) );
+                description.append( ", " ).append(
+                        mContext.getString( R.string.calendar_accessibility_work_scheduled ) );
             }
 
             itemView.setContentDescription( description.toString() );
@@ -371,7 +399,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
          */
         private void onItemClick(View view) {
             if (currentDayItem != null && mDayClickListener != null) {
-                mDayClickListener.onDayClick( currentDayItem.date, currentDayItem.dayData, currentDayItem.events );
+                mDayClickListener.onDayClick( currentDayItem.date, currentDayItem.dayData,
+                                              currentDayItem.events );
             }
         }
 
@@ -380,7 +409,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
          */
         private boolean onItemLongClick(View view) {
             if (currentDayItem != null && mDayClickListener != null) {
-                mDayClickListener.onDayLongClick( currentDayItem.date, currentDayItem.dayData, view );
+                mDayClickListener.onDayLongClick( currentDayItem.date, currentDayItem.dayData,
+                                                  view );
                 return true;
             }
             return false;
@@ -398,16 +428,16 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
          * Get color for work schedule.
          */
         private String getWorkScheduleColor(@NonNull WorkScheduleDay day, String userTeam) {
-            WorkScheduleShift shift = day.getShifts().get( day.findTeamShiftIndex( userTeam ) );
+            WorkScheduleShift shift = day.getWorkShifts().get( day.findTeamShiftIndex( userTeam ) );
 
-            return ( shift.getShift().getColorHex() );
+            return (shift.getShift().getColorHex());
         }
 
         /**
          * Get short name for work schedule.
          */
         private String getWorkScheduleText(@NonNull WorkScheduleDay day, String userTeam) {
-            WorkScheduleShift shift = day.getShifts().get( day.findTeamShiftIndex( userTeam ) );
+            WorkScheduleShift shift = day.getWorkShifts().get( day.findTeamShiftIndex( userTeam ) );
 
             return shift.getShift().getShortName(); // .getName();
         }
@@ -451,6 +481,7 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      * @param workScheduleMap Work schedule mapped by date
      */
     public void updateWorkSchedule(@NonNull Map<LocalDate, WorkScheduleDay> workScheduleMap) {
+        Log.i( TAG, "Updating work schedule for " + workScheduleMap.size() + " dates" );
         mWorkScheduleCache.clear();
         mWorkScheduleCache.putAll( workScheduleMap );
 
@@ -477,11 +508,14 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
      * Includes overflow days from previous and next months.
      */
     private void generateDayItems() {
+        Log.v( TAG, "Generating day items for " + mCurrentMonth );
+
         mDayItems.clear();
 
         // Get first day of month and find the Monday of that week
         LocalDate firstDayOfMonth = mCurrentMonth.atDay( 1 );
-        LocalDate startDate = firstDayOfMonth.minusDays( firstDayOfMonth.getDayOfWeek().getValue() - 1 );
+        LocalDate startDate = firstDayOfMonth.minusDays(
+                firstDayOfMonth.getDayOfWeek().getValue() - 1 );
 
         LocalDate today = LocalDate.now();
 
@@ -497,7 +531,8 @@ public class SwipeCalendarDayAdapter extends RecyclerView.Adapter<SwipeCalendarD
             WorkScheduleDay dayData = mWorkScheduleCache.get( currentDate );
             List<LocalEvent> events = mEventsCache.getOrDefault( currentDate, new ArrayList<>() );
 
-            CalendarDayItem dayItem = new CalendarDayItem( currentDate, isCurrentMonth, isToday, dayData, events );
+            CalendarDayItem dayItem = new CalendarDayItem( currentDate, isCurrentMonth, isToday,
+                                                           dayData, events );
             mDayItems.add( dayItem );
         }
 

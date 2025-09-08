@@ -23,7 +23,7 @@ import okhttp3.Response;
 /**
  * Dynamic factory for creating and managing workScheduleShift types.
  * <p>
- * Supports variable number of shifts with external JSON API loading.
+ * Supports variable number of workShifts with external JSON API loading.
  * Members access cached elements generated during setup phase rather
  * than static predefined elements. Provides both local persistence
  * and remote configuration capabilities.
@@ -41,7 +41,7 @@ public class ShiftTypeFactory {
     private static final String KEY_CACHE_VERSION = "cache_version";
 
     // JSON keys for API response parsing
-    private static final String JSON_KEY_SHIFTS = "shifts";
+    private static final String JSON_KEY_SHIFTS = "workShifts";
     private static final String JSON_KEY_NAME = "name";
     private static final String JSON_KEY_DESCRIPTION = "description";
     private static final String JSON_KEY_START_HOUR = "startHour";
@@ -83,32 +83,32 @@ public class ShiftTypeFactory {
     private ShiftTypeFactory() {}
 
     /**
-     * Initializes the factory with a specific number of shifts.
+     * Initializes the factory with a specific number of workShifts.
      * Creates default workScheduleShift types if no external source is configured.
      *
      * @param context Application context
-     * @param shiftCount Number of shifts to create
+     * @param shiftCount Number of workShifts to create
      * @return CompletableFuture that completes when initialization is done
      */
     public static CompletableFuture<Boolean> initialize(Context context, int shiftCount) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 clearCache();
-                currentShiftCount = Math.max(1, Math.min(shiftCount, 8)); // Limit 1-8 shifts
+                currentShiftCount = Math.max(1, Math.min(shiftCount, 8)); // Limit 1-8 workShifts
 
                 // Try to load from local storage first
                 if (loadFromLocalStorage(context)) {
                     initialized = true;
-                    Log.d(TAG, "Initialized from local storage with " + currentShiftCount + " shifts");
+                    Log.d(TAG, "Initialized from local storage with " + currentShiftCount + " workShifts");
                     return true;
                 }
 
-                // Create default shifts if no local data
+                // Create default workShifts if no local data
                 createDefaultShifts();
                 saveToLocalStorage(context);
                 initialized = true;
 
-                Log.d(TAG, "Initialized with default shifts: " + currentShiftCount);
+                Log.d(TAG, "Initialized with default workShifts: " + currentShiftCount);
                 return true;
 
             } catch (Exception e) {
@@ -135,7 +135,7 @@ public class ShiftTypeFactory {
                 if (jsonResponse != null && parseJsonShifts(jsonResponse)) {
                     saveToLocalStorage(context);
                     initialized = true;
-                    Log.d(TAG, "Initialized from API with " + currentShiftCount + " shifts");
+                    Log.d(TAG, "Initialized from API with " + currentShiftCount + " workShifts");
                     return true;
                 }
 
@@ -146,7 +146,7 @@ public class ShiftTypeFactory {
                     return true;
                 }
 
-                // Last resort: default shifts
+                // Last resort: default workShifts
                 currentShiftCount = 3;
                 createDefaultShifts();
                 initialized = true;
@@ -213,9 +213,9 @@ public class ShiftTypeFactory {
     }
 
     /**
-     * Gets the current number of configured shifts.
+     * Gets the current number of configured workShifts.
      *
-     * @return Number of shifts
+     * @return Number of workShifts
      */
     public static int getShiftCount() {
         ensureInitialized();
@@ -375,7 +375,7 @@ public class ShiftTypeFactory {
             indexCache.put(i, workScheduleShift);
         }
 
-        Log.d(TAG, "Created " + currentShiftCount + " default shifts");
+        Log.d(TAG, "Created " + currentShiftCount + " default workShifts");
     }
 
     /**
@@ -415,7 +415,7 @@ public class ShiftTypeFactory {
                 indexCache.put(i, workScheduleShift);
             }
 
-            Log.d(TAG, "Loaded " + currentShiftCount + " shifts from local storage");
+            Log.d(TAG, "Loaded " + currentShiftCount + " workShifts from local storage");
             return true;
 
         } catch (Exception e) {
@@ -495,7 +495,7 @@ public class ShiftTypeFactory {
                 indexCache.put(i, workScheduleShift);
             }
 
-            Log.d(TAG, "Parsed " + currentShiftCount + " shifts from JSON");
+            Log.d(TAG, "Parsed " + currentShiftCount + " workShifts from JSON");
             return true;
 
         } catch (JSONException e) {

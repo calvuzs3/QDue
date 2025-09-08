@@ -64,7 +64,7 @@
  * <h4>Use Case Classes:</h4>
  * <ul>
  *   <li><strong>CreateQDueUserUseCase</strong>: User creation with business validation</li>
- *   <li><strong>GetQDueUserUseCase</strong>: User retrieval operations</li>
+ *   <li><strong>ReadQDueUserUseCase</strong>: User retrieval operations</li>
  *   <li><strong>UpdateQDueUserUseCase</strong>: Complete profile updates</li>
  *   <li><strong>OnboardingUseCase</strong>: Minimal onboarding workflow</li>
  * </ul>

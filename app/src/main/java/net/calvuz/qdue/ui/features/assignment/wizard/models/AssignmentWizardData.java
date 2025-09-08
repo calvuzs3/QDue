@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 
 import java.time.LocalDate;
 
@@ -91,7 +92,7 @@ public class AssignmentWizardData {
     private String editingAssignmentId = null;
 
     // Pattern selection state
-    private PatternType patternType = null;
+    private PatternType patternType = null; //PatternType.QUATTRODUE;
 
     // Team selection
     private Team selectedTeam = null;
@@ -100,7 +101,7 @@ public class AssignmentWizardData {
     private RecurrenceRule selectedCustomPattern = null;
 
     // Date and cycle selections
-    private LocalDate assignmentDate = null;
+    private LocalDate assignmentDate = null; //LocalDate.now();
     private int cycleDayPosition = 1; // 1-based cycle position
 
     // Additional wizard metadata
@@ -111,6 +112,12 @@ public class AssignmentWizardData {
 
     public AssignmentWizardData() {
         // Default constructor
+    }
+
+    // Overload constructor
+    public AssignmentWizardData(QDueUser user, Team selectedTeam ) {
+        this.userId = user.getId();
+        this.selectedTeam = selectedTeam;
     }
 
     // ==================== USER IDENTIFICATION ====================

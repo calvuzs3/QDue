@@ -209,11 +209,11 @@ public class CustomPatternIntegrationTest {
 
             if (i % 2 == 0) {
                 // Even days (0, 2, 4): Work days
-                assertEquals( 1, day.getShifts().size() );
-                assertEquals( "morning_shift_id", day.getShifts().get( 0 ).getShift().getId() );
+                assertEquals( 1, day.getWorkShifts().size() );
+                assertEquals( "morning_shift_id", day.getWorkShifts().get( 0 ).getShift().getId() );
             } else {
                 // Odd days (1, 3, 5): Rest days
-                assertEquals( 0, day.getShifts().size() );
+                assertEquals( 0, day.getWorkShifts().size() );
             }
         }
     }

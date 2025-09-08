@@ -128,7 +128,7 @@ public class QuattroDue {
     private List<Day> getShifts(@NonNull LocalDate date) {
 
         // TAG
-        final String TAG = QuattroDue.TAG + ":getShifts";
+        final String TAG = QuattroDue.TAG + ":getWorkShifts";
         Log.v( TAG, "start" );
 
         // new List

@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -24,8 +22,6 @@ import java.util.UUID;
  *   <li><strong>Business Identity</strong>: Proper entity semantics with ID and name</li>
  *   <li><strong>Extensible</strong>: Designed for future property additions</li>
  *   <li><strong>Value Equality</strong>: Teams equal if they have same ID</li>
- *   <li><strong>Display Support</strong>: Localized methods for UI presentation</li>
- *   <li><strong>Localization Support</strong>: Full i18n support for all display text</li>
  * </ul>
  *
  * <h3>Team Types:</h3>
@@ -40,18 +36,12 @@ import java.util.UUID;
  * <h3>Usage Examples:</h3>
  * <pre>
  * {@code
- * // Create localized teams
+ * // Create teams
  * Team teamA = Team.builder("A")
  *     .displayName("Team Alpha")
  *     .description("Primary morning shift team")
  *     .teamType(TeamType.STANDARD)
- *     .localizer(domainLocalizer)
  *     .build();
- *
- * // Get localized display
- * String localizedStatus = teamA.getStatusDisplayName();
- * String localizedSummary = teamA.getLocalizedSummary();
- * }
  * </pre>
  *
  * <h3>Future Extensions:</h3>
@@ -64,9 +54,7 @@ import java.util.UUID;
  *   <li>Team contact information</li>
  * </ul>
  */
-public class Team extends LocalizableDomainModel {
-
-    private static final String LOCALIZATION_SCOPE = "team";
+public class Team {
 
     // ==================== TEAM TYPE ENUM ====================
 
@@ -136,7 +124,6 @@ public class Team extends LocalizableDomainModel {
      * Private constructor for builder pattern with localization support.
      */
     private Team(@NonNull Builder builder) {
-        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Validation
         Objects.requireNonNull( builder.id, "Team ID cannot be null" );
@@ -291,166 +278,10 @@ public class Team extends LocalizableDomainModel {
         return teamType == TeamType.EMERGENCY;
     }
 
-    // ==================== LOCALIZED DISPLAY METHODS ====================
+    // ==================== INFO ====================
 
     /**
-     * Get localized team type display name.
-     */
-    @NonNull
-    public String getTypeDisplayName() {
-        if (teamType != null) {
-            return localize( "type." + teamType.name().toLowerCase(),
-                    teamType.name(), // fallback
-                    teamType.name() );
-        }
-        return localize( "type.unspecified", "Unspecified", "Unspecified" );
-    }
-
-    /**
-     * Get localized team type description.
-     */
-    @NonNull
-    public String getTypeDescription() {
-        if (teamType != null) {
-            return localize( "type." + teamType.name().toLowerCase() + ".description",
-                    teamType.getDescriptionKey(), // fallback
-                    teamType.name() );
-        }
-        return localize( "type.unspecified.description", "No specific type", "No specific type" );
-    }
-
-    /**
-     * Get localized status display name.
-     */
-    @NonNull
-    public String getStatusDisplayName() {
-        if (active) {
-            return localize( "status.active", "Active", "Active" );
-        } else {
-            return localize( "status.inactive", "Inactive", "Inactive" );
-        }
-    }
-
-    /**
-     * Get display title for UI with localization support.
-     */
-    @NonNull
-    public String getDisplayTitle() {
-        if (displayName != null && !displayName.trim().isEmpty()) {
-            return displayName;
-        }
-        return name;
-    }
-
-    /**
-     * Get localized full name with description if available.
-     *
-     * @return Localized full team description
-     */
-    @NonNull
-    public String getLocalizedFullName() {
-        String title = getDisplayTitle();
-
-        if (description.isEmpty()) {
-            return title;
-        }
-
-        // Localize common descriptions or use as-is
-        String localizedDescription = localize( "description.custom", description, description );
-        String separator = localize( "format.name_description_separator", " - ", " - " );
-        return title + separator + localizedDescription;
-    }
-
-    /**
-     * Get localized summary information about the team.
-     *
-     * @return Localized team summary
-     */
-    @NonNull
-    public String getLocalizedSummary() {
-        StringBuilder summary = new StringBuilder();
-
-        // Team label with name
-        String teamLabel = localize( "label.team", "Team", "Team" );
-        summary.append( teamLabel ).append( " " ).append( getDisplayTitle() );
-
-        // Add ID if different from display name
-        if (!name.equals( displayName )) {
-            String idTemplate = localize( "format.id_parentheses", " ({0})", " ({0})" );
-            summary.append( String.format( idTemplate.replace( "{0}", "%s" ), name ) );
-        }
-
-        // Add type if specified
-        if (teamType != null) {
-            String typeTemplate = localize( "format.type_brackets", " [{0}]", " [{0}]" );
-            summary.append( String.format( typeTemplate.replace( "{0}", "%s" ), getTypeDisplayName() ) );
-        }
-
-        // Add status if inactive
-        if (!active) {
-            String inactiveLabel = localize( "status.inactive_suffix", " [INACTIVE]", " [INACTIVE]" );
-            summary.append( inactiveLabel );
-        }
-
-        return summary.toString();
-    }
-
-    /**
-     * Get localized team card information for detailed display.
-     *
-     * @return Localized team card content
-     */
-    @NonNull
-    public String getLocalizedTeamCard() {
-        StringBuilder card = new StringBuilder();
-
-        // Title
-        card.append( getDisplayTitle() ).append( "\n" );
-
-        // ID if different
-        if (!name.equals( displayName )) {
-            String idLabel = localize( "label.id", "ID", "ID" );
-            card.append( idLabel ).append( ": " ).append( name ).append( "\n" );
-        }
-
-        // Type
-        if (teamType != null) {
-            String typeLabel = localize( "label.type", "Type", "Type" );
-            card.append( typeLabel ).append( ": " ).append( getTypeDisplayName() ).append( "\n" );
-        }
-
-        // Status
-        String statusLabel = localize( "label.status", "Status", "Status" );
-        card.append( statusLabel ).append( ": " ).append( getStatusDisplayName() ).append( "\n" );
-
-        // Description
-        if (!description.isEmpty()) {
-            String descLabel = localize( "label.description", "Description", "Description" );
-            card.append( descLabel ).append( ": " ).append( description );
-        }
-
-        return card.toString().trim();
-    }
-
-    // ==================== NON-LOCALIZED DISPLAY METHODS (Legacy Support) ====================
-
-    /**
-     * Get full name with description if available (non-localized version for backward compatibility).
-     * Consider using getLocalizedFullName() for new code.
-     *
-     * @return Full team description
-     */
-    @NonNull
-    public String getFullName() {
-        if (description.isEmpty()) {
-            return displayName;
-        }
-        return displayName + " - " + description;
-    }
-
-    /**
-     * Get summary information about the team (non-localized version).
-     * Consider using getLocalizedSummary() for new code.
+     * Get summary information about the team.
      *
      * @return Team summary
      */
@@ -472,24 +303,6 @@ public class Team extends LocalizableDomainModel {
         }
 
         return summary.toString();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    /**
-     * Create a copy of this object with localizer injected.
-     * Useful for adding localization to existing instances.
-     *
-     * @param localizer DomainLocalizer to inject
-     * @return New instance with localizer support
-     */
-    @Override
-    @NonNull
-    public Team withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder( this.id )
-                .copyFrom( this )
-                .localizer( localizer )
-                .build();
     }
 
     // ==================== BUILDER PATTERN ====================
@@ -523,16 +336,6 @@ public class Team extends LocalizableDomainModel {
     @NonNull
     public static Builder builder(@NonNull String id, @NonNull String name) {
         return new Builder( id, name );
-    }
-
-    /**
-     * Create a builder from existing Team.
-     *
-     * @return Builder instance with current team data
-     */
-    @NonNull
-    public Builder toBuilder() {
-        return new Builder( this );
     }
 
     /**
@@ -765,18 +568,16 @@ public class Team extends LocalizableDomainModel {
      * Create a standard QuattroDue team with localization support.
      *
      * @param teamLetter Team letter (A, B, C, etc.)
-     * @param localizer  Optional domain localizer for i18n
      * @return QuattroDue team
      */
     @NonNull
-    public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable String colorHex, int qdueOffset, @Nullable DomainLocalizer localizer) {
+    public static Team createQuattroDueTeam(@NonNull String teamLetter, @Nullable String colorHex, int qdueOffset) {
         return builder( teamLetter )
-                .displayName( "Team " + teamLetter )
+                .displayName( teamLetter )
                 .teamType( TeamType.QUATTRODUE )
-                .description( "QuattroDue cycle team " + teamLetter )
+                .description( "QuattroDue Team" )
                 .colorHex( colorHex )
                 .qdueOffset( qdueOffset )
-                .localizer( localizer )
                 .build();
     }
 
@@ -784,17 +585,16 @@ public class Team extends LocalizableDomainModel {
      * Create a management team with localization support.
      *
      * @param teamName  Team name
-     * @param localizer Optional domain localizer for i18n
      * @return Management team
      */
     @NonNull
-    public static Team createManagementTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+    public static Team createManagementTeam(@NonNull String teamName, @NonNull String colorHex) {
         return builder( teamName )
                 .name( teamName )
                 .displayName( teamName )
+                .description("Management Team")
                 .colorHex( colorHex )
                 .teamType( TeamType.MANAGEMENT )
-                .localizer( localizer )
                 .build();
     }
 
@@ -802,17 +602,16 @@ public class Team extends LocalizableDomainModel {
      * Create an emergency team with localization support.
      *
      * @param teamName  Team name
-     * @param localizer Optional domain localizer for i18n
      * @return Emergency team
      */
     @NonNull
-    public static Team createEmergencyTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+    public static Team createEmergencyTeam(@NonNull String teamName, @NonNull String colorHex) {
         return builder( teamName )
                 .name( teamName )
                 .displayName( teamName )
+                .description("Emergency Team")
                 .colorHex( colorHex )
                 .teamType( TeamType.EMERGENCY )
-                .localizer( localizer )
                 .build();
     }
 
@@ -820,17 +619,16 @@ public class Team extends LocalizableDomainModel {
      * Create a support team with localization support.
      *
      * @param teamName  Team name
-     * @param localizer Optional domain localizer for i18n
      * @return Support team
      */
     @NonNull
-    public static Team createSupportTeam(@NonNull String teamName, @NonNull String colorHex, @Nullable DomainLocalizer localizer) {
+    public static Team createSupportTeam(@NonNull String teamName, @NonNull String colorHex) {
         return builder( teamName )
                 .name( teamName )
                 .displayName( teamName )
+                .description("Support Team")
                 .colorHex( colorHex )
                 .teamType( TeamType.SUPPORT )
-                .localizer( localizer )
                 .build();
     }
 
@@ -891,7 +689,6 @@ public class Team extends LocalizableDomainModel {
                 ", description='" + description + '\'' +
                 ", teamType=" + teamType +
                 ", active=" + active +
-                ", hasLocalizationSupport=" + hasLocalizationSupport() +
                 ", hashCodeCache=" + hashCodeCache +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +

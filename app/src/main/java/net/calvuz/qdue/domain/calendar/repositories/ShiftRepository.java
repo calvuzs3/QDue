@@ -147,62 +147,6 @@ public interface ShiftRepository {
     @NonNull
     CompletableFuture<Shift> getQuattroDueCycleShift();
 
-    // ==================== SHIFT DISCOVERY AND FILTERING ====================
-
-    /**
-     * Find shifts by time range.
-     *
-     * @param startTime Minimum start time
-     * @param endTime   Maximum end time
-     * @return CompletableFuture with List of Shift objects in time range
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> getShiftsByTimeRange(@NonNull LocalTime startTime, @NonNull LocalTime endTime);
-
-    /**
-     * Find shifts by duration range.
-     *
-     * @param minDuration Minimum shift duration
-     * @param maxDuration Maximum shift duration
-     * @return CompletableFuture with List of Shift objects in duration range
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> getShiftsByDurationRange(@NonNull Duration minDuration, @NonNull Duration maxDuration);
-
-    /**
-     * Find shifts that cross midnight.
-     *
-     * @return CompletableFuture with List of Shift objects that cross midnight
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> getMidnightCrossingShifts();
-
-    /**
-     * Find shifts with break time.
-     *
-     * @return CompletableFuture with List of Shift objects that include breaks
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> getShiftsWithBreaks();
-
-    /**
-     * Find shifts by color.
-     *
-     * @param colorHex Color hex code to search for
-     * @return CompletableFuture with List of Shift objects with specified color
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> getShiftsByColor(@NonNull String colorHex);
-
-    /**
-     * Search shifts by name pattern.
-     *
-     * @param namePattern Name pattern (supports wildcards)
-     * @return CompletableFuture with List of matching Shift objects
-     */
-    @NonNull
-    CompletableFuture<List<Shift>> searchShiftsByName(@NonNull String namePattern);
-
     // ==================== SHIFT VALIDATION ====================
 
     /**

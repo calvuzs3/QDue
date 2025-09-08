@@ -1,7 +1,6 @@
 package net.calvuz.qdue.ui.features.welcome.presentation;
 
-import static net.calvuz.qdue.QDue.REQUEST_PATTERN_ASSIGNMENT;
-
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentPatternAssignmentOnboardingBinding;
 import net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardActivity;
@@ -65,7 +65,7 @@ public class PatternAssignmentOnboardingFragment extends Fragment {
 
     private void launchPatternWizard() {
         Intent intent = PatternAssignmentWizardActivity.createIntent(requireContext(), true);
-        startActivityForResult(intent, REQUEST_PATTERN_ASSIGNMENT);
+        startActivityForResult(intent, QDue.REQUEST_PATTERN_ASSIGNMENT);
     }
 
     private void skipPatternAssignment() {
@@ -82,8 +82,8 @@ public class PatternAssignmentOnboardingFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_PATTERN_ASSIGNMENT) {
-            boolean success = resultCode == requireActivity().RESULT_OK;
+        if (requestCode == QDue.REQUEST_PATTERN_ASSIGNMENT) {
+            boolean success = resultCode == Activity.RESULT_OK;
 
             if (mWelcomeInterface != null) {
                 mWelcomeInterface.onPatternAssignmentCompleted(success);

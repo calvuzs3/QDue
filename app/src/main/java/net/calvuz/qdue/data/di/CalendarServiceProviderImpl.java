@@ -17,6 +17,8 @@ import net.calvuz.qdue.data.repositories.TeamRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserScheduleAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserTeamAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
+import net.calvuz.qdue.data.services.UserWorkScheduleService;
+import net.calvuz.qdue.data.services.impl.UserWorkScheduleServiceImpl;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
 import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
@@ -32,6 +34,7 @@ import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.TeamUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.core.common.i18n.impl.DomainLocalizerImpl;
@@ -127,6 +130,8 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== USE CASE INSTANCES ====================
 
+    private volatile UserWorkScheduleService mUserWorkScheduleService;
+    private volatile TeamUseCases mTeamUseCases;
     private volatile UserTeamAssignmentUseCases mUserTeamAssignmentUseCases;
     private volatile CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
     private volatile GenerateUserScheduleUseCase mGenerateUserScheduleUseCase;
@@ -150,6 +155,8 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     private final Object mUserAssignmentRepositoryLock = new Object();
     private final Object mUserTeamAssignmentRepositoryLock = new Object();
     private final Object mWorkScheduleRepositoryLock = new Object();
+    private final Object mUserWorkScheduleServiceLock = new Object();
+    private final Object mTeamUseCasesLock = new Object();
     private final Object mCreatePatternAssignmentUseCaseLock = new Object();
     private final Object mRecurrenceCalculatorLock = new Object();
     private final Object mExceptionResolverLock = new Object();
@@ -451,7 +458,52 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         return mSchedulingEngine;
     }
 
+    // ==================== WORK SCHEDULE SERVICES ====================
+
+    @Override
+    @NonNull
+    public UserWorkScheduleService getUserWorkScheduleService() {
+        if (mUserWorkScheduleService == null) {
+
+            synchronized (mUserWorkScheduleServiceLock) {
+                if (mUserWorkScheduleService == null) {
+                    try {
+                        ensureInitialized();
+                        Log.d( TAG, "Creating UserWorkScheduleService instance" );
+
+                        WorkScheduleRepository repo = getWorkScheduleRepository();
+                        GenerateUserScheduleUseCase use = new GenerateUserScheduleUseCase(repo);
+
+                        mUserWorkScheduleService = new UserWorkScheduleServiceImpl( use );
+                    } catch (Exception e) {
+                        Log.e( TAG, "Failed to initialize UserWorkScheduleService", e );
+                        throw new RuntimeException( "UserWorkScheduleService initialization failed", e );
+                    }
+                }
+            }
+        }
+        return mUserWorkScheduleService;
+    }
+
     // ==================== USE CASES ====================
+
+    @NonNull
+    @Override
+    public TeamUseCases getTeamUseCases() {
+        if (mTeamUseCases == null) {
+            synchronized (mTeamUseCasesLock) {
+                if (mTeamUseCases == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating TeamUseCases instance" );
+                    mTeamUseCases = new TeamUseCases(
+                            getTeamRepository()
+                            //getDomainLocalizer()
+                    );
+                }
+            }
+        }
+        return mTeamUseCases;
+    }
 
     @NonNull
     @Override
@@ -485,23 +537,6 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             }
         }
         return mCreatePatternAssignmentUseCase;
-    }
-
-    @Override
-    @NonNull
-    public GenerateUserScheduleUseCase getGenerateUserScheduleUseCase() {
-        if (mGenerateUserScheduleUseCase == null) {
-            synchronized (mUserScheduleUseCaseLock) {
-                if (mGenerateUserScheduleUseCase == null) {
-                    ensureInitialized();
-                    Log.d( TAG, "Creating GenerateUserScheduleUseCase instance" );
-                    mGenerateUserScheduleUseCase = new GenerateUserScheduleUseCase(
-                            getWorkScheduleRepository()
-                    );
-                }
-            }
-        }
-        return mGenerateUserScheduleUseCase;
     }
 
     @Override

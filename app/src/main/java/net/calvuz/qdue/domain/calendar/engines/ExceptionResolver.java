@@ -153,7 +153,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
             validateScheduleConsistency( modifiedSchedule );
 
             Log.d( TAG, "Successfully applied exceptions. Final schedule has " +
-                    modifiedSchedule.getShifts().size() + " shifts" );
+                    modifiedSchedule.getWorkShifts().size() + " shifts" );
 
             return modifiedSchedule;
         } catch (Exception e) {
@@ -246,7 +246,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
         // Remove all shifts for the user on this day
         String userId = exception.getUserId();
 
-        List<WorkScheduleShift> remainingShifts = schedule.getShifts().stream()
+        List<WorkScheduleShift> remainingShifts = schedule.getWorkShifts().stream()
                 .filter( shift -> !isShiftAssignedToUser( shift, userId, userTeamMappings ) )
                 .collect( Collectors.toList() );
 
@@ -259,7 +259,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
         WorkScheduleDay modifiedSchedule = builder.build();
 
         Log.v( TAG, "Applied absence exception for user " + userId +
-                ". Removed " + (schedule.getShifts().size() - remainingShifts.size()) + " shifts" );
+                ". Removed " + (schedule.getWorkShifts().size() - remainingShifts.size()) + " shifts" );
 
         return modifiedSchedule;
     }
@@ -309,7 +309,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
         WorkScheduleDay.Builder builder = WorkScheduleDay.builder( schedule.getDate() );
 
         // Copy all other shifts unchanged
-        for (WorkScheduleShift shift : schedule.getShifts()) {
+        for (WorkScheduleShift shift : schedule.getWorkShifts()) {
             if (!isShiftAssignedToUser( shift, userId1, userTeamMappings ) &&
                     !isShiftAssignedToUser( shift, userId2, userTeamMappings )) {
                 builder.addShift( shift );
@@ -356,7 +356,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
         WorkScheduleDay.Builder builder = WorkScheduleDay.builder( schedule.getDate() );
 
-        for (WorkScheduleShift shift : schedule.getShifts()) {
+        for (WorkScheduleShift shift : schedule.getWorkShifts()) {
             if (isShiftAssignedToUser( shift, userId, userTeamMappings )) {
                 // Apply time changes to user's shift
                 WorkScheduleShift modifiedShift = applyTimeChangesToShift( shift, exception );
@@ -502,7 +502,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
     private List<WorkScheduleShift> findShiftsForUser(@NonNull WorkScheduleDay schedule,
                                                       @NonNull String userId,
                                                       @NonNull Map<String, Team> userTeamMappings) {
-        return schedule.getShifts().stream()
+        return schedule.getWorkShifts().stream()
                 .filter( shift -> isShiftAssignedToUser( shift, userId, userTeamMappings ) )
                 .collect( Collectors.toList() );
     }
@@ -628,7 +628,7 @@ public class ExceptionResolver extends LocalizableDomainModel {
 
     private void validateScheduleConsistency(@NonNull WorkScheduleDay schedule) {
         // Perform basic consistency checks
-        for (WorkScheduleShift shift : schedule.getShifts()) {
+        for (WorkScheduleShift shift : schedule.getWorkShifts()) {
             if (shift.getStartTime().isAfter( shift.getEndTime() ) && !isOvernightShift( shift )) {
                 Log.w( TAG, "Invalid shift timing detected: start after end" );
             }

@@ -85,7 +85,7 @@ public class ManageUserTeamAssignmentsUseCase {
                 Log.d(TAG, "Creating assignment: user=" + userId + ", team=" + teamId + ", start=" + startDate);
 
                 // 1. Validate user exists
-                QDueUser user = qDueUserRepository.getUserById(userId).get().getData();
+                QDueUser user = qDueUserRepository.readUser(userId).get().getData();
                 if (user == null) {
                     return OperationResult.failure("User not found: " + userId,
                             OperationResult.OperationType.CREATE);
@@ -135,7 +135,7 @@ public class ManageUserTeamAssignmentsUseCase {
 
                 // 1. Validate all users and teams exist
                 for (AssignmentCreationRequest request : assignmentRequests) {
-                    QDueUser user = qDueUserRepository.getUserById(request.userId).get().getData();
+                    QDueUser user = qDueUserRepository.readUser(request.userId).get().getData();
                     if (user == null) {
                         return OperationResult.failure("User not found: " + request.userId,
                                 OperationResult.OperationType.READ);

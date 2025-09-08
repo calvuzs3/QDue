@@ -3,11 +3,8 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
 import net.calvuz.qdue.domain.common.enums.Priority;
 import net.calvuz.qdue.domain.common.enums.Status;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.text.MessageFormat;
@@ -30,16 +27,11 @@ import java.util.UUID;
  *   <li><strong>Priority System</strong>: Handle conflicting assignments</li>
  *   <li><strong>Multi-Team Support</strong>: Users can be assigned to multiple teams over time</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.1.0 - i18n Integration
- * @since Clean Architecture Phase 2
  */
-public class UserScheduleAssignment extends LocalizableDomainModel {
+public class UserScheduleAssignment
+{
 
     private static final String TAG = "UserScheduleAssignment";
-
-    private static final String LOCALIZATION_SCOPE = "user_assignment";
 
     // ==================== IDENTIFICATION ====================
 
@@ -96,7 +88,6 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private UserScheduleAssignment(@NonNull Builder builder) {
-        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Identification
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
@@ -106,18 +97,18 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
         // Core data
         this.userId = Objects.requireNonNull( builder.userId,
-                "User ID cannot be null" );
+                                              "User ID cannot be null" );
         this.userName = builder.userName;
         this.teamId = Objects.requireNonNull( builder.teamId,
-                "Team ID cannot be null" );
+                                              "Team ID cannot be null" );
         this.teamName = builder.teamName;
         this.recurrenceRuleId = Objects.requireNonNull( builder.recurrenceRuleId,
-                "Recurrence rule ID cannot be null" );
+                                                        "Recurrence rule ID cannot be null" );
         this.cycleDayPosition = builder.cycleDayPosition;
 
         // Time boundaries
         this.startDate = Objects.requireNonNull( builder.startDate,
-                "Start date cannot be null" );
+                                                 "Start date cannot be null" );
         this.endDate = builder.endDate;
         this.isPermanent = builder.endDate == null;
 
@@ -162,11 +153,13 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         LocalDate maxFuture = today.plusYears( 50 );
 
         if (startDate.isBefore( maxPast )) {
-            throw new IllegalArgumentException( "Start date cannot be more than 50 years in the past: " + startDate );
+            throw new IllegalArgumentException(
+                    "Start date cannot be more than 50 years in the past: " + startDate );
         }
 
         if (startDate.isAfter( maxFuture )) {
-            throw new IllegalArgumentException( "Start date cannot be more than 50 years in the future: " + startDate );
+            throw new IllegalArgumentException(
+                    "Start date cannot be more than 50 years in the future: " + startDate );
         }
 
         // Log status computation for debugging
@@ -222,7 +215,9 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         return recurrenceRuleId;
     }
 
-    public int getCycleDayPosition() { return cycleDayPosition; }
+    public int getCycleDayPosition() {
+        return cycleDayPosition;
+    }
 
     @NonNull
     public LocalDate getStartDate() {
@@ -312,9 +307,11 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * @return Computed status that maintains domain consistency
      */
     @NonNull
-    private Status computeStatus(@NonNull LocalDate startDate,
-                                 @Nullable LocalDate endDate,
-                                 boolean active) {
+    private Status computeStatus(
+            @NonNull LocalDate startDate,
+            @Nullable LocalDate endDate,
+            boolean active
+    ) {
         // Administrative override: if not active, it's cancelled
         if (!active) {
             Log.d( TAG, "Assignment administratively disabled - status: CANCELLED" );
@@ -350,12 +347,14 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
 
         // Date range check (independent of status)
         if (date.isBefore( startDate )) {
-            Log.e( TAG, MessageFormat.format( "Date ({0}) is before start date ({1})", date, startDate ) );
+            Log.e( TAG, MessageFormat.format( "Date ({0}) is before start date ({1})", date,
+                                              startDate ) );
             return false;
         }
 
         if (!isPermanent && endDate != null && date.isAfter( endDate )) {
-            Log.e( TAG, MessageFormat.format( "Date ({0}) is after end date ({1})", date, endDate ) );
+            Log.e( TAG,
+                   MessageFormat.format( "Date ({0}) is after end date ({1})", date, endDate ) );
             return false;
         }
 
@@ -418,7 +417,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Enhanced method: Check if assignment should be included in future planning.
      */
     public boolean isValidForPlanning(@NonNull LocalDate planningDate) {
-        return active && appliesTo(planningDate);
+        return active && appliesTo( planningDate );
     }
 
     /**
@@ -433,34 +432,11 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             return -1;
         }
 
-        return java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1; // +1 because both dates are inclusive
+        return java.time.temporal.ChronoUnit.DAYS.between( startDate,
+                                                           endDate ) + 1; // +1 because both dates are inclusive
     }
 
-    // ==================== LOCALIZED DISPLAY METHODS ====================
-
-    /**
-     * Get localized priority display name.
-     */
-    @NonNull
-    public String getPriorityDisplayName() {
-        return localize( "priority." + priority.name().toLowerCase(), priority.name() );
-    }
-
-    /**
-     * Get localized status display name.
-     */
-    @NonNull
-    public String getStatusDisplayName() {
-        return localize( "status." + status.name().toLowerCase(), status.name() );
-    }
-
-    /**
-     * Get localized status description.
-     */
-    @NonNull
-    public String getStatusDescription() {
-        return localize( "status." + status.name().toLowerCase() + ".description", status.getDescriptionKey() );
-    }
+    // ==================== DISPLAY METHODS ====================
 
     /**
      * Get display title for UI with localization support.
@@ -474,7 +450,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         String teamDisplay = teamName != null ? teamName : teamId;
         String userDisplay = userName != null ? userName : String.valueOf( userId );
 
-        return localize( "display.title", userDisplay + " - " + teamDisplay, userDisplay, teamDisplay );
+        return userDisplay + " - " + teamDisplay;
     }
 
     /**
@@ -483,28 +459,9 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
     @NonNull
     public String getDisplayPeriod() {
         if (isPermanent) {
-            return localize( "period.permanent", "From " + startDate, startDate );
+            return "From " + startDate;
         } else {
-            return localize( "period.temporary", startDate + " to " + endDate, startDate, endDate );
-        }
-    }
-
-    /**
-     * Get localized assignment type description.
-     */
-    @NonNull
-    public String getAssignmentTypeDescription() {
-        if (isPermanent) {
-            return localize( "type.permanent", "Permanent Assignment" );
-        } else {
-            long days = getDurationDays();
-            if (days <= 7) {
-                return localize( "type.short_term", "Short-term Assignment", days );
-            } else if (days <= 30) {
-                return localize( "type.medium_term", "Medium-term Assignment", days );
-            } else {
-                return localize( "type.long_term", "Long-term Assignment", days );
-            }
+            return startDate + " to " + endDate;
         }
     }
 
@@ -516,90 +473,40 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         Status effectiveStatus = getEffectiveStatus();
 
         if (effectiveStatus == Status.ACTIVE && isPermanent) {
-            return localize( "effective_status.active_permanent", "Active (Permanent)" );
+            return "Active (Permanent)";
         } else if (effectiveStatus == Status.ACTIVE && !isPermanent) {
-            return localize( "effective_status.active_temporary", "Active (Until " + endDate + ")", endDate );
+            return "Active (Until " + endDate + ")";
         } else if (effectiveStatus == Status.PENDING) {
-            return localize( "effective_status.pending_start", "Starts " + startDate, startDate );
+            return "Starts " + startDate;
         } else if (effectiveStatus == Status.EXPIRED) {
-            return localize( "effective_status.expired_on", "Expired " + endDate, endDate );
+            return "Expired " + endDate;
         }
 
-        return localize( "status." + effectiveStatus.name().toLowerCase(), effectiveStatus.name() );
-    }
-
-    /**
-     * Get localized duration description.
-     */
-    @NonNull
-    public String getDurationDescription() {
-        if (isPermanent) {
-            return localize( "duration.permanent", "Permanent" );
-        }
-
-        long days = getDurationDays();
-        if (days < 0) {
-            return localize( "duration.unspecified", "Unspecified" );
-        } else if (days == 1) {
-            return localize( "duration.one_day", "1 Day" );
-        } else if (days <= 7) {
-            return localize( "duration.days", days + " Days", days );
-        } else if (days <= 31) {
-            long weeks = days / 7;
-            long remainingDays = days % 7;
-            if (remainingDays == 0) {
-                return localize( "duration.weeks", weeks + " Weeks", weeks );
-            } else {
-                return localize( "duration.weeks_days", weeks + " Weeks, " + remainingDays + " Days", weeks, remainingDays );
-            }
-        } else {
-            long months = days / 30;
-            long remainingDays = days % 30;
-            if (remainingDays == 0) {
-                return localize( "duration.months", months + " Months", months );
-            } else {
-                return localize( "duration.months_days", months + " Months, " + remainingDays + " Days", months, remainingDays );
-            }
-        }
-    }
-
-    /**
-     * Get localized assignment context information.
-     */
-    @NonNull
-    public String getAssignmentContext() {
-        if (assignedByUserName != null) {
-            return localize( "context.assigned_by", "Assigned by " + assignedByUserName, assignedByUserName );
-        } else if (departmentName != null && roleName != null) {
-            return localize( "context.department_role", departmentName + " - " + roleName, departmentName, roleName );
-        } else if (departmentName != null) {
-            return localize( "context.department_only", "Department: " + departmentName, departmentName );
-        } else if (roleName != null) {
-            return localize( "context.role_only", "Role: " + roleName, roleName );
-        } else {
-            return localize( "context.standard", "Standard Assignment" );
-        }
+        return effectiveStatus.name();
     }
 
     // ==================== FACTORY METHODS ====================
+
     /**
      * Create pattern assignment with correct status computation.
      * Status will be automatically determined based on start date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
-                                                                 @NonNull String teamId,
-                                                                 @NonNull String recurrenceRuleId,
-                                                                 @NonNull LocalDate startDate,
-                                                                 @NonNull String patternName) {
+    public static UserScheduleAssignment createPatternAssignment(
+            @NonNull String userId,
+            @NonNull String teamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate startDate,
+            @NonNull String patternName
+    ) {
         return builder()
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .assignedByUserName(patternName)
-                .priority(Priority.NORMAL)
-                .active(true)  // Administratively enabled
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .assignedByUserName( patternName )
+                .priority( Priority.NORMAL )
+                .active( true )  // Administratively enabled
                 // DON'T set status - it will be computed automatically
                 .build();
     }
@@ -608,21 +515,23 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary pattern assignment with end date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
-                                                                 @NonNull String teamId,
-                                                                 @NonNull String recurrenceRuleId,
-                                                                 @NonNull LocalDate startDate,
-                                                                 @Nullable LocalDate endDate,
-                                                                 @NonNull String patternName) {
+    public static UserScheduleAssignment createPatternAssignment(
+            @NonNull String userId,
+            @NonNull String teamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate startDate,
+            @Nullable LocalDate endDate,
+            @NonNull String patternName
+    ) {
         return builder()
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .endDate(endDate)
-                .assignedByUserName(patternName)
-                .priority(Priority.NORMAL)
-                .active(true)  // Administratively enabled
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .endDate( endDate )
+                .assignedByUserName( patternName )
+                .priority( Priority.NORMAL )
+                .active( true )  // Administratively enabled
                 // DON'T set status - it will be computed automatically
                 .build();
     }
@@ -631,22 +540,24 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create temporary pattern assignment with end date.
      */
     @NonNull
-    public static UserScheduleAssignment createPatternAssignment(@NonNull String userId,
-                                                                 @NonNull String teamId,
-                                                                 @NonNull String recurrenceRuleId,
-                                                                 @NonNull LocalDate startDate,
-                                                                 @Nullable String patternName,
-                                                                 int cycleDayPosition) {
+    public static UserScheduleAssignment createPatternAssignment(
+            @NonNull String userId,
+            @NonNull String teamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate startDate,
+            @Nullable String patternName,
+            int cycleDayPosition
+    ) {
         return builder()
-                .title(patternName)
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .cycleDayPosition(cycleDayPosition)
-                .assignedByUserName(patternName)
-                .priority(Priority.NORMAL)
-                .active(true)  // Administratively enabled
+                .title( patternName )
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .cycleDayPosition( cycleDayPosition )
+                .assignedByUserName( patternName )
+                .priority( Priority.NORMAL )
+                .active( true )  // Administratively enabled
                 // DON'T set status - it will be computed automatically
                 .build();
     }
@@ -655,12 +566,12 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create pattern assignment with cycle position and end date.
      * For temporary or limited-duration assignments.
      *
-     * @param userId User ID for assignment
-     * @param teamId Team ID or name
+     * @param userId           User ID for assignment
+     * @param teamId           Team ID or name
      * @param recurrenceRuleId RecurrenceRule ID for pattern
-     * @param startDate Assignment start date
-     * @param endDate Assignment end date (can be null for permanent)
-     * @param patternName Display name for pattern
+     * @param startDate        Assignment start date
+     * @param endDate          Assignment end date (can be null for permanent)
+     * @param patternName      Display name for pattern
      * @param cycleDayPosition Position in pattern cycle (1-based)
      * @return New UserScheduleAssignment with cycle position and end date
      */
@@ -672,55 +583,56 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             @NonNull LocalDate startDate,
             @Nullable LocalDate endDate,
             @NonNull String patternName,
-            int cycleDayPosition) {
+            int cycleDayPosition
+    ) {
 
         return builder()
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .endDate(endDate)
-                .assignedByUserName(patternName)
-                .priority(Priority.NORMAL)
-                .active(true)  // Administratively enabled
-                .cycleDayPosition(cycleDayPosition)  // NEW: Cycle position field
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .endDate( endDate )
+                .assignedByUserName( patternName )
+                .priority( Priority.NORMAL )
+                .active( true )  // Administratively enabled
+                .cycleDayPosition( cycleDayPosition )  // NEW: Cycle position field
                 // DON'T set status - it will be computed automatically
                 .build();
     }
-
 
     /**
      * Create ended version of existing assignment for gap-filling strategy.
      * Sets end date to terminate existing assignment before new one starts.
      *
      * @param existing Existing assignment to terminate
-     * @param endDate Date when assignment should end
+     * @param endDate  Date when assignment should end
      * @return New assignment with same properties but with end date set
      */
     @NonNull
     public static UserScheduleAssignment createEndedAssignment(
             @NonNull UserScheduleAssignment existing,
-            @NonNull LocalDate endDate) {
+            @NonNull LocalDate endDate
+    ) {
 
         return builder()
-                .id(existing.getId())  // Keep same ID for update
-                .userId(existing.getUserId())
-                .teamId(existing.getTeamId())
-                .recurrenceRuleId(existing.getRecurrenceRuleId())
-                .startDate(existing.getStartDate())
-                .endDate(endDate)  // NEW: Set end date to terminate
-                .title(existing.getTitle())
-                .description(existing.getDescription())
-                .notes(existing.getNotes())
-                .assignedByUserId(existing.getAssignedByUserId())
-                .assignedByUserName(existing.getAssignedByUserName())
-                .priority(existing.getPriority())
-                .active(existing.isActive())  // Keep original active state
-                .cycleDayPosition(existing.getCycleDayPosition())
-                .createdAt(existing.getCreatedAt())
-                .updatedAt(System.currentTimeMillis())  // Update timestamp
-                .createdByUserId(existing.getCreatedByUserId())
-                .lastModifiedByUserId(existing.getLastModifiedByUserId())
+                .id( existing.getId() )  // Keep same ID for update
+                .userId( existing.getUserId() )
+                .teamId( existing.getTeamId() )
+                .recurrenceRuleId( existing.getRecurrenceRuleId() )
+                .startDate( existing.getStartDate() )
+                .endDate( endDate )  // NEW: Set end date to terminate
+                .title( existing.getTitle() )
+                .description( existing.getDescription() )
+                .notes( existing.getNotes() )
+                .assignedByUserId( existing.getAssignedByUserId() )
+                .assignedByUserName( existing.getAssignedByUserName() )
+                .priority( existing.getPriority() )
+                .active( existing.isActive() )  // Keep original active state
+                .cycleDayPosition( existing.getCycleDayPosition() )
+                .createdAt( existing.getCreatedAt() )
+                .updatedAt( System.currentTimeMillis() )  // Update timestamp
+                .createdByUserId( existing.getCreatedByUserId() )
+                .lastModifiedByUserId( existing.getLastModifiedByUserId() )
                 // DON'T set status - it will be recomputed based on new end date
                 .build();
     }
@@ -729,84 +641,61 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create standard permanent team assignment.
      */
     @NonNull
-    public static UserScheduleAssignment createPermanentAssignment(@NonNull String userId, @NonNull String teamId,
-                                                                   @NonNull String recurrenceRuleId, @NonNull LocalDate startDate) {
-        return createPermanentAssignment(userId, teamId, recurrenceRuleId, startDate, null);
-    }
-
-    /**
-     * Create standard permanent team assignment with localization support.
-     */
-    @NonNull
-    public static UserScheduleAssignment createPermanentAssignment(@NonNull String userId, @NonNull String teamId,
-                                                                   @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
-                                                                   @Nullable DomainLocalizer localizer) {
+    public static UserScheduleAssignment createPermanentAssignment(
+            @NonNull String userId,
+            @NonNull String teamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate startDate
+            ) {
         return builder()
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .priority(Priority.NORMAL)
-                .active(true)
-                .localizer(localizer)
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .priority( Priority.NORMAL )
+                .active( true )
                 .build();
-    }
-
-    /**
-     * Create temporary team assignment with end date.
-     */
-    @NonNull
-    public static UserScheduleAssignment createTemporaryAssignment(@NonNull String userId, @NonNull String teamId,
-                                                                   @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
-                                                                   @NonNull LocalDate endDate) {
-        return createTemporaryAssignment(userId, teamId, recurrenceRuleId, startDate, endDate, null);
     }
 
     /**
      * Create temporary team assignment with end date and localization support.
      */
     @NonNull
-    public static UserScheduleAssignment createTemporaryAssignment(@NonNull String userId, @NonNull String teamId,
-                                                                   @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
-                                                                   @NonNull LocalDate endDate, @Nullable DomainLocalizer localizer) {
+    public static UserScheduleAssignment createTemporaryAssignment(
+            @NonNull String userId, @NonNull String teamId,
+            @NonNull String recurrenceRuleId, @NonNull LocalDate startDate,
+            @NonNull LocalDate endDate
+    ) {
         return builder()
-                .userId(userId)
-                .teamId(teamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(startDate)
-                .endDate(endDate)
-                .priority(Priority.HIGH) // Temporary assignments usually override standard ones
-                .active(true)
-                .localizer(localizer)
+                .userId( userId )
+                .teamId( teamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( startDate )
+                .endDate( endDate )
+                .priority( Priority.HIGH ) // Temporary assignments usually override standard ones
+                .active( true )
                 .build();
-    }
-
-    /**
-     * Create team transfer assignment (replaces previous assignment).
-     */
-    @NonNull
-    public static UserScheduleAssignment createTeamTransfer(@NonNull String userId, @NonNull String newTeamId,
-                                                            @NonNull String recurrenceRuleId, @NonNull LocalDate transferDate,
-                                                            @Nullable String assignedByUserId) {
-        return createTeamTransfer(userId, newTeamId, recurrenceRuleId, transferDate, assignedByUserId, null);
     }
 
     /**
      * Create team transfer assignment with localization support.
      */
     @NonNull
-    public static UserScheduleAssignment createTeamTransfer(@NonNull String userId, @NonNull String newTeamId,
-                                                            @NonNull String recurrenceRuleId, @NonNull LocalDate transferDate,
-                                                            @Nullable String assignedByUserId, @Nullable DomainLocalizer localizer) {
+    public static UserScheduleAssignment createTeamTransfer(
+            @NonNull String userId,
+            @NonNull String newTeamId,
+            @NonNull String recurrenceRuleId,
+            @NonNull LocalDate transferDate,
+            @Nullable String assignedByUserId
+    ) {
         return builder()
-                .userId(userId)
-                .teamId(newTeamId)
-                .recurrenceRuleId(recurrenceRuleId)
-                .startDate(transferDate)
-                .priority(Priority.OVERRIDE) // Team transfers override existing assignments
-                .active(true)
-                .assignedByUserId(assignedByUserId)
-                .localizer(localizer)
+                .userId( userId )
+                .teamId( newTeamId )
+                .recurrenceRuleId( recurrenceRuleId )
+                .startDate( transferDate )
+                .priority( Priority.OVERRIDE ) // Team transfers override existing assignments
+                .active( true )
+                .assignedByUserId( assignedByUserId )
                 .build();
     }
 
@@ -814,14 +703,15 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      * Create disabled assignment (for soft delete scenarios).
      */
     @NonNull
-    public static UserScheduleAssignment createDisabledAssignment(@NonNull UserScheduleAssignment source) {
+    public static UserScheduleAssignment createDisabledAssignment(
+            @NonNull UserScheduleAssignment source
+    ) {
         return builder()
-                .copyFrom(source)
-                .active(false)  // Administratively disabled
+                .copyFrom( source )
+                .active( false )  // Administratively disabled
                 // Status will be automatically computed as CANCELLED
                 .build();
     }
-
 
     /**
      * Create terminated version of existing assignment for conflict resolution.
@@ -832,39 +722,29 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
      */
     @NonNull
     public static UserScheduleAssignment createCancelledAssignment(
-            @NonNull UserScheduleAssignment existing) {
+            @NonNull UserScheduleAssignment existing
+    ) {
 
         return builder()
-                .id(existing.getId())  // Keep same ID for update
-                .userId(existing.getUserId())
-                .teamId(existing.getTeamId())
-                .recurrenceRuleId(existing.getRecurrenceRuleId())
-                .startDate(existing.getStartDate())
-                .endDate(existing.getEndDate())
-                .title(existing.getTitle())
-                .description(existing.getDescription())
-                .notes(existing.getNotes())
-                .assignedByUserId(existing.getAssignedByUserId())
-                .assignedByUserName(existing.getAssignedByUserName())
-                .priority(existing.getPriority())
-                .active(false)  // NEW: Administratively disable
-                .cycleDayPosition(existing.getCycleDayPosition())
-                .createdAt(existing.getCreatedAt())
-                .updatedAt(System.currentTimeMillis())  // Update timestamp
-                .createdByUserId(existing.getCreatedByUserId())
-                .lastModifiedByUserId(existing.getLastModifiedByUserId())
+                .id( existing.getId() )  // Keep same ID for update
+                .userId( existing.getUserId() )
+                .teamId( existing.getTeamId() )
+                .recurrenceRuleId( existing.getRecurrenceRuleId() )
+                .startDate( existing.getStartDate() )
+                .endDate( existing.getEndDate() )
+                .title( existing.getTitle() )
+                .description( existing.getDescription() )
+                .notes( existing.getNotes() )
+                .assignedByUserId( existing.getAssignedByUserId() )
+                .assignedByUserName( existing.getAssignedByUserName() )
+                .priority( existing.getPriority() )
+                .active( false )  // NEW: Administratively disable
+                .cycleDayPosition( existing.getCycleDayPosition() )
+                .createdAt( existing.getCreatedAt() )
+                .updatedAt( System.currentTimeMillis() )  // Update timestamp
+                .createdByUserId( existing.getCreatedByUserId() )
+                .lastModifiedByUserId( existing.getLastModifiedByUserId() )
                 // Status will be computed as CANCELLED due to active=false
-                .build();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    @Override
-    @NonNull
-    public UserScheduleAssignment withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder()
-                .copyFrom( this )
-                .localizer( localizer )
                 .build();
     }
 
@@ -875,7 +755,8 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
         return new Builder();
     }
 
-    public static class Builder extends LocalizableBuilder<UserScheduleAssignment, Builder> {
+    public static class Builder
+    {
         private String id;
         private String title;
         private String description;
@@ -930,7 +811,7 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             this.createdByUserId = source.createdByUserId;
             this.lastModifiedByUserId = source.lastModifiedByUserId;
 
-            return copyLocalizableFrom( source );
+            return this;
         }
 
         @NonNull
@@ -1077,13 +958,6 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
             return this;
         }
 
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
-
-        @Override
         @NonNull
         public UserScheduleAssignment build() {
             return new UserScheduleAssignment( this );
@@ -1135,6 +1009,5 @@ public class UserScheduleAssignment extends LocalizableDomainModel {
                 ", createdByUserId=" + createdByUserId +
                 ", lastModifiedByUserId=" + lastModifiedByUserId +
                 '}';
-
     }
 }

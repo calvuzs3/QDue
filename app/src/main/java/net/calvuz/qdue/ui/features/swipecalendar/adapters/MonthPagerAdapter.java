@@ -72,7 +72,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         /**
          * Load events for a specific month.
          *
-         * @param month Target month
+         * @param month    Target month
          * @param callback Callback for results
          */
         void loadEventsForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, List<LocalEvent>>> callback);
@@ -80,7 +80,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         /**
          * Load work schedule for a specific month.
          *
-         * @param month Target month
+         * @param month    Target month
          * @param callback Callback for results
          */
         void loadWorkScheduleForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, WorkScheduleDay>> callback);
@@ -91,6 +91,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      */
     public interface DataCallback<T> {
         void onSuccess(@NonNull T data);
+
         void onError(@NonNull Exception error);
     }
 
@@ -176,19 +177,19 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Creates MonthPagerAdapter with required dependencies.
      *
-     * @param context Context for resource access
+     * @param context    Context for resource access
      * @param dataLoader Data loading interface
      */
     public MonthPagerAdapter(@NonNull Context context, @NonNull DataLoader dataLoader) {
         this.mContext = context;
-        this.mInflater = LayoutInflater.from(context);
+        this.mInflater = LayoutInflater.from( context );
         this.mDataLoader = dataLoader;
-        this.mMainHandler = new Handler(Looper.getMainLooper());
-        this.mBackgroundExecutor = Executors.newFixedThreadPool(2);
+        this.mMainHandler = new Handler( Looper.getMainLooper() );
+        this.mBackgroundExecutor = Executors.newFixedThreadPool( 2 );
 
-        setHasStableIds(true);
-        Log.d(TAG, "MonthPagerAdapter created");
-        Log.d(TAG, "MonthPagerAdapter created with context: " + context.getClass().getSimpleName());
+        setHasStableIds( true );
+        Log.d( TAG, "MonthPagerAdapter created" );
+        Log.d( TAG, "MonthPagerAdapter created with context: " + context.getClass().getSimpleName() );
     }
 
     // ==================== ADAPTER IMPLEMENTATION ====================
@@ -209,50 +210,48 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         try {
-            View itemView = mInflater.inflate(R.layout.item_swipe_calendar_month, parent, false);
-            return new MonthViewHolder(itemView);
-
+            View itemView = mInflater.inflate( R.layout.item_swipe_calendar_month, parent, false );
+            return new MonthViewHolder( itemView );
         } catch (Exception e) {
-            Log.e(TAG, "Failed to inflate layout with themed context, trying parent context", e);
+            Log.e( TAG, "Failed to inflate layout with themed context, trying parent context", e );
 
             // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
             try {
-                View fallbackView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_swipe_calendar_month, parent, false);
-                Log.w(TAG, "Successfully inflated layout with parent context (fallback)");
-                return new MonthViewHolder(fallbackView);
-
+                View fallbackView = LayoutInflater.from( parent.getContext() )
+                        .inflate( R.layout.item_swipe_calendar_month, parent, false );
+                Log.w( TAG, "Successfully inflated layout with parent context (fallback)" );
+                return new MonthViewHolder( fallbackView );
             } catch (Exception fallbackError) {
-                Log.e(TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError);
+                Log.e( TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError );
 
                 // ✅ LAST RESORT: Create minimal layout programmatically
-                LinearLayout errorLayout = new LinearLayout(parent.getContext());
-                errorLayout.setLayoutParams(new ViewGroup.LayoutParams(
+                LinearLayout errorLayout = new LinearLayout( parent.getContext() );
+                errorLayout.setLayoutParams( new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
-                ));
-                errorLayout.setOrientation(LinearLayout.VERTICAL);
+                ) );
+                errorLayout.setOrientation( LinearLayout.VERTICAL );
 
-                TextView errorText = new TextView(parent.getContext());
-                errorText.setText("Layout inflation failed");
-                errorText.setGravity( Gravity.CENTER);
-                errorLayout.addView(errorText);
+                TextView errorText = new TextView( parent.getContext() );
+                errorText.setText( "Layout inflation failed" );
+                errorText.setGravity( Gravity.CENTER );
+                errorLayout.addView( errorText );
 
-                Log.e(TAG, "Created emergency layout due to inflation failure");
-                return new MonthViewHolder(errorLayout);
+                Log.e( TAG, "Created emergency layout due to inflation failure" );
+                return new MonthViewHolder( errorLayout );
             }
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull MonthViewHolder holder, int position) {
-        YearMonth month = SwipeCalendarStateManager.getMonthForPosition(position);
-        holder.bind(month);
+        YearMonth month = SwipeCalendarStateManager.getMonthForPosition( position );
+        holder.bind( month );
     }
 
     @Override
     public void onViewRecycled(@NonNull MonthViewHolder holder) {
-        super.onViewRecycled(holder);
+        super.onViewRecycled( holder );
         holder.cleanup();
     }
 
@@ -275,20 +274,20 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         private YearMonth currentMonth;
 
         public MonthViewHolder(@NonNull View itemView) {
-            super(itemView);
+            super( itemView );
 
             // Find views
-            monthDaysRecycler = itemView.findViewById(R.id.recycler_month_days);
-            loadingOverlay = itemView.findViewById(R.id.loading_overlay);
-            errorState = itemView.findViewById(R.id.error_state);
-            retryButton = itemView.findViewById(R.id.btn_retry);
+            monthDaysRecycler = itemView.findViewById( R.id.recycler_month_days );
+            loadingOverlay = itemView.findViewById( R.id.loading_overlay );
+            errorState = itemView.findViewById( R.id.error_state );
+            retryButton = itemView.findViewById( R.id.btn_retry );
 
             // Configure RecyclerView
             setupRecyclerView();
 
             // Set retry button listener
             if (retryButton != null) {
-                retryButton.setOnClickListener(v -> retryLoadData());
+                retryButton.setOnClickListener( v -> retryLoadData() );
             }
         }
 
@@ -300,71 +299,75 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
 
             // Create or update day adapter
             if (dayAdapter == null) {
-                dayAdapter = new SwipeCalendarDayAdapter(mContext, month);
-                dayAdapter.setOnDayClickListener(new SwipeCalendarDayAdapter.OnDayClickListener() {
+                dayAdapter = new SwipeCalendarDayAdapter( mContext, month );
+                dayAdapter.setOnDayClickListener( new SwipeCalendarDayAdapter.OnDayClickListener() {
                     @Override
                     public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
                         if (mInteractionListener != null) {
-                            mInteractionListener.onDayClick(date, day, dayEvents);
+                            mInteractionListener.onDayClick( date, day, dayEvents );
                         }
                     }
 
                     @Override
                     public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
                         if (mInteractionListener != null) {
-                            mInteractionListener.onDayLongClick(date, day, view);
+                            mInteractionListener.onDayLongClick( date, day, view );
                         }
                     }
-                });
-                monthDaysRecycler.setAdapter(dayAdapter);
+                } );
+                monthDaysRecycler.setAdapter( dayAdapter );
             } else {
-                dayAdapter.updateMonth(month);
+                dayAdapter.updateMonth( month );
             }
 
             // Load data for this month
-            loadDataForMonth(month);
+            loadDataForMonth( month );
 
-            Log.v(TAG, "Bound ViewHolder to month: " + month);
+            Log.v( TAG, "Bound ViewHolder to month: " + month );
         }
 
         /**
          * Setup RecyclerView configuration.
          */
         private void setupRecyclerView() {
-            GridLayoutManager layoutManager = new GridLayoutManager(mContext, 7); // 7 days per week
-            monthDaysRecycler.setLayoutManager(layoutManager);
-            monthDaysRecycler.setHasFixedSize(true);
-            monthDaysRecycler.setNestedScrollingEnabled(false);
-            monthDaysRecycler.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            GridLayoutManager layoutManager = new GridLayoutManager( mContext, 7 ); // 7 days per week
+            monthDaysRecycler.setLayoutManager( layoutManager );
+            monthDaysRecycler.setHasFixedSize( true );
+            monthDaysRecycler.setNestedScrollingEnabled( false );
+            monthDaysRecycler.setOverScrollMode( View.OVER_SCROLL_NEVER );
         }
 
         /**
          * Load data for the specified month.
          */
         private void loadDataForMonth(@NonNull YearMonth month) {
-            MonthData monthData = mMonthDataCache.get(month);
+            Log.i( TAG, "Loading data for month: " + month );
+
+            MonthData monthData = mMonthDataCache.get( month );
 
             if (monthData == null) {
-                monthData = new MonthData(month);
-                mMonthDataCache.put(month, monthData);
+                monthData = new MonthData( month );
+                mMonthDataCache.put( month, monthData );
             }
 
             if (monthData.isLoaded()) {
                 // Data already loaded - update UI
-                updateAdapterWithData(monthData);
-                showLoadedState();
+                updateAdapterWithData( monthData );
+                Log.i( TAG, "(loaded) Created new month data for month: " + monthData );
 
+                showLoadedState();
             } else if (monthData.isLoading()) {
                 // Currently loading - show loading state
+                Log.i( TAG, "(loading) Loading data for month: " + month );
                 showLoadingState();
-
             } else if (monthData.hasError()) {
                 // Previous error - show error state
+                Log.i( TAG, "(error) Error loading data for month: " + month );
                 showErrorState();
-
             } else {
                 // Need to load data
-                startDataLoading(monthData);
+                Log.i( TAG, "(idle) Need to load data for month: " + month );
+                startDataLoading( monthData );
             }
         }
 
@@ -376,65 +379,66 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             monthData.state = LoadingState.LOADING_EVENTS;
 
             // Load events first
-            mDataLoader.loadEventsForMonth(monthData.month, new DataCallback<>() {
+            mDataLoader.loadEventsForMonth( monthData.month, new DataCallback<>() {
                 @Override
                 public void onSuccess(@NonNull Map<LocalDate, List<LocalEvent>> eventsData) {
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         monthData.events.clear();
-                        monthData.events.putAll(eventsData);
+                        monthData.events.putAll( eventsData );
                         monthData.state = LoadingState.LOADING_WORK_SCHEDULE;
 
                         // Now load work schedule
-                        loadWorkScheduleData(monthData);
-                    });
+                        loadWorkScheduleData( monthData );
+                    } );
                 }
 
                 @Override
                 public void onError(@NonNull Exception error) {
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         monthData.state = LoadingState.ERROR;
                         monthData.lastError = error;
                         showErrorState();
 
                         if (mInteractionListener != null) {
-                            mInteractionListener.onMonthLoadError(monthData.month, error);
+                            mInteractionListener.onMonthLoadError( monthData.month, error );
                         }
-                    });
+                    } );
                 }
-            });
+            } );
         }
 
         /**
          * Load work schedule data (second phase of loading).
          */
         private void loadWorkScheduleData(@NonNull MonthData monthData) {
-            mDataLoader.loadWorkScheduleForMonth(monthData.month, new DataCallback<>() {
+            mDataLoader.loadWorkScheduleForMonth( monthData.month, new DataCallback<>() {
                 @Override
                 public void onSuccess(@NonNull Map<LocalDate, WorkScheduleDay> workScheduleData) {
-                    mMainHandler.post(() -> {
+                    Log.i( TAG, "Loaded work schedule data for month: " + monthData.month );
+                    mMainHandler.post( () -> {
                         monthData.workSchedule.clear();
-                        monthData.workSchedule.putAll(workScheduleData);
+                        monthData.workSchedule.putAll( workScheduleData );
                         monthData.state = LoadingState.LOADED;
 
                         // Update UI with complete data
-                        updateAdapterWithData(monthData);
+                        updateAdapterWithData( monthData );
                         showLoadedState();
-                    });
+                    } );
                 }
 
                 @Override
                 public void onError(@NonNull Exception error) {
-                    mMainHandler.post(() -> {
+                    mMainHandler.post( () -> {
                         monthData.state = LoadingState.ERROR;
                         monthData.lastError = error;
                         showErrorState();
 
                         if (mInteractionListener != null) {
-                            mInteractionListener.onMonthLoadError(monthData.month, error);
+                            mInteractionListener.onMonthLoadError( monthData.month, error );
                         }
-                    });
+                    } );
                 }
-            });
+            } );
         }
 
         /**
@@ -442,8 +446,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          */
         private void updateAdapterWithData(@NonNull MonthData monthData) {
             if (dayAdapter != null) {
-                dayAdapter.updateEvents(monthData.events);
-                dayAdapter.updateWorkSchedule(monthData.workSchedule);
+                dayAdapter.updateEvents( monthData.events );
+                dayAdapter.updateWorkSchedule( monthData.workSchedule );
             }
         }
 
@@ -452,10 +456,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          */
         private void showLoadingState() {
             if (loadingOverlay != null) {
-                loadingOverlay.setVisibility(View.VISIBLE);
+                loadingOverlay.setVisibility( View.VISIBLE );
             }
             if (errorState != null) {
-                errorState.setVisibility(View.GONE);
+                errorState.setVisibility( View.GONE );
             }
         }
 
@@ -464,10 +468,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          */
         private void showLoadedState() {
             if (loadingOverlay != null) {
-                loadingOverlay.setVisibility(View.GONE);
+                loadingOverlay.setVisibility( View.GONE );
             }
             if (errorState != null) {
-                errorState.setVisibility(View.GONE);
+                errorState.setVisibility( View.GONE );
             }
         }
 
@@ -476,10 +480,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          */
         private void showErrorState() {
             if (loadingOverlay != null) {
-                loadingOverlay.setVisibility(View.GONE);
+                loadingOverlay.setVisibility( View.GONE );
             }
             if (errorState != null) {
-                errorState.setVisibility(View.VISIBLE);
+                errorState.setVisibility( View.VISIBLE );
             }
         }
 
@@ -488,10 +492,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          */
         private void retryLoadData() {
             if (currentMonth != null) {
-                MonthData monthData = mMonthDataCache.get(currentMonth);
+                MonthData monthData = mMonthDataCache.get( currentMonth );
                 if (monthData != null) {
                     monthData.state = LoadingState.IDLE;
-                    loadDataForMonth(currentMonth);
+                    loadDataForMonth( currentMonth );
                 }
             }
         }
@@ -502,7 +506,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         public void cleanup() {
             // Clear references to prevent memory leaks
             if (dayAdapter != null) {
-                dayAdapter.setOnDayClickListener(null);
+                dayAdapter.setOnDayClickListener( null );
             }
         }
     }
@@ -524,7 +528,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      * @param month Month to refresh
      */
     public void refreshMonth(@NonNull YearMonth month) {
-        MonthData monthData = mMonthDataCache.get(month);
+        MonthData monthData = mMonthDataCache.get( month );
         if (monthData != null) {
             monthData.state = LoadingState.IDLE;
             monthData.events.clear();
@@ -532,8 +536,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             monthData.lastError = null;
 
             // Notify adapter to rebind affected ViewHolder
-            int position = SwipeCalendarStateManager.getPositionForMonth(month);
-            notifyItemChanged(position);
+            int position = SwipeCalendarStateManager.getPositionForMonth( month );
+            notifyItemChanged( position );
         }
     }
 
@@ -543,7 +547,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      */
     public void clearCache() {
         mMonthDataCache.clear();
-        Log.d(TAG, "Month data cache cleared");
+        Log.d( TAG, "Month data cache cleared" );
     }
 
     /**
@@ -554,6 +558,6 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         clearCache();
         mBackgroundExecutor.shutdown();
         mInteractionListener = null;
-        Log.d(TAG, "MonthPagerAdapter cleaned up");
+        Log.d( TAG, "MonthPagerAdapter cleaned up" );
     }
 }

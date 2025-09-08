@@ -218,7 +218,7 @@ public abstract class CalendarDatabase extends RoomDatabase {
             db.execSQL( "PRAGMA foreign_keys = ON" );
 
             // Optimize for calendar read-heavy workload
-            optimizeDatabaseForEnhancedCalendar( db );
+            optimizeDatabaseForCalendar( db );
 
             // Create all performance indexes
             createEnhancedPerformanceIndexes( db );
@@ -246,7 +246,7 @@ public abstract class CalendarDatabase extends RoomDatabase {
         /**
          * Optimize database settings for enhanced calendar operations.
          */
-        private void optimizeDatabaseForEnhancedCalendar(@NonNull SupportSQLiteDatabase db) {
+        private void optimizeDatabaseForCalendar(@NonNull SupportSQLiteDatabase db) {
             try {
                 // WAL mode for better read performance (calendar views are read-heavy)
                 db.execSQL( "PRAGMA journal_mode = WAL" );
@@ -354,15 +354,15 @@ public abstract class CalendarDatabase extends RoomDatabase {
         }
 
         private void initializeQDueUserData(@NonNull SupportSQLiteDatabase db) {
-            db.execSQL( "INSERT INTO user (id, nickname, email, created_at, updated_at) " +
-                            "VALUES (?, ?, ?, ?, ?)",
-                    new Object[]{
-                            UUID.randomUUID().toString(),
-                            "User",
-                            "",
-                            System.currentTimeMillis(),
-                            System.currentTimeMillis()
-                    } );
+//            db.execSQL( "INSERT INTO user (id, nickname, email, created_at, updated_at) " +
+//                            "VALUES (?, ?, ?, ?, ?)",
+//                    new Object[]{
+//                            UUID.randomUUID().toString(),
+//                            "User",
+//                            "",
+//                            System.currentTimeMillis(),
+//                            System.currentTimeMillis()
+//                    } );
         }
 
         private void initializeShiftsAndTeamsData(@NonNull SupportSQLiteDatabase db, @NonNull Context context) {

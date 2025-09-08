@@ -3,20 +3,15 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
 import net.calvuz.qdue.domain.common.enums.Status;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
 
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
-public class UserTeamAssignment extends LocalizableDomainModel {
+public class UserTeamAssignment {
 
     private static final String TAG = "UserTeamAssignment";
-
-    private static final String LOCALIZATION_SCOPE = "user_team_assignment";
 
     // ==================== IDENTIFICATION ====================
 
@@ -34,7 +29,6 @@ public class UserTeamAssignment extends LocalizableDomainModel {
 
     private final LocalDate startDate;              // Assignment start (inclusive)
     private final LocalDate endDate;                // Assignment end (inclusive, null = permanent)
-    //private final boolean isPermanent;            // True if no end date
 
     // ==================== PRIORITY AND STATUS ====================
 
@@ -64,7 +58,6 @@ public class UserTeamAssignment extends LocalizableDomainModel {
     // ==================== CONSTRUCTOR ====================
 
     private UserTeamAssignment(@NonNull Builder builder) {
-        super( builder.mLocalizer, LOCALIZATION_SCOPE );
 
         // Identification
         this.id = builder.id != null ? builder.id : UUID.randomUUID().toString();
@@ -82,35 +75,6 @@ public class UserTeamAssignment extends LocalizableDomainModel {
         this.updatedAt = builder.updatedAt > 0 ? builder.updatedAt : System.currentTimeMillis();
         this.createdByUserId = builder.createdByUserId;
         this.lastModifiedByUserId = builder.lastModifiedByUserId;
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    /**
-     * Check if this instance has localization support.
-     *
-     * @return true if localizer is available
-     */
-    @Override
-    public boolean hasLocalizationSupport() {
-        return super.hasLocalizationSupport();
-    }
-
-    /**
-     * Create a copy of this object with localizer injected.
-     * Useful for adding localization to existing instances.
-     *
-     * @param localizer DomainLocalizer to inject
-     * @return New instance with localizer support
-     */
-    @NonNull
-    @Override
-    public UserTeamAssignment withLocalizer(@NonNull DomainLocalizer localizer) {
-
-        return builder()
-                .copyFrom( this )
-                .localizer( localizer )
-                .build();
     }
 
     // ==================== GETTERS ====================
@@ -182,7 +146,7 @@ public class UserTeamAssignment extends LocalizableDomainModel {
         return new UserTeamAssignment.Builder();
     }
 
-    public static class Builder extends LocalizableBuilder<UserTeamAssignment, UserTeamAssignment.Builder> {
+    public static class Builder  {
         private String id;
         private String title;
         private String description;
@@ -217,7 +181,7 @@ public class UserTeamAssignment extends LocalizableDomainModel {
             this.createdByUserId = source.createdByUserId;
             this.lastModifiedByUserId = source.lastModifiedByUserId;
 
-            return copyLocalizableFrom( source );
+            return this;
         }
 
         @NonNull
@@ -315,13 +279,6 @@ public class UserTeamAssignment extends LocalizableDomainModel {
             return this;
         }
 
-        @Override
-        @NonNull
-        protected UserTeamAssignment.Builder self() {
-            return this;
-        }
-
-        @Override
         @NonNull
         public UserTeamAssignment build() {
             return new UserTeamAssignment( this );

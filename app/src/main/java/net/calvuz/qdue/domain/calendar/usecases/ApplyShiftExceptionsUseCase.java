@@ -16,13 +16,13 @@ import java.util.concurrent.CompletableFuture;
  * <p>Handles shift exception workflow with approval processes
  * and conflict resolution.</p>
  */
-public class ApplyShiftExceptionsUseCase {
-
-    private static final String TAG = "ApplyShiftExceptionsUC";
-
+public class ApplyShiftExceptionsUseCase
+{
     private final WorkScheduleRepository mWorkScheduleRepository;
 
-    public ApplyShiftExceptionsUseCase(@NonNull WorkScheduleRepository workScheduleRepository) {
+    public ApplyShiftExceptionsUseCase(
+            @NonNull WorkScheduleRepository workScheduleRepository
+    ) {
         this.mWorkScheduleRepository = workScheduleRepository;
     }
 
@@ -34,8 +34,10 @@ public class ApplyShiftExceptionsUseCase {
      * @return CompletableFuture with updated WorkScheduleDay
      */
     @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> executeForUser(
-            @NonNull String userId, @NonNull LocalDate date) {
+    public CompletableFuture<OperationResult<WorkScheduleDay>> execute(
+            @NonNull String userId,
+            @NonNull LocalDate date
+    ) {
 
         // Get current schedule with exceptions already applied
         return mWorkScheduleRepository.getWorkScheduleForDate(date, userId)
@@ -53,7 +55,6 @@ public class ApplyShiftExceptionsUseCase {
                             }
                         }
 
-                        Log.d(TAG, "Applied shift exceptions for user " + userId + " on " + date);
                         return OperationResult.success(schedule, OperationResult.OperationType.READ);
                     } else {
                         return result;

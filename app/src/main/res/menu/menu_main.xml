@@ -10,6 +10,14 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_assignment"
+        android:contentDescription="@string/nav_assignment"
+        android:icon="@drawable/ic_rounded_groups_24"
+        android:title="@string/nav_assignment"
+        app:showAsAction="never" />
+
+
+    <item
         android:id="@+id/action_settings"
         android:contentDescription="@string/menu_title_settings"
         android:icon="@drawable/ic_rounded_settings_24"

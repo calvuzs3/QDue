@@ -3,10 +3,6 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
-
 import java.time.LocalTime;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +27,6 @@ import java.util.stream.Collectors;
  *   <li><strong>Shift Templates</strong>: Uses domain Shift for categorization</li>
  *   <li><strong>Immutable Design</strong>: Thread-safe and predictable state</li>
  *   <li><strong>Builder Pattern</strong>: Fluent API for construction</li>
- *   <li><strong>Localization Support</strong>: Full i18n support for all display text</li>
  *   <li><strong>Clean Architecture</strong>: No external dependencies</li>
  * </ul>
  *
@@ -50,25 +45,15 @@ import java.util.stream.Collectors;
  *     .shift(Shift.createMorningShift(localizer))
  *     .startTime(LocalTime.of(6, 0))
  *     .endTime(LocalTime.of(14, 0))
+ *     .colorHex("#FF0000")
  *     .addTeam(teamA)
  *     .addTeam(teamB)
  *     .description("Morning shift with teams A and B")
- *     .localizer(domainLocalizer)
  *     .build();
- *
- * // Get localized display
- * String localizedSummary = morningShift.getLocalizedSummary();
- * String teamStatus = morningShift.getLocalizedTeamStatus();
  * }
  * </pre>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Clean Architecture Implementation with Localization
- * @since Database Version 6
  */
-public class WorkScheduleShift extends LocalizableDomainModel implements Cloneable {
-
-    private static final String LOCALIZATION_SCOPE = "work_shift";
+public class WorkScheduleShift implements Cloneable {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -77,6 +62,7 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
     private final Shift shift;
     private final LocalTime startTime;
     private final LocalTime endTime;
+    private final String colorHex;
     private final List<Team> teams;
     private final String description;
 
@@ -88,73 +74,14 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
     // ==================== CONSTRUCTORS ====================
 
     /**
-     * Creates a work schedule shift with basic information.
-     *
-     * @param shift Template shift definition
-     * @param startTime Start time of the shift
-     * @param endTime End time of the shift
-     */
-    public WorkScheduleShift(@NonNull Shift shift,
-                             @NonNull LocalTime startTime,
-                             @NonNull LocalTime endTime) {
-        this(shift, startTime, endTime, new ArrayList<>(), null, null);
-    }
-
-    /**
-     * Creates a work schedule shift with complete information.
-     *
-     * @param shift Template shift definition
-     * @param startTime Start time of the shift
-     * @param endTime End time of the shift
-     * @param teams Teams assigned to this shift
-     * @param description Optional description
-     */
-    public WorkScheduleShift(@NonNull Shift shift,
-                             @NonNull LocalTime startTime,
-                             @NonNull LocalTime endTime,
-                             @NonNull List<Team> teams,
-                             @Nullable String description) {
-        this(shift, startTime, endTime, teams, description, null);
-    }
-
-    /**
-     * Creates a work schedule shift with complete information and localization support.
-     *
-     * @param shift Template shift definition
-     * @param startTime Start time of the shift
-     * @param endTime End time of the shift
-     * @param teams Teams assigned to this shift
-     * @param description Optional description
-     * @param localizer Optional domain localizer for i18n
-     */
-    public WorkScheduleShift(@NonNull Shift shift,
-                             @NonNull LocalTime startTime,
-                             @NonNull LocalTime endTime,
-                             @NonNull List<Team> teams,
-                             @Nullable String description,
-                             @Nullable DomainLocalizer localizer) {
-        super(localizer, LOCALIZATION_SCOPE);
-
-        this.shift = Objects.requireNonNull(shift, "Shift cannot be null");
-        this.startTime = Objects.requireNonNull(startTime, "Start time cannot be null");
-        this.endTime = Objects.requireNonNull(endTime, "End time cannot be null");
-        this.teams = new ArrayList<>(Objects.requireNonNull(teams, "Teams cannot be null"));
-        this.description = description != null ? description : "";
-
-        // Calculate cached values
-        this.crossesMidnight = endTime.isBefore(startTime);
-        this.duration = calculateDuration();
-    }
-
-    /**
      * Private constructor for builder pattern.
      */
     private WorkScheduleShift(@NonNull Builder builder) {
-        super(builder.mLocalizer, LOCALIZATION_SCOPE);
 
         this.shift = Objects.requireNonNull(builder.shift, "Shift cannot be null");
         this.startTime = Objects.requireNonNull(builder.startTime, "Start time cannot be null");
         this.endTime = Objects.requireNonNull(builder.endTime, "End time cannot be null");
+        this.colorHex = Objects.requireNonNull(builder.colorHex, "Color cannot be null");
         this.teams = new ArrayList<>(builder.teams);
         this.description = builder.description != null ? builder.description : "";
 
@@ -193,6 +120,16 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
     @NonNull
     public LocalTime getEndTime() {
         return endTime;
+    }
+
+    /**
+     * Get the shift color in hexadecimal format.
+     *
+     * @return Hexadecimal color string
+     */
+    @NonNull
+    public String getColorHex() {
+        return colorHex;
     }
 
     /**
@@ -268,7 +205,7 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
     /**
      * Check if a team with specific name is assigned to this shift.
      *
-     * @param teamName Team name to check
+     * @param teamId Team name to check
      * @return true if team with that name is assigned
      */
     public boolean hasTeamWithId(@NonNull String teamId) {
@@ -399,178 +336,6 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
         return summary.toString();
     }
 
-    // ==================== LOCALIZED DISPLAY METHODS ====================
-
-    /**
-     * Get localized time range display.
-     */
-    @NonNull
-    public String getLocalizedTimeRange() {
-        return localize("time.range_format", getTimeRange(), getTimeRange());
-    }
-
-    /**
-     * Get localized team count description.
-     */
-    @NonNull
-    public String getLocalizedTeamCount() {
-        if (teams.isEmpty()) {
-            return localize("teams.none", "No teams assigned", "No teams assigned");
-        } else if (teams.size() == 1) {
-            return localize("teams.single", "1 team", "1 team");
-        } else {
-            return localize("teams.multiple", "{0} teams", "{0} teams", teams.size());
-        }
-    }
-
-    /**
-     * Get localized team status summary.
-     */
-    @NonNull
-    public String getLocalizedTeamStatus() {
-        if (teams.isEmpty()) {
-            return localize("teams.none_assigned", "No teams assigned", "No teams assigned");
-        }
-
-        String teamsLabel = localize("teams.assigned", "Teams", "Teams");
-        return teamsLabel + ": " + getTeamsAsCommaSeparatedString();
-    }
-
-    /**
-     * Get localized shift summary.
-     */
-    @NonNull
-    public String getLocalizedSummary() {
-        StringBuilder summary = new StringBuilder();
-
-        // Shift type display name
-        if (shift != null) {
-            summary.append(shift.getDisplayTitle());
-        } else {
-            summary.append(localize("shift.unknown", "Unknown shift", "Unknown shift"));
-        }
-
-        // Time range
-        String timeLabel = localize("time.period", " ({0})", " ({0})");
-        summary.append(String.format(timeLabel.replace("{0}", "%s"), getLocalizedTimeRange()));
-
-        // Team information
-        if (hasTeams()) {
-            String separator = localize("format.summary_separator", " - ", " - ");
-            summary.append(separator).append(getLocalizedTeamStatus());
-        }
-
-        // Duration if significant
-        long durationMinutes = getDurationMinutes();
-        if (durationMinutes > 0) {
-            String durationLabel = localize("duration.minutes", " [{0} min]", " [{0} min]");
-            summary.append(String.format(durationLabel.replace("{0}", "%d"), durationMinutes));
-        }
-
-        return summary.toString();
-    }
-
-    /**
-     * Get localized detailed information.
-     */
-    @NonNull
-    public String getLocalizedDetailedSummary() {
-        StringBuilder summary = new StringBuilder();
-
-        // Basic shift information
-        summary.append(getLocalizedSummary()).append("\n");
-
-        // Description if available
-        if (!description.isEmpty()) {
-            String descLabel = localize("description.label", "Description", "Description");
-            summary.append(descLabel).append(": ").append(description).append("\n");
-        }
-
-        // Timing details
-        String timingLabel = localize("timing.details", "Timing details", "Timing details");
-        summary.append(timingLabel).append(":\n");
-
-        String startLabel = localize("time.start", "Start", "Start");
-        String endLabel = localize("time.end", "End", "End");
-        String durationLabel = localize("duration.label", "Duration", "Duration");
-
-        summary.append("  ").append(startLabel).append(": ").append(startTime).append("\n");
-        summary.append("  ").append(endLabel).append(": ").append(endTime).append("\n");
-        summary.append("  ").append(durationLabel).append(": ").append(getDurationMinutes()).append(" ");
-        summary.append(localize("time.minutes", "minutes", "minutes")).append("\n");
-
-        if (crossesMidnight) {
-            String midnightNote = localize("time.crosses_midnight_note",
-                    "Note: This shift crosses midnight",
-                    "Note: This shift crosses midnight");
-            summary.append("  ").append(midnightNote).append("\n");
-        }
-
-        return summary.toString().trim();
-    }
-
-    // ==================== FACTORY METHODS ====================
-
-    /**
-     * Create a morning shift with default timing.
-     *
-     * @return Morning WorkScheduleShift
-     */
-    @NonNull
-    public static WorkScheduleShift createMorningShift() {
-        return builder()
-                .shift(Shift.createMorningShift(null))
-                .startTime(LocalTime.of(6, 0))
-                .endTime(LocalTime.of(14, 0))
-                .build();
-    }
-
-    /**
-     * Create an afternoon shift with default timing.
-     *
-     * @return Afternoon WorkScheduleShift
-     */
-    @NonNull
-    public static WorkScheduleShift createAfternoonShift() {
-        return builder()
-                .shift(Shift.createAfternoonShift(null))
-                .startTime(LocalTime.of(14, 0))
-                .endTime(LocalTime.of(22, 0))
-                .build();
-    }
-
-    /**
-     * Create a night shift with default timing.
-     *
-     * @return Night WorkScheduleShift
-     */
-    @NonNull
-    public static WorkScheduleShift createNightShift() {
-        return builder()
-                .shift(Shift.createNightShift(null))
-                .startTime(LocalTime.of(22, 0))
-                .endTime(LocalTime.of(6, 0))
-                .build();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    /**
-     * Create a copy of this object with localizer injected.
-     * Useful for adding localization to existing instances.
-     *
-     * @param localizer DomainLocalizer to inject
-     * @return New instance with localizer support
-     */
-    @Override
-    @NonNull
-    public WorkScheduleShift withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder()
-                .copyFrom(this)
-                .localizer(localizer)
-                .build();
-    }
-
     // ==================== BUILDER PATTERN ====================
 
     /**
@@ -596,21 +361,22 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
     /**
      * Builder class for creating WorkScheduleShift instances.
      */
-    public static class Builder extends LocalizableBuilder<WorkScheduleShift, Builder> {
+    public static class Builder {
         private Shift shift;
         private LocalTime startTime;
         private LocalTime endTime;
+        private String colorHex;
         private final List<Team> teams = new ArrayList<>();
         private String description;
 
         public Builder() {
-            // Empty constructor for fresh builds
         }
 
         private Builder(@NonNull WorkScheduleShift existingShift) {
             this.shift = existingShift.shift;
             this.startTime = existingShift.startTime;
             this.endTime = existingShift.endTime;
+            this.colorHex = existingShift.colorHex;
             this.teams.addAll(existingShift.teams);
             this.description = existingShift.description;
         }
@@ -623,10 +389,11 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
             this.shift = source.shift;
             this.startTime = source.startTime;
             this.endTime = source.endTime;
+            this.colorHex = source.colorHex;
             this.teams.clear();
             this.teams.addAll(source.teams);
             this.description = source.description;
-            return copyLocalizableFrom(source);
+            return this;
         }
 
         /**
@@ -701,6 +468,18 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
         }
 
         /**
+         * Set shift color in hexadecimal format.
+         *
+         * @param colorHex Hexadecimal color string
+         * @return Builder instance for chaining
+         */
+        @NonNull
+        public Builder colorHex(@NonNull String colorHex) {
+            this.colorHex = Objects.requireNonNull(colorHex, "Color cannot be null");
+            return this;
+        }
+
+        /**
          * Add a team to this shift.
          *
          * @param team Team to add
@@ -767,19 +546,12 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
             return this;
         }
 
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
-
         /**
          * Build the WorkScheduleShift instance.
          *
          * @return New WorkScheduleShift instance
          * @throws IllegalStateException if required fields are not set
          */
-        @Override
         @NonNull
         public WorkScheduleShift build() {
             if (shift == null) {
@@ -790,6 +562,9 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
             }
             if (endTime == null) {
                 throw new IllegalStateException("End time must be set");
+            }
+            if (colorHex == null) {
+                throw new IllegalStateException("Shift color must be set");
             }
 
             return new WorkScheduleShift(this);
@@ -811,7 +586,14 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
             // Clone teams (Team objects are immutable, so shallow copy is fine)
             List<Team> clonedTeams = new ArrayList<>(teams);
 
-            return new WorkScheduleShift(shift, startTime, endTime, clonedTeams, description, getLocalizer());
+            return builder()
+                    .shift(shift)
+                    .startTime(startTime)
+                    .endTime(endTime)
+                    .colorHex(colorHex)
+                    .addTeams(clonedTeams)
+                    .description(description)
+                    .build();
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to clone WorkScheduleShift", e);
@@ -849,6 +631,7 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
         return Objects.equals(shift, that.shift) &&
                 Objects.equals(startTime, that.startTime) &&
                 Objects.equals(endTime, that.endTime) &&
+                Objects.equals(colorHex, that.colorHex) &&
                 Objects.equals(teams, that.teams) &&
                 Objects.equals(description, that.description);
     }
@@ -880,11 +663,11 @@ public class WorkScheduleShift extends LocalizableDomainModel implements Cloneab
                 "shift=" + shift.toDetailedString() +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
+                ", colorHex='" + colorHex + '\'' +
                 ", crossesMidnight=" + crossesMidnight +
                 ", duration=" + duration +
                 ", teams=" + teams +
                 ", description='" + description + '\'' +
-                ", hasLocalizationSupport=" + hasLocalizationSupport() +
                 '}';
     }
 }

@@ -16,13 +16,20 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.core.di.DependencyInjector;
+import net.calvuz.qdue.core.di.Injectable;
+import net.calvuz.qdue.core.di.ServiceProvider;
+import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
+import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.databinding.ActivityPatternAssignmentWizardBinding;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.calendar.models.UserTeamAssignment;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
+import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.adapters.PatternAssignmentWizardAdapter;
 import net.calvuz.qdue.ui.features.assignment.wizard.di.AssignmentWizardModule;
@@ -62,12 +69,12 @@ import java.time.LocalDate;
  *   <li><strong>Validation</strong>: Check for conflicting assignments before creation</li>
  *   <li><strong>User Confirmation</strong>: Show impact of closing existing assignments</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0
- * @since Clean Architecture Phase 2
  */
-public class PatternAssignmentWizardActivity extends AppCompatActivity implements AssignmentWizardInterface {
+public class PatternAssignmentWizardActivity extends AppCompatActivity implements
+        Injectable,
+        AssignmentWizardInterface
+
+{
 
     private static final String TAG = "PatternAssignmentWizard";
 
@@ -93,6 +100,8 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
 
     private CreatePatternAssignmentUseCase mAssignmentUseCase;
     private UserTeamAssignmentUseCases mUserTeamAssignmentUseCase;
+    private QDueUserService mQDueUserService;
+    private CalendarServiceProvider mCalendarServiceProvider;
 
     // ==================== FACTORY METHODS ====================
 
@@ -180,14 +189,47 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     }
 
     private void initializeDependencies() {
-        AssignmentWizardModule wizardModule = AssignmentWizardModule.create( this );
-        mAssignmentUseCase = wizardModule.getCreatePatternAssignmentUseCase();
-        mUserTeamAssignmentUseCase = wizardModule.getUserTeamAssignmentUseCases();
+        try {
+            // Get ServiceProvider instance
+            DependencyInjector.inject( this, this );
+
+            AssignmentWizardModule wizardModule = AssignmentWizardModule.create( this );
+            mAssignmentUseCase = wizardModule.getCreatePatternAssignmentUseCase();
+            mUserTeamAssignmentUseCase = wizardModule.getUserTeamAssignmentUseCases();
+        } catch (Exception e) {
+            Log.e( TAG, "Error initializing dependencies", e );
+            throw new RuntimeException( "Critical error: Dependency injection failed", e );
+        }
     }
 
     private void initializeWizardData() {
-        mWizardData = new AssignmentWizardData();
-        mWizardData.setUserId( QDuePreferences.getUserId( this ) );
+
+        // Get Default User
+        QDueUser currentUser = mQDueUserService.getPrimaryUser().join().getData();
+        assert currentUser != null;
+
+        // Get Team
+        Team currentUserTeam = null;
+        OperationResult<UserTeamAssignment> currentUserTeamAssignment = mCalendarServiceProvider
+                .getUserTeamAssignmentUseCases()
+                .getGetUserTeamAssignmentForDateUseCase()
+                .execute(
+                        currentUser.getId(),
+                        LocalDate.now() )
+                .join();
+        if (currentUserTeamAssignment.isSuccess()) {
+            String currentUserTeamID = currentUserTeamAssignment.getData().getTeamID();
+            assert currentUserTeamID != null;
+
+            OperationResult<Team> team = mCalendarServiceProvider.getTeamUseCases().getGetTeamUseCase().execute( currentUserTeamID ).join();
+            if (team.isSuccess()) {
+                currentUserTeam = team.getData();
+                assert currentUserTeam != null;
+            }
+        }
+
+        mWizardData = new AssignmentWizardData( currentUser, currentUserTeam );
+//        mWizardData.setUserId( QDuePreferences.getUserId( this ) );       //   ):X
         mWizardData.setFirstAssignment( isFirstAssignment() );
 
         String editAssignmentId = getIntent().getStringExtra( EXTRA_EDIT_ASSIGNMENT_ID );
@@ -245,6 +287,28 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
         mBinding.btnNext.setOnClickListener( v -> navigateToNextStep() );
         mBinding.btnPrevious.setOnClickListener( v -> navigateToPreviousStep() );
         mBinding.btnCancel.setOnClickListener( v -> finish() );
+    }
+
+    // ==================== DEPENDENCY INJECTION ====================
+
+    /**
+     * Inject dependencies into this component
+     *
+     * @param serviceProvider Service provider
+     */
+    @Override
+    public void inject(ServiceProvider serviceProvider) {
+        this.mQDueUserService = serviceProvider.getQDueUserService();
+        this.mCalendarServiceProvider = serviceProvider.getCalendarServiceProvider();
+    }
+
+    /**
+     * Check if dependencies are injected and ready
+     */
+    @Override
+    public boolean areDependenciesReady() {
+        return mCalendarServiceProvider != null &&
+                mQDueUserService != null;
     }
 
     // ==================== NAVIGATION ====================
@@ -463,6 +527,13 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     }
 
     private void loadExistingAssignmentForEdit(@NonNull String assignmentId) {
+
+        OperationResult<UserTeamAssignment> result =        mCalendarServiceProvider
+                .getUserTeamAssignmentUseCases()
+                .getGetUserTeamAssignmentUseCase()
+                .execute( assignmentId ).join();
+
+
         // TODO: Load existing assignment data for editing
         Log.d( TAG, "Loading assignment for edit: " + assignmentId );
     }

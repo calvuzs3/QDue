@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
-import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
@@ -57,12 +56,9 @@ import java.util.concurrent.Executors;
  *   <li><strong>Custom Patterns</strong>: Flexible team assignment support</li>
  *   <li><strong>User Relevance</strong>: User relevant if in ANY assigned team</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 3.2.0 - Multi-Team Support with Fixed Dependencies
- * @since Clean Architecture Phase 3
  */
-public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
+public class WorkScheduleRepositoryImpl implements WorkScheduleRepository
+{
 
     private static final String TAG = "WorkScheduleRepositoryImpl";
 
@@ -74,6 +70,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     // ==================== CACHING ====================
 
+    private final ConcurrentHashMap<String, WorkScheduleDay> mUserWorkScheduleCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, WorkScheduleDay> mScheduleCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Object> mConfigCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, LocalDate> mSchemeCache = new ConcurrentHashMap<>();
@@ -90,13 +87,145 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
      * @param context                 Application context
      * @param calendarServiceProvider CalendarServiceProvider for domain repository access
      */
-    public WorkScheduleRepositoryImpl(@NonNull Context context,
-                                      @NonNull CalendarServiceProvider calendarServiceProvider) {
+    public WorkScheduleRepositoryImpl(
+            @NonNull Context context,
+            @NonNull CalendarServiceProvider calendarServiceProvider
+    ) {
         this.mContext = context.getApplicationContext();
         this.mCalendarServiceProvider = calendarServiceProvider;
         this.mExecutorService = Executors.newCachedThreadPool();
 
         Log.i( TAG, "WorkScheduleRepositoryImpl initialized with CalendarServiceProvider DI" );
+    }
+
+    // ==================== SCHEDULE GENERATION ====================
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserWorkScheduleForDateRange(
+            @NonNull LocalDate startDate,
+            @NonNull LocalDate endDate,
+            @Nullable String userId
+    ) {
+
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
+
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays(
+                        1 )) {
+                    OperationResult<WorkScheduleDay> daySchedule = getUserWorkScheduleForDate( date,
+                                                                                               userId ).join();
+
+                    if (daySchedule.isSuccess()) {
+                        scheduleMap.put( date, daySchedule.getData() );
+                    }
+                }
+
+                return OperationResult.success( scheduleMap, OperationResult.OperationType.READ );
+            } catch (Exception e) {
+                Log.e( TAG, "Error generating work schedule for date range", e );
+                return OperationResult.failure( "Failed to generate date range schedule",
+                                                OperationResult.OperationType.READ );
+            }
+        }, mExecutorService );
+    }
+
+    @Override
+    @NonNull
+    public CompletableFuture<OperationResult<WorkScheduleDay>> getUserWorkScheduleForDate(
+            @NonNull LocalDate date,
+            @Nullable String userId
+    ) {
+        return CompletableFuture.supplyAsync( () -> {
+            try {
+                // Check cache first
+                String cacheKey = buildCacheKey( date, userId );
+                WorkScheduleDay cachedUserWorkSchedule = mUserWorkScheduleCache.get( cacheKey );
+                if (cachedUserWorkSchedule != null) {
+                    return OperationResult.success( cachedUserWorkSchedule,
+                                                    OperationResult.OperationType.READ );
+                }
+
+                // Generate schedule using domain engines
+                WorkScheduleDay schedule = generateUserWorkScheduleForDate( date, userId );
+
+                // Cache the result
+                mScheduleCache.put( cacheKey, schedule );
+
+                return OperationResult.success( schedule,
+                                                OperationResult.OperationType.READ );
+            } catch (Exception e) {
+                Log.e( TAG, "Error generating work schedule for date: " + date, e );
+                return OperationResult.failure( "Failed to generate schedule for " + date,
+                                                OperationResult.OperationType.READ );
+            }
+        }, mExecutorService );
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    private String buildCacheKey(@NonNull LocalDate date, @Nullable String userId) {
+        return "schedule_" + date + "_" + (userId != null ? userId : "default");
+    }
+
+    private WorkScheduleDay generateUserWorkScheduleForDate(
+            @NonNull LocalDate date,
+            @Nullable String userId
+    ) {
+        try {
+            // Get user assignment
+            UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
+            if (assignment == null) {
+                // Create an empty schedule
+                return WorkScheduleDay.builder( date )
+                        .dayStatus( WorkScheduleDay.DayStatus.REST_DAY )
+                        .build();
+            }
+
+            // Get domain engines from CalendarServiceProvider
+//            SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
+
+            // Generate base schedule
+            WorkScheduleDay baseSchedule = generateBaseUserWorkScheduleFromAssignment( date,
+                                                                                       assignment );
+
+            // Apply exceptions if user specified
+            if (userId != null) {
+                baseSchedule = applyShiftExceptionsToSchedule( baseSchedule, userId );
+            }
+
+            return baseSchedule;
+        } catch (Exception e) {
+            Log.e( TAG, "Error generating schedule for date " + date, e );
+            return WorkScheduleDay.builder( date ).build();
+        }
+    }
+
+    @NonNull
+    private WorkScheduleDay generateBaseUserWorkScheduleFromAssignment(
+            @NonNull LocalDate date,
+            @NonNull UserScheduleAssignment assignment
+    ) {
+        try {
+            // Get recurrence rule by ID from assignment
+            String recurrenceRuleId = assignment.getRecurrenceRuleId();
+
+            RecurrenceRule theRule = mCalendarServiceProvider.getRecurrenceRuleRepository()
+                    .getRecurrenceRuleById( recurrenceRuleId ).join();
+
+            if (theRule == null) {
+                Log.w( TAG, "Recurrence theRule not found: " + recurrenceRuleId );
+                return WorkScheduleDay.builder( date ).build();
+            }
+
+            // Use RecurrenceCalculator to generate schedule
+            RecurrenceCalculator calculator = mCalendarServiceProvider.getRecurrenceCalculator();
+            return calculator.generateScheduleForDate( date, theRule, assignment );
+        } catch (Exception e) {
+            Log.e( TAG, "Error generating base schedule", e );
+            return WorkScheduleDay.builder( date ).build();
+        }
     }
 
     // ==================== SCHEDULE GENERATION ====================
@@ -110,7 +239,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 String cacheKey = buildCacheKey( date, userId );
                 WorkScheduleDay cachedSchedule = mScheduleCache.get( cacheKey );
                 if (cachedSchedule != null) {
-                    return OperationResult.success( cachedSchedule, OperationResult.OperationType.READ );
+                    return OperationResult.success( cachedSchedule,
+                                                    OperationResult.OperationType.READ );
                 }
 
                 // Generate schedule using domain engines
@@ -123,7 +253,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error generating work schedule for date: " + date, e );
                 return OperationResult.failure( "Failed to generate schedule for " + date,
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -134,13 +264,16 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             @NonNull LocalDate startDate, @NonNull LocalDate endDate, @Nullable String userId) {
 
         return CompletableFuture.supplyAsync( () -> {
-            Log.v( TAG, "Generating work schedule for date range: " + startDate + " to " + endDate );
+            Log.v( TAG,
+                   "Generating work schedule for date range: " + startDate + " to " + endDate );
 
             try {
                 Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
 
-                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
-                    WorkScheduleDay daySchedule = generateScheduleForDate( date, userId );
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays(
+                        1 )) {
+
+                    WorkScheduleDay daySchedule = generateWorkScheduleForDate( date, userId );
                     scheduleMap.put( date, daySchedule );
                 }
 
@@ -149,7 +282,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error generating work schedule for date range", e );
                 return OperationResult.failure( "Failed to generate date range schedule",
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -176,18 +309,21 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             try {
                 List<WorkScheduleEvent> events = new ArrayList<>();
 
-                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays(
+                        1 )) {
                     WorkScheduleDay daySchedule = generateScheduleForDate( date, userId );
-                    List<WorkScheduleEvent> dayEvents = convertScheduleDayToMultiTeamEvents( daySchedule, userId );
+                    List<WorkScheduleEvent> dayEvents = convertScheduleDayToMultiTeamEvents(
+                            daySchedule, userId );
                     events.addAll( dayEvents );
                 }
 
-                Log.v( TAG, "Got " + events.size() + " work schedule events with multi-team support" );
+                Log.v( TAG,
+                       "Got " + events.size() + " work schedule events with multi-team support" );
                 return OperationResult.success( events, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error getting work schedule events", e );
                 return OperationResult.failure( "Failed to get events",
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -198,11 +334,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<List<Team>>> getAllTeams() {
         return mCalendarServiceProvider.getTeamRepository().getAllActiveTeams()
-                .thenApply( teams -> OperationResult.success( teams, OperationResult.OperationType.READ ) )
+                .thenApply( teams -> OperationResult.success( teams,
+                                                              OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error getting all teams", throwable );
                     return OperationResult.failure( "Failed to get teams",
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -212,20 +349,22 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 // Get user's current assignment
-                UserScheduleAssignment assignment = getUserAssignmentForDate( LocalDate.now(), userId );
+                UserScheduleAssignment assignment = getUserAssignmentForDate( LocalDate.now(),
+                                                                              userId );
                 if (assignment == null) {
                     return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
                 // Get team by ID from assignment
                 String teamId = assignment.getTeamId();
-                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById( teamId ).join();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(
+                        teamId ).join();
 
                 return OperationResult.success( team, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error getting team for user " + userId, e );
                 return OperationResult.failure( "Failed to get team for user",
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -255,13 +394,14 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 if (result.isSuccess()) {
                     return OperationResult.success( null, OperationResult.OperationType.UPDATE );
                 } else {
-                    return OperationResult.failure( "Failed to save assignment: " + result.getErrorMessage(),
+                    return OperationResult.failure(
+                            "Failed to save assignment: " + result.getErrorMessage(),
                             OperationResult.OperationType.UPDATE );
                 }
             } catch (Exception e) {
                 Log.e( TAG, "Error setting team for user " + userId, e );
                 return OperationResult.failure( "Failed to set team: " + e.getMessage(),
-                        OperationResult.OperationType.UPDATE );
+                                                OperationResult.OperationType.UPDATE );
             }
         }, mExecutorService );
     }
@@ -274,7 +414,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 WorkScheduleDay schedule = generateScheduleForDate( date, null );
                 List<Team> workingTeams = new ArrayList<>();
 
-                for (WorkScheduleShift shift : schedule.getShifts()) {
+                for (WorkScheduleShift shift : schedule.getWorkShifts()) {
                     workingTeams.addAll( shift.getTeams() );
                 }
 
@@ -282,7 +422,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error getting teams working on date " + date, e );
                 return OperationResult.failure( "Failed to get working teams",
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -293,11 +433,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<List<Shift>>> getAllShifts() {
         return mCalendarServiceProvider.getShiftRepository().getAllShifts()
-                .thenApply( shifts -> OperationResult.success( shifts, OperationResult.OperationType.READ ) )
+                .thenApply( shifts -> OperationResult.success( shifts,
+                                                               OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error getting all shifts", throwable );
                     return OperationResult.failure( "Failed to get shifts",
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -305,11 +446,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<Shift>> getShiftById(@NonNull String shiftId) {
         return mCalendarServiceProvider.getShiftRepository().getShiftById( shiftId )
-                .thenApply( shift -> OperationResult.success( shift, OperationResult.OperationType.READ ) )
+                .thenApply( shift -> OperationResult.success( shift,
+                                                              OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error getting shift by ID " + shiftId, throwable );
                     return OperationResult.failure( "Failed to get shift",
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -317,11 +459,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<Shift>> getShiftByName(@NonNull String name) {
         return mCalendarServiceProvider.getShiftRepository().getShiftByName( name )
-                .thenApply( shift -> OperationResult.success( shift, OperationResult.OperationType.READ ) )
+                .thenApply( shift -> OperationResult.success( shift,
+                                                              OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error getting shift by name " + name, throwable );
                     return OperationResult.failure( "Failed to get shift",
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -329,11 +472,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<Shift>> saveShift(@NonNull Shift shift) {
         return mCalendarServiceProvider.getShiftRepository().saveShift( shift )
-                .thenApply( savedShift -> OperationResult.success( savedShift, OperationResult.OperationType.CREATE ) )
+                .thenApply( savedShift -> OperationResult.success( savedShift,
+                                                                   OperationResult.OperationType.CREATE ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error saving shift", throwable );
                     return OperationResult.failure( "Failed to save shift",
-                            OperationResult.OperationType.CREATE );
+                                                    OperationResult.OperationType.CREATE );
                 } );
     }
 
@@ -344,16 +488,16 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 .thenApply( success -> {
                     if (success) {
                         return OperationResult.success( null,
-                                OperationResult.OperationType.DELETE );
+                                                        OperationResult.OperationType.DELETE );
                     } else {
                         return OperationResult.failure( "Failed to delete shift",
-                                OperationResult.OperationType.DELETE );
+                                                        OperationResult.OperationType.DELETE );
                     }
                 } )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error deleting shift " + shiftId, throwable );
                     return OperationResult.failure( "Failed to delete shift",
-                            OperationResult.OperationType.DELETE );
+                                                    OperationResult.OperationType.DELETE );
                 } );
     }
 
@@ -363,12 +507,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, null );
-                return OperationResult.success( schedule.getShifts(),
-                        OperationResult.OperationType.READ );
+                return OperationResult.success( schedule.getWorkShifts(),
+                                                OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error getting shifts for date " + date, e );
                 return OperationResult.failure( "Failed to get shifts",
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -385,7 +529,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 if (cached != null) {
                     Log.v( TAG, "Returning cached scheme start date: " + cached );
                     return OperationResult.success( cached,
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 }
 
                 // ✅ FIX: Read from preferences like the old QuattroDue system
@@ -427,10 +571,11 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 Log.d( TAG, "Schedule cache cleared after scheme date update" );
 
                 return OperationResult.success( "Updating scheme start date to: " + newStartDate,
-                        OperationResult.OperationType.UPDATE );
+                                                OperationResult.OperationType.UPDATE );
             } catch (Exception e) {
                 Log.e( TAG, "Error updating scheme start date", e );
-                return OperationResult.failure( "Failed to update scheme start date: " + e.getMessage(),
+                return OperationResult.failure(
+                        "Failed to update scheme start date: " + e.getMessage(),
                         OperationResult.OperationType.UPDATE );
             }
         }, mExecutorService );
@@ -454,7 +599,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error getting schedule configuration", e );
                 return OperationResult.failure( "Failed to get configuration: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -474,7 +619,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error updating schedule configuration", e );
                 return OperationResult.failure( "Failed to update configuration: " + e.getMessage(),
-                        OperationResult.OperationType.UPDATE );
+                                                OperationResult.OperationType.UPDATE );
             }
         }, mExecutorService );
     }
@@ -492,7 +637,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                     throw new RuntimeException( "No Scheme StartDate" );
 
                 // TODO: remove hardcode 18 day cycle length
-                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between( schemeStart, date );
+                long daysSinceStart = java.time.temporal.ChronoUnit.DAYS.between( schemeStart,
+                                                                                  date );
                 int dayInCycle = (int) (daysSinceStart % 18); // 18-day QuattroDue cycle
 
                 Log.v( TAG, "Day in cycle calculation: " + date + " = day " + dayInCycle +
@@ -501,7 +647,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 return OperationResult.success( dayInCycle, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error calculating day in cycle", e );
-                return OperationResult.failure( "Failed to calculate day in cycle: " + e.getMessage(),
+                return OperationResult.failure(
+                        "Failed to calculate day in cycle: " + e.getMessage(),
                         OperationResult.OperationType.READ );
             }
         }, mExecutorService );
@@ -513,13 +660,14 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, null );
-                boolean hasWorkingShifts = !schedule.getShifts().isEmpty();
+                boolean hasWorkingShifts = !schedule.getWorkShifts().isEmpty();
 
-                return OperationResult.success( hasWorkingShifts, OperationResult.OperationType.READ );
+                return OperationResult.success( hasWorkingShifts,
+                                                OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error checking if working day", e );
                 return OperationResult.failure( "Failed to check working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -531,7 +679,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, null );
 
-                for (WorkScheduleShift shift : schedule.getShifts()) {
+                for (WorkScheduleShift shift : schedule.getWorkShifts()) {
                     if (shift.getTeams().contains( team )) {
                         return OperationResult.success( true, OperationResult.OperationType.READ );
                     }
@@ -540,7 +688,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 return OperationResult.success( false, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error checking if working day for team", e );
-                return OperationResult.failure( "Failed to check team working day: " + e.getMessage(),
+                return OperationResult.failure(
+                        "Failed to check team working day: " + e.getMessage(),
                         OperationResult.OperationType.READ );
             }
         }, mExecutorService );
@@ -553,7 +702,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 .thenApply( result -> {
                     if (result.isSuccess()) {
                         boolean isWorking = result.getData();
-                        return OperationResult.success( !isWorking, OperationResult.OperationType.READ );
+                        return OperationResult.success( !isWorking,
+                                                        OperationResult.OperationType.READ );
                     } else {
                         return result;
                     }
@@ -567,12 +717,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<Boolean>> hasWorkSchedule(@Nullable WorkScheduleDay day) {
         return CompletableFuture.supplyAsync( () -> {
             try {
-                boolean hasSchedule = day != null && !day.getShifts().isEmpty();
+                boolean hasSchedule = day != null && !day.getWorkShifts().isEmpty();
                 return OperationResult.success( hasSchedule, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error checking if has work schedule", e );
                 return OperationResult.failure( "Failed to check schedule: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -584,7 +734,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, userId );
 
-                if (schedule.getShifts().isEmpty()) {
+                if (schedule.getWorkShifts().isEmpty()) {
                     return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
@@ -595,7 +745,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             } catch (Exception e) {
                 Log.e( TAG, "Error getting work schedule color", e );
                 return OperationResult.failure( "Failed to get color: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -607,12 +757,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             try {
                 WorkScheduleDay schedule = generateScheduleForDate( date, userId );
 
-                if (schedule.getShifts().isEmpty()) {
+                if (schedule.getWorkShifts().isEmpty()) {
                     return OperationResult.success( null, OperationResult.OperationType.READ );
                 }
 
                 StringBuilder summary = new StringBuilder();
-                for (WorkScheduleShift shift : schedule.getShifts()) {
+                for (WorkScheduleShift shift : schedule.getWorkShifts()) {
                     if (summary.length() > 0) summary.append( ", " );
                     summary.append( shift.getShift().getName() );
 
@@ -623,11 +773,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                     }
                 }
 
-                return OperationResult.success( summary.toString(), OperationResult.OperationType.READ );
+                return OperationResult.success( summary.toString(),
+                                                OperationResult.OperationType.READ );
             } catch (Exception e) {
                 Log.e( TAG, "Error getting work schedule summary", e );
                 return OperationResult.failure( "Failed to get summary: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -658,7 +809,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             Map<String, Object> status = new HashMap<>();
             status.put( "cache_size", mScheduleCache.size() );
             status.put( "ready", true );
-            status.put( "calendar_services_ready", mCalendarServiceProvider.areCalendarServicesReady() );
+            status.put( "calendar_services_ready",
+                        mCalendarServiceProvider.areCalendarServicesReady() );
             return OperationResult.success( status, OperationResult.OperationType.READ );
         }, mExecutorService );
     }
@@ -687,11 +839,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<Team>> findTeamByName(@NonNull String teamName) {
         return mCalendarServiceProvider.getTeamRepository().getTeamByName( teamName )
-                .thenApply( team -> OperationResult.success( team, OperationResult.OperationType.READ ) )
+                .thenApply( team -> OperationResult.success( team,
+                                                             OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error finding team by name " + teamName, throwable );
                     return OperationResult.failure( "Team not found: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -699,11 +852,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     @NonNull
     public CompletableFuture<OperationResult<Team>> findTeamById(@NonNull String teamId) {
         return mCalendarServiceProvider.getTeamRepository().getTeamById( teamId )
-                .thenApply( team -> OperationResult.success( team, OperationResult.OperationType.READ ) )
+                .thenApply( team -> OperationResult.success( team,
+                                                             OperationResult.OperationType.READ ) )
                 .exceptionally( throwable -> {
                     Log.e( TAG, "Error finding team by ID " + teamId, throwable );
                     return OperationResult.failure( "Team not found: " + throwable.getMessage(),
-                            OperationResult.OperationType.READ );
+                                                    OperationResult.OperationType.READ );
                 } );
     }
 
@@ -726,16 +880,19 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                             .build();
 
                     // Save each team using repository
-                    Team savedTeam = mCalendarServiceProvider.getTeamRepository().saveTeam( team ).join();
+                    Team savedTeam = mCalendarServiceProvider.getTeamRepository().saveTeam(
+                            team ).join();
                     if (savedTeam != null) {
                         standardTeams.add( savedTeam );
                     }
                 }
 
-                return OperationResult.success( standardTeams, OperationResult.OperationType.CREATE );
+                return OperationResult.success( standardTeams,
+                                                OperationResult.OperationType.CREATE );
             } catch (Exception e) {
                 Log.e( TAG, "Error creating standard teams", e );
-                return OperationResult.failure( "Failed to create standard teams: " + e.getMessage(),
+                return OperationResult.failure(
+                        "Failed to create standard teams: " + e.getMessage(),
                         OperationResult.OperationType.CREATE );
             }
         }, mExecutorService );
@@ -749,13 +906,14 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 for (int i = 1; i <= 30; i++) { // Check next 30 days
                     LocalDate checkDate = fromDate.plusDays( i );
                     if (isWorkingDayForTeam( checkDate, team ).join().getData()) {
-                        return OperationResult.success( checkDate, OperationResult.OperationType.READ );
+                        return OperationResult.success( checkDate,
+                                                        OperationResult.OperationType.READ );
                     }
                 }
                 return OperationResult.success( null, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 return OperationResult.failure( "Error finding next working day: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -768,12 +926,14 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 for (int i = 1; i <= 30; i++) { // Check previous 30 days
                     LocalDate checkDate = fromDate.minusDays( i );
                     if (isWorkingDayForTeam( checkDate, team ).join().getData()) {
-                        return OperationResult.success( checkDate, OperationResult.OperationType.READ );
+                        return OperationResult.success( checkDate,
+                                                        OperationResult.OperationType.READ );
                     }
                 }
                 return OperationResult.success( null, OperationResult.OperationType.READ );
             } catch (Exception e) {
-                return OperationResult.failure( "Error finding previous working day: " + e.getMessage(),
+                return OperationResult.failure(
+                        "Error finding previous working day: " + e.getMessage(),
                         OperationResult.OperationType.READ );
             }
         }, mExecutorService );
@@ -785,7 +945,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
         return CompletableFuture.supplyAsync( () -> {
             try {
                 int count = 0;
-                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )) {
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays(
+                        1 )) {
                     if (isWorkingDayForTeam( date, team ).join().getData()) {
                         count++;
                     }
@@ -793,7 +954,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
                 return OperationResult.success( count, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 return OperationResult.failure( "Error counting working days: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
@@ -803,22 +964,19 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     public CompletableFuture<OperationResult<Integer>> getRestDaysCount(@NonNull Team team, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
         return CompletableFuture.supplyAsync( () -> {
             try {
-                long totalDays = java.time.temporal.ChronoUnit.DAYS.between( startDate, endDate ) + 1;
+                long totalDays = java.time.temporal.ChronoUnit.DAYS.between( startDate,
+                                                                             endDate ) + 1;
                 int workingDays = getWorkingDaysCount( team, startDate, endDate ).join().getData();
                 int restDays = (int) totalDays - workingDays;
                 return OperationResult.success( restDays, OperationResult.OperationType.READ );
             } catch (Exception e) {
                 return OperationResult.failure( "Error counting rest days: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
+                                                OperationResult.OperationType.READ );
             }
         }, mExecutorService );
     }
 
     // ==================== HELPER METHODS ====================
-
-    private String buildCacheKey(@NonNull LocalDate date, @Nullable String userId) {
-        return "schedule_" + date + "_" + (userId != null ? userId : "default");
-    }
 
     private WorkScheduleDay generateScheduleForDate(@NonNull LocalDate date, @Nullable String userId) {
         try {
@@ -833,10 +991,38 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             }
 
             // Get domain engines from CalendarServiceProvider
-            SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
+//            SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
 
             // Generate base schedule
             WorkScheduleDay baseSchedule = generateBaseScheduleFromAssignment( date, assignment );
+
+            // Apply exceptions if user specified
+            if (userId != null) {
+                baseSchedule = applyShiftExceptionsToSchedule( baseSchedule, userId );
+            }
+
+            return baseSchedule;
+        } catch (Exception e) {
+            Log.e( TAG, "Error generating schedule for date " + date, e );
+            return WorkScheduleDay.builder( date ).build();
+        }
+    }
+
+    private WorkScheduleDay generateWorkScheduleForDate(@NonNull LocalDate date, @Nullable String userId) {
+        try {
+            // Get user assignment
+            UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
+            if (assignment == null) {
+                // Create an empty schedule
+                return WorkScheduleDay.builder( date ).build();
+            }
+
+            // Get domain engines from CalendarServiceProvider
+//            SchedulingEngine schedulingEngine = mCalendarServiceProvider.getSchedulingEngine();
+
+            // Generate base schedule
+            WorkScheduleDay baseSchedule = generateBaseWorkScheduleFromAssignment( date,
+                                                                                   assignment );
 
             // Apply exceptions if user specified
             if (userId != null) {
@@ -877,7 +1063,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     private String getDefaultRecurrenceRuleId() {
         try {
             List<RecurrenceRule> rules = mCalendarServiceProvider.getRecurrenceRuleRepository()
-                    .getRecurrenceRulesByFrequency( RecurrenceRule.Frequency.QUATTRODUE_CYCLE ).join();
+                    .getRecurrenceRulesByFrequency(
+                            RecurrenceRule.Frequency.QUATTRODUE_CYCLE ).join();
 
             if (rules != null && !rules.isEmpty()) {
                 return rules.get( 0 ).getId();
@@ -892,6 +1079,29 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
     @NonNull
     private WorkScheduleDay generateBaseScheduleFromAssignment(@NonNull LocalDate date, @NonNull UserScheduleAssignment assignment) {
+        try {
+            // Get recurrence rule by ID from assignment
+            String recurrenceRuleId = assignment.getRecurrenceRuleId();
+
+            RecurrenceRule theRule = mCalendarServiceProvider.getRecurrenceRuleRepository()
+                    .getRecurrenceRuleById( recurrenceRuleId ).join();
+
+            if (theRule == null) {
+                Log.w( TAG, "Recurrence theRule not found: " + recurrenceRuleId );
+                return WorkScheduleDay.builder( date ).build();
+            }
+
+            // Use RecurrenceCalculator to generate schedule
+            RecurrenceCalculator calculator = mCalendarServiceProvider.getRecurrenceCalculator();
+            return calculator.generateScheduleForDate( date, theRule, assignment );
+        } catch (Exception e) {
+            Log.e( TAG, "Error generating base schedule", e );
+            return WorkScheduleDay.builder( date ).build();
+        }
+    }
+
+    @NonNull
+    private WorkScheduleDay generateBaseWorkScheduleFromAssignment(@NonNull LocalDate date, @NonNull UserScheduleAssignment assignment) {
         try {
             // Get recurrence rule by ID from assignment
             String recurrenceRuleId = assignment.getRecurrenceRuleId();
@@ -935,7 +1145,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
 
             // Apply exceptions using ExceptionResolver
             ExceptionResolver resolver = mCalendarServiceProvider.getExceptionResolver();
-            return resolver.applyExceptions( baseSchedule, exceptions, userTeamMappings, new HashMap<>() );
+            return resolver.applyExceptions( baseSchedule, exceptions, userTeamMappings,
+                                             new HashMap<>() );
         } catch (Exception e) {
             Log.e( TAG, "Error applying shift exceptions", e );
             return baseSchedule;
@@ -950,7 +1161,8 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
             UserScheduleAssignment assignment = getUserAssignmentForDate( date, userId );
             if (assignment != null) {
                 String teamId = assignment.getTeamId();
-                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById( teamId ).join();
+                Team team = mCalendarServiceProvider.getTeamRepository().getTeamById(
+                        teamId ).join();
                 if (team != null) {
                     mappings.put( userId, team );
                 }
@@ -969,7 +1181,7 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository {
     private List<WorkScheduleEvent> convertScheduleDayToMultiTeamEvents(@NonNull WorkScheduleDay scheduleDay, @Nullable String userId) {
         List<WorkScheduleEvent> events = new ArrayList<>();
 
-        for (WorkScheduleShift shift : scheduleDay.getShifts()) {
+        for (WorkScheduleShift shift : scheduleDay.getWorkShifts()) {
             // Create WorkScheduleEvent with multiple teams support
             WorkScheduleEvent event = WorkScheduleEvent.builder( scheduleDay.getDate() )
                     .setShift( shift.getShift() )

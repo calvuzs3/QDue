@@ -220,7 +220,7 @@ public class ShiftRepositoryImpl implements ShiftRepository {
     public CompletableFuture<Shift> saveShift(@NonNull Shift shift) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Saving shift: " + shift.getDisplayName());
+                Log.d(TAG, "Saving shift: " + shift.getName());
 
                 // Convert to entity
                 ShiftEntity entity = convertToEntity(shift);
@@ -247,11 +247,11 @@ public class ShiftRepositoryImpl implements ShiftRepository {
                 }
 
                 Shift savedShift = convertToDomainModel(entity);
-                Log.d(TAG, "Successfully saved shift: " + shift.getDisplayName());
+                Log.d(TAG, "Successfully saved shift: " + shift.getName());
                 return savedShift;
 
             } catch (Exception e) {
-                Log.e(TAG, "Error saving shift: " + shift.getDisplayName(), e);
+                Log.e(TAG, "Error saving shift: " + shift.getName(), e);
                 throw new RuntimeException("Failed to save shift", e);
             }
         }, mExecutorService);
@@ -338,164 +338,6 @@ public class ShiftRepositoryImpl implements ShiftRepository {
         return getSystemShift(SYSTEM_QUATTRODUE_SHIFT_ID, "QuattroDue Cycle", "06:00", "18:00", "#9C27B0");
     }
 
-    // ==================== SHIFT DISCOVERY AND FILTERING ====================
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> getShiftsByTimeRange(@NonNull LocalTime startTime, @NonNull LocalTime endTime) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting shifts by time range: " + startTime + " - " + endTime);
-
-                String startTimeStr = startTime.format(DateTimeFormatter.ofPattern("HH:mm"));
-                List<ShiftEntity> entities = mShiftDao.getShiftsByStartTime(startTimeStr);
-
-                // Filter by end time as well
-                List<Shift> filteredShifts = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .filter(shift -> {
-                            LocalTime shiftEndTime = shift.getEndTime();
-                            return shiftEndTime.equals(endTime) ||
-                                    (shiftEndTime.isAfter(startTime) && shiftEndTime.isBefore(endTime.plusHours(1)));
-                        })
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + filteredShifts.size() + " shifts in time range");
-                return filteredShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting shifts by time range", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> getShiftsByDurationRange(@NonNull Duration minDuration, @NonNull Duration maxDuration) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting shifts by duration range: " + minDuration + " - " + maxDuration);
-
-                long minMinutes = minDuration.toMinutes();
-                long maxMinutes = maxDuration.toMinutes();
-
-                List<ShiftEntity> entities = mShiftDao.getShiftsByDurationRange(minMinutes, maxMinutes);
-                List<Shift> domainShifts = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + domainShifts.size() + " shifts in duration range");
-                return domainShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting shifts by duration range", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> getMidnightCrossingShifts() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting midnight crossing shifts");
-
-                List<ShiftEntity> entities = mShiftDao.getShiftsCrossingMidnight();
-                List<Shift> domainShifts = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + domainShifts.size() + " midnight crossing shifts");
-                return domainShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting midnight crossing shifts", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> getShiftsWithBreaks() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting shifts with breaks");
-
-                List<ShiftEntity> entities = mShiftDao.getShiftsWithBreaks();
-                List<Shift> domainShifts = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + domainShifts.size() + " shifts with breaks");
-                return domainShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting shifts with breaks", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> getShiftsByColor(@NonNull String colorHex) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Getting shifts by color: " + colorHex);
-
-                List<ShiftEntity> allEntities = mShiftDao.getActiveShifts();
-                List<Shift> filteredShifts = allEntities.stream()
-                        .filter(entity -> colorHex.equals(entity.getColorHex()))
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + filteredShifts.size() + " shifts with color: " + colorHex);
-                return filteredShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting shifts by color", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
-    @NonNull
-    @Override
-    public CompletableFuture<List<Shift>> searchShiftsByName(@NonNull String namePattern) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Log.d(TAG, "Searching shifts by name pattern: " + namePattern);
-
-                // Convert pattern to SQL LIKE pattern
-                String sqlPattern = namePattern.replace("*", "%").replace("?", "_");
-                if (!sqlPattern.contains("%")) {
-                    sqlPattern = "%" + sqlPattern + "%";
-                }
-
-                List<ShiftEntity> entities = mShiftDao.findShiftsByNamePattern(sqlPattern);
-                List<Shift> domainShifts = entities.stream()
-                        .map(this::convertToDomainModel)
-                        .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
-
-                Log.d(TAG, "Found " + domainShifts.size() + " shifts matching pattern: " + namePattern);
-                return domainShifts;
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error searching shifts by name pattern", e);
-                return new ArrayList<>();
-            }
-        }, mExecutorService);
-    }
-
     // ==================== SHIFT VALIDATION ====================
 
     @NonNull
@@ -503,7 +345,7 @@ public class ShiftRepositoryImpl implements ShiftRepository {
     public CompletableFuture<ValidationResult> validateShift(@NonNull Shift shift) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Validating shift: " + shift.getDisplayName());
+                Log.d(TAG, "Validating shift: " + shift.getName());
 
                 List<String> errors = new ArrayList<>();
                 List<String> warnings = new ArrayList<>();
@@ -596,7 +438,7 @@ public class ShiftRepositoryImpl implements ShiftRepository {
     public CompletableFuture<List<Shift>> findConflictingShifts(@NonNull Shift shift) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                Log.d(TAG, "Finding conflicting shifts for: " + shift.getDisplayName());
+                Log.d(TAG, "Finding conflicting shifts for: " + shift.getName());
 
                 List<ShiftEntity> allEntities = mShiftDao.getActiveShifts();
                 List<Shift> conflictingShifts = new ArrayList<>();

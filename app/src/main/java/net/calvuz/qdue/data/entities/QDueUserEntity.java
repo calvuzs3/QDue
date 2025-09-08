@@ -64,11 +64,6 @@ public class QDueUserEntity {
      * Default constructor for Room.
      */
     public QDueUserEntity() {
-        this.id = UUID.randomUUID().toString();
-        this.nickname = "";
-        this.email = "";
-        this.createdAt=System.currentTimeMillis();
-        this.updatedAt=System.currentTimeMillis();
     }
 
     // ==================== GETTERS AND SETTERS ====================
@@ -170,15 +165,6 @@ public class QDueUserEntity {
     // ==================== UTILITY METHODS ====================
 
     /**
-     * Check if entity represents a valid user (has ID).
-     *
-     * @return true if entity has ID (persisted)
-     */
-    public boolean isPersisted() {
-        return id != null;
-    }
-
-    /**
      * Check if user has nickname.
      *
      * @return true if nickname is not empty
@@ -232,7 +218,6 @@ public class QDueUserEntity {
                 ", email='" + email + '\'' +
                 ", createdAt=" + LocalDateTime.ofInstant( Instant.ofEpochMilli( createdAt ), ZoneId.systemDefault() ) +
                 ", updatedAt=" + LocalDateTime.ofInstant( Instant.ofEpochMilli( updatedAt ), ZoneId.systemDefault() ) +
-                ", persisted=" + isPersisted() +
                 ", profileComplete=" + isProfileComplete() +
                 '}';
     }

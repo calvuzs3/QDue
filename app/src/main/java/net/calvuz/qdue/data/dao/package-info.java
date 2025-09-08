@@ -288,7 +288,7 @@
  * @Transaction
  * public void initializeCalendarWithShiftsAndTeams(CalendarSetupData setupData) {
  *     // Insert shifts
- *     for (ShiftSetupData shiftData : setupData.getShifts()) {
+ *     for (ShiftSetupData shiftData : setupData.getWorkShifts()) {
  *         ShiftEntity shift = createShiftEntity(shiftData);
  *         long shiftId = shiftDao.insertShift(shift);
  *

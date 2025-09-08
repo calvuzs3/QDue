@@ -1161,11 +1161,11 @@ import net.calvuz.qdue.ui.shared.DaysListEventsPreview;
 #### Step 4: Integrate DI
 ```java
 // Old direct instantiation
-DaysListAdapter adapter = new DaysListAdapter(context, items, team, shifts);
+DaysListAdapter adapter = new DaysListAdapter(context, items, team, workShifts);
 
 // New DI-based instantiation
 DaysListModule module = new DaysListModule(context, eventsService, userService);
-DaysListAdapter adapter = module.provideDaysListAdapter(context, items, team, shifts);
+DaysListAdapter adapter = module.provideDaysListAdapter(context, items, team, workShifts);
 ```
 
 ### Common Migration Issues

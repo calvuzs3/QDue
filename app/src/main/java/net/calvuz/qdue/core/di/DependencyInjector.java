@@ -26,11 +26,11 @@ public class DependencyInjector {
             serviceProvider.initializeServices();
             injectable.inject(serviceProvider);
 
-            Log.d(TAG, "✅ Dependencies injected successfully into " +
+            Log.i(TAG, "Dependencies injected successfully into " +
                     injectable.getClass().getSimpleName());
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Error injecting dependencies: " + e.getMessage());
+            Log.e(TAG, "Error injecting dependencies: " + e.getMessage());
             throw new RuntimeException("Dependency injection failed", e);
         }
     }

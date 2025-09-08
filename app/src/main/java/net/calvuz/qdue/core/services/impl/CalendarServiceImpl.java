@@ -15,18 +15,17 @@ import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.ShiftException;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
-import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -212,145 +211,6 @@ public class CalendarServiceImpl implements CalendarService {
         return mCalendarServiceProvider;
     }
 
-    // ==================== WORK SCHEDULE OPERATIONS ====================
-
-    @Override
-    @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> getUserScheduleForDate(
-            @NonNull String userId, @NonNull LocalDate date) {
-
-        return CompletableFuture.supplyAsync( () -> {
-            try {
-                if (!isReady()) {
-                    return OperationResult.failure( "CalendarService not ready",
-                            OperationResult.OperationType.READ );
-                }
-
-                Log.d( TAG, "Getting user schedule for userID: " + userId + ", date: " + date );
-
-                // Check cache first
-                String cacheKey = generateUserCacheKey( userId, date );
-                Object cachedResult = mCache.get( cacheKey );
-                if (cachedResult instanceof WorkScheduleDay) {
-                    Log.d( TAG, "Cache hit for user schedule: " + cacheKey );
-                    return OperationResult.success( (WorkScheduleDay) cachedResult, OperationResult.OperationType.READ );
-                }
-
-                // Use GenerateUserScheduleUseCase for complex user schedule logic
-                GenerateUserScheduleUseCase generateUserScheduleUseCase =
-                        mCalendarServiceProvider.getGenerateUserScheduleUseCase();
-
-                // Generate schedule using domain use case
-                OperationResult<WorkScheduleDay> result = generateUserScheduleUseCase
-                        .executeForDate( userId, date ).join(); // .generateUserScheduleForDate(userID, date).join();
-
-                if (result.isSuccess() && result.getData() != null) {
-                    // Cache the result
-                    mCache.put( cacheKey, result.getData() );
-                    Log.d( TAG, "Generated user schedule with " +
-                            result.getData().getShifts().size() + " shifts using domain use case" );
-                }
-
-                return result;
-            } catch (Exception e) {
-                Log.e( TAG, "Error getting user schedule for " + userId + " on " + date, e );
-                return OperationResult.failure( "Failed to get user schedule: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
-            }
-        }, mExecutorService );
-    }
-
-    @Override
-    @NonNull
-    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForDateRange(
-            @NonNull String userId, @NonNull LocalDate startDate, @NonNull LocalDate endDate) {
-
-        return CompletableFuture.supplyAsync( () -> {
-            try {
-                if (!isReady()) {
-                    return OperationResult.failure( "CalendarService not ready",
-                            OperationResult.OperationType.READ );
-                }
-
-                Log.d( TAG, "Getting user schedule range for userID: " + userId +
-                        ", dates: " + startDate + " to " + endDate );
-
-                // Use GenerateUserScheduleUseCase for date range operations
-                GenerateUserScheduleUseCase generateUserScheduleUseCase =
-                        mCalendarServiceProvider.getGenerateUserScheduleUseCase();
-
-                OperationResult<Map<LocalDate, WorkScheduleDay>> result = generateUserScheduleUseCase
-                        .executeForDateRange( userId, startDate, endDate ).join();
-                //.generateUserScheduleForDateRange(userID, startDate, endDate).join();
-
-                if (result.isSuccess()) {
-                    Log.d( TAG, "Generated user schedule range with " +
-                            result.getData().size() + " days using domain use case" );
-                }
-
-                return result;
-            } catch (Exception e) {
-                Log.e( TAG, "Error getting user schedule range for " + userId, e );
-                return OperationResult.failure( "Failed to get user schedule range: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
-            }
-        }, mExecutorService );
-    }
-
-    @Override
-    @NonNull
-    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> getUserScheduleForMonth(
-            @NonNull String userId, @NonNull YearMonth month) {
-
-        LocalDate startDate = month.atDay( 1 );
-        LocalDate endDate = month.atEndOfMonth();
-
-        return getUserScheduleForDateRange( userId, startDate, endDate );
-    }
-
-    @Override
-    @NonNull
-    public CompletableFuture<OperationResult<WorkScheduleDay>> getTeamScheduleForDate(
-            @NonNull LocalDate date, @Nullable String teamId) {
-
-        return CompletableFuture.supplyAsync( () -> {
-            try {
-                if (!isReady()) {
-                    return OperationResult.failure( "CalendarService not ready",
-                            OperationResult.OperationType.READ );
-                }
-
-                Log.d( TAG, "Getting team schedule for date: " + date + ", teamID: " + teamId );
-
-                // Use GenerateTeamScheduleUseCase for team coordination logic
-                GenerateTeamScheduleUseCase generateTeamScheduleUseCase =
-                        mCalendarServiceProvider.getGenerateTeamScheduleUseCase();
-
-                OperationResult<WorkScheduleDay> result;
-                if (teamId != null) {
-                    result = generateTeamScheduleUseCase
-                            .executeForDate( date, Integer.valueOf( teamId ) ).join();
-                    //.generateTeamScheduleForDate(teamID, date).join();
-                } else {
-                    result = generateTeamScheduleUseCase
-                            .executeForDate( date, null ).join();
-                    //.generateAllTeamsScheduleForDate(date).join();
-                }
-
-                if (result.isSuccess()) {
-                    Log.d( TAG, "Generated team schedule with " +
-                            result.getData().getShifts().size() + " shifts using domain use case" );
-                }
-
-                return result;
-            } catch (Exception e) {
-                Log.e( TAG, "Error getting team schedule for " + teamId + " on " + date, e );
-                return OperationResult.failure( "Failed to get team schedule: " + e.getMessage(),
-                        OperationResult.OperationType.READ );
-            }
-        }, mExecutorService );
-    }
-
     // ==================== CALENDAR EVENTS OPERATIONS ====================
 
     @Override
@@ -409,7 +269,7 @@ public class CalendarServiceImpl implements CalendarService {
                         mCalendarServiceProvider.getGenerateTeamScheduleUseCase();
 
                 OperationResult<Map<LocalDate, WorkScheduleDay>> scheduleResult =
-                        generateTeamScheduleUseCase.executeForDateRange( startDate, endDate, Integer.valueOf( teamId ) ).join();
+                        generateTeamScheduleUseCase.execute( startDate, endDate, Integer.valueOf( teamId ) ).join();
                 //.generateTeamScheduleForDateRange(teamID, startDate, endDate).join();
 
                 if (!scheduleResult.isSuccess()) {
@@ -810,7 +670,7 @@ public class CalendarServiceImpl implements CalendarService {
             LocalDate date = entry.getKey();
             WorkScheduleDay schedule = entry.getValue();
 
-            for (net.calvuz.qdue.domain.calendar.models.WorkScheduleShift shift : schedule.getShifts()) {
+            for (WorkScheduleShift shift : schedule.getWorkShifts()) {
                 // Create WorkScheduleEvent with multi-team support
                 WorkScheduleEvent event = WorkScheduleEvent.builder( date )
                         .setShift( shift.getShift() )
