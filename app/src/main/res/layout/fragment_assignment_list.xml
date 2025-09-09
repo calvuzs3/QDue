@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    fragment_assignment_list.xml - Assignment List Fragment Layout
+
+    Material Design layout with RecyclerView, SwipeRefreshLayout,
+    FloatingActionButton, and empty state handling.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.features.assignment.list.AssignmentListFragment">
+
+    <!-- Assignment List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_assignments"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="@dimen/assignment_list_padding_top"
+        android:paddingBottom="@dimen/assignment_list_padding_bottom"
+        android:paddingStart="@dimen/assignment_list_padding_horizontal"
+        android:paddingEnd="@dimen/assignment_list_padding_horizontal"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_assignment_card" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_state_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/assignment_empty_state_padding"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- Empty State Icon -->
+        <ImageView
+            android:layout_width="@dimen/assignment_empty_state_icon_size"
+            android:layout_height="@dimen/assignment_empty_state_icon_size"
+            android:layout_marginBottom="@dimen/assignment_empty_state_spacing"
+            android:src="@drawable/ic_assignment_empty_state"
+            android:contentDescription="@string/assignment_empty_state_icon_description"
+            app:tint="?colorOnSurfaceVariant" />
+
+        <!-- Empty State Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/assignment_empty_state_spacing_small"
+            android:text="@string/assignment_list_empty_title"
+            android:textAppearance="?textAppearanceHeadlineSmall"
+            android:textColor="?colorOnSurfaceVariant"
+            android:gravity="center" />
+
+        <!-- Empty State Message -->
+        <TextView
+            android:id="@+id/text_empty_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/assignment_empty_state_spacing"
+            android:text="@string/assignment_list_empty_message"
+            android:textAppearance="?textAppearanceBodyLarge"
+            android:textColor="?colorOnSurfaceVariant"
+            android:gravity="center"
+            android:lineSpacingExtra="@dimen/assignment_empty_state_line_spacing" />
+
+        <!-- Create First Assignment Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_create_first_assignment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/assignment_create_first_button"
+            android:icon="@drawable/ic_rounded_add_24"
+            style="@style/Widget.Material3.Button.TonalButton" />
+
+    </LinearLayout>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_create_assignment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/assignment_create_fab_description"
+        app:srcCompat="@drawable/ic_rounded_add_24"
+        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

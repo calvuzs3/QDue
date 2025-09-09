@@ -18,6 +18,7 @@ import com.google.android.material.chip.Chip;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentDatePositionSelectionBinding;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.interfaces.AssignmentWizardInterface;
 import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData;
@@ -315,7 +316,7 @@ public class DatePositionSelectionFragment extends Fragment {
     private void updateCyclePositionUI() {
         AssignmentWizardData wizardData = mWizardInterface.getWizardData();
 
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (wizardData.getPattern() == Pattern.QUATTRODUE) {
             mBinding.txtCyclePositionDescription.setText(R.string.cycle_position_description_quattrodue);
             mMaxCyclePosition = 16;
         } else {
@@ -332,7 +333,7 @@ public class DatePositionSelectionFragment extends Fragment {
     private String getCyclePositionDescription(int position) {
         AssignmentWizardData wizardData = mWizardInterface.getWizardData();
 
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (wizardData.getPattern() == Pattern.QUATTRODUE) {
             return getQuattroDuePositionDescription(position);
         } else {
             return getString(R.string.cycle_day_work); // Generic for custom patterns
@@ -370,7 +371,7 @@ public class DatePositionSelectionFragment extends Fragment {
     private void updateMaxCyclePosition() {
         AssignmentWizardData wizardData = mWizardInterface.getWizardData();
 
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.CUSTOM
+        if (wizardData.getPattern() == Pattern.CUSTOM
                 && wizardData.getSelectedCustomPattern() != null) {
             mMaxCyclePosition = wizardData.getSelectedCustomPattern().getCycleLength();
         } else {

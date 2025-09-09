@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Activity and Navigation -->
+    <string name="assignment_list_title">I Tuoi Turni</string>
+    <string name="assignment_list_subtitle">Gestisci i tuoi turni di lavoro</string>
+
+    <!-- Empty State -->
+    <string name="assignment_list_empty_title">Nessun turno assegnato</string>
+    <string name="assignment_list_empty_message">Non hai ancora turni di lavoro configurati.\nCrea il tuo primo turno personalizzato per iniziare.</string>
+    <string name="assignment_empty_state_icon_description">Icona nessun turno</string>
+    <string name="assignment_create_first_button">Crea Primo Turno</string>
+
+    <!-- Assignment Card -->
+    <string name="assignment_default_title">Turno Personalizzato</string>
+    <string name="assignment_unknown_team">Team Sconosciuto</string>
+    <string name="assignment_team_format">Team: %1$s</string>
+    <string name="assignment_date_permanent">Dal %1$s → Permanente</string>
+    <string name="assignment_date_range">%1$s → %2$s</string>
+    <string name="assignment_date_permanent_short">Da %1$s (permanente)</string>
+    <string name="assignment_date_range_short">%1$s - %2$s</string>
+
+    <!-- Status Labels -->
+    <string name="assignment_status_active">ATTIVO</string>
+    <string name="assignment_status_pending">IN ATTESA</string>
+    <string name="assignment_status_expired">SCADUTO</string>
+    <string name="assignment_status_cancelled">ANNULLATO</string>
+    <string name="assignment_status_suspended">Sospeso</string>
+    <string name="assignment_status_unknown">SCONOSCIUTO</string>
+
+    <!-- Action Buttons -->
+    <string name="assignment_edit_button_description">Modifica turno</string>
+    <string name="assignment_delete_button_description">Elimina turno</string>
+    <string name="assignment_create_fab_description">Crea nuovo turno</string>
+
+    <!-- Assignment Details -->
+    <string name="assignment_details_format">%1$s - %2$s</string>
+
+    <!-- Delete Confirmation Dialog -->
+    <string name="assignment_delete_confirmation_title">Elimina Turno</string>
+    <string name="assignment_delete_confirmation_message">Sei sicuro di voler eliminare questo turno?</string>
+    <string name="assignment_delete_details_header">Dettagli del turno:</string>
+    <string name="assignment_delete_detail_name">Nome: %1$s</string>
+    <string name="assignment_delete_detail_team">Team: %1$s</string>
+    <string name="assignment_delete_detail_dates">Periodo: %1$s</string>
+    <string name="assignment_delete_final_warning">Questa azione non può essere annullata.</string>
+    <string name="assignment_delete_confirm_button">Elimina</string>
+
+    <!-- Status-Specific Delete Warnings -->
+    <string name="assignment_delete_warning_active">⚠️ ATTENZIONE: Questo turno è attualmente attivo. L\'eliminazione potrebbe influire sulla generazione del calendario.</string>
+    <string name="assignment_delete_warning_pending">ℹ️ NOTA: Questo turno è programmato per il futuro. L\'eliminazione impedirà l\'attivazione automatica.</string>
+
+    <!-- Success and Error Messages -->
+    <string name="assignment_deleted_successfully">Turno eliminato con successo</string>
+    <string name="assignment_created_successfully">Nuovo turno creato con successo</string>
+    <string name="assignment_updated_successfully">Turno aggiornato con successo</string>
+
+    <!-- Error Messages -->
+    <string name="error_loading_assignments">Errore nel caricamento dei turni</string>
+    <string name="error_deleting_assignment">Errore nell\'eliminazione del turno</string>
+    <string name="assignment_delete_error_missing_data">Dati del turno mancanti</string>
+    <string name="retry">Riprova</string>
+
+    <!-- Loading States -->
+    <string name="assignment_loading">Caricamento turni…</string>
+    <string name="assignment_deleting">Eliminazione in corso…</string>
+
+    <!-- Accessibility -->
+    <string name="assignment_card_description">Scheda turno %1$s</string>
+    <string name="assignment_status_chip_description">Stato turno: %1$s</string>
+
+    <!-- Menu Integration -->
+    <string name="menu_assignments">I Tuoi Turni</string>
+    <string name="menu_assignments_description">Gestisci i tuoi turni di lavoro</string>
+
+</resources>

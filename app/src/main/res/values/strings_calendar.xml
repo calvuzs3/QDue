@@ -222,13 +222,6 @@
     <string name="priority_urgent_priority">Priorità urgente</string>
     <string name="priority_override_priority">Priorità sostituzione</string>
 
-    <!-- Assignment Status -->
-    <string name="assignment_status_active">Attivo</string>
-    <string name="assignment_status_pending">In attesa</string>
-    <string name="assignment_status_expired">Scaduto</string>
-    <string name="assignment_status_suspended">Sospeso</string>
-    <string name="assignment_status_cancelled">Annullato</string>
-
     <!-- Templates -->
     <string name="user_display_template">Utente %d</string>
     <string name="assignment_display_title">%s → %s</string>
@@ -690,7 +683,6 @@
 
     <!-- Shift Formatting -->
     <string name="domain_work_shift_format_summary_separator"> - </string>
-
 
 
 

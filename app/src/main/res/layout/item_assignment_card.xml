@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_assignment_card.xml - Assignment Card Layout for RecyclerView
+
+    Material Design card layout for displaying assignment information
+    with status indicators and action buttons.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_assignment"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/assignment_card_margin_vertical"
+    android:layout_marginBottom="@dimen/assignment_card_margin_vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:checkable="false"
+    app:cardElevation="@dimen/assignment_card_elevation"
+    app:cardCornerRadius="@dimen/assignment_card_corner_radius"
+    app:rippleColor="?colorControlHighlight"
+    style="@style/Widget.Material3.CardView.Elevated">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/assignment_card_padding">
+
+        <!-- Header Row: Title and Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/assignment_card_spacing_small">
+
+            <!-- Assignment Title -->
+            <TextView
+                android:id="@+id/text_assignment_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?textAppearanceHeadlineSmall"
+                android:textColor="?colorOnSurface"
+                android:maxLines="2"
+                android:ellipsize="end"
+                tools:text="Turno Personalizzato Mattino" />
+
+            <!-- Status Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/assignment_card_spacing_small"
+                android:textSize="@dimen/assignment_status_chip_text_size"
+                style="@style/Widget.Material3.Chip.Assist"
+                tools:text="ATTIVO" />
+
+        </LinearLayout>
+
+        <!-- Team Information -->
+        <TextView
+            android:id="@+id/text_team_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/assignment_card_spacing_small"
+            android:textAppearance="?textAppearanceBodyLarge"
+            android:textColor="?colorOnSurfaceVariant"
+            android:drawableStart="@drawable/ic_rounded_groups_24"
+            android:drawablePadding="@dimen/assignment_card_icon_padding"
+            android:gravity="center_vertical"
+            app:drawableTint="?colorOnSurfaceVariant"
+            tools:text="Team: Squadra A" />
+
+        <!-- Date Range Information -->
+        <TextView
+            android:id="@+id/text_date_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/assignment_card_spacing"
+            android:textAppearance="?textAppearanceBodyMedium"
+            android:textColor="?colorOnSurfaceVariant"
+            android:drawableStart="@drawable/ic_rounded_calendar_month_24"
+            android:drawablePadding="@dimen/assignment_card_icon_padding"
+            android:gravity="center_vertical"
+            app:drawableTint="?colorOnSurfaceVariant"
+            tools:text="1 gen 2025 → Permanente" />
+
+        <!-- Action Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="@dimen/assignment_card_spacing_small">
+
+            <!-- Edit Button -->
+            <ImageButton
+                android:id="@+id/button_edit"
+                android:layout_width="@dimen/assignment_action_button_size"
+                android:layout_height="@dimen/assignment_action_button_size"
+                android:layout_marginEnd="@dimen/assignment_card_spacing_small"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_rounded_edit_24"
+                android:contentDescription="@string/assignment_edit_button_description"
+                app:tint="?colorPrimary" />
+
+            <!-- Delete Button -->
+            <ImageButton
+                android:id="@+id/button_delete"
+                android:layout_width="@dimen/assignment_action_button_size"
+                android:layout_height="@dimen/assignment_action_button_size"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_rounded_delete_24"
+                android:contentDescription="@string/assignment_delete_button_description"
+                app:tint="?colorError" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

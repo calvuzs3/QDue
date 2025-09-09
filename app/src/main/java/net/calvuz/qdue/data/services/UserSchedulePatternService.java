@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.schedulepattern.services;
+package net.calvuz.qdue.data.services;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,14 +45,22 @@ import java.util.concurrent.CompletableFuture;
  *   <li><strong>UserScheduleAssignmentRepository</strong>: Create user assignments</li>
  *   <li><strong>RecurrenceCalculator</strong>: Preview pattern application</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Initial Implementation
- * @since Clean Architecture Phase 2
  */
 public interface UserSchedulePatternService {
 
     // ==================== PATTERN CREATION ====================
+
+    /**
+     * Create a new user schedule pattern with auto-generated name.
+     *
+     * @param patternDays List of pattern days defining the sequence
+     * @param startDate Date when pattern should start
+     * @return CompletableFuture with OperationResult containing UserScheduleAssignment
+     */
+    @NonNull
+    CompletableFuture<OperationResult<UserScheduleAssignment>> createUserPattern(
+            @NonNull List<PatternDay> patternDays,
+            @NonNull LocalDate startDate);
 
     /**
      * Create a new user schedule pattern from pattern days.
@@ -67,18 +75,6 @@ public interface UserSchedulePatternService {
             @NonNull List<PatternDay> patternDays,
             @NonNull LocalDate startDate,
             @NonNull String patternName);
-
-    /**
-     * Create a new user schedule pattern with auto-generated name.
-     *
-     * @param patternDays List of pattern days defining the sequence
-     * @param startDate Date when pattern should start
-     * @return CompletableFuture with OperationResult containing UserScheduleAssignment
-     */
-    @NonNull
-    CompletableFuture<OperationResult<UserScheduleAssignment>> createUserPattern(
-            @NonNull List<PatternDay> patternDays,
-            @NonNull LocalDate startDate);
 
     // ==================== PATTERN MODIFICATION ====================
 
@@ -306,5 +302,108 @@ public interface UserSchedulePatternService {
         public List<String> getShiftTypes() {
             return shiftTypes;
         }
+    }
+
+
+
+
+    // ==================== ASSIGNMENT MANAGEMENT - NEW METHODS ====================
+
+    /**
+     * Get all user schedule assignments for current user.
+     *
+     * <p>Retrieves all assignments for the current user, ordered by start date
+     * in descending order (most recent/future first). Includes all statuses:
+     * ACTIVE, PENDING, EXPIRED, CANCELLED.</p>
+     *
+     * @param userId Current QDueUser ID (String)
+     * @return CompletableFuture with OperationResult containing List of UserScheduleAssignment
+     */
+    @NonNull
+    CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserAssignmentsList(@NonNull String userId);
+
+    /**
+     * Get single user schedule assignment by ID.
+     *
+     * <p>Retrieves a specific assignment for viewing or editing. Validates that
+     * the assignment belongs to the requesting user.</p>
+     *
+     * @param assignmentId Assignment ID to retrieve
+     * @param userId QDueUser ID (String) for ownership validation
+     * @return CompletableFuture with OperationResult containing UserScheduleAssignment
+     */
+    @NonNull
+    CompletableFuture<OperationResult<UserScheduleAssignment>> getUserAssignment(
+            @NonNull String assignmentId,
+            @NonNull String userId);
+
+    /**
+     * Delete user schedule assignment with validation.
+     *
+     * <p>Deletes an assignment after performing business rule validation:
+     * - Validates user ownership
+     * - Checks for conflicts with active schedules
+     * - Handles cleanup of associated RecurrenceRule if not referenced elsewhere
+     * - Prevents deletion of currently active critical assignments</p>
+     *
+     * @param assignmentId Assignment ID to delete
+     * @param userId QDueUser ID (String) for ownership validation
+     * @return CompletableFuture with OperationResult containing deletion success boolean
+     */
+    @NonNull
+    CompletableFuture<OperationResult<Boolean>> deleteUserAssignmentWithValidation(
+            @NonNull String assignmentId,
+            @NonNull String userId);
+
+    /**
+     * Get assignment statistics for user.
+     *
+     * <p>Provides statistics about user's assignments including counts by status,
+     * upcoming assignment changes, and pattern usage summary.</p>
+     *
+     * @param userId QDueUser ID (String) for statistics
+     * @return CompletableFuture with OperationResult containing AssignmentStatistics
+     */
+    @NonNull
+    CompletableFuture<OperationResult<AssignmentStatistics>> getUserAssignmentStatistics(@NonNull String userId);
+
+    // ==================== NEW DATA CLASSES ====================
+
+    /**
+     * Assignment statistics for user dashboard.
+     */
+    class AssignmentStatistics {
+        private final int totalAssignments;
+        private final int activeAssignments;
+        private final int pendingAssignments;
+        private final int expiredAssignments;
+        private final LocalDate nextStartDate;
+        private final LocalDate nextEndDate;
+        private final String currentTeam;
+        private final boolean hasActiveAssignment;
+
+        public AssignmentStatistics(int totalAssignments, int activeAssignments,
+                                    int pendingAssignments, int expiredAssignments,
+                                    LocalDate nextStartDate, LocalDate nextEndDate,
+                                    String currentTeam, boolean hasActiveAssignment) {
+            this.totalAssignments = totalAssignments;
+            this.activeAssignments = activeAssignments;
+            this.pendingAssignments = pendingAssignments;
+            this.expiredAssignments = expiredAssignments;
+            this.nextStartDate = nextStartDate;
+            this.nextEndDate = nextEndDate;
+            this.currentTeam = currentTeam;
+            this.hasActiveAssignment = hasActiveAssignment;
+        }
+
+        // Getters
+        public int getTotalAssignments() { return totalAssignments; }
+        public int getActiveAssignments() { return activeAssignments; }
+        public int getPendingAssignments() { return pendingAssignments; }
+        public int getExpiredAssignments() { return expiredAssignments; }
+        @Nullable public LocalDate getNextStartDate() { return nextStartDate; }
+        @Nullable public LocalDate getNextEndDate() { return nextEndDate; }
+        @Nullable public String getCurrentTeam() { return currentTeam; }
+        public boolean hasActiveAssignment() { return hasActiveAssignment; }
     }
 }

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ import java.time.LocalDate;
  *
  * <h3>Fragment Integration:</h3>
  * <ul>
- *   <li><strong>PatternTypeSelectionFragment</strong>: Calls onPatternTypeSelected()</li>
+ *   <li><strong>PatternSelectionFragment</strong>: Calls onPatternSelected()</li>
  *   <li><strong>TeamSelectionFragment</strong>: Calls onTeamSelected()</li>
  *   <li><strong>CustomPatternSelectionFragment</strong>: Calls onCustomPatternSelected()</li>
  *   <li><strong>DatePositionSelectionFragment</strong>: Calls onDateSelected() and onCycleDayPositionSelected()</li>
@@ -46,9 +47,9 @@ public interface AssignmentWizardInterface {
      * Called when user selects a pattern type (QuattroDue vs Custom).
      * Updates wizard state and triggers UI updates for dependent steps.
      *
-     * @param patternType Selected pattern type
+     * @param pattern Selected pattern type
      */
-    void onPatternTypeSelected(@NonNull AssignmentWizardData.PatternType patternType);
+    void onPatternSelected(@NonNull Pattern pattern);
 
     /**
      * Called when user selects a team for QuattroDue pattern.

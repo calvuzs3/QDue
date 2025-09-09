@@ -19,6 +19,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
+        <activity android:name=".ui.features.assignment.list.AssignmentListActivity"
+            android:exported="false"
+            android:label="@string/assignment_list_title"
+            android:theme="@style/Theme.QDue">
+            <!-- Metadata for navigation -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.features.swipecalendar.presentation.SwipeCalendarActivity" />
+        </activity>
+
         <!-- Pattern Assignment Wizard Activity -->
         <activity
             android:name="net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardActivity"

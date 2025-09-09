@@ -7,6 +7,7 @@ import net.calvuz.qdue.domain.common.enums.Priority;
 import net.calvuz.qdue.domain.common.enums.Status;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -25,10 +26,9 @@ import java.util.UUID;
  *   <li><strong>Time Boundaries</strong>: Support for start/end dates of assignments</li>
  *   <li><strong>Recurrence Integration</strong>: Links to RecurrenceRule for schedule patterns</li>
  *   <li><strong>Priority System</strong>: Handle conflicting assignments</li>
- *   <li><strong>Multi-Team Support</strong>: Users can be assigned to multiple teams over time</li>
  * </ul>
  */
-public class UserScheduleAssignment
+public class UserScheduleAssignment implements Serializable
 {
 
     private static final String TAG = "UserScheduleAssignment";
@@ -43,11 +43,13 @@ public class UserScheduleAssignment
     // ==================== CORE ASSIGNMENT DATA ====================
 
     private final String userId;            // User being assigned
-    private final String userName;          // Display name for UI
+    private final String userName;       // // Display name for UI
+
     private final String teamId;            // Team assignment
-    private final String teamName;          // Team display name
+    private final String teamName;       // // Team display name
+
     private final String recurrenceRuleId;  // Schedule pattern
-    private final int cycleDayPosition;     // For patterns
+    private final int cycleDayPosition;     // For patterns ( in QUATTRODUE )
 
     // ==================== TIME BOUNDARIES ====================
 

@@ -7,6 +7,7 @@ import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,7 +41,8 @@ import java.util.regex.Pattern;
  * @version 1.0.0 - Clean Architecture Simplified User Model
  * @since Clean Architecture Phase 3
  */
-public class QDueUser {
+public class QDueUser implements Serializable
+{
 
     private static final String TAG = "QDueUser";
 

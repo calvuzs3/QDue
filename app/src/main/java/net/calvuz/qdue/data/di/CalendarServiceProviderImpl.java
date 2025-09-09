@@ -17,7 +17,9 @@ import net.calvuz.qdue.data.repositories.TeamRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserScheduleAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserTeamAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.data.services.UserWorkScheduleService;
+import net.calvuz.qdue.data.services.impl.UserSchedulePatternServiceImpl;
 import net.calvuz.qdue.data.services.impl.UserWorkScheduleServiceImpl;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
@@ -131,6 +133,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     // ==================== USE CASE INSTANCES ====================
 
     private volatile UserWorkScheduleService mUserWorkScheduleService;
+    private volatile UserSchedulePatternService mUserSchedulePatternService;
     private volatile TeamUseCases mTeamUseCases;
     private volatile UserTeamAssignmentUseCases mUserTeamAssignmentUseCases;
     private volatile CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
@@ -156,6 +159,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     private final Object mUserTeamAssignmentRepositoryLock = new Object();
     private final Object mWorkScheduleRepositoryLock = new Object();
     private final Object mUserWorkScheduleServiceLock = new Object();
+    private final Object mUserSchedulePatternServiceLock = new Object();
     private final Object mTeamUseCasesLock = new Object();
     private final Object mCreatePatternAssignmentUseCaseLock = new Object();
     private final Object mRecurrenceCalculatorLock = new Object();
@@ -483,6 +487,35 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
             }
         }
         return mUserWorkScheduleService;
+    }
+
+    @Override
+    @NonNull
+    public UserSchedulePatternService getUserSchedulePatternService() {
+        if (mUserSchedulePatternService == null) {
+
+            synchronized (mUserSchedulePatternServiceLock) {
+                if (mUserSchedulePatternService == null) {
+                    try {
+                        ensureInitialized();
+                        Log.d( TAG, "Creating UserSchedulePatternService instance" );
+
+                        mUserSchedulePatternService = new UserSchedulePatternServiceImpl(
+                                getContext(),
+                                getShiftRepository(),
+                                getUserScheduleAssignmentRepository(),
+                                getRecurrenceRuleRepository(),
+                                getLocaleManager()
+                        );
+                    } catch (Exception e) {
+                        Log.e( TAG, "Failed to initialize UserSchedulePatternService", e );
+                        throw new RuntimeException(
+                                "UserSchedulePatternService initialization failed", e );
+                    }
+                }
+            }
+        }
+        return mUserSchedulePatternService;
     }
 
     // ==================== USE CASES ====================

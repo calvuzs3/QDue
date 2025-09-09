@@ -19,7 +19,7 @@ import net.calvuz.qdue.domain.common.enums.Status;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.ui.features.schedulepattern.UserSchedulePatternCreationActivity;
 import net.calvuz.qdue.ui.features.schedulepattern.di.SchedulePatternModule;
-import net.calvuz.qdue.ui.features.schedulepattern.services.UserSchedulePatternService;
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.format.DateTimeFormatter;

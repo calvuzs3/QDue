@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Assignment List Layout -->
+    <dimen name="assignment_list_padding_top">8dp</dimen>
+    <dimen name="assignment_list_padding_bottom">88dp</dimen>          <!-- Space for FAB -->
+    <dimen name="assignment_list_padding_horizontal">16dp</dimen>
+
+    <!-- Assignment Card Dimensions -->
+    <dimen name="assignment_card_elevation">2dp</dimen>
+    <dimen name="assignment_card_corner_radius">12dp</dimen>
+    <dimen name="assignment_card_padding">16dp</dimen>
+    <dimen name="assignment_card_margin_vertical">4dp</dimen>
+
+    <!-- Assignment Card Spacing -->
+    <dimen name="assignment_card_spacing">12dp</dimen>
+    <dimen name="assignment_card_spacing_small">8dp</dimen>
+    <dimen name="assignment_card_icon_padding">8dp</dimen>
+
+    <!-- Action Buttons -->
+    <dimen name="assignment_action_button_size">48dp</dimen>
+    <dimen name="assignment_action_button_padding">12dp</dimen>
+
+    <!-- Status Chip -->
+    <dimen name="assignment_status_chip_text_size">12sp</dimen>
+    <dimen name="assignment_status_chip_height">32dp</dimen>
+
+    <!-- Empty State -->
+    <dimen name="assignment_empty_state_padding">32dp</dimen>
+    <dimen name="assignment_empty_state_icon_size">72dp</dimen>
+    <dimen name="assignment_empty_state_spacing">24dp</dimen>
+    <dimen name="assignment_empty_state_spacing_small">16dp</dimen>
+    <dimen name="assignment_empty_state_line_spacing">4dp</dimen>
+
+</resources>

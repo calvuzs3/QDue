@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.fragments.ConfirmationFragment;
 import net.calvuz.qdue.ui.features.assignment.wizard.fragments.CustomPatternSelectionFragment;
@@ -82,7 +83,7 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         Log.d(TAG, "Creating fragment for position: " + position +
-                ", pattern type: " + mWizardData.getPatternType());
+                ", pattern type: " + mWizardData.getPattern());
 
         switch (position) {
             case STEP_PATTERN_TYPE:
@@ -121,7 +122,7 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
 
     @NonNull
     private Fragment createSelectionFragment() {
-        AssignmentWizardData.PatternType patternType = mWizardData.getPatternType();
+        Pattern patternType = mWizardData.getPattern();
 
         if (patternType == null) {
             Log.w(TAG, "Pattern type not selected, defaulting to team selection fragment");
@@ -181,8 +182,8 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
      * Notify adapter that pattern type has changed.
      * This may require recreating Step 1 fragment with different type.
      */
-    public void notifyPatternTypeChanged() {
-        Log.d(TAG, "Pattern type changed to: " + mWizardData.getPatternType() +
+    public void notifyPatternChanged() {
+        Log.d(TAG, "Pattern type changed to: " + mWizardData.getPattern() +
                 ", clearing selection fragments");
 
         // Clear cached selection fragments since pattern type determines which one to use
@@ -247,10 +248,10 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
             case STEP_PATTERN_TYPE:
                 return mPatternTypeFragment != null;
             case STEP_SELECTION:
-                AssignmentWizardData.PatternType patternType = mWizardData.getPatternType();
-                if (patternType == AssignmentWizardData.PatternType.QUATTRODUE) {
+                Pattern patternType = mWizardData.getPattern();
+                if (patternType == Pattern.QUATTRODUE) {
                     return mTeamSelectionFragment != null;
-                } else if (patternType == AssignmentWizardData.PatternType.CUSTOM) {
+                } else if (patternType == Pattern.CUSTOM) {
                     return mCustomPatternSelectionFragment != null;
                 } else {
                     return false;
@@ -279,10 +280,10 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
             case STEP_PATTERN_TYPE:
                 return "Pattern Type";
             case STEP_SELECTION:
-                AssignmentWizardData.PatternType patternType = mWizardData.getPatternType();
-                if (patternType == AssignmentWizardData.PatternType.QUATTRODUE) {
+                Pattern patternType = mWizardData.getPattern();
+                if (patternType == Pattern.QUATTRODUE) {
                     return "Team Selection";
-                } else if (patternType == AssignmentWizardData.PatternType.CUSTOM) {
+                } else if (patternType == Pattern.CUSTOM) {
                     return "Custom Pattern";
                 } else {
                     return "Selection";
@@ -330,7 +331,7 @@ public class PatternAssignmentWizardAdapter extends FragmentStateAdapter {
     public String getDebugInfo() {
         StringBuilder debug = new StringBuilder();
         debug.append("PatternAssignmentWizardAdapter Debug Info:\n");
-        debug.append("  Pattern Type: ").append(mWizardData.getPatternType()).append("\n");
+        debug.append("  Pattern Type: ").append(mWizardData.getPattern()).append( "\n");
         debug.append("  Total Steps: ").append(getItemCount()).append("\n");
         debug.append("  Fragment States:\n");
         debug.append("    PatternType: ").append(mPatternTypeFragment != null ? "Created" : "Not Created").append("\n");

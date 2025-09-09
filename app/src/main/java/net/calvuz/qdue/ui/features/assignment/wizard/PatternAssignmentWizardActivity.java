@@ -29,13 +29,13 @@ import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
 import net.calvuz.qdue.domain.calendar.models.UserTeamAssignment;
 import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.adapters.PatternAssignmentWizardAdapter;
 import net.calvuz.qdue.ui.features.assignment.wizard.di.AssignmentWizardModule;
 import net.calvuz.qdue.ui.features.assignment.wizard.interfaces.AssignmentWizardInterface;
 import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData;
-import net.calvuz.qdue.preferences.QDuePreferences;
 
 import java.time.LocalDate;
 
@@ -266,7 +266,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
                             tab.setContentDescription( getString( R.string.wizard_step_pattern_type ) );
                             break;
                         case 1: // Team/Custom Selection
-                            tab.setIcon( mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE ?
+                            tab.setIcon( mWizardData.getPattern() == Pattern.QUATTRODUE ?
                                     R.drawable.ic_rounded_group_24 : R.drawable.ic_rounded_edit_24 );
                             tab.setContentDescription( getString( R.string.wizard_step_selection ) );
                             break;
@@ -335,9 +335,9 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     private boolean validateCurrentStep() {
         switch (mCurrentStep) {
             case 0: // Pattern Type Selection
-                return mWizardData.getPatternType() != null;
+                return mWizardData.getPattern() != null;
             case 1: // Team/Custom Selection
-                if (mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+                if (mWizardData.getPattern() == Pattern.QUATTRODUE) {
                     return mWizardData.getSelectedTeam() != null;
                 } else {
                     return mWizardData.getSelectedCustomPattern() != null;
@@ -379,7 +379,7 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
         mBinding.progressBar.setVisibility( View.VISIBLE );
         mBinding.btnNext.setEnabled( false );
 
-        if (mWizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (mWizardData.getPattern() == Pattern.QUATTRODUE) {
             createQuattroDueAssignment();
         } else {
             createCustomPatternAssignment();
@@ -447,19 +447,19 @@ public class PatternAssignmentWizardActivity extends AppCompatActivity implement
     // ==================== ASSIGNMENT WIZARD INTERFACE ====================
 
     @Override
-    public void onPatternTypeSelected(@NonNull AssignmentWizardData.PatternType patternType) {
-        mWizardData.setPatternType( patternType );
+    public void onPatternSelected(@NonNull Pattern pattern) {
+        mWizardData.setPattern( pattern );
 
         // Reset selections when pattern type changes
         mWizardData.setSelectedTeam( null );
         mWizardData.setSelectedCustomPattern( null );
 
         // Update adapter and UI
-        mWizardAdapter.notifyPatternTypeChanged();
+        mWizardAdapter.notifyPatternChanged();
         updateTabIndicators();
         updateUI();
 
-        Log.d( TAG, "Pattern type selected: " + patternType );
+        Log.d( TAG, "Pattern type selected: " + pattern );
     }
 
     @Override

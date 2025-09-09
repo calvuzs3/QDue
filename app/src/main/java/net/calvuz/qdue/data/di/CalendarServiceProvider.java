@@ -2,6 +2,7 @@ package net.calvuz.qdue.data.di;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
@@ -62,7 +63,8 @@ import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
  *   <li><strong>Resource Cleanup</strong>: Proper disposal and resource management</li>
  * </ul>
  */
-public interface CalendarServiceProvider {
+public interface CalendarServiceProvider
+{
 
     // ==================== SERVICES ====================
 
@@ -73,6 +75,14 @@ public interface CalendarServiceProvider {
      */
     @NonNull
     UserWorkScheduleService getUserWorkScheduleService();
+
+    /**
+     * Get UserSchedulePatternService instance.
+     *
+     * @return UserSchedulePatternService instance
+     */
+    @NonNull
+    UserSchedulePatternService getUserSchedulePatternService();
 
     /**
      * Get CreatePatternAssignmentUseCase for assignment creation operations.
@@ -365,7 +375,8 @@ public interface CalendarServiceProvider {
     record CalendarServiceStatus(boolean servicesReady, boolean repositoriesInitialized,
                                  boolean enginesInitialized, boolean useCasesInitialized,
                                  long initializationTime, int activeRepositories, int activeEngines,
-                                 int activeUseCases, String statusMessage) {
+                                 int activeUseCases, String statusMessage)
+    {
 
         @NonNull
         @Override

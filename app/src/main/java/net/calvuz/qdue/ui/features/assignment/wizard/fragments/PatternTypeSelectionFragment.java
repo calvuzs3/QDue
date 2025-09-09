@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.databinding.FragmentPatternTypeSelectionBinding;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.interfaces.AssignmentWizardInterface;
 import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData;
@@ -35,10 +36,6 @@ import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData
  *   <li><strong>Visual Indicators</strong>: Icons and formatting to distinguish options</li>
  *   <li><strong>Immediate Feedback</strong>: Selection immediately updates wizard state</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Pattern Type Selection Fragment
- * @since Clean Architecture Phase 2
  */
 public class PatternTypeSelectionFragment extends Fragment {
 
@@ -127,32 +124,32 @@ public class PatternTypeSelectionFragment extends Fragment {
 
     private void setupClickListeners() {
         // QuattroDue pattern selection
-        mBinding.cardQuattroDue.setOnClickListener(v -> selectPatternType(AssignmentWizardData.PatternType.QUATTRODUE) );
+        mBinding.cardQuattroDue.setOnClickListener(v -> selectPattern( Pattern.QUATTRODUE) );
 
         // Custom pattern selection
-        mBinding.cardCustom.setOnClickListener(v -> selectPatternType(AssignmentWizardData.PatternType.CUSTOM) );
+        mBinding.cardCustom.setOnClickListener(v -> selectPattern( Pattern.CUSTOM) );
 
         // Radio button clicks (delegate to card clicks)
-        mBinding.radioQuattroDue.setOnClickListener(v -> selectPatternType(AssignmentWizardData.PatternType.QUATTRODUE) );
+        mBinding.radioQuattroDue.setOnClickListener(v -> selectPattern( Pattern.QUATTRODUE) );
 
-        mBinding.radioCustom.setOnClickListener(v -> selectPatternType(AssignmentWizardData.PatternType.CUSTOM) );
+        mBinding.radioCustom.setOnClickListener(v -> selectPattern( Pattern.CUSTOM) );
     }
 
     // ==================== PATTERN SELECTION ====================
 
-    private void selectPatternType(AssignmentWizardData.PatternType patternType) {
-        Log.d(TAG, "Pattern type selected: " + patternType);
+    private void selectPattern(Pattern pattern) {
+        Log.d(TAG, "Pattern type selected: " + pattern);
 
         // Update radio button states
-        mBinding.radioQuattroDue.setChecked(patternType == AssignmentWizardData.PatternType.QUATTRODUE);
-        mBinding.radioCustom.setChecked(patternType == AssignmentWizardData.PatternType.CUSTOM);
+        mBinding.radioQuattroDue.setChecked(pattern == Pattern.QUATTRODUE);
+        mBinding.radioCustom.setChecked(pattern == Pattern.CUSTOM);
 
         // Update card selection states
-        mBinding.cardQuattroDue.setChecked(patternType == AssignmentWizardData.PatternType.QUATTRODUE);
-        mBinding.cardCustom.setChecked(patternType == AssignmentWizardData.PatternType.CUSTOM);
+        mBinding.cardQuattroDue.setChecked(pattern == Pattern.QUATTRODUE);
+        mBinding.cardCustom.setChecked(pattern == Pattern.CUSTOM);
 
         // Notify wizard interface
-        mWizardInterface.onPatternTypeSelected(patternType);
+        mWizardInterface.onPatternSelected(pattern);
 
         // Provide haptic feedback
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
@@ -168,11 +165,11 @@ public class PatternTypeSelectionFragment extends Fragment {
         if (mWizardInterface == null) return;
 
         AssignmentWizardData wizardData = mWizardInterface.getWizardData();
-        AssignmentWizardData.PatternType selectedType = wizardData.getPatternType();
+        Pattern selectedType = wizardData.getPattern();
 
         if (selectedType != null) {
             Log.d(TAG, "Restoring pattern type selection: " + selectedType);
-            selectPatternType(selectedType);
+            selectPattern( selectedType);
         }
     }
 
@@ -182,12 +179,12 @@ public class PatternTypeSelectionFragment extends Fragment {
         AssignmentWizardData wizardData = mWizardInterface.getWizardData();
 
         // Update selection states based on current wizard data
-        AssignmentWizardData.PatternType currentSelection = wizardData.getPatternType();
+        Pattern currentSelection = wizardData.getPattern();
 
-        mBinding.radioQuattroDue.setChecked(currentSelection == AssignmentWizardData.PatternType.QUATTRODUE);
-        mBinding.radioCustom.setChecked(currentSelection == AssignmentWizardData.PatternType.CUSTOM);
-        mBinding.cardQuattroDue.setChecked(currentSelection == AssignmentWizardData.PatternType.QUATTRODUE);
-        mBinding.cardCustom.setChecked(currentSelection == AssignmentWizardData.PatternType.CUSTOM);
+        mBinding.radioQuattroDue.setChecked(currentSelection == Pattern.QUATTRODUE);
+        mBinding.radioCustom.setChecked(currentSelection == Pattern.CUSTOM);
+        mBinding.cardQuattroDue.setChecked(currentSelection == Pattern.QUATTRODUE);
+        mBinding.cardCustom.setChecked(currentSelection == Pattern.CUSTOM);
 
         // Update UI based on editing mode
         if (wizardData.isEditingMode()) {
@@ -206,7 +203,7 @@ public class PatternTypeSelectionFragment extends Fragment {
      * @return true if pattern type is selected
      */
     public boolean isValid() {
-        return mWizardInterface != null && mWizardInterface.getWizardData().hasPatternTypeSelected();
+        return mWizardInterface != null && mWizardInterface.getWizardData().hasPatternSelected();
     }
 
     /**
@@ -224,13 +221,13 @@ public class PatternTypeSelectionFragment extends Fragment {
     // ==================== PUBLIC INTERFACE ====================
 
     /**
-     * Programmatically select pattern type.
+     * Programmatically select pattern.
      * Used for testing or external navigation.
      *
-     * @param patternType Pattern type to select
+     * @param pattern Pattern type to select
      */
-    public void setPatternType(@NonNull AssignmentWizardData.PatternType patternType) {
-        selectPatternType(patternType);
+    public void setPatternType(@NonNull Pattern pattern) {
+        selectPattern( pattern);
     }
 
     /**
@@ -238,9 +235,9 @@ public class PatternTypeSelectionFragment extends Fragment {
      * @return Selected pattern type or null
      */
     @Nullable
-    public AssignmentWizardData.PatternType getSelectedPatternType() {
+    public Pattern getSelectedPattern() {
         if (mWizardInterface != null) {
-            return mWizardInterface.getWizardData().getPatternType();
+            return mWizardInterface.getWizardData().getPattern();
         }
         return null;
     }

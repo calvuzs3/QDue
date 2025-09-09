@@ -11,8 +11,8 @@ import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
-import net.calvuz.qdue.ui.features.schedulepattern.services.UserSchedulePatternService;
-import net.calvuz.qdue.ui.features.schedulepattern.services.impl.UserSchedulePatternServiceImpl;
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
+import net.calvuz.qdue.data.services.impl.UserSchedulePatternServiceImpl;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**
@@ -44,10 +44,6 @@ import net.calvuz.qdue.ui.core.common.utils.Log;
  * mShiftRepository = module.getShiftRepository();
  * mPatternService = module.getUserSchedulePatternService();
  * </pre>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Initial Implementation
- * @since Clean Architecture Phase 2
  */
 public class SchedulePatternModule {
 

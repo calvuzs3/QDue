@@ -3,17 +3,15 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.domain.common.enums.Status;
 
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 
-public class UserTeamAssignment
+public class UserPatternAssignment
 {
-
-    private static final String TAG = "UserTeamAssignment";
-
     // ==================== IDENTIFICATION ====================
 
     private final String id;
@@ -24,7 +22,7 @@ public class UserTeamAssignment
     // ==================== CORE ASSIGNMENT DATA ====================
 
     private final String userID;                    // User being assigned
-    private final String teamID;                    // Team assignment
+    private final Pattern pattern;                    // Team assignment
 
     // ==================== TIME BOUNDARIES ====================
 
@@ -58,13 +56,16 @@ public class UserTeamAssignment
 
     // ==================== CONSTRUCTOR ====================
 
-    private UserTeamAssignment(@NonNull Builder builder) {
+    private UserPatternAssignment(
+            @NonNull UserPatternAssignment.Builder builder
+    ) {
         this.id = builder.getId() != null ? builder.getId() : UUID.randomUUID().toString();
         this.title = builder.getTitle();
         this.description = builder.getDescription();
         this.notes = builder.getNotes();
-        this.userID = Objects.requireNonNull( builder.getUserID(), "User ID cannot be null" );
-        this.teamID = Objects.requireNonNull( builder.getTeamID(), "Team ID cannot be null" );
+        this.userID = Objects.requireNonNull( builder.getAssignedByUserID(),
+                                              "User ID cannot be null" );
+        this.pattern = Objects.requireNonNull( builder.getPattern(), "Pattern cannot be null" );
         this.startDate = Objects.requireNonNull( builder.getStartDate(),
                                                  "Start date cannot be null" );
         this.endDate = builder.getEndDate();
@@ -72,7 +73,7 @@ public class UserTeamAssignment
         this.assignedByUserId = builder.getAssignedByUserID();
         this.active = builder.isActive();
         this.createdAt = builder.getCreatedAt() > 0 ? builder.getCreatedAt() : System.currentTimeMillis();
-        this.updatedAt = builder.getUpdatedAt() > 0 ? builder.getUpdatedAt() : System.currentTimeMillis();
+        this.updatedAt = builder.getCreatedAt() > 0 ? builder.getUpdatedAt() : System.currentTimeMillis();
         this.createdByUserId = builder.getCreatedByUserId();
         this.lastModifiedByUserId = builder.getLastModifiedByUserId();
     }
@@ -99,8 +100,8 @@ public class UserTeamAssignment
         return userID;
     }
 
-    public String getTeamID() {
-        return teamID;
+    public Pattern getPattern() {
+        return pattern;
     }
 
     public LocalDate getStartDate() {
@@ -142,9 +143,8 @@ public class UserTeamAssignment
     // ==================== BUILDER ====================
 
     @NonNull
-    public static UserTeamAssignment.Builder builder(
-    ) {
-        return new UserTeamAssignment.Builder();
+    public static UserPatternAssignment.Builder builder() {
+        return new UserPatternAssignment.Builder();
     }
 
     public static class Builder
@@ -154,7 +154,7 @@ public class UserTeamAssignment
         private String description;
         private String notes;
         private String userID;
-        private String teamID;
+        private Pattern pattern;
         private LocalDate startDate;
         private LocalDate endDate;
         private Status status;
@@ -166,25 +166,27 @@ public class UserTeamAssignment
         private String lastModifiedByUserId;
 
         @NonNull
-        public UserTeamAssignment.Builder copyFrom(@NonNull UserTeamAssignment source) {
-            this.id = source.id;
-            this.title = source.title;
-            this.description = source.description;
-            this.notes = source.notes;
-            this.userID = source.userID;
-            this.teamID = source.teamID;
-            this.startDate = source.startDate;
-            this.endDate = source.endDate;
-            this.status = source.status;
-            this.assignedByUserID = source.assignedByUserId;
-            this.active = source.active;
-            this.createdAt = source.createdAt;
-            this.updatedAt = source.updatedAt;
-            this.createdByUserId = source.createdByUserId;
-            this.lastModifiedByUserId = source.lastModifiedByUserId;
+        public UserPatternAssignment.Builder copyFrom(@NonNull UserPatternAssignment source) {
+            this.id = source.getId();
+            this.title = source.getTitle();
+            this.description = source.getDescription();
+            this.notes = source.getNotes();
+            this.userID = source.getUserID();
+            this.pattern = source.getPattern();
+            this.startDate = source.getStartDate();
+            this.endDate = source.getEndDate();
+            this.status = source.getStatus();
+            this.assignedByUserID = source.getAssignedByUserId();
+            this.active = source.isActive();
+            this.createdAt = source.getCreatedAt();
+            this.updatedAt = source.getUpdatedAt();
+            this.createdByUserId = source.getCreatedByUserId();
+            this.lastModifiedByUserId = source.getLastModifiedByUserId();
 
             return this;
         }
+
+        // ==================== GETTERS ====================
 
         public String getId() {
             return id;
@@ -206,8 +208,8 @@ public class UserTeamAssignment
             return userID;
         }
 
-        public String getTeamID() {
-            return teamID;
+        public Pattern getPattern() {
+            return pattern;
         }
 
         public LocalDate getStartDate() {
@@ -246,104 +248,106 @@ public class UserTeamAssignment
             return lastModifiedByUserId;
         }
 
+        // ==================== BUILDER CHAINS METHODS ====================
+
         @NonNull
-        public UserTeamAssignment.Builder id(@Nullable String id) {
+        public UserPatternAssignment.Builder id(@Nullable String id) {
             this.id = id;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder title(@Nullable String title) {
+        public UserPatternAssignment.Builder title(@Nullable String title) {
             this.title = title;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder description(@Nullable String description) {
+        public UserPatternAssignment.Builder description(@Nullable String description) {
             this.description = description;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder notes(@Nullable String notes) {
+        public UserPatternAssignment.Builder notes(@Nullable String notes) {
             this.notes = notes;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder userID(@NonNull String userId) {
+        public UserPatternAssignment.Builder userID(@NonNull String userId) {
             this.userID = userId;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder teamID(@NonNull String teamId) {
-            this.teamID = teamId;
+        public UserPatternAssignment.Builder pattern(@NonNull Pattern pattern) {
+            this.pattern = pattern;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder startDate(@NonNull LocalDate startDate) {
+        public UserPatternAssignment.Builder startDate(@NonNull LocalDate startDate) {
             this.startDate = startDate;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder endDate(@Nullable LocalDate endDate) {
+        public UserPatternAssignment.Builder endDate(@Nullable LocalDate endDate) {
             this.endDate = endDate;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder assignedByUserID(@Nullable String assignedByUserId) {
+        public UserPatternAssignment.Builder assignedByUserID(@Nullable String assignedByUserId) {
             this.assignedByUserID = assignedByUserId;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder status(@NonNull Status status) {
+        public UserPatternAssignment.Builder status(@NonNull Status status) {
             this.status = status;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder active(boolean active) {
+        public UserPatternAssignment.Builder active(boolean active) {
             this.active = active;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder createdAt(long createdAt) {
+        public UserPatternAssignment.Builder createdAt(long createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder updatedAt(long updatedAt) {
+        public UserPatternAssignment.Builder updatedAt(long updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder createdByUserId(@Nullable String createdByUserId) {
+        public UserPatternAssignment.Builder createdByUserId(@Nullable String createdByUserId) {
             this.createdByUserId = createdByUserId;
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment.Builder lastModifiedByUserId(@Nullable String lastModifiedByUserId) {
+        public UserPatternAssignment.Builder lastModifiedByUserId(@Nullable String lastModifiedByUserId) {
             this.lastModifiedByUserId = lastModifiedByUserId;
             return this;
         }
 
-        public UserTeamAssignment.Builder computeStatus() {
+        public UserPatternAssignment.Builder computeStatus() {
             this.status = Status.computeStatus( this.startDate, this.endDate, this.active );
             return this;
         }
 
         @NonNull
-        public UserTeamAssignment build() {
-            return new UserTeamAssignment( this );
+        public UserPatternAssignment build() {
+            return new UserPatternAssignment( this );
         }
     }
 
@@ -353,23 +357,28 @@ public class UserTeamAssignment
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserTeamAssignment that = (UserTeamAssignment) o;
+        UserPatternAssignment that = (UserPatternAssignment) o;
         return Objects.equals( id, that.id );
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode(
+
+    ) {
         return Objects.hash( id );
     }
 
     @Override
     @NonNull
-    public String toString() {
-        return "UserTeamAssignment{" +
-                "id='" + id + '\'' +
-                ", title='" + title + '\'' +
-                ", userID=" + userID +
-                ", teamID='" + teamID + '\'' +
+    public String toString(
+
+    ) {
+        return "PatternAssignment{" +
+                "id='" + getId() + '\'' +
+                ", title='" + getTitle() + '\'' +
+                ", userID=" + getUserID() +
+                ", pattern='" + getPattern().name() + '\'' +
                 '}';
     }
+
 }

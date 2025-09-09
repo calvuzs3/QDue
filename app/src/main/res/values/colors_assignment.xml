@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Status Colors - Active Assignment -->
+    <color name="status_active_background">#E8F5E8</color>        <!-- Light green background -->
+    <color name="status_active_text">#1B5E20</color>              <!-- Dark green text -->
+    <color name="status_active_border">#4CAF50</color>            <!-- Green border -->
+
+    <!-- Status Colors - Pending Assignment -->
+    <color name="status_pending_background">#E3F2FD</color>       <!-- Light blue background -->
+    <color name="status_pending_text">#0D47A1</color>             <!-- Dark blue text -->
+    <color name="status_pending_border">#2196F3</color>           <!-- Blue border -->
+
+    <!-- Status Colors - Expired Assignment -->
+    <color name="status_expired_background">#F5F5F5</color>       <!-- Light gray background -->
+    <color name="status_expired_text">#424242</color>             <!-- Dark gray text -->
+    <color name="status_expired_border">#9E9E9E</color>           <!-- Gray border -->
+
+    <!-- Status Colors - Cancelled Assignment -->
+    <color name="status_cancelled_background">#FFEBEE</color>     <!-- Light red background -->
+    <color name="status_cancelled_text">#B71C1C</color>           <!-- Dark red text -->
+    <color name="status_cancelled_border">#F44336</color>         <!-- Red border -->
+
+    <!-- Status Colors - Unknown/Default -->
+    <color name="status_unknown_background">#FFF3E0</color>       <!-- Light orange background -->
+    <color name="status_unknown_text">#E65100</color>             <!-- Dark orange text -->
+    <color name="status_unknown_border">#FF9800</color>           <!-- Orange border -->
+
+    <!-- Assignment Card Colors -->
+    <color name="assignment_card_background">?attr/colorSurface</color>
+    <color name="assignment_card_elevation_overlay">?attr/colorSurfaceVariant</color>
+    <color name="assignment_card_ripple">?attr/colorPrimaryVariant</color>
+
+    <!-- Empty State Colors -->
+    <color name="assignment_empty_state_icon">#9E9E9E</color>     <!-- Medium gray -->
+    <color name="assignment_empty_state_text">#757575</color>     <!-- Medium gray text -->
+
+    <!-- Action Button Colors -->
+    <color name="assignment_edit_button">?attr/colorPrimary</color>
+    <color name="assignment_delete_button">?attr/colorError</color>
+    <color name="assignment_action_ripple">?attr/colorPrimaryVariant</color>
+
+</resources>

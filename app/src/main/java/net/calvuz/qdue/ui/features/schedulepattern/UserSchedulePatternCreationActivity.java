@@ -40,7 +40,7 @@ import net.calvuz.qdue.ui.features.schedulepattern.adapters.ShiftSelectionAdapte
 import net.calvuz.qdue.ui.features.schedulepattern.models.PatternDay;
 import net.calvuz.qdue.ui.features.schedulepattern.di.SchedulePatternModule;
 import net.calvuz.qdue.ui.core.common.utils.Log;
-import net.calvuz.qdue.ui.features.schedulepattern.services.UserSchedulePatternService;
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

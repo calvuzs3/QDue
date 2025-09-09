@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
 import net.calvuz.qdue.domain.calendar.models.Team;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 
 import java.time.LocalDate;
@@ -40,50 +41,8 @@ import java.time.LocalDate;
  * @version 1.0.0 - Assignment Wizard State Management
  * @since Clean Architecture Phase 2
  */
-public class AssignmentWizardData {
-
-    // ==================== PATTERN TYPE ENUMERATION ====================
-
-    /**
-     * Available pattern types for assignment creation.
-     */
-    public enum PatternType {
-        QUATTRODUE( "quattrodue", "QuattroDue Standard Pattern" ),
-        CUSTOM( "custom", "Custom User Pattern" );
-
-        private final String key;
-        private final String displayName;
-
-        PatternType(String key, String displayName) {
-            this.key = key;
-            this.displayName = displayName;
-        }
-
-        @NonNull
-        public String getKey() {
-            return key;
-        }
-
-        @NonNull
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        /**
-         * Check if this pattern type requires team selection.
-         */
-        public boolean requiresTeamSelection() {
-            return this == QUATTRODUE;
-        }
-
-        /**
-         * Check if this pattern type requires custom pattern selection.
-         */
-        public boolean requiresCustomPatternSelection() {
-            return this == CUSTOM;
-        }
-    }
-
+public class AssignmentWizardData 
+{
     // ==================== CORE WIZARD STATE ====================
 
     // User identification
@@ -92,7 +51,7 @@ public class AssignmentWizardData {
     private String editingAssignmentId = null;
 
     // Pattern selection state
-    private PatternType patternType = null; //PatternType.QUATTRODUE;
+    private Pattern pattern = null;
 
     // Team selection
     private Team selectedTeam = null;
@@ -158,18 +117,18 @@ public class AssignmentWizardData {
     // ==================== PATTERN TYPE SELECTION ====================
 
     @Nullable
-    public PatternType getPatternType() {
-        return patternType;
+    public Pattern getPattern() {
+        return pattern;
     }
 
-    public void setPatternType(@Nullable PatternType patternType) {
-        this.patternType = patternType;
+    public void setPattern(@Nullable Pattern pattern) {
+        this.pattern = pattern;
 
         // Clear dependent selections when pattern type changes
-        if (patternType != PatternType.QUATTRODUE) {
+        if (pattern != Pattern.QUATTRODUE) {
             selectedTeam = null;
         }
-        if (patternType != PatternType.CUSTOM) {
+        if (pattern != Pattern.CUSTOM) {
             selectedCustomPattern = null;
         }
     }
@@ -177,8 +136,8 @@ public class AssignmentWizardData {
     /**
      * Check if pattern type has been selected.
      */
-    public boolean hasPatternTypeSelected() {
-        return patternType != null;
+    public boolean hasPatternSelected() {
+        return pattern != null;
     }
 
     // ==================== QUATTRODUE TEAM SELECTION ====================
@@ -196,7 +155,7 @@ public class AssignmentWizardData {
      * Check if team selection is complete (for QuattroDue patterns).
      */
     public boolean hasTeamSelected() {
-        return patternType != PatternType.QUATTRODUE || selectedTeam != null;
+        return pattern != Pattern.QUATTRODUE || selectedTeam != null;
     }
 
     // ==================== CUSTOM PATTERN SELECTION ====================
@@ -214,7 +173,7 @@ public class AssignmentWizardData {
      * Check if custom pattern selection is complete.
      */
     public boolean hasCustomPatternSelected() {
-        return patternType != PatternType.CUSTOM || selectedCustomPattern != null;
+        return pattern != Pattern.CUSTOM || selectedCustomPattern != null;
     }
 
     // ==================== DATE AND CYCLE POSITION ====================
@@ -269,7 +228,7 @@ public class AssignmentWizardData {
      */
     public boolean isStep1Complete() {
 
-        return hasPatternTypeSelected();
+        return hasPatternSelected();
     }
 
     /**
@@ -278,7 +237,7 @@ public class AssignmentWizardData {
     public boolean isStep2Complete() {
         if (!isStep1Complete()) return false;
 
-        return switch (patternType) {
+        return switch (pattern) {
             case QUATTRODUE -> hasTeamSelected();
             case CUSTOM -> hasCustomPatternSelected();
             default -> false;
@@ -326,15 +285,15 @@ public class AssignmentWizardData {
             return "User ID cannot be empty";
         }
 
-        if (!hasPatternTypeSelected()) {
+        if (!hasPatternSelected()) {
             return "Pattern type must be selected";
         }
 
-        if (patternType == PatternType.QUATTRODUE && !hasTeamSelected()) {
+        if (pattern == Pattern.QUATTRODUE && !hasTeamSelected()) {
             return "Team must be selected for QuattroDue patterns";
         }
 
-        if (patternType == PatternType.CUSTOM && !hasCustomPatternSelected()) {
+        if (pattern == Pattern.CUSTOM && !hasCustomPatternSelected()) {
             return "Custom pattern must be selected";
         }
 
@@ -346,7 +305,7 @@ public class AssignmentWizardData {
             return "Assignment date cannot be null";
         }
 
-        if (patternType == PatternType.QUATTRODUE && (cycleDayPosition < 1 || cycleDayPosition > 18)) {
+        if (pattern == Pattern.QUATTRODUE && (cycleDayPosition < 1 || cycleDayPosition > 18)) {
             return "QuattroDue cycle position must be between 1 and 18";
         }
 
@@ -373,12 +332,12 @@ public class AssignmentWizardData {
 
         StringBuilder summary = new StringBuilder();
 
-        summary.append( "Pattern: " ).append( patternType.getDisplayName() );
+        summary.append( "Pattern: " ).append( pattern.getDisplayName() );
 
-        if (patternType == PatternType.QUATTRODUE && selectedTeam != null) {
+        if (pattern == Pattern.QUATTRODUE && selectedTeam != null) {
             summary.append( "\nTeam: " ).append( selectedTeam.getName() );
             summary.append( " (Offset: " ).append( selectedTeam.getQdueOffset() ).append( ")" );
-        } else if (patternType == PatternType.CUSTOM && selectedCustomPattern != null) {
+        } else if (pattern == Pattern.CUSTOM && selectedCustomPattern != null) {
             summary.append( "\nCustom Pattern: " ).append( selectedCustomPattern.getName() );
         }
 
@@ -395,8 +354,8 @@ public class AssignmentWizardData {
      * Get pattern type display name safely.
      */
     @NonNull
-    public String getPatternTypeDisplayName() {
-        return patternType != null ? patternType.getDisplayName() : "Not Selected";
+    public String getPatternDisplayName() {
+        return pattern != null ? pattern.getDisplayName() : "Not Selected";
     }
 
     // ==================== RESET METHODS ====================
@@ -405,7 +364,7 @@ public class AssignmentWizardData {
      * Reset all selections (keep user info).
      */
     public void resetSelections() {
-        patternType = null;
+        pattern = null;
         selectedTeam = null;
         selectedCustomPattern = null;
         assignmentDate = null;
@@ -431,7 +390,7 @@ public class AssignmentWizardData {
                 "userID=" + userId +
                 ", isFirstAssignment=" + isFirstAssignment +
                 ", editingAssignmentId='" + editingAssignmentId + '\'' +
-                ", patternType=" + patternType +
+                ", pattern=" + pattern +
                 ", selectedTeam=" + (selectedTeam != null ? selectedTeam.getName() : null) +
                 ", selectedCustomPattern=" + (selectedCustomPattern != null ? selectedCustomPattern.getName() : null) +
                 ", assignmentDate=" + assignmentDate +

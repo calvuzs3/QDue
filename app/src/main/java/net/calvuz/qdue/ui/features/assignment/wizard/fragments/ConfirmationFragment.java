@@ -14,6 +14,7 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.databinding.FragmentConfirmationBinding;
 import net.calvuz.qdue.domain.calendar.models.UserScheduleAssignment;
+import net.calvuz.qdue.domain.common.enums.Pattern;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.wizard.interfaces.AssignmentWizardInterface;
 import net.calvuz.qdue.ui.features.assignment.wizard.models.AssignmentWizardData;
@@ -171,7 +172,7 @@ public class ConfirmationFragment extends Fragment {
     }
 
     private void updatePatternTypeSummary(AssignmentWizardData wizardData) {
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (wizardData.getPattern() == Pattern.QUATTRODUE) {
             mBinding.txtPatternTypeSummary.setText(R.string.summary_pattern_quattrodue);
         } else {
             mBinding.txtPatternTypeSummary.setText(R.string.summary_pattern_custom);
@@ -179,7 +180,7 @@ public class ConfirmationFragment extends Fragment {
     }
 
     private void updateSelectionSummary(AssignmentWizardData wizardData) {
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (wizardData.getPattern() == Pattern.QUATTRODUE) {
             // Show team summary
             if (wizardData.getSelectedTeam() != null) {
                 String teamSummary = getString(R.string.summary_team_format,
@@ -308,7 +309,7 @@ public class ConfirmationFragment extends Fragment {
 
         Log.d(TAG, "Starting assignment creation process");
 
-        if (wizardData.getPatternType() == AssignmentWizardData.PatternType.QUATTRODUE) {
+        if (wizardData.getPattern() == Pattern.QUATTRODUE) {
             createQuattroDueAssignment(wizardData);
         } else {
             createCustomPatternAssignment(wizardData);

@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.schedulepattern.services.impl;
+package net.calvuz.qdue.data.services.impl;
 
 import android.content.Context;
 
@@ -17,9 +17,11 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
 import net.calvuz.qdue.domain.calendar.repositories.UserScheduleAssignmentRepository;
+import net.calvuz.qdue.domain.common.enums.Priority;
+import net.calvuz.qdue.domain.common.enums.Status;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.features.schedulepattern.models.PatternDay;
-import net.calvuz.qdue.ui.features.schedulepattern.services.UserSchedulePatternService;
+import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -73,10 +75,8 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
     // ==================== DEPENDENCIES ====================
 
     private final Context mContext;
-    private final ShiftRepository mShiftRepository;
     private final UserScheduleAssignmentRepository mUserScheduleAssignmentRepository;
     private final RecurrenceRuleRepository mRecurrenceRuleRepository;
-    private final LocaleManager mLocaleManager;
     private final ExecutorService mExecutorService;
 
     // ==================== CONSTRUCTOR ====================
@@ -96,10 +96,8 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
                                           @NonNull RecurrenceRuleRepository recurrenceRuleRepository,
                                           @NonNull LocaleManager localeManager) {
         this.mContext = context.getApplicationContext();
-        this.mShiftRepository = shiftRepository;
         this.mUserScheduleAssignmentRepository = userScheduleAssignmentRepository;
         this.mRecurrenceRuleRepository = recurrenceRuleRepository;
-        this.mLocaleManager = localeManager;
         this.mExecutorService = Executors.newFixedThreadPool( 3 );
 
         Log.d( TAG, "UserSchedulePatternServiceImpl initialized" );
@@ -881,5 +879,321 @@ public class UserSchedulePatternServiceImpl implements UserSchedulePatternServic
                 return OperationResult.failure( "Preview generation error: " + e.getMessage(), OperationResult.OperationType.CREATE );
             }
         }, mExecutorService );
+    }
+
+
+    // ==================== ASSIGNMENT MANAGEMENT - NEW IMPLEMENTATIONS ====================
+
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<List<UserScheduleAssignment>>> getUserAssignmentsList(@NonNull String userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Getting assignments list for QDueUser: " + userId);
+
+                 // Get all active assignments for the user
+                OperationResult<List<UserScheduleAssignment>> result =
+                        mUserScheduleAssignmentRepository.getUserActiveAssignments(userId).join();
+
+                if (result.isFailure()) {
+                    Log.w(TAG, "Failed to get user assignments: " + result.getErrorMessage());
+                    return result;
+                }
+
+                List<UserScheduleAssignment> assignments = result.getData();
+                if (assignments == null) {
+                    assignments = new ArrayList<>();
+                }
+
+                // Sort by start date descending (most recent/future first)
+                assignments.sort((a1, a2) -> a2.getStartDate().compareTo(a1.getStartDate()));
+
+                Log.d(TAG, "Found " + assignments.size() + " assignments for QDueUser " + userId);
+
+                return OperationResult.success(assignments, OperationResult.OperationType.READ);
+
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "Invalid userId format: " + userId, e);
+                return OperationResult.failure(
+                        "Invalid user ID format: " + userId,
+                        OperationResult.OperationType.READ
+                );
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting user assignments list for QDueUser " + userId, e);
+                return OperationResult.failure(
+                        "Failed to retrieve assignments: " + e.getMessage(),
+                        OperationResult.OperationType.READ
+                );
+            }
+        }, mExecutorService);
+    }
+
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<UserScheduleAssignment>> getUserAssignment(
+            @NonNull String assignmentId,
+            @NonNull String userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Getting assignment " + assignmentId + " for QDueUser " + userId);
+
+                // Get assignment by ID
+                OperationResult<UserScheduleAssignment> result =
+                        mUserScheduleAssignmentRepository.getUserScheduleAssignmentById(assignmentId).join();
+
+                if (result.isFailure()) {
+                    Log.w(TAG, "Assignment not found: " + assignmentId);
+                    return OperationResult.failure(
+                            "Assignment not found: " + assignmentId,
+                            OperationResult.OperationType.READ
+                    );
+                }
+
+                UserScheduleAssignment assignment = result.getData();
+                if (assignment == null) {
+                    return OperationResult.failure(
+                            "Assignment not found: " + assignmentId,
+                            OperationResult.OperationType.READ
+                    );
+                }
+
+                // Validate ownership - Convert Long userId from assignment to String for comparison
+                String assignmentUserId = String.valueOf(assignment.getUserId());
+                if (!userId.equals(assignmentUserId)) {
+                    Log.w(TAG, "QDueUser " + userId + " attempted to access assignment " + assignmentId +
+                            " owned by QDueUser " + assignmentUserId);
+                    return OperationResult.failure(
+                            "Access denied: Assignment belongs to different user",
+                            OperationResult.OperationType.READ
+                    );
+                }
+
+                Log.d(TAG, "Retrieved assignment " + assignmentId + " for QDueUser " + userId);
+                return OperationResult.success(assignment, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting assignment " + assignmentId + " for QDueUser " + userId, e);
+                return OperationResult.failure(
+                        "Failed to retrieve assignment: " + e.getMessage(),
+                        OperationResult.OperationType.READ
+                );
+            }
+        }, mExecutorService);
+    }
+
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<Boolean>> deleteUserAssignmentWithValidation(
+            @NonNull String assignmentId,
+            @NonNull String userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Deleting assignment " + assignmentId + " for QDueUser " + userId);
+
+                // First, get and validate the assignment
+                OperationResult<UserScheduleAssignment> getResult =
+                        getUserAssignment(assignmentId, userId).join();
+
+                if (getResult.isFailure()) {
+                    return OperationResult.failure(
+                            getResult.getErrorMessage(),
+                            OperationResult.OperationType.DELETE
+                    );
+                }
+
+                UserScheduleAssignment assignment = getResult.getData();
+                if (assignment == null) {
+                    return OperationResult.failure(
+                            "Assignment not found",
+                            OperationResult.OperationType.DELETE
+                    );
+                }
+
+                // Business rule validation for deletion
+                OperationResult<Void> validationResult = validateAssignmentDeletion(assignment);
+                if (validationResult.isFailure()) {
+                    return OperationResult.failure(
+                            validationResult.getErrorMessage(),
+                            OperationResult.OperationType.DELETE
+                    );
+                }
+
+                // Delete the assignment
+                OperationResult<Boolean> deleteResult =
+                        mUserScheduleAssignmentRepository.deleteUserScheduleAssignment(assignmentId).join();
+
+                if (deleteResult.isFailure()) {
+                    Log.e(TAG, "Failed to delete assignment: " + deleteResult.getErrorMessage());
+                    return deleteResult;
+                }
+
+                // Cleanup associated RecurrenceRule if not referenced elsewhere
+                cleanupOrphanedRecurrenceRule(assignment.getRecurrenceRuleId(), assignmentId);
+
+                Log.d(TAG, "Successfully deleted assignment " + assignmentId + " for QDueUser " + userId);
+                return OperationResult.success(true, OperationResult.OperationType.DELETE);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error deleting assignment " + assignmentId + " for QDueUser " + userId, e);
+                return OperationResult.failure(
+                        "Failed to delete assignment: " + e.getMessage(),
+                        OperationResult.OperationType.DELETE
+                );
+            }
+        }, mExecutorService);
+    }
+
+    @NonNull
+    @Override
+    public CompletableFuture<OperationResult<AssignmentStatistics>> getUserAssignmentStatistics(@NonNull String userId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Log.d(TAG, "Calculating assignment statistics for QDueUser: " + userId);
+
+                // Get all assignments for the user
+                OperationResult<List<UserScheduleAssignment>> assignmentsResult =
+                        getUserAssignmentsList(userId).join();
+
+                if (assignmentsResult.isFailure()) {
+                    return OperationResult.failure(
+                            "Failed to get assignments: " + assignmentsResult.getErrorMessage(),
+                            OperationResult.OperationType.READ
+                    );
+                }
+
+                List<UserScheduleAssignment> assignments = assignmentsResult.getData();
+                if (assignments == null) {
+                    assignments = new ArrayList<>();
+                }
+
+                // Calculate statistics
+                LocalDate today = LocalDate.now();
+                int totalAssignments = assignments.size();
+                int activeAssignments = 0;
+                int pendingAssignments = 0;
+                int expiredAssignments = 0;
+
+                LocalDate nextStartDate = null;
+                LocalDate nextEndDate = null;
+                String currentTeam = null;
+                boolean hasActiveAssignment = false;
+
+                for (UserScheduleAssignment assignment : assignments) {
+                    switch (assignment.getStatus()) {
+                        case ACTIVE:
+                            activeAssignments++;
+                            hasActiveAssignment = true;
+                            if (currentTeam == null) {
+                                currentTeam = assignment.getTeamName();
+                            }
+                            if (assignment.getEndDate() != null &&
+                                    (nextEndDate == null || assignment.getEndDate().isBefore(nextEndDate))) {
+                                nextEndDate = assignment.getEndDate();
+                            }
+                            break;
+                        case PENDING:
+                            pendingAssignments++;
+                            if (nextStartDate == null || assignment.getStartDate().isBefore(nextStartDate)) {
+                                nextStartDate = assignment.getStartDate();
+                            }
+                            break;
+                        case EXPIRED:
+                        case CANCELLED:
+                            expiredAssignments++;
+                            break;
+                    }
+                }
+
+                AssignmentStatistics statistics = new AssignmentStatistics(
+                        totalAssignments, activeAssignments, pendingAssignments, expiredAssignments,
+                        nextStartDate, nextEndDate, currentTeam, hasActiveAssignment
+                );
+
+                Log.d(TAG, "Calculated statistics for QDueUser " + userId + ": " +
+                        totalAssignments + " total, " + activeAssignments + " active");
+
+                return OperationResult.success(statistics, OperationResult.OperationType.READ);
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error calculating assignment statistics for QDueUser " + userId, e);
+                return OperationResult.failure(
+                        "Failed to calculate statistics: " + e.getMessage(),
+                        OperationResult.OperationType.READ
+                );
+            }
+        }, mExecutorService);
+    }
+
+    // ==================== HELPER METHODS FOR ASSIGNMENT MANAGEMENT ====================
+
+    /**
+     * Validate assignment deletion business rules.
+     *
+     * @param assignment Assignment to validate for deletion
+     * @return OperationResult with validation result
+     */
+    @NonNull
+    private OperationResult<Void> validateAssignmentDeletion(@NonNull UserScheduleAssignment assignment) {
+        LocalDate today = LocalDate.now();
+
+        // Rule 1: Cannot delete assignments that are currently active and critical
+        if (assignment.getStatus() == Status.ACTIVE) {
+            // Check if this is the only active assignment for the user
+            // For now, we allow deletion but warn the user (will be handled in UI)
+            Log.w(TAG, "Deleting currently active assignment: " + assignment.getId());
+        }
+
+        // Rule 2: Cannot delete assignments that started in the past and have generated schedules
+        if (assignment.getStartDate().isBefore(today)) {
+            // We still allow deletion but log a warning
+            // In a production system, you might want to prevent this or require admin approval
+            Log.w(TAG, "Deleting assignment that already started: " + assignment.getId());
+        }
+
+        // Rule 3: Check for high priority assignments
+        if (assignment.getPriority() == Priority.OVERRIDE) {
+            Log.w(TAG, "Deleting high priority assignment: " + assignment.getId());
+        }
+
+        // For now, all deletions are allowed but logged
+        // In future iterations, you can add stricter validation here
+        return OperationResult.success(null, OperationResult.OperationType.VALIDATION);
+    }
+
+    /**
+     * Cleanup orphaned RecurrenceRule if no other assignments reference it.
+     *
+     * @param recurrenceRuleId RecurrenceRule ID to check
+     * @param excludeAssignmentId Assignment ID to exclude from the check
+     */
+    private void cleanupOrphanedRecurrenceRule(@NonNull String recurrenceRuleId,
+                                               @NonNull String excludeAssignmentId) {
+        try {
+            // Check if any other assignments reference this RecurrenceRule
+            OperationResult<List<UserScheduleAssignment>> assignmentsResult =
+                    mUserScheduleAssignmentRepository.getAssignmentsByRecurrenceRule(recurrenceRuleId).join();
+
+            if (assignmentsResult.isSuccess()) {
+                List<UserScheduleAssignment> assignments = assignmentsResult.getData();
+                if (assignments != null) {
+                    // Filter out the assignment being deleted
+                    long count = assignments.stream()
+                            .filter(a -> !excludeAssignmentId.equals(a.getId()))
+                            .count();
+
+                    if (count == 0) {
+                        // No other assignments reference this rule, safe to delete
+                        mRecurrenceRuleRepository.deleteRecurrenceRule(recurrenceRuleId);
+                        Log.d(TAG, "Cleaned up orphaned RecurrenceRule: " + recurrenceRuleId);
+                    } else {
+                        Log.d(TAG, "RecurrenceRule " + recurrenceRuleId + " still referenced by " +
+                                count + " other assignments");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Error during RecurrenceRule cleanup: " + e.getMessage());
+            // Non-critical error, continue with deletion
+        }
     }
 }
