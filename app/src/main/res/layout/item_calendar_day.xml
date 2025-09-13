@@ -51,7 +51,7 @@
 
             <!-- Dot di base -->
             <TextView
-                android:id="@+id/v_events_dot"
+                android:id="@+id/v_swipecalendar_event_dot"
                 android:layout_width="@dimen/spacing_m"
                 android:layout_height="@dimen/spacing_m"
                 android:layout_gravity="top|end"

@@ -37,7 +37,7 @@
             app:popupTheme="@style/ThemeOverlay.Material3.Light"
             app:title="@string/debug_swipe_calendar_title"
             app:titleTextColor="?attr/colorOnPrimary"
-            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIcon="@android:drawable/menu_frame"
             app:navigationContentDescription="@string/navigation_back" />
 
     </com.google.android.material.appbar.AppBarLayout>

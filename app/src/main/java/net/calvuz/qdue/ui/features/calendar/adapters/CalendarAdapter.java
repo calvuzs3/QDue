@@ -17,10 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
 
-import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.EventType;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
@@ -30,7 +28,6 @@ import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
 import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.R;
 
@@ -623,7 +620,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             // Initialize all elements
             tvDayNumber = itemView.findViewById(R.id.tv_day_number);
             eventsContainer = itemView.findViewById(R.id.events_container);
-            vEventsDot = itemView.findViewById(R.id.v_events_dot);
+            vEventsDot = itemView.findViewById(R.id.v_swipecalendar_event_dot );
             tvEventsCount = itemView.findViewById(R.id.tv_events_count);
             tvShiftName = itemView.findViewById(R.id.tv_shift_name);
             vShiftIndicator = itemView.findViewById(R.id.v_shift_indicator);

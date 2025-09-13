@@ -3,6 +3,7 @@ package net.calvuz.qdue.domain.common.builders;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
+import net.calvuz.qdue.domain.common.i18n.Localizable;
 
 /**
  * LocalizableBuilder - Base builder class for localizable domain models.
@@ -35,8 +36,8 @@ public abstract class LocalizableBuilder<T, B extends LocalizableBuilder<T, B>> 
      */
     @NonNull
     public B copyLocalizableFrom(@NonNull T source) {
-        if (source instanceof net.calvuz.qdue.domain.common.i18n.Localizable) {
-            this.mLocalizer = ((net.calvuz.qdue.domain.common.i18n.Localizable) source).getLocalizer();
+        if (source instanceof Localizable) {
+            this.mLocalizer = ((Localizable) source).getLocalizer();
         }
         return self();
     }

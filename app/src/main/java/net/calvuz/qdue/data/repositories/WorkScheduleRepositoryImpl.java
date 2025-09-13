@@ -112,10 +112,12 @@ public class WorkScheduleRepositoryImpl implements WorkScheduleRepository
             try {
                 Map<LocalDate, WorkScheduleDay> scheduleMap = new HashMap<>();
 
-                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays(
-                        1 )) {
-                    OperationResult<WorkScheduleDay> daySchedule = getUserWorkScheduleForDate( date,
-                                                                                               userId ).join();
+                for (LocalDate date = startDate; !date.isAfter( endDate ); date = date.plusDays( 1 )
+                ) {
+                    OperationResult<WorkScheduleDay> daySchedule = getUserWorkScheduleForDate(
+                            date,
+                            userId
+                    ).join();
 
                     if (daySchedule.isSuccess()) {
                         scheduleMap.put( date, daySchedule.getData() );

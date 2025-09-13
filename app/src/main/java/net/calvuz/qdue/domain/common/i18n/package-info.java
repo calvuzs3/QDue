@@ -276,6 +276,5 @@
  * @see net.calvuz.qdue.domain.common.i18n.DomainLocalizer
  * @see net.calvuz.qdue.core.common.i18n.LocaleManager
  * @see net.calvuz.qdue.core.common.i18n.impl.DomainLocalizerImpl
- * @see net.calvuz.qdue.core.di.DomainServiceProvider
  */
 package net.calvuz.qdue.domain.common.i18n;

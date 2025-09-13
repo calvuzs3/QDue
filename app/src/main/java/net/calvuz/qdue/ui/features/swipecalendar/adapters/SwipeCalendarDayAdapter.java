@@ -1,7 +1,6 @@
 package net.calvuz.qdue.ui.features.swipecalendar.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,8 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+
+import org.w3c.dom.Text;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -54,10 +55,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>Multiple events per day aggregation</li>
  *   <li>Priority-based event highlighting</li>
  * </ul>
- *
- * @author QDue Development Team
- * @version 1.0.0
- * @since Database Version 6
  */
 public class SwipeCalendarDayAdapter
         extends RecyclerView.Adapter<SwipeCalendarDayAdapter.DayViewHolder>
@@ -189,9 +186,9 @@ public class SwipeCalendarDayAdapter
         private final TextView dayNumberText;
 
         // Event indicators (from item_calendar_day.xml)
-        private final View eventTypeIndicator;
-        private final View eventPriorityBadge;
-        private final TextView eventCountText;
+        private final View eventTypeIndicators; // FrameLayout
+        private final TextView eventIndicator;
+        private final TextView eventsBadge;
         private final TextView workScheduleText;
 
         // Work schedule indicator
@@ -207,9 +204,10 @@ public class SwipeCalendarDayAdapter
             dayNumberText = itemView.findViewById( R.id.tv_day_number );
 
             // Event indicators (may be null if not present in layout)
-            eventTypeIndicator = itemView.findViewById( R.id.event_type_indicator );
-            eventPriorityBadge = itemView.findViewById( R.id.event_priority_badge );
-            eventCountText = itemView.findViewById( R.id.tv_events_count );
+            eventTypeIndicators = itemView.findViewById(
+                    R.id.frame_swipecalendar_events_indicators );
+            eventIndicator = itemView.findViewById( R.id.tv_swipecalendar_event_indicator );
+            eventsBadge = itemView.findViewById( R.id.tv_swipecalendar_events_badge );
 
             // Work schedule indicators
             workScheduleText = itemView.findViewById( R.id.tv_work_schedule );
@@ -267,19 +265,15 @@ public class SwipeCalendarDayAdapter
                 // Current month - normal
                 cardView.setCardBackgroundColor(
                         context.getColor( R.color.calendar_day_current_month_background ) );
-                dayNumberText.setTextColor(
-                        context.getColor( R.color.calendar_day_current_month_text ) );
+                // Apply weekend styling if applicable
+                if (dayItem.date.getDayOfWeek().getValue() >= 6) { // Saturday=6, Sunday=7
+                    dayNumberText.setTextColor(
+                            context.getColor( R.color.calendar_day_weekend_text ) );
+                } else {
+                    dayNumberText.setTextColor(
+                            context.getColor( R.color.calendar_day_current_month_text ) );
+                }
                 cardView.setStrokeWidth( 0 );
-            }
-
-            // Apply weekend styling if applicable
-            if (dayItem.date.getDayOfWeek().getValue() >= 6) { // Saturday=6, Sunday=7
-                dayNumberText.setTextColor( context.getColor( R.color.calendar_day_weekend_text ) );
-            }
-
-            // Configure work schedule Highlight
-            if (dayItem.dayData != null) {
-                configureWorkScheduleIndicators( dayItem );
             }
         }
 
@@ -320,34 +314,61 @@ public class SwipeCalendarDayAdapter
             boolean hasEvents = !dayItem.events.isEmpty();
 
             // Event type indicator
-            if (eventTypeIndicator != null) {
+            if (eventTypeIndicators != null) {
                 if (hasEvents) {
-                    eventTypeIndicator.setVisibility( View.VISIBLE );
+                    eventTypeIndicators.setVisibility( View.VISIBLE );
                     // Set color based on highest priority event type
                     LocalEvent primaryEvent = dayItem.events.get( 0 ); // Assume sorted by priority
                     int eventColor = getEventTypeColor( primaryEvent );
-                    eventTypeIndicator.setBackgroundColor( eventColor );
+//                    eventTypeIndicators.setBackgroundColor( Color.BLUE );
+                    Log.w( TAG, "Event type indicator set to color: " + eventColor );
+                    Log.w( TAG, "Events: " + dayItem.events );
                 } else {
-                    eventTypeIndicator.setVisibility( View.GONE );
+                    eventTypeIndicators.setVisibility( View.GONE );
                 }
-            }
+            } else Log.e( TAG, "Event indicators not found in layout" );
 
-            // Event priority badge
-            if (eventPriorityBadge != null) {
-                boolean hasHighPriorityEvent = dayItem.events.stream()
-                        .anyMatch(
-                                event -> event.getPriority() != null && event.getPriority().isHigh() );
-                eventPriorityBadge.setVisibility( hasHighPriorityEvent ? View.VISIBLE : View.GONE );
-            }
+//            // Event priority badge
+//            if (eventIndicator != null) {
+//                boolean hasHighPriorityEvent = dayItem.events.stream()
+//                        .anyMatch(
+//                                event -> event.getPriority() != null && event.getPriority().isHigh() );
+//                eventIndicator.setVisibility( hasHighPriorityEvent ? View.VISIBLE : View.GONE );
+//            }
 
-            // Event count text
-            if (eventCountText != null) {
-                if (hasEvents && dayItem.events.size() > 1) {
-                    eventCountText.setVisibility( View.VISIBLE );
-                    eventCountText.setText( String.valueOf( dayItem.events.size() ) );
-                } else {
-                    eventCountText.setVisibility( View.GONE );
-                }
+            boolean use_badge = false;
+
+            if (!use_badge) {
+                // Event indicator
+                if (eventIndicator != null) {
+                    if (hasEvents) {
+                        eventIndicator.setVisibility( View.VISIBLE );
+
+                        LocalEvent primaryEvent = dayItem.events.get(
+                                0 ); // Assume sorted by priority
+                        int eventColor = getEventTypeColor( primaryEvent );
+                        eventIndicator.setBackgroundColor( eventColor );
+                        eventIndicator.setText(
+                                String.valueOf( dayItem.events.get( 0 ).getTitle() ) );
+                    } else {
+                        eventIndicator.setVisibility( View.GONE );
+                    }
+                } else Log.d( TAG, "Event count text not found in layout" );
+                // Events badge
+                if (eventsBadge != null) {
+                    if (hasEvents) {
+                        eventsBadge.setVisibility( View.VISIBLE );
+
+                        LocalEvent primaryEvent = dayItem.events.get(
+                                0 ); // Assume sorted by priority
+                        int eventColor = getEventTypeColor( primaryEvent );
+//                    eventsBadge.setBackgroundColor( eventColor );
+                        eventsBadge.setText( String.valueOf( dayItem.events.size() ) );
+                        eventsBadge.setTextAlignment( TextView.TEXT_ALIGNMENT_CENTER );
+                    } else {
+                        eventsBadge.setVisibility( View.GONE );
+                    }
+                } else Log.d( TAG, "Event count text not found in layout" );
             }
         }
 

@@ -209,38 +209,38 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     @Override
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        try {
+//        try {
             View itemView = mInflater.inflate( R.layout.item_swipe_calendar_month, parent, false );
             return new MonthViewHolder( itemView );
-        } catch (Exception e) {
-            Log.e( TAG, "Failed to inflate layout with themed context, trying parent context", e );
+//        } catch (Exception e) {
+//            Log.e( TAG, "Failed to inflate layout with themed context, trying parent context", e );
 
-            // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
-            try {
-                View fallbackView = LayoutInflater.from( parent.getContext() )
-                        .inflate( R.layout.item_swipe_calendar_month, parent, false );
-                Log.w( TAG, "Successfully inflated layout with parent context (fallback)" );
-                return new MonthViewHolder( fallbackView );
-            } catch (Exception fallbackError) {
-                Log.e( TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError );
-
-                // ✅ LAST RESORT: Create minimal layout programmatically
-                LinearLayout errorLayout = new LinearLayout( parent.getContext() );
-                errorLayout.setLayoutParams( new ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                ) );
-                errorLayout.setOrientation( LinearLayout.VERTICAL );
-
-                TextView errorText = new TextView( parent.getContext() );
-                errorText.setText( "Layout inflation failed" );
-                errorText.setGravity( Gravity.CENTER );
-                errorLayout.addView( errorText );
-
-                Log.e( TAG, "Created emergency layout due to inflation failure" );
-                return new MonthViewHolder( errorLayout );
-            }
-        }
+//            // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
+//            try {
+//                View fallbackView = LayoutInflater.from( parent.getContext() )
+//                        .inflate( R.layout.item_swipe_calendar_month, parent, false );
+//                Log.w( TAG, "Successfully inflated layout with parent context (fallback)" );
+//                return new MonthViewHolder( fallbackView );
+//            } catch (Exception fallbackError) {
+//                Log.e( TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError );
+//
+//                // ✅ LAST RESORT: Create minimal layout programmatically
+//                LinearLayout errorLayout = new LinearLayout( parent.getContext() );
+//                errorLayout.setLayoutParams( new ViewGroup.LayoutParams(
+//                        ViewGroup.LayoutParams.MATCH_PARENT,
+//                        ViewGroup.LayoutParams.MATCH_PARENT
+//                ) );
+//                errorLayout.setOrientation( LinearLayout.VERTICAL );
+//
+//                TextView errorText = new TextView( parent.getContext() );
+//                errorText.setText( "Layout inflation failed" );
+//                errorText.setGravity( Gravity.CENTER );
+//                errorLayout.addView( errorText );
+//
+//                Log.e( TAG, "Created emergency layout due to inflation failure" );
+//                return new MonthViewHolder( errorLayout );
+//            }
+//        }
     }
 
     @Override

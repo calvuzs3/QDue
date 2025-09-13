@@ -84,7 +84,7 @@ public class GenerateUserScheduleUseCase {
     /**
      * GenerateUserScheduleForDateRange - Individual User Schedule Generation for a Date Range
      */
-    public class GenerateUserScheduleForDateRange {
+    private class GenerateUserScheduleForDateRange {
         /**
          * Execute use case for date range.
          *
@@ -141,7 +141,7 @@ public class GenerateUserScheduleUseCase {
     }
 
 
-    public class GenerateUserScheduleForDate {
+    private class GenerateUserScheduleForDate {
 
         /**
          * Execute use case for specific date.
@@ -222,11 +222,11 @@ public class GenerateUserScheduleUseCase {
         return new GenerateUserScheduleForMonth();
     }
 
-    public GenerateUserScheduleForDateRange getGenerateUserScheduleForDateRange() {
+    private GenerateUserScheduleForDateRange getGenerateUserScheduleForDateRange() {
         return new GenerateUserScheduleForDateRange();
     }
 
-    public GenerateUserScheduleForDate getGenerateUserScheduleForDate() {
+    private GenerateUserScheduleForDate getGenerateUserScheduleForDate() {
         return new GenerateUserScheduleForDate();
     }
 }

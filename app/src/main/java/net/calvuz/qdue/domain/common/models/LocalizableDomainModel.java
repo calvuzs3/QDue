@@ -11,7 +11,9 @@ import net.calvuz.qdue.domain.common.i18n.Localizable;
  * <p>Provides common localization infrastructure that can be extended
  * by all domain models requiring i18n support.</p>
  */
-public abstract class LocalizableDomainModel implements Localizable {
+public abstract class LocalizableDomainModel
+        implements Localizable
+{
 
     protected final DomainLocalizer mLocalizer;
     protected final DomainLocalizer mScopedLocalizer;

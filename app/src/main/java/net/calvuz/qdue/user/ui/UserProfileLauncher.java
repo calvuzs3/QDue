@@ -4,8 +4,6 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity;
-
 public class UserProfileLauncher  {
 
     /**
@@ -31,16 +29,4 @@ public class UserProfileLauncher  {
         // For example, check if database is initialized
         return true;
     }
-
-    /**
-     * Launch SmartShifts with specific configuration
-     */
-    public static void launchWithConfig(AppCompatActivity fromActivity, String config) {
-        Intent intent = new Intent( fromActivity, SmartshiftsActivity.class );
-        intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        intent.putExtra( "config", config );
-        fromActivity.startActivity( intent );
-    }
-
-
 }

@@ -3,13 +3,9 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.common.models.LocalizableDomainModel;
-
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,45 +44,24 @@ import java.util.stream.Collectors;
  *   <li><strong>Use Case Layer</strong>: Business logic operations on work schedule days</li>
  *   <li><strong>Presentation Layer</strong>: Calendar display and user interaction</li>
  * </ul>
- *
- * <h3>Usage Examples:</h3>
- * <pre>
- * {@code
- * // Create localized work schedule day
- * WorkScheduleDay day = WorkScheduleDay.builder(LocalDate.now())
- *     .addShift(morningShift)
- *     .addShift(afternoonShift)
- *     .addOffWorkTeam("C")
- *     .dayStatus(DayStatus.WORKING_DAY)
- *     .localizer(domainLocalizer)
- *     .build();
- *
- * // Get localized display
- * String dayName = day.getLocalizedDayName();
- * String summary = day.getSummary();
- * }
- * </pre>
- *
- * @author QDue Development Team
- * @version 2.0.0 - Localization Implementation
- * @since Clean Architecture Phase 2
  */
-public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable {
+public class WorkScheduleDay
+        implements Cloneable
+{
 
-    private static final String LOCALIZATION_SCOPE = "calendar";
-
-    private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("EEEE");
+    private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern( "EEEE" );
 
     // ==================== DAY STATUS ENUM ====================
 
     /**
      * Enumeration of day status types with localization keys.
      */
-    public enum DayStatus {
-        WORKING_DAY("working_day", "regular_working_day_with_shifts"),
-        REST_DAY("rest_day", "rest_day_with_no_shifts"),
-        HOLIDAY("holiday", "holiday_with_special_arrangements"),
-        PARTIAL_DAY("partial_day", "partial_working_day_with_reduced_shifts");
+    public enum DayStatus
+    {
+        WORKING_DAY( "working_day", "regular_working_day_with_shifts" ),
+        REST_DAY( "rest_day", "rest_day_with_no_shifts" ),
+        HOLIDAY( "holiday", "holiday_with_special_arrangements" ),
+        PARTIAL_DAY( "partial_day", "partial_working_day_with_reduced_shifts" );
 
         private final String displayNameKey;
         private final String descriptionKey;
@@ -131,31 +106,31 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * Private constructor for builder pattern with localization support.
      */
     private WorkScheduleDay(@NonNull Builder builder) {
-        super(builder.mLocalizer, LOCALIZATION_SCOPE);
 
-        this.date = Objects.requireNonNull(builder.date, "Date cannot be null");
-        this.isToday = date.equals(LocalDate.now());
-        this.dayStatus = builder.dayStatus != null ? builder.dayStatus : determineDayStatus(builder.shifts);
-        this.workShifts = new ArrayList<>( builder.shifts);
-        this.offWorkTeams = new ArrayList<>(builder.offWorkTeams);
+        this.date = Objects.requireNonNull( builder.date, "Date cannot be null" );
+        this.isToday = date.equals( LocalDate.now() );
+        this.dayStatus = builder.dayStatus != null ? builder.dayStatus : determineDayStatus(
+                builder.shifts );
+        this.workShifts = new ArrayList<>( builder.shifts );
+        this.offWorkTeams = new ArrayList<>( builder.offWorkTeams );
     }
 
     /**
      * Private constructor for cloning with localization preservation.
      */
-    private WorkScheduleDay(@NonNull LocalDate date,
-                            boolean isToday,
-                            @Nullable DayStatus dayStatus,
-                            @NonNull List<WorkScheduleShift> workShifts,
-                            @NonNull List<Team> offWorkTeams,
-                            @Nullable DomainLocalizer localizer) {
-        super(localizer, LOCALIZATION_SCOPE);
+    private WorkScheduleDay(
+            @NonNull LocalDate date,
+            boolean isToday,
+            @Nullable DayStatus dayStatus,
+            @NonNull List<WorkScheduleShift> workShifts,
+            @NonNull List<Team> offWorkTeams
+    ) {
 
         this.date = date;
         this.isToday = isToday;
         this.dayStatus = dayStatus != null ? dayStatus : determineDayStatus( workShifts );
         this.workShifts = new ArrayList<>( workShifts );
-        this.offWorkTeams = new ArrayList<>(offWorkTeams);
+        this.offWorkTeams = new ArrayList<>( offWorkTeams );
     }
 
     // ==================== GETTERS ====================
@@ -206,7 +181,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      */
     @NonNull
     public List<Team> getOffWorkTeams() {
-        return Collections.unmodifiableList(offWorkTeams);
+        return Collections.unmodifiableList( offWorkTeams );
     }
 
     /**
@@ -227,7 +202,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      */
     @NonNull
     public WorkScheduleShift getShift(int index) {
-        return workShifts.get( index);
+        return workShifts.get( index );
     }
 
     // ==================== BUSINESS LOGIC ====================
@@ -274,7 +249,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if this day is yesterday
      */
     public boolean isYesterday() {
-        return date.equals(LocalDate.now().minusDays(1));
+        return date.equals( LocalDate.now().minusDays( 1 ) );
     }
 
     /**
@@ -283,7 +258,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if this day is tomorrow
      */
     public boolean isTomorrow() {
-        return date.equals(LocalDate.now().plusDays(1));
+        return date.equals( LocalDate.now().plusDays( 1 ) );
     }
 
     /**
@@ -293,10 +268,10 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if team is working in any shift
      */
     public boolean isTeamWorking(@NonNull Team team) {
-        Objects.requireNonNull(team, "Team cannot be null");
+        Objects.requireNonNull( team, "Team cannot be null" );
 
         return workShifts.stream()
-                .anyMatch(shift -> shift.getTeams().contains(team));
+                .anyMatch( shift -> shift.getTeams().contains( team ) );
     }
 
     /**
@@ -306,10 +281,10 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if team is working in any shift
      */
     public boolean isTeamWorking(@NonNull String teamID) {
-        Objects.requireNonNull(teamID, "Team ID cannot be null");
+        Objects.requireNonNull( teamID, "Team ID cannot be null" );
 
         return workShifts.stream()
-                .anyMatch(shift -> shift.hasTeamWithId(teamID));
+                .anyMatch( shift -> shift.hasTeamWithId( teamID ) );
     }
 
     /**
@@ -319,8 +294,8 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if team is off work
      */
     public boolean isTeamOffWork(@NonNull Team team) {
-        Objects.requireNonNull(team, "Team cannot be null");
-        return offWorkTeams.contains(team);
+        Objects.requireNonNull( team, "Team cannot be null" );
+        return offWorkTeams.contains( team );
     }
 
     /**
@@ -330,9 +305,9 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return true if team is off work
      */
     public boolean isTeamOffWork(@NonNull String teamName) {
-        Objects.requireNonNull(teamName, "Team name cannot be null");
+        Objects.requireNonNull( teamName, "Team name cannot be null" );
         return offWorkTeams.stream()
-                .anyMatch(team -> team.hasName(teamName));
+                .anyMatch( team -> team.hasName( teamName ) );
     }
 
     /**
@@ -342,10 +317,10 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Shift index (0-based), or -1 if team is not working
      */
     public int findTeamShiftIndex(@NonNull Team team) {
-        Objects.requireNonNull(team, "Team cannot be null");
+        Objects.requireNonNull( team, "Team cannot be null" );
 
         for (int i = 0; i < workShifts.size(); i++) {
-            if (workShifts.get( i).getTeams().contains( team)) {
+            if (workShifts.get( i ).getTeams().contains( team )) {
                 return i;
             }
         }
@@ -359,10 +334,10 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Shift index (0-based), or -1 if team is not working
      */
     public int findTeamShiftIndex(@NonNull String teamName) {
-        Objects.requireNonNull(teamName, "Team name cannot be null");
+        Objects.requireNonNull( teamName, "Team name cannot be null" );
 
         for (int i = 0; i < workShifts.size(); i++) {
-            if (workShifts.get( i).hasTeamWithId( teamName)) {
+            if (workShifts.get( i ).hasTeamWithId( teamName )) {
                 return i;
             }
         }
@@ -378,7 +353,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      */
     @NonNull
     public List<Team> getTeamsInShift(int shiftIndex) {
-        return workShifts.get( shiftIndex).getTeams();
+        return workShifts.get( shiftIndex ).getTeams();
     }
 
     // ==================== DISPLAY METHODS ====================
@@ -400,8 +375,8 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
     @NonNull
     public String getOffWorkTeamsAsString() {
         return offWorkTeams.stream()
-                .map(Team::getName)
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .map( Team::getName )
+                .collect( StringBuilder::new, StringBuilder::append, StringBuilder::append )
                 .toString();
     }
 
@@ -416,30 +391,10 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
         if (shiftIndex < 0 || shiftIndex >= workShifts.size()) {
             return "";
         }
-        return workShifts.get( shiftIndex).getTeamsAsString();
+        return workShifts.get( shiftIndex ).getTeamsAsString();
     }
 
-    // ==================== LOCALIZED DISPLAY METHODS ====================
-
-    /**
-     * Get localized day status display name.
-     */
-    @NonNull
-    public String getStatusDisplayName() {
-        return localize("status." + dayStatus.name().toLowerCase(),
-                dayStatus.name(), // fallback
-                dayStatus.name());
-    }
-
-    /**
-     * Get localized day status description.
-     */
-    @NonNull
-    public String getStatusDescription() {
-        return localize("status." + dayStatus.name().toLowerCase() + ".description",
-                dayStatus.getDescriptionKey(), // fallback
-                dayStatus.name());
-    }
+    // ==================== DISPLAY METHODS ====================
 
     /**
      * Get localized day of week name with special handling for today/yesterday/tomorrow.
@@ -447,77 +402,40 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Localized day name (e.g., "Today", "Yesterday", "Monday")
      */
     @NonNull
-    public String getLocalizedDayName() {
+    public String getDayName() {
         if (isToday()) {
-            return localize("day.today", "Today", "Today");
-        } else if (isYesterday()) {
-            return localize("day.yesterday", "Yesterday", "Yesterday");
-        } else if (isTomorrow()) {
-            return localize("day.tomorrow", "Tomorrow", "Tomorrow");
-        } else {
-            // Get localized day of week
-            String dayOfWeek = date.format(DAY_FORMATTER);
-            return localize("day.of_week." + dayOfWeek.toLowerCase(), dayOfWeek, dayOfWeek);
+            return "Today";
         }
+        return date.format( DAY_FORMATTER );
     }
 
     /**
-     * Get standard localized day of week name (without today/yesterday/tomorrow).
+     * Get team status summary.
      *
-     * @return Localized day of week name (e.g., "Monday", "Tuesday")
+     * @return Team status
      */
     @NonNull
-    public String getDayOfWeekName() {
-        String dayOfWeek = date.format(DAY_FORMATTER);
-        return localize("day.of_week." + dayOfWeek.toLowerCase(), dayOfWeek, dayOfWeek);
-    }
-
-    /**
-     * Get localized shift count description.
-     *
-     * @return Localized shift count (e.g., "3 workShifts", "No workShifts")
-     */
-    @NonNull
-    public String getLocalizedShiftCount() {
-        if (workShifts.isEmpty()) {
-            return localize("workShifts.none", "No workShifts", "No workShifts");
-        } else if (workShifts.size() == 1) {
-            return localize("workShifts.single", "1 shift", "1 shift");
-        } else {
-            return localize( "workShifts.multiple", "{0} workShifts", "{0} workShifts", workShifts.size());
-        }
-    }
-
-    /**
-     * Get localized team status summary.
-     *
-     * @return Localized team status (e.g., "Teams working: A, B | Teams off: C, D")
-     */
-    @NonNull
-    public String getLocalizedTeamStatus() {
+    public String getTeamStatus() {
         StringBuilder status = new StringBuilder();
 
         // Working teams
         List<String> workingTeamNames = getWorkingTeamNames();
         if (!workingTeamNames.isEmpty()) {
-            String workingLabel = localize("teams.working", "Teams working", "Teams working");
-            status.append(workingLabel).append(": ");
-            status.append(String.join(", ", workingTeamNames));
+            status.append( "Teams working: " );
+            status.append( String.join( ", ", workingTeamNames ) );
         }
 
         // Off-work teams
         if (!offWorkTeams.isEmpty()) {
             if (status.length() > 0) {
-                String separator = localize("format.team_status_separator", " | ", " | ");
-                status.append(separator);
+                status.append( " | " );
             }
-            String offWorkLabel = localize("teams.off_work", "Teams off", "Teams off");
-            status.append(offWorkLabel).append(": ");
-            status.append(String.join(", ", offWorkTeams.stream().map(Team::getName).collect(Collectors.toList())));
+            status.append( "Teams off: " );
+            status.append( String.join( ", ", offWorkTeams.stream().map( Team::getName ).collect(
+                    Collectors.toList() ) ) );
         }
 
-        return status.length() > 0 ? status.toString() :
-                localize("teams.no_info", "No team information", "No team information");
+        return status.length() > 0 ? status.toString() : "No team information";
     }
 
     /**
@@ -526,27 +444,27 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Localized day summary
      */
     @NonNull
-    public String getLocalizedSummary() {
+    public String getSummary() {
         StringBuilder summary = new StringBuilder();
 
         // Day name and date
-        summary.append(getLocalizedDayName());
+        summary.append( getDayName() );
 
         // Add date if not today/yesterday/tomorrow
         if (!isToday() && !isYesterday() && !isTomorrow()) {
-            String dateFormat = localize("format.date_parentheses", " ({0})", " ({0})");
-            summary.append(String.format(dateFormat.replace("{0}", "%s"), date.toString()));
+            summary.append( MessageFormat.format( "({0})", date.toString() ) );
         }
 
         // Status if not standard working day
-        if (dayStatus != DayStatus.WORKING_DAY) {
-            String statusFormat = localize("format.status_brackets", " [{0}]", " [{0}]");
-            summary.append(String.format(statusFormat.replace("{0}", "%s"), getStatusDisplayName()));
+        if (!dayStatus.equals( DayStatus.WORKING_DAY )) {
+            summary.append( MessageFormat.format( " [{0}]", this.dayStatus ) );
         }
 
         // Shift count
-        String separator = localize("format.summary_separator", " - ", " - ");
-        summary.append(separator).append(getLocalizedShiftCount());
+        summary.append( " - " )
+                .append( getShiftCount() )
+                .append( " shifts" );
+        summary.append( "\n" );
 
         return summary.toString();
     }
@@ -557,67 +475,19 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Localized detailed summary
      */
     @NonNull
-    public String getLocalizedDetailedSummary() {
+    public String getDetailedSummary() {
         StringBuilder summary = new StringBuilder();
 
         // Basic summary
-        summary.append(getLocalizedSummary()).append("\n");
+        summary.append( getSummary() );
 
         // Team status if available
-        String teamStatus = getLocalizedTeamStatus();
-        if (!teamStatus.equals(localize("teams.no_info", "No team information", "No team information"))) {
-            summary.append(teamStatus).append("\n");
+        String teamStatus = getTeamStatus();
+        if (!teamStatus.equals( "No team information" )) {
+            summary.append( teamStatus ).append( "\n" );
         }
 
-        // Days from today
-        long daysFromToday = ChronoUnit.DAYS.between(LocalDate.now(), date);
-        if (daysFromToday != 0) {
-            if (daysFromToday > 0) {
-                if (daysFromToday == 1) {
-                    summary.append(localize("time.in_one_day", "In 1 day", "In 1 day"));
-                } else {
-                    summary.append(localize("time.in_days", "In {0} days", "In {0} days", daysFromToday));
-                }
-            } else {
-                long daysAgo = Math.abs(daysFromToday);
-                if (daysAgo == 1) {
-                    summary.append(localize("time.one_day_ago", "1 day ago", "1 day ago"));
-                } else {
-                    summary.append(localize("time.days_ago", "{0} days ago", "{0} days ago", daysAgo));
-                }
-            }
-        }
-
-        return summary.toString().trim();
-    }
-
-    /**
-     * Get localized calendar cell content.
-     *
-     * @return Localized content for calendar cell display
-     */
-    @NonNull
-    public String getLocalizedCalendarCell() {
-        StringBuilder cell = new StringBuilder();
-
-        // Day number
-        cell.append(getDayOfMonth());
-
-        // Status indicator if not standard
-        if (dayStatus != DayStatus.WORKING_DAY) {
-            String indicator = localize("status." + dayStatus.name().toLowerCase() + ".indicator",
-                    dayStatus.name().substring(0, 1),
-                    dayStatus.name().substring(0, 1));
-            cell.append(" ").append(indicator);
-        }
-
-        // Shift indicator
-        if (hasShifts()) {
-            String shiftIndicator = localize("indicator.has_shifts", "●", "●");
-            cell.append(" ").append(shiftIndicator);
-        }
-
-        return cell.toString();
+        return summary.toString();
     }
 
     // ==================== HELPER METHODS ====================
@@ -630,11 +500,11 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
     @NonNull
     private List<String> getWorkingTeamNames() {
         return workShifts.stream()
-                .flatMap(shift -> shift.getTeams().stream())
-                .map(Team::getName)
+                .flatMap( shift -> shift.getTeams().stream() )
+                .map( Team::getName )
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
+                .collect( Collectors.toList() );
     }
 
     /**
@@ -653,71 +523,6 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
         }
     }
 
-    // ==================== FACTORY METHODS ====================
-
-    /**
-     * Create a standard working day with localization support.
-     *
-     * @param date Date for the day
-     * @param localizer Optional domain localizer for i18n
-     * @return Working day
-     */
-    @NonNull
-    public static WorkScheduleDay createWorkingDay(@NonNull LocalDate date, @Nullable DomainLocalizer localizer) {
-        return builder(date)
-                .dayStatus(DayStatus.WORKING_DAY)
-                .localizer(localizer)
-                .build();
-    }
-
-    /**
-     * Create a rest day with localization support.
-     *
-     * @param date Date for the day
-     * @param localizer Optional domain localizer for i18n
-     * @return Rest day
-     */
-    @NonNull
-    public static WorkScheduleDay createRestDay(@NonNull LocalDate date, @Nullable DomainLocalizer localizer) {
-        return builder(date)
-                .dayStatus(DayStatus.REST_DAY)
-                .localizer(localizer)
-                .build();
-    }
-
-    /**
-     * Create a holiday with localization support.
-     *
-     * @param date Date for the day
-     * @param localizer Optional domain localizer for i18n
-     * @return Holiday day
-     */
-    @NonNull
-    public static WorkScheduleDay createHoliday(@NonNull LocalDate date, @Nullable DomainLocalizer localizer) {
-        return builder(date)
-                .dayStatus(DayStatus.HOLIDAY)
-                .localizer(localizer)
-                .build();
-    }
-
-    // ==================== LOCALIZABLE IMPLEMENTATION ====================
-
-    /**
-     * Create a copy of this object with localizer injected.
-     * Useful for adding localization to existing instances.
-     *
-     * @param localizer DomainLocalizer to inject
-     * @return New instance with localizer support
-     */
-    @Override
-    @NonNull
-    public WorkScheduleDay withLocalizer(@NonNull DomainLocalizer localizer) {
-        return builder(this.date)
-                .copyFrom(this)
-                .localizer(localizer)
-                .build();
-    }
-
     // ==================== BUILDER PATTERN ====================
 
     /**
@@ -727,43 +532,27 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      * @return Builder instance
      */
     @NonNull
-    public static Builder builder(@NonNull LocalDate date) {
-        return new Builder(date);
-    }
-
-    /**
-     * Create a builder from existing WorkScheduleDay.
-     *
-     * @return Builder instance with current day data
-     */
-    @NonNull
-    public Builder toBuilder() {
-        return new Builder(this);
+    public static Builder builder(
+            @NonNull LocalDate date
+    ) {
+        return new Builder( date );
     }
 
     /**
      * Builder class for creating WorkScheduleDay instances with localization support.
      */
-    public static class Builder extends LocalizableBuilder<WorkScheduleDay, Builder> {
-        private final LocalDate date;
+    public static class Builder
+    {
+        private LocalDate date;
         private DayStatus dayStatus;
         private final List<WorkScheduleShift> shifts = new ArrayList<>();
         private final List<Team> offWorkTeams = new ArrayList<>();
 
-//        public Builder() {
-//            // Convenience default constructor
-//            this.date = LocalDate.now();
-//        }
-
-        public Builder(@NonNull LocalDate date) {
-            this.date = Objects.requireNonNull(date, "Date cannot be null");
+        public Builder() {
         }
 
-        private Builder(@NonNull WorkScheduleDay existingDay) {
-            this.date = existingDay.date;
-            this.dayStatus = existingDay.dayStatus;
-            this.shifts.addAll(existingDay.workShifts );
-            this.offWorkTeams.addAll(existingDay.offWorkTeams);
+        public Builder(@NonNull LocalDate date) {
+            this.date = Objects.requireNonNull( date, "Date cannot be null" );
         }
 
         /**
@@ -773,11 +562,42 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
         public Builder copyFrom(@NonNull WorkScheduleDay source) {
             this.dayStatus = source.dayStatus;
             this.shifts.clear();
-            this.shifts.addAll(source.workShifts );
+            this.shifts.addAll( source.workShifts );
             this.offWorkTeams.clear();
-            this.offWorkTeams.addAll(source.offWorkTeams);
+            this.offWorkTeams.addAll( source.offWorkTeams );
 
-            return copyLocalizableFrom(source);
+            return this;
+        }
+
+        // ==================== GETTERS ====================
+
+        public LocalDate getDate() {
+            return date;
+        }
+
+        public DayStatus getDayStatus() {
+            return dayStatus;
+        }
+
+        public List<WorkScheduleShift> getShifts() {
+            return shifts;
+        }
+
+        public List<Team> getOffWorkTeams() {
+            return offWorkTeams;
+        }
+
+        // ==================== SETTERS ====================
+
+        /**
+         * Set the date for the day.
+         *
+         * @param date
+         * @return Builder instance for chaining
+         */
+        public Builder date(@NonNull LocalDate date) {
+            this.date = Objects.requireNonNull( date, "Date cannot be null" );
+            return this;
         }
 
         /**
@@ -800,7 +620,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addShift(@NonNull WorkScheduleShift shift) {
-            this.shifts.add(Objects.requireNonNull(shift, "Shift cannot be null"));
+            this.shifts.add( Objects.requireNonNull( shift, "Shift cannot be null" ) );
             return this;
         }
 
@@ -812,8 +632,8 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addShifts(@NonNull List<WorkScheduleShift> shifts) {
-            Objects.requireNonNull(shifts, "Shifts cannot be null");
-            this.shifts.addAll(shifts);
+            Objects.requireNonNull( shifts, "Shifts cannot be null" );
+            this.shifts.addAll( shifts );
             return this;
         }
 
@@ -825,7 +645,7 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addOffWorkTeam(@NonNull Team team) {
-            this.offWorkTeams.add(Objects.requireNonNull(team, "Team cannot be null"));
+            this.offWorkTeams.add( Objects.requireNonNull( team, "Team cannot be null" ) );
             return this;
         }
 
@@ -837,8 +657,8 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addOffWorkTeam(@NonNull String teamName) {
-            Objects.requireNonNull(teamName, "Team name cannot be null");
-            this.offWorkTeams.add(Team.fromName(teamName));
+            Objects.requireNonNull( teamName, "Team name cannot be null" );
+            this.offWorkTeams.add( Team.fromName( teamName ) );
             return this;
         }
 
@@ -850,8 +670,8 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addOffWorkTeams(@NonNull List<Team> teams) {
-            Objects.requireNonNull(teams, "Teams cannot be null");
-            this.offWorkTeams.addAll(teams);
+            Objects.requireNonNull( teams, "Teams cannot be null" );
+            this.offWorkTeams.addAll( teams );
             return this;
         }
 
@@ -863,30 +683,25 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
          */
         @NonNull
         public Builder addOffWorkTeamNames(@NonNull List<String> teamNames) {
-            Objects.requireNonNull(teamNames, "Team names cannot be null");
-            teamNames.forEach(name -> {
+            Objects.requireNonNull( teamNames, "Team names cannot be null" );
+            teamNames.forEach( name -> {
                 if (name != null && !name.trim().isEmpty()) {
-                    this.offWorkTeams.add(Team.fromName(name.trim()));
+                    this.offWorkTeams.add( Team.fromName( name.trim() ) );
                 }
-            });
+            } );
             return this;
         }
 
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
+        // ==================== BUILDER ====================
 
         /**
          * Build the WorkScheduleDay instance.
          *
          * @return New WorkScheduleDay instance
          */
-        @Override
         @NonNull
         public WorkScheduleDay build() {
-            return new WorkScheduleDay(this);
+            return new WorkScheduleDay( this );
         }
     }
 
@@ -905,16 +720,15 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
             // Clone workShifts deeply
             List<WorkScheduleShift> clonedShifts = new ArrayList<>();
             for (WorkScheduleShift shift : workShifts) {
-                clonedShifts.add(shift.clone());
+                clonedShifts.add( shift.clone() );
             }
 
             // Clone off-work teams (Team objects are immutable, so shallow copy is fine)
-            List<Team> clonedOffWorkTeams = new ArrayList<>(offWorkTeams);
+            List<Team> clonedOffWorkTeams = new ArrayList<>( offWorkTeams );
 
-            return new WorkScheduleDay(date, isToday, dayStatus, clonedShifts, clonedOffWorkTeams, getLocalizer());
-
+            return new WorkScheduleDay( date, isToday, dayStatus, clonedShifts, clonedOffWorkTeams );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to clone WorkScheduleDay", e);
+            throw new RuntimeException( "Failed to clone WorkScheduleDay", e );
         }
     }
 
@@ -927,24 +741,23 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
      */
     @NonNull
     public WorkScheduleDay cloneWithDate(@NonNull LocalDate newDate) {
-        Objects.requireNonNull(newDate, "New date cannot be null");
+        Objects.requireNonNull( newDate, "New date cannot be null" );
 
         try {
             // Clone workShifts deeply
             List<WorkScheduleShift> clonedShifts = new ArrayList<>();
             for (WorkScheduleShift shift : workShifts) {
-                clonedShifts.add(shift.clone());
+                clonedShifts.add( shift.clone() );
             }
 
             // Clone off-work teams
-            List<Team> clonedOffWorkTeams = new ArrayList<>(offWorkTeams);
+            List<Team> clonedOffWorkTeams = new ArrayList<>( offWorkTeams );
 
             // Create new instance with new date and recalculated isToday
-            return new WorkScheduleDay(newDate, newDate.equals(LocalDate.now()), dayStatus,
-                    clonedShifts, clonedOffWorkTeams, getLocalizer());
-
+            return new WorkScheduleDay( newDate, newDate.equals( LocalDate.now() ), dayStatus,
+                                        clonedShifts, clonedOffWorkTeams);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to clone WorkScheduleDay with new date", e);
+            throw new RuntimeException( "Failed to clone WorkScheduleDay with new date", e );
         }
     }
 
@@ -957,15 +770,15 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
 
         WorkScheduleDay that = (WorkScheduleDay) o;
         return isToday == that.isToday &&
-                Objects.equals(date, that.date) &&
-                Objects.equals(dayStatus, that.dayStatus) &&
+                Objects.equals( date, that.date ) &&
+                Objects.equals( dayStatus, that.dayStatus ) &&
                 Objects.equals( workShifts, that.workShifts ) &&
-                Objects.equals(offWorkTeams, that.offWorkTeams);
+                Objects.equals( offWorkTeams, that.offWorkTeams );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash( date, isToday, dayStatus, workShifts, offWorkTeams);
+        return Objects.hash( date, isToday, dayStatus, workShifts, offWorkTeams );
     }
 
     @Override
@@ -988,21 +801,20 @@ public class WorkScheduleDay extends LocalizableDomainModel implements Cloneable
     @NonNull
     public String toDetailedString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("WorkScheduleDay{")
-                .append("date=").append(date)
-                .append(", dayOfWeek=").append(getDayOfWeekName())
-                .append(", isToday=").append(isToday)
-                .append(", dayStatus=").append(dayStatus)
-                .append(", workShifts=[");
+        sb.append( "WorkScheduleDay{" )
+                .append( "date=" ).append( date )
+                .append( ", dayOfWeek=" ).append( date.format( DAY_FORMATTER ) )
+                .append( ", isToday=" ).append( isToday )
+                .append( ", dayStatus=" ).append( dayStatus )
+                .append( ", workShifts=[" );
 
         for (int i = 0; i < workShifts.size(); i++) {
-            if (i > 0) sb.append(", ");
-            sb.append( workShifts.get( i).toString());
+            if (i > 0) sb.append( ", " );
+            sb.append( workShifts.get( i ).toString() );
         }
 
-        sb.append("], offWorkTeams=").append(offWorkTeams)
-                .append(", hasLocalizationSupport=").append(hasLocalizationSupport())
-                .append('}');
+        sb.append( "], offWorkTeams=" ).append( offWorkTeams )
+                .append( '}' );
         return sb.toString();
     }
 }

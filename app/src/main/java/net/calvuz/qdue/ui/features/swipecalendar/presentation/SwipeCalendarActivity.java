@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.features.swipecalendar.presentation;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -7,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import net.calvuz.qdue.R;
@@ -18,6 +18,7 @@ import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.preferences.QDuePreferences;
+import net.calvuz.qdue.ui.core.architecture.base.TimeChangeBaseActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.list.AssignmentListActivity;
 import net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardLauncher;
@@ -66,21 +67,25 @@ import java.time.LocalDate;
  * Intent intent = SwipeCalendarActivity.createIntent(context, null, userID);
  * startActivity(intent);
  * </pre>
+ *
+ * @author QDue Team
+ * @version 1.0
+ * @since 2025
  */
-public class SwipeCalendarActivity extends AppCompatActivity implements Injectable
+public class SwipeCalendarActivity
+        extends TimeChangeBaseActivity
+        implements Injectable
 {
     private static final String TAG = "SwipeCalendarActivity";
 
     // ==================== INTENT EXTRAS ====================
 
     /**
-     * Extra key for initial date parameter (ISO date string format)
+     * Extra keys for:
+     * initial date parameter (ISO date string format)
+     * user ID parameter
      */
     public static final String EXTRA_INITIAL_DATE = "initial_date";
-
-    /**
-     * Extra key for user ID parameter (long value)
-     */
     public static final String EXTRA_USER_ID = "user_id";
 
     // ==================== DEPENDENCIES ====================
@@ -107,7 +112,9 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      * @return Intent for launching activity
      */
     @NonNull
-    public static Intent createIntent(@NonNull android.content.Context context) {
+    public static Intent createIntent(
+            @NonNull Context context
+    ) {
         return new Intent( context, SwipeCalendarActivity.class );
     }
 
@@ -119,8 +126,11 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      * @return Intent for launching activity
      */
     @NonNull
-    public static Intent createIntent(@NonNull android.content.Context context, @Nullable LocalDate initialDate) {
-        Intent intent = new Intent( context, SwipeCalendarActivity.class );
+    public static Intent createIntent(
+            @NonNull Context context,
+            @Nullable LocalDate initialDate
+    ) {
+        Intent intent = createIntent( context );
         if (initialDate != null) {
             intent.putExtra( EXTRA_INITIAL_DATE, initialDate.toString() );
         }
@@ -137,9 +147,9 @@ public class SwipeCalendarActivity extends AppCompatActivity implements Injectab
      */
     @NonNull
     public static Intent createIntent(
-            @NonNull android.content.Context context,
+            @NonNull Context context,
             @Nullable LocalDate initialDate,
-            @Nullable Long userId
+            @Nullable String userId
     ) {
         Intent intent = createIntent( context, initialDate );
         if (userId != null) {

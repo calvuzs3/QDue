@@ -363,7 +363,7 @@ public abstract class BaseActivity extends AppCompatActivity implements
     private void registerTimeChangeReceiver() {
         if (!receiverRegistered && timeChangeReceiver != null) {
             try {
-                IntentFilter filter = TimeChangeReceiver.createCriticalIntentFilter();
+                IntentFilter filter = TimeChangeReceiver.createOnlyCriticalIntentFilter();
                 registerReceiver(timeChangeReceiver, filter);
                 receiverRegistered = true;
             } catch (Exception e) {

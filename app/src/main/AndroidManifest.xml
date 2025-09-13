@@ -19,7 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
-        <activity android:name=".ui.features.assignment.list.AssignmentListActivity"
+        <!-- Assignment List Activity -->
+        <activity
+            android:name=".ui.features.assignment.list.AssignmentListActivity"
             android:exported="false"
             android:label="@string/assignment_list_title"
             android:theme="@style/Theme.QDue">
@@ -35,7 +37,6 @@
             android:exported="false"
             android:label="@string/title_pattern_assignment_wizard"
             android:parentActivityName="net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.QDue"
             android:windowSoftInputMode="adjustResize">
 
@@ -62,7 +63,6 @@
             android:name=".ui.features.swipecalendar.presentation.SwipeCalendarActivity"
             android:exported="true"
             android:label="@string/debug_swipe_calendar_title"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.QDue">
 
             <!-- MAIN LAUNCHER INTENT-FILTER (moved from QDueMainActivity) -->
@@ -100,27 +100,10 @@
         </activity>
 
 
-        <!-- SmartShifts Activities -->
-        <activity
-            android:name="net.calvuz.qdue.smartshifts.ui.main.SmartshiftsActivity"
-            android:exported="false"
-            android:label="@string/smartshifts_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.SmartShifts" />
-
-        <activity
-            android:name="net.calvuz.qdue.smartshifts.ui.setup.ShiftSetupWizardActivity"
-            android:exported="false"
-            android:label="@string/setup_wizard_title"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.SmartShifts" />
-
         <!-- WelcomeActivity -->
         <activity
             android:name=".ui.features.welcome.presentation.WelcomeActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <!--        android:theme="@style/Theme.QDue.Welcome"-->
+            android:exported="false" />
 
 
         <!-- SettingsActivity -->
@@ -134,6 +117,7 @@
                 android:value=".QDueMainActivity" />
         </activity>
 
+
         <!-- UserProfileActivity -->
         <activity
             android:name="net.calvuz.qdue.user.ui.UserProfileActivity"
@@ -146,6 +130,7 @@
                 android:value="net.calvuz.qdue.QDueMainActivity" />
         </activity>
 
+
         <!-- UserSchedulePatternCreationActivity -->
         <activity
             android:name=".ui.features.schedulepattern.UserSchedulePatternCreationActivity"
@@ -157,6 +142,8 @@
                 android:value=".QDueMainActivity" />
         </activity>
 
+
+        <!-- EventsActivity -->
         <activity
             android:name=".ui.features.events.presentation.EventsActivity"
             android:exported="true"
@@ -259,8 +246,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="net.calvuz.qdue.smartshifts.ui.settings.SmartShiftsSettingsActivity" />
-
         <!-- Fonts -->
         <meta-data
             android:name="preloaded_fonts"
@@ -269,6 +254,8 @@
         <meta-data
             android:name="com.google.android.gms.fonts"
             android:resource="@array/com_google_android_gms_fonts_certs" />
+
+
 
         <!-- Time changes -->
         <receiver

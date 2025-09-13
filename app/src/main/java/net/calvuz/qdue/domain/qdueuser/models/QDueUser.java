@@ -3,10 +3,6 @@ package net.calvuz.qdue.domain.qdueuser.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.calendar.models.RecurrenceRule;
-import net.calvuz.qdue.domain.calendar.models.Team;
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDateTime;

@@ -26,7 +26,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import net.calvuz.qdue.databinding.ActivityQdueMainBinding;
 import net.calvuz.qdue.preferences.QDuePreferences;
-import net.calvuz.qdue.smartshifts.integration.SmartShiftsLauncher;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.features.events.interfaces.EventsRefreshInterface;
@@ -1132,13 +1131,6 @@ public class QDueMainActivity extends BaseActivity {
                 return true;
             }
 
-            if (id == R.id.action_smart_shifts) {
-                Log.d( TAG, MessageFormat.format( message, "SmartShifts" ) );
-
-                if (SmartShiftsLauncher.isAvailable()) {
-                    SmartShiftsLauncher.launch( this );
-                }
-            }
 
             if (id == R.id.action_user_profile) {
                 openUserProfileActivity();

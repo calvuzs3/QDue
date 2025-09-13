@@ -3,8 +3,6 @@ package net.calvuz.qdue.domain.calendar.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.domain.common.builders.LocalizableBuilder;
-
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,7 +12,7 @@ import java.util.UUID;
  * <p>This is a clean architecture domain model representing a work team entity.
  * Teams are fundamental business concepts that can be assigned to shifts and
  * have users as members. The model is designed to be simple but extensible
- * for future enhancements with full localization support.</p>
+ * for future enhancements.</p>
  *
  * <h3>Key Features:</h3>
  * <ul>
@@ -31,27 +29,6 @@ import java.util.UUID;
  *   <li><strong>EMERGENCY</strong>: Emergency response teams</li>
  *   <li><strong>MANAGEMENT</strong>: Management and supervisory teams</li>
  *   <li><strong>SUPPORT</strong>: Support and auxiliary teams</li>
- * </ul>
- *
- * <h3>Usage Examples:</h3>
- * <pre>
- * {@code
- * // Create teams
- * Team teamA = Team.builder("A")
- *     .displayName("Team Alpha")
- *     .description("Primary morning shift team")
- *     .teamType(TeamType.STANDARD)
- *     .build();
- * </pre>
- *
- * <h3>Future Extensions:</h3>
- * <p>This model can be easily extended to include:</p>
- * <ul>
- *   <li>Team member lists</li>
- *   <li>Team capabilities/skills</li>
- *   <li>Team scheduling preferences</li>
- *   <li>Team performance metrics</li>
- *   <li>Team contact information</li>
  * </ul>
  */
 public class Team {
@@ -341,7 +318,7 @@ public class Team {
     /**
      * Builder class for creating Team instances with localization support.
      */
-    public static class Builder extends LocalizableBuilder<Team, Builder> {
+    public static class Builder {
         private String id;
         private String name;
         private String displayName;
@@ -396,8 +373,52 @@ public class Team {
             this.createdAt = source.createdAt;
             this.updatedAt = source.updatedAt;
 
-            return copyLocalizableFrom( source );
+            return this;
         }
+
+        // ================== GETTERS ====================
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public String getColorHex() {
+            return colorHex;
+        }
+
+        public int getQdueOffset() {
+            return qdueOffset;
+        }
+
+        public TeamType getTeamType() {
+            return teamType;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public long getCreatedAt() {
+            return createdAt;
+        }
+
+        public long getUpdatedAt() {
+            return updatedAt;
+        }
+
+        // ================== SETTERS ====================
 
         /**
          * Set id
@@ -539,23 +560,11 @@ public class Team {
         }
 
         /**
-         * Set localizer for localization support.
-         *
-         * @return Builder instance for chaining
-         */
-        @Override
-        @NonNull
-        protected Builder self() {
-            return this;
-        }
-
-        /**
          * Build the Team instance.
          *
          * @return New Team instance
          * @throws IllegalArgumentException if required fields are not valid
          */
-        @Override
         @NonNull
         public Team build() {
             return new Team( this );

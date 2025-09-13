@@ -57,7 +57,8 @@ import java.util.Map;
  *   <li>GenerateUserScheduleUseCase for work schedule operations</li>
  * </ul>
  */
-public class SwipeCalendarModule {
+public class SwipeCalendarModule
+{
 
     private static final String TAG = "SwipeCalendarModule";
 
@@ -94,11 +95,13 @@ public class SwipeCalendarModule {
      * @param userService            Service for user data operations
      * @param workScheduleRepository Repository for work schedule operations
      */
-    public SwipeCalendarModule(@NonNull Context context,
-                               @NonNull CalendarServiceProvider calendarServiceProvider,
-                               @NonNull EventsService eventsService,
-                               @NonNull QDueUserService userService,
-                               @NonNull WorkScheduleRepository workScheduleRepository) {
+    public SwipeCalendarModule(
+            @NonNull Context context,
+            @NonNull CalendarServiceProvider calendarServiceProvider,
+            @NonNull EventsService eventsService,
+            @NonNull QDueUserService userService,
+            @NonNull WorkScheduleRepository workScheduleRepository
+    ) {
 
         // Validate context for proper theming capabilities
         if (!(context instanceof Activity)) {
@@ -230,7 +233,9 @@ public class SwipeCalendarModule {
      * - Thread safety: All operations handle concurrency properly
      * - Single User: Optimized for single user application workflow</p>
      */
-    private class AsyncDataLoader implements MonthPagerAdapter.DataLoader {
+    private class AsyncDataLoader
+            implements MonthPagerAdapter.DataLoader
+    {
 
         /**
          * Load events for specified month using EventsService.
@@ -240,8 +245,10 @@ public class SwipeCalendarModule {
          * @param callback Callback for async result delivery
          */
         @Override
-        public void loadEventsForMonth(@NonNull YearMonth month,
-                                       @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, List<LocalEvent>>> callback) {
+        public void loadEventsForMonth(
+                @NonNull YearMonth month,
+                @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, List<LocalEvent>>> callback
+        ) {
 
             Log.d( TAG, "Loading events for month: " + month );
 
@@ -254,10 +261,12 @@ public class SwipeCalendarModule {
                             if (result.isSuccess() && result.getData() != null) {
                                 try {
                                     // Group events by date for calendar display
-                                    Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate( result.getData() );
+                                    Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(
+                                            result.getData() );
 
                                     callback.onSuccess( eventsMap );
-                                    Log.d( TAG, "Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)" );
+                                    Log.d( TAG,
+                                           "Events loaded successfully for " + month + " (" + eventsMap.size() + " dates)" );
                                 } catch (Exception e) {
                                     Log.e( TAG, "Failed to process events for " + month, e );
                                     callback.onError( e );
@@ -265,14 +274,18 @@ public class SwipeCalendarModule {
                             } else {
                                 result.getErrorMessage();
                                 String errorMsg = result.getErrorMessage();
-                                Exception error = new RuntimeException( "Failed to load events: " + errorMsg );
-                                Log.w( TAG, "Events service returned error for " + month + ": " + errorMsg );
+                                Exception error = new RuntimeException(
+                                        "Failed to load events: " + errorMsg );
+                                Log.w( TAG,
+                                       "Events service returned error for " + month + ": " + errorMsg );
                                 callback.onError( error );
                             }
                         } )
                         .exceptionally( throwable -> {
-                            Log.e( TAG, "Exception in async events loading for " + month, throwable );
-                            callback.onError( new RuntimeException( "Async events loading failed", throwable ) );
+                            Log.e( TAG, "Exception in async events loading for " + month,
+                                   throwable );
+                            callback.onError( new RuntimeException( "Async events loading failed",
+                                                                    throwable ) );
                             return null;
                         } );
             } catch (Exception e) {
@@ -303,19 +316,25 @@ public class SwipeCalendarModule {
                             if (result.isSuccess() && result.hasData()) {
                                 assert result.getData() != null;
                                 callback.onSuccess( result.getData() );
-                                Log.d( TAG, "Work schedule loaded successfully via generateWorkScheduleForUser "
-                                        + "{" +  month + "} {" + mQDueUser + "} {" + result.getData().size() + " days}" );
+                                Log.d( TAG,
+                                       "Work schedule loaded successfully via generateWorkScheduleForUser "
+                                               + "{" + month + "} {" + mQDueUser + "} {" + result.getData().size() + " days}" );
                             } else {
                                 result.getErrorMessage();
                                 String errorMsg = result.getErrorMessage();
-                                Exception error = new RuntimeException( "Failed to load work schedule: " + errorMsg );
-                                Log.w( TAG, "GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
+                                Exception error = new RuntimeException(
+                                        "Failed to load work schedule: " + errorMsg );
+                                Log.w( TAG,
+                                       "GenerateUserScheduleUseCase returned error for " + month + ": " + errorMsg );
                                 callback.onError( error );
                             }
                         } )
                         .exceptionally( throwable -> {
-                            Log.e( TAG, "Exception in async work schedule loading for " + month, throwable );
-                            callback.onError( new RuntimeException( "Async work schedule loading failed", throwable ) );
+                            Log.e( TAG, "Exception in async work schedule loading for " + month,
+                                   throwable );
+                            callback.onError(
+                                    new RuntimeException( "Async work schedule loading failed",
+                                                          throwable ) );
                             return null;
                         } );
 
@@ -537,8 +556,7 @@ public class SwipeCalendarModule {
         validation.put( "state_manager_created", mStateManager != null );
         validation.put( "pager_adapter_created", mPagerAdapter != null );
         validation.put( "data_loader_created", mDataLoader != null );
-        assert mUserService != null;
-        validation.put( "current_user_id", mUserService.getPrimaryUser() );
+        validation.put( "current_user_id", mQDueUser.getId() ) ;
 
         return validation;
     }

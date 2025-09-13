@@ -70,7 +70,7 @@ public interface UserScheduleAssignmentDao {
     @Query ("""
             SELECT * FROM user_schedule_assignments 
             WHERE user_id = :userId 
-            AND status = 'ACTIVE' 
+            AND (status = 'ACTIVE' OR status = 'PENDING') 
             AND start_date <= :date 
             AND (is_permanent = 1 OR end_date >= :date) 
             AND active = 1 

@@ -24,10 +24,6 @@ import java.util.Locale;
  *
  * <p><strong>Note:</strong> Add these methods to the existing LocaleManager class
  * in net.calvuz.qdue.core.common.i18n.LocaleManager</p>
- *
- * @author QDue Development Team
- * @version 1.0.0 - Calendar Engine i18n Extensions
- * @since Clean Architecture Phase 2
  */
 public class LocaleManagerExtensions {
 

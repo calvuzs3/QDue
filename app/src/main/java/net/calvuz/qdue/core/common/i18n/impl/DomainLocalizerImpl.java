@@ -65,7 +65,10 @@ public class DomainLocalizerImpl implements DomainLocalizer {
      * @param context Application context for resource access
      * @param localeManager Core LocaleManager for i18n infrastructure
      */
-    public DomainLocalizerImpl(@NonNull Context context, @NonNull LocaleManager localeManager) {
+    public DomainLocalizerImpl(
+            @NonNull Context context,
+            @NonNull LocaleManager localeManager
+    ) {
         this(context, localeManager, "");
     }
 
@@ -76,7 +79,11 @@ public class DomainLocalizerImpl implements DomainLocalizer {
      * @param localeManager Core LocaleManager for i18n infrastructure
      * @param scope Localization scope for key prefixing
      */
-    private DomainLocalizerImpl(@NonNull Context context, @NonNull LocaleManager localeManager, @NonNull String scope) {
+    private DomainLocalizerImpl(
+            @NonNull Context context,
+            @NonNull LocaleManager localeManager,
+            @NonNull String scope
+    ) {
         this.mContext = context.getApplicationContext();
         this.mLocaleManager = localeManager;
         this.mScope = scope;
