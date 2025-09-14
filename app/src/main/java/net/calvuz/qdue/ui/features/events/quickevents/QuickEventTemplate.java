@@ -2,13 +2,13 @@ package net.calvuz.qdue.ui.features.events.quickevents;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.metadata.EventMetadataManager;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.EventPriority;
+import net.calvuz.qdue.domain.calendar.events.actions.EventAction;
+import net.calvuz.qdue.domain.calendar.events.metadata.EventMetadataManager;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.events.enums.EventType;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
 import net.calvuz.qdue.core.services.models.EventPreview;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -207,10 +207,10 @@ public class QuickEventTemplate {
     // ==================== TEMPLATE USAGE ====================
 
     /**
-     * ✅ MAIN METHOD: Create LocalEvent from this template
+     * ✅ MAIN METHOD: Create EventEntityGoogle from this template
      * Delegates all business logic to QuickEventLogicAdapter
      */
-    public LocalEvent createEvent(LocalDate date, Long userId) {
+    public EventEntityGoogle createEvent(LocalDate date, Long userId) {
         if (!isValid) {
             throw new IllegalStateException("Cannot create event from invalid template: " + templateId);
         }
@@ -225,9 +225,9 @@ public class QuickEventTemplate {
         }
 
         // Delegate to QuickEventLogicAdapter for actual creation
-        //LocalEvent event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userID);
+        //EventEntityGoogle event = QuickEventLogicAdapter.createEventFromAction(sourceAction, date, userID);
         EventAction eventAction = ToolbarActionBridge.mapToEventAction(sourceAction);
-        LocalEvent event = QuickEventLogicAdapter.createEventFromEventAction(eventAction, date, userId);
+        EventEntityGoogle event = QuickEventLogicAdapter.createEventFromEventAction( eventAction, date, userId);
 
         // Inizializzare metadata tracking
         event = EventMetadataManager.initializeEditSessionMetadata(event, userId);
@@ -240,16 +240,16 @@ public class QuickEventTemplate {
     }
 
     /**
-     * Create LocalEvent with default user (when userID not available)
+     * Create EventEntityGoogle with default user (when userID not available)
      */
-    public LocalEvent createEvent(LocalDate date) {
+    public EventEntityGoogle createEvent(LocalDate date) {
         return createEvent(date, null);
     }
 
     /**
      * Add template-specific metadata to created event
      */
-    private void addTemplateMetadata(LocalEvent event) {
+    private void addTemplateMetadata(EventEntityGoogle event) {
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
 

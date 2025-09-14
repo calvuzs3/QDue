@@ -18,16 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.core.architecture.base.BaseAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
 import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.R;
 
@@ -48,7 +45,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
     private static final String TAG = "CalendarLgsAdp";
 
     // Events data management
-    private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
+    private Map<LocalDate, List<EventEntityGoogle>> mEventsData = new HashMap<>();
     private Map<LocalDate, Integer> mEventsCount = new HashMap<>();
 
     // Event Indicator
@@ -164,7 +161,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
 
         // ✅ STEP 4: Apply background highlighting UNIFICATO
         if (date != null) {
-            List<LocalEvent> events = getEventsForDate(date);
+            List<EventEntityGoogle> events = getEventsForDate( date);
             HighlightingHelper.applyUnifiedHighlighting(mContext, holder, date, events, mEventHelper);
         }
 
@@ -233,7 +230,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
-        List<LocalEvent> events = getEventsForDate(date);
+        List<EventEntityGoogle> events = getEventsForDate( date);
 
         if (events.isEmpty()) {
             // No events - hide both indicators
@@ -368,7 +365,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
                 java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
                 java.time.LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
+                List<EventEntityGoogle> events = mEventsDatabase.eventDao().getEventsForDateRange( startDateTime, endDateTime);
 
                 Log.i(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
@@ -376,7 +373,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
             } catch (Exception e) {
 
                 Log.e(TAG, mTAG + "Error loading events from database: " + e.getMessage());
-                return new ArrayList<LocalEvent>();
+                return new ArrayList<EventEntityGoogle>();
             }
         }).thenAccept(events -> {
             // Process on main thread
@@ -400,14 +397,14 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      *
      * @param events List of events to process
      */
-    private void processLoadedEvents(List<LocalEvent> events) {
+    private void processLoadedEvents(List<EventEntityGoogle> events) {
         final String mTAG = "processLoadedEvents: ";
         Log.v(TAG, mTAG + "called with " + events.size() + " events");
 
-        Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
+        Map<LocalDate, List<EventEntityGoogle>> eventsMap = new HashMap<>();
 
         // Process each event and expand multi-day events
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             expandEventAcrossDays(event, eventsMap);
         }
 
@@ -432,7 +429,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      *                  Key: Date,
      *                  Value: List of events
      */
-    private void expandEventAcrossDays(LocalEvent event, Map<LocalDate, List<LocalEvent>> eventsMap) {
+    private void expandEventAcrossDays(EventEntityGoogle event, Map<LocalDate, List<EventEntityGoogle>> eventsMap) {
         final String mTAG = "expandEventAcrossDays: ";
         Log.v(TAG, mTAG + "called with event: " + event.getTitle());
 
@@ -485,7 +482,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      *                  Key: Date,
      *                  Value: List of events
      */
-    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
+    public void updateEventsData(Map<LocalDate, List<EventEntityGoogle>> eventsMap) {
         // FIX: Assicurarsi che l'aggiornamento avvenga nel main thread
         if (Looper.myLooper() != Looper.getMainLooper()) {
             // Se non siamo nel main thread, fare post al main thread
@@ -499,7 +496,7 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
         // Creare copia defensive per evitare modifiche concorrenti
         if (eventsMap != null) {
             this.mEventsData = new HashMap<>();
-            for (Map.Entry<LocalDate, List<LocalEvent>> entry : eventsMap.entrySet()) {
+            for (Map.Entry<LocalDate, List<EventEntityGoogle>> entry : eventsMap.entrySet()) {
                 this.mEventsData.put(entry.getKey(), new ArrayList<>(entry.getValue()));
             }
         } else {
@@ -514,10 +511,10 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
      *
      * @param date Date to get events for
      */
-    private List<LocalEvent> getEventsForDate(LocalDate date) {
-        List<LocalEvent> events = mEventsData.get(date);
+    private List<EventEntityGoogle> getEventsForDate(LocalDate date) {
+        List<EventEntityGoogle> events = mEventsData.get( date);
 
-        return (events != null) ? events : new ArrayList<LocalEvent>();
+        return (events != null) ? events : new ArrayList<EventEntityGoogle>();
     }
 
     /**
@@ -533,11 +530,11 @@ public class CalendarAdapter extends BaseInteractiveAdapter {
                 return mEventsDatabase.eventDao().getAllEvents();
             } catch (Exception e) {
                 Log.e(TAG, "Error loading events", e);
-                return new ArrayList<LocalEvent>();
+                return new ArrayList<EventEntityGoogle>();
             }
         }).thenAccept(events -> {
-            Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
-            for (LocalEvent event : events) {
+            Map<LocalDate, List<EventEntityGoogle>> eventsMap = new HashMap<>();
+            for (EventEntityGoogle event : events) {
                 LocalDate eventDate = event.getStartDate();
                 eventsMap.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
             }

@@ -14,14 +14,12 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.utils.ColorUtils;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
-
-import org.w3c.dom.Text;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -50,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>Event Integration:</h3>
  * <ul>
- *   <li>LocalEvent display with type indicators</li>
+ *   <li>EventEntityGoogle display with type indicators</li>
  *   <li>Work schedule (Quattrodue) pattern visualization</li>
  *   <li>Multiple events per day aggregation</li>
  *   <li>Priority-based event highlighting</li>
@@ -77,7 +75,7 @@ public class SwipeCalendarDayAdapter
          * @param day       Day data (may be null for overflow days)
          * @param dayEvents Events for this day (may be empty)
          */
-        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents);
+        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<EventEntityGoogle> dayEvents);
 
         /**
          * Called when user long-clicks on a day cell.
@@ -97,11 +95,11 @@ public class SwipeCalendarDayAdapter
      * @param dayData May be null for overflow days
      */
     private record CalendarDayItem(LocalDate date, boolean isCurrentMonth, boolean isToday,
-                                   WorkScheduleDay dayData, List<LocalEvent> events)
+                                   WorkScheduleDay dayData, List<EventEntityGoogle> events)
     {
         private CalendarDayItem(
                 @NonNull LocalDate date, boolean isCurrentMonth, boolean isToday,
-                @Nullable WorkScheduleDay dayData, @NonNull List<LocalEvent> events
+                @Nullable WorkScheduleDay dayData, @NonNull List<EventEntityGoogle> events
         ) {
             this.date = date;
             this.isCurrentMonth = isCurrentMonth;
@@ -122,7 +120,7 @@ public class SwipeCalendarDayAdapter
     private List<CalendarDayItem> mDayItems = new ArrayList<>();
 
     // Events cache by date
-    private Map<LocalDate, List<LocalEvent>> mEventsCache = new ConcurrentHashMap<>();
+    private Map<LocalDate, List<EventEntityGoogle>> mEventsCache = new ConcurrentHashMap<>();
 
     // Work schedule data cache by date
     private Map<LocalDate, WorkScheduleDay> mWorkScheduleCache = new ConcurrentHashMap<>();
@@ -318,7 +316,7 @@ public class SwipeCalendarDayAdapter
                 if (hasEvents) {
                     eventTypeIndicators.setVisibility( View.VISIBLE );
                     // Set color based on highest priority event type
-                    LocalEvent primaryEvent = dayItem.events.get( 0 ); // Assume sorted by priority
+                    EventEntityGoogle primaryEvent = dayItem.events.get( 0 ); // Assume sorted by priority
                     int eventColor = getEventTypeColor( primaryEvent );
 //                    eventTypeIndicators.setBackgroundColor( Color.BLUE );
                     Log.w( TAG, "Event type indicator set to color: " + eventColor );
@@ -332,7 +330,7 @@ public class SwipeCalendarDayAdapter
 //            if (eventIndicator != null) {
 //                boolean hasHighPriorityEvent = dayItem.events.stream()
 //                        .anyMatch(
-//                                event -> event.getPriority() != null && event.getPriority().isHigh() );
+//                                event -> event.getEventPriority() != null && event.getEventPriority().isHigh() );
 //                eventIndicator.setVisibility( hasHighPriorityEvent ? View.VISIBLE : View.GONE );
 //            }
 
@@ -344,7 +342,7 @@ public class SwipeCalendarDayAdapter
                     if (hasEvents) {
                         eventIndicator.setVisibility( View.VISIBLE );
 
-                        LocalEvent primaryEvent = dayItem.events.get(
+                        EventEntityGoogle primaryEvent = dayItem.events.get(
                                 0 ); // Assume sorted by priority
                         int eventColor = getEventTypeColor( primaryEvent );
                         eventIndicator.setBackgroundColor( eventColor );
@@ -359,7 +357,7 @@ public class SwipeCalendarDayAdapter
                     if (hasEvents) {
                         eventsBadge.setVisibility( View.VISIBLE );
 
-                        LocalEvent primaryEvent = dayItem.events.get(
+                        EventEntityGoogle primaryEvent = dayItem.events.get(
                                 0 ); // Assume sorted by priority
                         int eventColor = getEventTypeColor( primaryEvent );
 //                    eventsBadge.setBackgroundColor( eventColor );
@@ -440,7 +438,7 @@ public class SwipeCalendarDayAdapter
         /**
          * Get color for event type.
          */
-        private int getEventTypeColor(@NonNull LocalEvent event) {
+        private int getEventTypeColor(@NonNull EventEntityGoogle event) {
             // TODO: Implement event type color mapping
             return mContext.getColor( R.color.calendar_event_default_color );
         }
@@ -485,7 +483,7 @@ public class SwipeCalendarDayAdapter
      *
      * @param eventsMap Events mapped by date
      */
-    public void updateEvents(@NonNull Map<LocalDate, List<LocalEvent>> eventsMap) {
+    public void updateEvents(@NonNull Map<LocalDate, List<EventEntityGoogle>> eventsMap) {
         mEventsCache.clear();
         mEventsCache.putAll( eventsMap );
 
@@ -550,7 +548,7 @@ public class SwipeCalendarDayAdapter
 
             // Get day data and events for this date
             WorkScheduleDay dayData = mWorkScheduleCache.get( currentDate );
-            List<LocalEvent> events = mEventsCache.getOrDefault( currentDate, new ArrayList<>() );
+            List<EventEntityGoogle> events = mEventsCache.getOrDefault( currentDate, new ArrayList<>() );
 
             CalendarDayItem dayItem = new CalendarDayItem( currentDate, isCurrentMonth, isToday,
                                                            dayData, events );

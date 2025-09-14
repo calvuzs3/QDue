@@ -7,20 +7,15 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.ui.core.architecture.base.BaseAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveFragment;
 import net.calvuz.qdue.ui.features.dayslist.adapters.DaysListAdapter;
 import net.calvuz.qdue.ui.features.dayslist.components.DaysListEventsPreview;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
-import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -184,7 +179,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
         }
 
         try {
-            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            Map<LocalDate, List<EventEntityGoogle>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
                 mLegacyAdapter.updateEventsData(eventsCache);
                 Log.i(TAG,  "✅ Adapter updated with events data");
@@ -255,7 +250,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
      * @param events The list of events to display
      */
     @Override
-    protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
+    protected void onShowEventsDialog(LocalDate date, @Nullable List<EventEntityGoogle> events) {
         Log.d(TAG, "✅ Showing events dialog for date: " + date);
 
         // DaysList-specific events dialog
@@ -302,7 +297,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
     /**
      * Show DaysList-specific events dialog
      */
-    private void showDaysListEventsDialog(LocalDate date, List<LocalEvent> events) {
+    private void showDaysListEventsDialog(LocalDate date, List<EventEntityGoogle> events) {
         Log.v(TAG, "✅ Showing DaysList events dialog with " + events.size() + " events for " + date);
 
         // TODO: Implement DaysListEventsDialogFragment
@@ -512,7 +507,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
         // Test click normale su un giorno con eventi
         LocalDate testDate = LocalDate.now();
-        List<LocalEvent> testEvents = getEventsForDate(testDate);
+        List<EventEntityGoogle> testEvents = getEventsForDate( testDate);
         // Click normale dovrebbe mostrare "TODO: Phase 2" nei log
     }
 
@@ -522,7 +517,7 @@ public class DayslistViewFragment extends BaseInteractiveFragment {
 
         // Test expansion on today
         LocalDate today = LocalDate.now();
-        List<LocalEvent> todayEvents = getEventsForDate(today);
+        List<EventEntityGoogle> todayEvents = getEventsForDate( today);
 
         Log.d(TAG, "Testing expansion for today: " + today);
         Log.d(TAG, "Today has " + todayEvents.size() + " events");

@@ -1,6 +1,6 @@
 package net.calvuz.qdue.core.common.interfaces;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 
 /**
@@ -14,37 +14,37 @@ public interface EventsOperationsInterface {
      * @param event Event to delete
      * @param listener Callback for deletion status
      */
-    void triggerEventDeletion(LocalEvent event, EventDeletionListener listener);
+    void triggerEventDeletion(EventEntityGoogle event, EventDeletionListener listener);
 
     /**
      * Edit existing event
      * @param event Event to edit
      */
-    void triggerEventEdit(LocalEvent event);
+    void triggerEventEdit(EventEntityGoogle event);
 
     /**
      * Edit existing event from the list contextual menu
      * @param event Event to edit
      */
-    void triggerEventEditFromList(LocalEvent event);
+    void triggerEventEditFromList(EventEntityGoogle event);
 
     /**
      * Duplicate existing event
      * @param event Event to duplicate
      */
-    void triggerEventDuplicate(LocalEvent event);
+    void triggerEventDuplicate(EventEntityGoogle event);
 
     /**
      * Share event via system share intent
      * @param event Event to share
      */
-    void triggerEventShare(LocalEvent event);
+    void triggerEventShare(EventEntityGoogle event);
 
     /**
      * Add event to system calendar
      * @param event Event to add to calendar
      */
-    void triggerAddToCalendar(LocalEvent event);
+    void triggerAddToCalendar(EventEntityGoogle event);
 
     /**
      * Create new event

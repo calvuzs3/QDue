@@ -30,10 +30,10 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.backup.BackupIntegration;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.enums.SelectionMode;
 import net.calvuz.qdue.ui.core.common.interfaces.SelectionModeHandler;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
 import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
@@ -81,7 +81,7 @@ public class EventsListFragment extends Fragment implements
 
     // Data
     private EventsAdapter mEventsAdapter;
-    private List<LocalEvent> mEventsList;
+    private List<EventEntityGoogle> mEventsList;
 
     // Interfaces
     private EventsFileOperationsInterface mFileOperationsInterface;
@@ -191,12 +191,12 @@ public class EventsListFragment extends Fragment implements
     private void setupRecyclerView() {
         mEventsAdapter = new EventsAdapter(mEventsList, new EventsAdapter.OnEventClickListener() {
             @Override
-            public void onEventClick(LocalEvent event) {
+            public void onEventClick(EventEntityGoogle event) {
                 EventsListFragment.this.onEventClick(event);
             }
 
             @Override
-            public void onEventLongClick(LocalEvent event) {
+            public void onEventLongClick(EventEntityGoogle event) {
                 EventsListFragment.this.onEventLongClick(event);
             }
 
@@ -264,12 +264,12 @@ public class EventsListFragment extends Fragment implements
             // Load all events asynchronously
             new Thread(() -> {
                 try {
-                    List<LocalEvent> events = eventDao.getAllEvents();
+                    List<EventEntityGoogle> events = eventDao.getAllEvents();
 
                     // Update UI on main thread
                     requireActivity().runOnUiThread(() -> {
                         // Filter out events with pending deletion
-                        List<LocalEvent> filteredEvents = filterPendingDeletions(events);
+                        List<EventEntityGoogle> filteredEvents = filterPendingDeletions( events);
 
                         mEventsList.clear();
                         if (filteredEvents != null && !filteredEvents.isEmpty()) {
@@ -471,11 +471,11 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📋 Get list of currently selected events
      */
-    private List<LocalEvent> getSelectedEvents() {
-        List<LocalEvent> selectedEvents = new ArrayList<>();
+    private List<EventEntityGoogle> getSelectedEvents() {
+        List<EventEntityGoogle> selectedEvents = new ArrayList<>();
 
         if (mEventsList != null && mSelectedEventIds != null) {
-            for (LocalEvent event : mEventsList) {
+            for (EventEntityGoogle event : mEventsList) {
                 if (mSelectedEventIds.contains(event.getId())) {
                     selectedEvents.add(event);
                 }
@@ -520,7 +520,7 @@ public class EventsListFragment extends Fragment implements
 
         // Update bottom toolbar if visible
         if (mBottomSelectionToolbar != null && mBottomSelectionToolbar.isVisible()) {
-            List<LocalEvent> selectedEventsList = getSelectedEvents();
+            List<EventEntityGoogle> selectedEventsList = getSelectedEvents();
             mBottomSelectionToolbar.updateSelection(mSelectedEventIds, selectedEventsList);
         }
 
@@ -638,7 +638,7 @@ public class EventsListFragment extends Fragment implements
 
         // ✅ NEW: Update toolbar with new selection
         if (mBottomSelectionToolbar != null && mBottomSelectionToolbar.isVisible()) {
-            List<LocalEvent> selectedEvents = getSelectedEvents();
+            List<EventEntityGoogle> selectedEvents = getSelectedEvents();
             mBottomSelectionToolbar.updateSelection(mSelectedEventIds, selectedEvents);
         }
 
@@ -677,7 +677,7 @@ public class EventsListFragment extends Fragment implements
 
             // Restore original title
             if (getActivity() != null) {
-                getActivity().setTitle(R.string.nav_eventi);
+                getActivity().setTitle(R.string.nav_events );
             }
         }
     }
@@ -688,7 +688,7 @@ public class EventsListFragment extends Fragment implements
      * Handle event item click - Navigate to detail fragment or handle selection
      */
     @Override
-    public void onEventClick(LocalEvent event) {
+    public void onEventClick(EventEntityGoogle event) {
         Log.d(TAG, "onEventClick called for: " + (event != null ? event.getTitle() : "null"));
 
         if (event == null || event.getId() == null) {
@@ -723,7 +723,7 @@ public class EventsListFragment extends Fragment implements
      * Handle event long click - Enter selection mode
      */
     @Override
-    public void onEventLongClick(LocalEvent event) {
+    public void onEventLongClick(EventEntityGoogle event) {
         if (event == null || event.getId() == null) return;
 
         Log.d(TAG, "onEventLongClick called for: " + event.getTitle());
@@ -763,7 +763,7 @@ public class EventsListFragment extends Fragment implements
     // ==================== ENHANCED ACTION HANDLERS FOR BOTTOM TOOLBAR ====================
 
     @Override
-    public void onEventActionSelected(EventsBottomSelectionToolbar.EventAction action, Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
+    public void onEventActionSelected(EventsBottomSelectionToolbar.EventAction action, Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents) {
         Log.d(TAG, "Enhanced action selected: " + action + " for " + selectedEventIds.size() + " events");
 
         switch (action) {
@@ -794,9 +794,9 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📝 Enhanced edit events with existing navigation
      */
-    private void handleEnhancedEditEvents(List<LocalEvent> selectedEvents) {
+    private void handleEnhancedEditEvents(List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents.size() == 1) {
-            LocalEvent event = selectedEvents.get(0);
+            EventEntityGoogle event = selectedEvents.get( 0);
 
             // TODO: internationalize these messages
             if (event == null || event.getId() == null) {
@@ -819,9 +819,9 @@ public class EventsListFragment extends Fragment implements
     /**
      * 🗑️ Enhanced delete events with existing confirmation pattern
      */
-    private void handleEnhancedDeleteEvents(Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
+    private void handleEnhancedDeleteEvents(Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents.size() == 1) {
-            LocalEvent event = selectedEvents.get(0);
+            EventEntityGoogle event = selectedEvents.get( 0);
             try {
                 mEventsOperationsInterface.triggerEventDeletion(event, new EventDeletionListener() {
                     @Override
@@ -853,9 +853,9 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📤 Enhanced share events
      */
-    private void handleEnhancedShareEvents(List<LocalEvent> selectedEvents) {
+    private void handleEnhancedShareEvents(List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents.size() == 1) {
-            LocalEvent event = selectedEvents.get(0);
+            EventEntityGoogle event = selectedEvents.get( 0);
             try {
                 mEventsOperationsInterface.triggerEventShare(event);
             } catch (Exception e) {
@@ -870,7 +870,7 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📋 Enhanced copy event to clipboard
      */
-    private void handleEnhancedCopyEvent(LocalEvent event) {
+    private void handleEnhancedCopyEvent(EventEntityGoogle event) {
 
         // TODO: implements a method in EventOperatinInterface like
 //            try {
@@ -900,7 +900,7 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📊 Enhanced duplicate event using existing patterns
      */
-    private void handleEnhancedDuplicateEvent(LocalEvent event) {
+    private void handleEnhancedDuplicateEvent(EventEntityGoogle event) {
         try {
             mEventsOperationsInterface.triggerEventDuplicate(event);
         } catch (Exception e) {
@@ -914,9 +914,9 @@ public class EventsListFragment extends Fragment implements
     /**
      * 📅 Enhanced add to system calendar
      */
-    private void handleEnhancedAddToCalendar(List<LocalEvent> selectedEvents) {
+    private void handleEnhancedAddToCalendar(List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents.size() == 1) {
-            LocalEvent event = selectedEvents.get(0);
+            EventEntityGoogle event = selectedEvents.get( 0);
             try {
                 mEventsOperationsInterface.triggerAddToCalendar(event);
             } catch (Exception e) {
@@ -928,9 +928,9 @@ public class EventsListFragment extends Fragment implements
         }
     }
 
-    private void handleEnhancedExportEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
+    private void handleEnhancedExportEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents.size() == 1) {
-            LocalEvent event = selectedEvents.get(0);
+            EventEntityGoogle event = selectedEvents.get( 0);
             try {
                 mFileOperationsInterface.triggerExportSelectedEventsToFile(fileUri, selectedEventIds, selectedEvents);
             } catch (Exception e) {
@@ -949,13 +949,13 @@ public class EventsListFragment extends Fragment implements
     /**
      * Filter out events that are pending deletion
      */
-    private List<LocalEvent> filterPendingDeletions(List<LocalEvent> events) {
+    private List<EventEntityGoogle> filterPendingDeletions(List<EventEntityGoogle> events) {
         if (mPendingDeletionIds.isEmpty() || events == null) {
             return events;
         }
 
-        List<LocalEvent> filtered = new ArrayList<>();
-        for (LocalEvent event : events) {
+        List<EventEntityGoogle> filtered = new ArrayList<>();
+        for (EventEntityGoogle event : events) {
             if (event != null && event.getId() != null &&
                     !mPendingDeletionIds.contains(event.getId())) {
                 filtered.add(event);
@@ -1177,7 +1177,7 @@ public class EventsListFragment extends Fragment implements
         }
 
         // Get selected events
-        List<LocalEvent> selectedEvents = getSelectedEvents();
+        List<EventEntityGoogle> selectedEvents = getSelectedEvents();
 
         // ✅ Show modern toolbar with current selection
         mBottomSelectionToolbar.show(
@@ -1206,7 +1206,7 @@ public class EventsListFragment extends Fragment implements
      * Add new event to list (called after creation)
      * with proper state handling
      */
-    public void addEvent(LocalEvent event) {
+    public void addEvent(EventEntityGoogle event) {
         final String mTAG = "addEvent: ";
         Log.d(TAG, mTAG + "Called for: " + (event != null ? event.getTitle() : "null"));
 
@@ -1221,7 +1221,7 @@ public class EventsListFragment extends Fragment implements
                 try {
                     // Check if event already exists to avoid duplicates
                     boolean exists = false;
-                    for (LocalEvent existingEvent : mEventsList) {
+                    for (EventEntityGoogle existingEvent : mEventsList) {
                         if (existingEvent != null && event.getId() != null &&
                                 event.getId().equals(existingEvent.getId())) {
                             Log.w(TAG, mTAG + "Event already exists in list: " + event.getTitle());
@@ -1282,7 +1282,7 @@ public class EventsListFragment extends Fragment implements
                     String removedTitle = "";
 
                     for (int i = 0; i < mEventsList.size(); i++) {
-                        LocalEvent event = mEventsList.get(i);
+                        EventEntityGoogle event = mEventsList.get( i);
                         if (event != null && eventId.equals(event.getId())) {
                             removedTitle = event.getTitle();
                             removedPosition = i;
@@ -1336,7 +1336,7 @@ public class EventsListFragment extends Fragment implements
     /**
      * Update existing event in list (called after editing)
      */
-    public void updateEvent(LocalEvent updatedEvent) {
+    public void updateEvent(EventEntityGoogle updatedEvent) {
         if (updatedEvent == null || updatedEvent.getId() == null) return;
 
         for (int i = 0; i < mEventsList.size(); i++) {
@@ -1351,9 +1351,9 @@ public class EventsListFragment extends Fragment implements
     /**
      * Get events list
      *
-     * @return LocalEvent List
+     * @return EventEntityGoogle List
      */
-    public List<LocalEvent> getEventsList() {
+    public List<EventEntityGoogle> getEventsList() {
         return mEventsList;
     }
 
@@ -1401,7 +1401,7 @@ public class EventsListFragment extends Fragment implements
     /**
      * ENHANCED: Handle event creation with proper state management
      */
-    public void onEventCreated(LocalEvent event) {
+    public void onEventCreated(EventEntityGoogle event) {
         final String mTAG = "onEventCreated: ";
         Log.d(TAG, mTAG + "Called for: " + (event != null ? event.getTitle() : "null"));
 
@@ -1506,7 +1506,7 @@ public class EventsListFragment extends Fragment implements
         Log.d(TAG, "=== TESTING SELECTION MODE ===");
 
         if (!mEventsList.isEmpty()) {
-            LocalEvent firstEvent = mEventsList.get(0);
+            EventEntityGoogle firstEvent = mEventsList.get( 0);
             if (firstEvent != null) {
                 Log.d(TAG, "Testing with first event: " + firstEvent.getTitle());
 
@@ -1532,7 +1532,7 @@ public class EventsListFragment extends Fragment implements
         Log.d(TAG, "Should show empty state: " + mEventsList.isEmpty());
 
         for (int i = 0; i < Math.min(mEventsList.size(), 5); i++) { // Log max 5 events
-            LocalEvent event = mEventsList.get(i);
+            EventEntityGoogle event = mEventsList.get( i);
             if (event != null) {
                 Log.d(TAG, i + ": " + event.getTitle() + " (ID: " + event.getId() + ")");
             } else {

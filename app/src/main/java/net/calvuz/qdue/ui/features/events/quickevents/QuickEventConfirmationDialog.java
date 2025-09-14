@@ -20,16 +20,15 @@ import com.google.android.material.timepicker.TimeFormat;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.models.EventPreview;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.core.services.models.QuickEventRequest;
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.actions.EventActionManager;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.actions.EventAction;
+import net.calvuz.qdue.domain.calendar.events.actions.EventActionManager;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
+import net.calvuz.qdue.domain.events.enums.EventType;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Library;
@@ -113,7 +112,7 @@ public class QuickEventConfirmationDialog implements Injectable {
 //    private final EventDao mEventDao;
 
     // Event data (mutable during editing)
-    private LocalEvent mEventData;
+    private EventEntityGoogle mEventData;
     private LocalTime mStartTime;
     private LocalTime mEndTime;
     private boolean mAllDay;
@@ -127,7 +126,7 @@ public class QuickEventConfirmationDialog implements Injectable {
         /**
          * Called when event is successfully created and saved
          */
-        void onEventCreated(LocalEvent createdEvent, ToolbarAction sourceAction, LocalDate date);
+        void onEventCreated(EventEntityGoogle createdEvent, ToolbarAction sourceAction, LocalDate date);
 
         /**
          * Called when event creation is cancelled by user
@@ -567,13 +566,13 @@ public class QuickEventConfirmationDialog implements Injectable {
     /**
      * ✅ Handle service creation result
      */
-    private void handleCreationResult(OperationResult<LocalEvent> result) {
+    private void handleCreationResult(OperationResult<EventEntityGoogle> result) {
         if (mContext instanceof Activity) {
             ((Activity) mContext).runOnUiThread(() -> {
                 setLoadingState(false);
 
                 if (result.isSuccess()) {
-                    LocalEvent createdEvent = result.getData();
+                    EventEntityGoogle createdEvent = result.getData();
                     Log.d(TAG, "Event created successfully: " + createdEvent.getId());
 
                     Library.showSuccess(mContext, "Evento creato con successo!");

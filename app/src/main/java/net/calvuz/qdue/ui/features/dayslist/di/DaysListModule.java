@@ -3,7 +3,6 @@ package net.calvuz.qdue.ui.features.dayslist.di;
 import android.content.Context;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;

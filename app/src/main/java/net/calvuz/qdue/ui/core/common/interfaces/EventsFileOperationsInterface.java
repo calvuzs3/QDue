@@ -2,7 +2,7 @@ package net.calvuz.qdue.ui.core.common.interfaces;
 
 import android.net.Uri;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 
 import java.util.List;
 import java.util.Set;
@@ -27,7 +27,7 @@ public interface EventsFileOperationsInterface {
     /**
      * Trigger export SELECTED events to file
      * @param selectedEventIds Set of event IDs to export
-     * @param selectedEvents List of selected LocalEvent objects for export
+     * @param selectedEvents List of selected EventEntityGoogle objects for export
      */
-    public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<LocalEvent> selectedEvents);
+    public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents);
 }

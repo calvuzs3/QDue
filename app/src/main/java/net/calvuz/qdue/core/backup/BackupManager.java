@@ -8,8 +8,7 @@ import androidx.preference.PreferenceManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
@@ -147,7 +146,7 @@ public class BackupManager {
      * Perform automatic backup of current events
      * Called whenever events are modified (create, update, delete, import)
      */
-    public void performAutoBackup(List<LocalEvent> events) {
+    public void performAutoBackup(List<EventEntityGoogle> events) {
         if (!isAutoBackupEnabled()) {
             Log.d(TAG, "Auto backup disabled, skipping");
             return;
@@ -178,7 +177,7 @@ public class BackupManager {
     /**
      * Perform manual backup with callback
      */
-    public void performManualBackup(List<LocalEvent> events, BackupCallback callback) {
+    public void performManualBackup(List<EventEntityGoogle> events, BackupCallback callback) {
         if (mBackupDirectory == null) {
             callback.onBackupError("Backup directory not available", null);
             return;
@@ -204,7 +203,7 @@ public class BackupManager {
     /**
      * Create backup file from events list
      */
-    private BackupResult createBackup(List<LocalEvent> events) throws IOException {
+    private BackupResult createBackup(List<EventEntityGoogle> events) throws IOException {
         // Generate timestamp for unique filename
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String filename = BACKUP_FILE_PREFIX + timestamp + BACKUP_FILE_EXTENSION;
@@ -230,7 +229,7 @@ public class BackupManager {
     /**
      * Create EventPackageJson structure from events list for backup
      */
-    private EventPackageJson createPackageFromEvents(List<LocalEvent> events, String timestamp) {
+    private EventPackageJson createPackageFromEvents(List<EventEntityGoogle> events, String timestamp) {
         EventPackageJson packageJson = new EventPackageJson();
 
         // Create package info
@@ -246,7 +245,7 @@ public class BackupManager {
 
         // Convert events to JSON format
         packageJson.events = new ArrayList<>();
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             EventPackageJson.EventJson eventJson = convertLocalEventToJson(event);
             packageJson.events.add(eventJson);
         }
@@ -255,9 +254,9 @@ public class BackupManager {
     }
 
     /**
-     * Convert LocalEvent to EventPackageJson.EventJson
+     * Convert EventEntityGoogle to EventPackageJson.EventJson
      */
-    private EventPackageJson.EventJson convertLocalEventToJson(LocalEvent event) {
+    private EventPackageJson.EventJson convertLocalEventToJson(EventEntityGoogle event) {
         EventPackageJson.EventJson eventJson = new EventPackageJson.EventJson();
 
         eventJson.id = event.getId();

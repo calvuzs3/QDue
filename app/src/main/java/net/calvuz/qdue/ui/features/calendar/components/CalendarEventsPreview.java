@@ -3,8 +3,7 @@ package net.calvuz.qdue.ui.features.calendar.components;
 import android.content.Context;
 import android.view.View;
 
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -44,7 +43,7 @@ public class CalendarEventsPreview extends BaseEventsPreview {
         if (mBottomSheetImpl != null) {
             mBottomSheetImpl.setEventsPreviewListener(new EventsPreviewListener() {
                 @Override
-                public void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date) {
+                public void onEventQuickAction(EventQuickAction action, EventEntityGoogle event, LocalDate date) {
                     // Forward to our listener
                     if (mListener != null) {
                         mListener.onEventQuickAction(action, event, date);
@@ -81,7 +80,7 @@ public class CalendarEventsPreview extends BaseEventsPreview {
     // ==================== BASE EVENTS PREVIEW IMPLEMENTATION ====================
 
     @Override
-    protected void showEventsPreviewImpl(LocalDate date, List<LocalEvent> events, View anchorView) {
+    protected void showEventsPreviewImpl(LocalDate date, List<EventEntityGoogle> events, View anchorView) {
         Log.d(TAG, "Delegating to bottom sheet: showEventsPreview for " + date);
 
         if (mBottomSheetImpl != null) {

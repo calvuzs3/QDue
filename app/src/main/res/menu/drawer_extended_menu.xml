@@ -26,8 +26,8 @@
         <item
             android:id="@+id/nav_events"
             android:icon="@drawable/ic_rounded_event_24"
-            android:title="@string/nav_eventi"
-            android:contentDescription="@string/nav_eventi" />
+            android:title="@string/nav_events"
+            android:contentDescription="@string/nav_events" />
 
     </group>
 

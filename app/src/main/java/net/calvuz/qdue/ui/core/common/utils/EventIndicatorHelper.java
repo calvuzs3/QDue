@@ -8,9 +8,9 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
+import net.calvuz.qdue.domain.events.enums.EventType;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class EventIndicatorHelper {
      * @param eventsIndicator TextView to show event count
      * @param events List of events for the day
      */
-    public void setupSimpleEventIndicator(TextView eventsIndicator, List<LocalEvent> events) {
+    public void setupSimpleEventIndicator(TextView eventsIndicator, List<EventEntityGoogle> events) {
         if (eventsIndicator == null) return;
 
         if (events == null || events.isEmpty()) {
@@ -67,10 +67,10 @@ public class EventIndicatorHelper {
     /**
      * Get color for highest priority event in the list.
      */
-    public int getHighestPriorityColor(List<LocalEvent> events) {
+    public int getHighestPriorityColor(List<EventEntityGoogle> events) {
         EventPriority highestPriority = EventPriority.LOW;
 
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             EventPriority priority = event.getPriority();
             if (priority != null && getPriorityScore(priority) > getPriorityScore(highestPriority)) {
                 highestPriority = priority;
@@ -108,7 +108,7 @@ public class EventIndicatorHelper {
      * @param priorityBadge The badge View for priority
      * @param events List of events for this day
      */
-    public void setupEventIndicators(View typeIndicator, View priorityBadge, List<LocalEvent> events) {
+    public void setupEventIndicators(View typeIndicator, View priorityBadge, List<EventEntityGoogle> events) {
         if (events == null || events.isEmpty()) {
             hideIndicators(typeIndicator, priorityBadge);
             return;
@@ -132,7 +132,7 @@ public class EventIndicatorHelper {
      * @param events List of events for the day
      * @return true if there are events
      */
-    public boolean hasEvents(List<LocalEvent> events) {
+    public boolean hasEvents(List<EventEntityGoogle> events) {
         return events != null && !events.isEmpty();
     }
 
@@ -141,7 +141,7 @@ public class EventIndicatorHelper {
      * @param events List of events
      * @return Count of events
      */
-    public int getEventsCount(List<LocalEvent> events) {
+    public int getEventsCount(List<EventEntityGoogle> events) {
         return events != null ? events.size() : 0;
     }
 
@@ -236,7 +236,7 @@ public class EventIndicatorHelper {
      * @param events List of events for the day
      */
     public void setupAdvancedEventIndicators(View typeIndicator, View priorityBadge,
-                                             TextView textIndicator, List<LocalEvent> events) {
+                                             TextView textIndicator, List<EventEntityGoogle> events) {
         if (events == null || events.isEmpty()) {
             hideAdvancedIndicators(typeIndicator, priorityBadge, textIndicator);
             return;
@@ -297,11 +297,11 @@ public class EventIndicatorHelper {
     /**
      * STEP 5: Get dominant event type for visual indicator.
      */
-    private EventType getDominantEventType(List<LocalEvent> events) {
+    private EventType getDominantEventType(List<EventEntityGoogle> events) {
         EventType dominantType = EventType.GENERAL;
         int dominantScore = 0;
 
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             int typeScore = getEventTypeScore(event.getEventType());
             if (typeScore > dominantScore) {
                 dominantScore = typeScore;
@@ -316,7 +316,7 @@ public class EventIndicatorHelper {
      * STEP 5 FIX: Get dominant priority for visual indicator.
      * Returns EventPriority directly.
      */
-    private EventPriority getDominantPriority(List<LocalEvent> events) {
+    private EventPriority getDominantPriority(List<EventEntityGoogle> events) {
         if (events == null || events.isEmpty()) {
             return EventPriority.LOW;
         }
@@ -324,7 +324,7 @@ public class EventIndicatorHelper {
         EventPriority dominantPriority = EventPriority.LOW;
         int dominantScore = 0;
 
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             EventPriority priority = event.getPriority();
             int priorityScore = getPriorityScore(priority);
 

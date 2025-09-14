@@ -6,8 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
-import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.events.EventPackageManagerExtension;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.File;
@@ -457,7 +455,7 @@ public class RestoreManager {
             return false;
         }
 
-        // TODO: Convert EventJson to LocalEvent and save to database
+        // TODO: Convert EventJson to EventEntityGoogle and save to database
         // For now, we simulate the process
         Log.d(TAG, "Would restore event: " + eventJson.title + " (ID: " + eventJson.id + ")");
 

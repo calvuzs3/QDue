@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -35,7 +35,7 @@ public final class HighlightingHelper {
     public static void applyUnifiedHighlighting(Context context,
                                                 com.google.android.material.card.MaterialCardView cardView,
                                                 LocalDate date,
-                                                List<LocalEvent> events,
+                                                List<EventEntityGoogle> events,
                                                 EventIndicatorHelper eventHelper) {
 
         LocalDate today = LocalDate.now();
@@ -212,7 +212,7 @@ public final class HighlightingHelper {
     /**
      * Setup card style for EVENTS with subtle highlighting
      */
-    public static void setupEventsCardStyle(Context context, EventIndicatorHelper helper, com.google.android.material.card.MaterialCardView cardView, List<LocalEvent> events) {
+    public static void setupEventsCardStyle(Context context, EventIndicatorHelper helper, com.google.android.material.card.MaterialCardView cardView, List<EventEntityGoogle> events) {
         // Ottenere colore dominante eventi
         int eventColor = getDominantEventTypeColor(context, helper, events);
 
@@ -233,7 +233,7 @@ public final class HighlightingHelper {
     /**
      * Ottenere colore dominante eventi
      */
-    private static int getDominantEventTypeColor(Context context, EventIndicatorHelper helper, List<LocalEvent> events) {
+    private static int getDominantEventTypeColor(Context context, EventIndicatorHelper helper, List<EventEntityGoogle> events) {
         if (events == null || events.isEmpty()) {
             return ContextCompat.getColor(context, R.color.event_type_general);
         }

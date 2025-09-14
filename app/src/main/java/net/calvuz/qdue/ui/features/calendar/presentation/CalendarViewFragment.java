@@ -11,11 +11,8 @@ import androidx.annotation.Nullable;
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.QDueMainActivity;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.quattrodue.models.Day;
-import net.calvuz.qdue.ui.core.architecture.base.BaseAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveFragment;
 import net.calvuz.qdue.ui.core.components.widgets.EventsPreviewManager;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
@@ -171,7 +168,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
         }
 
         try {
-            Map<LocalDate, List<LocalEvent>> eventsCache = getEventsCache();
+            Map<LocalDate, List<EventEntityGoogle>> eventsCache = getEventsCache();
             if (!eventsCache.isEmpty()) {
                 mLegacyAdapter.updateEventsData(eventsCache);
                 Log.i(TAG, mTAG + "✅ Adapter updated with events data");
@@ -319,7 +316,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
     }
 
     @Override
-    protected void onShowEventsDialog(LocalDate date, @Nullable List<LocalEvent> events) {
+    protected void onShowEventsDialog(LocalDate date, @Nullable List<EventEntityGoogle> events) {
         Log.d(TAG, "Calendar: Showing events dialog for date: " + date);
 
         // DaysList-specific events dialog
@@ -345,7 +342,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
     /**
      * Show DaysList-specific events dialog
      */
-    private void showCalendarEventsDialog(LocalDate date, List<LocalEvent> events) {
+    private void showCalendarEventsDialog(LocalDate date, List<EventEntityGoogle> events) {
         Log.d(TAG, "Showing Calendar events dialog with " + events.size() + " events for " + date);
 
         // For now, use base implementation
@@ -409,7 +406,7 @@ public class CalendarViewFragment extends BaseInteractiveFragment {
         Log.d(TAG, "=== DEBUG TEST BOTTOM SHEET ===");
 
         LocalDate testDate = LocalDate.now();
-        List<LocalEvent> testEvents = getEventsForDate(testDate);
+        List<EventEntityGoogle> testEvents = getEventsForDate( testDate);
 
         Log.d(TAG, "Testing bottom sheet for today: " + testDate);
         Log.d(TAG, "Test events count: " + testEvents.size());

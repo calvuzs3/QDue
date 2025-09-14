@@ -3,13 +3,11 @@ package net.calvuz.qdue.ui.features.swipecalendar.adapters;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,8 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -75,7 +73,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          * @param month    Target month
          * @param callback Callback for results
          */
-        void loadEventsForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, List<LocalEvent>>> callback);
+        void loadEventsForMonth(@NonNull YearMonth month, @NonNull DataCallback<Map<LocalDate, List<EventEntityGoogle>>> callback);
 
         /**
          * Load work schedule for a specific month.
@@ -102,7 +100,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         /**
          * Called when user clicks on a day.
          */
-        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events);
+        void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<EventEntityGoogle> events);
 
         /**
          * Called when user long-clicks on a day.
@@ -134,7 +132,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     private static class MonthData {
         final YearMonth month;
         LoadingState state = LoadingState.IDLE;
-        Map<LocalDate, List<LocalEvent>> events = new ConcurrentHashMap<>();
+        Map<LocalDate, List<EventEntityGoogle>> events = new ConcurrentHashMap<>();
         Map<LocalDate, WorkScheduleDay> workSchedule = new ConcurrentHashMap<>();
         Exception lastError;
 
@@ -302,7 +300,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
                 dayAdapter = new SwipeCalendarDayAdapter( mContext, month );
                 dayAdapter.setOnDayClickListener( new SwipeCalendarDayAdapter.OnDayClickListener() {
                     @Override
-                    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
+                    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<EventEntityGoogle> dayEvents) {
                         if (mInteractionListener != null) {
                             mInteractionListener.onDayClick( date, day, dayEvents );
                         }
@@ -381,7 +379,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             // Load events first
             mDataLoader.loadEventsForMonth( monthData.month, new DataCallback<>() {
                 @Override
-                public void onSuccess(@NonNull Map<LocalDate, List<LocalEvent>> eventsData) {
+                public void onSuccess(@NonNull Map<LocalDate, List<EventEntityGoogle>> eventsData) {
                     mMainHandler.post( () -> {
                         monthData.events.clear();
                         monthData.events.putAll( eventsData );

@@ -1,6 +1,7 @@
 package net.calvuz.qdue.ui.core.common.interfaces;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public interface EventsPreviewInterface {
      * @param events List of events for that date
      * @param anchorView View that was clicked (for positioning)
      */
-    void showEventsPreview(LocalDate date, List<LocalEvent> events, android.view.View anchorView);
+    void showEventsPreview(LocalDate date, List<EventEntityGoogle> events, android.view.View anchorView);
 
     /**
      * Hide currently showing events preview
@@ -35,7 +36,7 @@ public interface EventsPreviewInterface {
      * @param event The event to act on
      * @param date The date context
      */
-    void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date);
+    void onEventQuickAction(EventQuickAction action, EventEntityGoogle event, LocalDate date);
 
     /**
      * Handle general actions (add event, navigate to events activity)
@@ -71,7 +72,7 @@ public interface EventsPreviewInterface {
         /**
          * Called when an event quick action is performed
          */
-        void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date);
+        void onEventQuickAction(EventQuickAction action, EventEntityGoogle event, LocalDate date);
 
         /**
          * Called when a general events action is performed

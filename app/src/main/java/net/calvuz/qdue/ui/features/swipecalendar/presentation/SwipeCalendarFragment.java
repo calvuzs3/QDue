@@ -27,13 +27,13 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
+import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
@@ -666,7 +666,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     private class MonthInteractionListener implements MonthPagerAdapter.OnMonthInteractionListener {
 
         @Override
-        public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events) {
+        public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<EventEntityGoogle> events) {
             // Handle day click - could open day detail view or event creation
             Log.d( TAG, "Day clicked: " + date + ", events count: " + events.size() );
 
@@ -704,11 +704,11 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     /**
      * Open day events view.
      */
-    private void openDayEventsView(@NonNull LocalDate date, @NonNull List<LocalEvent> events) {
+    private void openDayEventsView(@NonNull LocalDate date, @NonNull List<EventEntityGoogle> events) {
         // TODO: Implement day events view
         // Could open EventsActivity filtered to specific date
         Intent intent = new Intent( requireContext(), EventsActivity.class );
-        intent.putExtra( EventsActivity.EXTRA_FILTER_DATE, date.toString() );
+        intent.putExtra( LocalEventsActivity.EXTRA_FILTER_DATE, date.toString() );
         startActivity( intent );
     }
 

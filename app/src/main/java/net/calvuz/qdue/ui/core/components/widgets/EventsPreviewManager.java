@@ -2,8 +2,7 @@ package net.calvuz.qdue.ui.core.components.widgets;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.features.calendar.components.CalendarEventsPreview;
 import net.calvuz.qdue.ui.features.dayslist.components.DaysListEventsPreview;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsPreviewInterface;
@@ -70,7 +69,7 @@ public class EventsPreviewManager implements EventsPreviewInterface {
     }
 
     @Override
-    public void showEventsPreview(LocalDate date, List<LocalEvent> events, android.view.View anchorView) {
+    public void showEventsPreview(LocalDate date, List<EventEntityGoogle> events, android.view.View anchorView) {
         if (mCurrentImplementation != null) {
             mCurrentImplementation.showEventsPreview(date, events, anchorView);
         } else {
@@ -91,7 +90,7 @@ public class EventsPreviewManager implements EventsPreviewInterface {
     }
 
     @Override
-    public void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date) {
+    public void onEventQuickAction(EventQuickAction action, EventEntityGoogle event, LocalDate date) {
         if (mCurrentImplementation != null) {
             mCurrentImplementation.onEventQuickAction(action, event, date);
         }

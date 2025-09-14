@@ -394,7 +394,7 @@
     <string name="settings_events_google_calendars_title">Calendari</string>
     <string name="settings_events_google_calendars_summary">Scegli quali calendari importare</string>
 
-    <!-- LocalEvent Types -->
+    <!-- EventEntityGoogle Types -->
     <string name="settings_events_types_header">Tipologie Eventi</string>
     <string name="settings_events_production_stops_title">Fermate Produzione</string>
     <string name="settings_events_production_stops_summary">Mostra eventi di fermata programmata e carenza ordini</string>
@@ -410,7 +410,7 @@
     <string name="settings_events_import_title">Importa Eventi</string>
     <string name="settings_events_import_summary">Carica eventi da file JSON</string>
 
-    <!-- LocalEvent Priority String -->
+    <!-- EventEntityGoogle Priority String -->
     <string name="event_priority">Priorità evento</string>
 
     <!-- Update Messages -->
@@ -569,7 +569,7 @@
 
 
     <!-- Navigation and Titles -->
-    <string name="nav_eventi">Eventi</string>
+    <string name="nav_events">Eventi</string>
     <string name="event_detail_title">Dettagli Evento</string>
     <string name="add_new_event">Aggiungi nuovo evento</string>
 

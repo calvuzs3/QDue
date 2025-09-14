@@ -19,6 +19,109 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QDue">
 
+        <!-- LocalEventsActivity -->
+        <activity
+            android:name=".ui.features.events.local.presentation.LocalEventsActivity"
+            android:exported="true"
+            android:label="@string/menu_title_events">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.features.swipecalendar.presentation.SwipeCalendarActivity" />
+
+            <!-- Standard activity launch -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+
+            <!-- Primary: Custom .qdue files with specific hosts -->
+            <intent-filter android:priority="100">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.externalstorage.documents" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <intent-filter android:priority="96">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.providers.downloads.documents" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <intent-filter android:priority="92">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.google.android.apps.docs.storage" />
+                <data android:pathPattern=".*\\.qdue" />
+            </intent-filter>
+
+            <!-- Secondary: JSON files via MIME type (Storage Access Framework) -->
+            <intent-filter android:priority="90">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:mimeType="application/json" />
+            </intent-filter>
+
+            <!-- Fallback: JSON files with common document providers -->
+            <intent-filter android:priority="86">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.externalstorage.documents" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <intent-filter android:priority="82">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.android.providers.downloads.documents" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <!-- Google Drive support -->
+            <intent-filter android:priority="70">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="content" />
+                <data android:host="com.google.android.apps.docs.storage" />
+                <data android:pathPattern=".*\\.json" />
+            </intent-filter>
+
+            <!-- File provider support (your app's FileProvider) -->
+            <intent-filter android:priority="60">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:host="${applicationId}.fileprovider"
+                    android:scheme="content" />
+            </intent-filter>
+        </activity>
+
         <!-- Assignment List Activity -->
         <activity
             android:name=".ui.features.assignment.list.AssignmentListActivity"

@@ -62,7 +62,7 @@ public class FullApplicationBackup {
 
     /**
      * Legacy events backup from QDueDatabase
-     * Contains LocalEvent entities and related data
+     * Contains EventEntityGoogle entities and related data
      */
     public EntityBackupPackage eventsBackup;
 

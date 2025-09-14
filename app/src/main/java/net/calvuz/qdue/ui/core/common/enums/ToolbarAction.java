@@ -5,7 +5,7 @@ package net.calvuz.qdue.ui.core.common.enums;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.EventType;
+import net.calvuz.qdue.domain.events.enums.EventType;
 
 import java.time.LocalDate;
 import java.util.List;

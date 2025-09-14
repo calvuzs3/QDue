@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><!-- EventsActivity Layout - Responsive with Navigation Component Support -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".ui.features.events.local.presentation.LocalEventsActivity">
+
+    <!-- App Bar Layout -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar_events"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:theme="@style/ThemeOverlay.QDue.Toolbar"
+            app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24"
+            app:title="@string/nav_events" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content Area with Navigation Host Fragment -->
+    <FrameLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Navigation Host Fragment Container -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment_events"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:defaultNavHost="false"
+            app:navGraph="@navigation/events_navigation" />
+
+        <!-- Empty State View (shown when no events available) -->
+        <include
+            android:id="@+id/empty_state_events"
+            layout="@layout/empty_state_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <!-- Loading State View -->
+        <include
+            android:id="@+id/loading_state_events"
+            layout="@layout/loading_state_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/spacing_m"
+        android:layout_marginBottom="@dimen/spacing_l"
+        android:contentDescription="@string/text_create_new_event"
+        android:src="@drawable/ic_rounded_calendar_add_on_24"
+        app:srcCompat="@drawable/ic_rounded_calendar_add_on_24" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

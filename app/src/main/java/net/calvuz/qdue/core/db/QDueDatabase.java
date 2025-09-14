@@ -9,10 +9,10 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.dao.TurnExceptionDao;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.models.TurnException;
+import net.calvuz.qdue.core.db.converters.CalendarTypeConverters;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.dao.TurnExceptionDao;
+import net.calvuz.qdue.domain.calendar.events.models.TurnException;
 import net.calvuz.qdue.user.data.dao.EstablishmentDao;
 import net.calvuz.qdue.user.data.dao.MacroDepartmentDao;
 import net.calvuz.qdue.user.data.dao.SubDepartmentDao;
@@ -30,7 +30,7 @@ import java.text.MessageFormat;
  * QDueDatabase - Unified main database for Q-DUE application.
  * <p>
  * Database Evolution:
- * Version 1: Events only (LocalEvent)
+ * Version 1: Events only (EventEntityGoogle)
  * Version 2: Events + TurnException
  * Version 3: Events + TurnException + User management (UNIFIED)
  * <p>
@@ -45,8 +45,8 @@ import java.text.MessageFormat;
 @Database (
         entities = {
                 // Events and Calendar
-                LocalEvent.class,
-                TurnException.class,
+//                EventDao.class,
+//                TurnException.class,
 
                 // User Management (migrated from UserDatabase)
                 User.class,
@@ -59,7 +59,8 @@ import java.text.MessageFormat;
         exportSchema = false
 )
 @TypeConverters ({
-        QDueTypeConverters.class
+        QDueTypeConverters.class,
+        CalendarTypeConverters.class
 })
 public abstract class QDueDatabase extends RoomDatabase {
 

@@ -33,7 +33,6 @@ import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.proto.CalendarDataManagerEnhanced;
 import net.calvuz.qdue.ui.proto.MigrationHelper;
 import net.calvuz.qdue.ui.features.settings.presentation.QDueSettingsActivity;
-import net.calvuz.qdue.ui.core.architecture.base.BaseActivity;
 import net.calvuz.qdue.ui.core.common.enums.NavigationMode;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -843,7 +842,7 @@ public class QDueMainActivity extends BaseActivity {
                 openUserProfileActivity();
                 return true;
             } else if (itemId == R.id.nav_events) {
-                Log.d( TAG, MessageFormat.format( message, R.string.nav_eventi ) );
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_events ) );
                 openEventsActivity();
                 return true;
             } else if (itemId == R.id.nav_settings) {

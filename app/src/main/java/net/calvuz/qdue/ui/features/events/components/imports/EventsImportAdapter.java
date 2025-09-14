@@ -5,8 +5,8 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.events.imports.EventsImportManager;
-import net.calvuz.qdue.events.EventPackageManager;
+import net.calvuz.qdue.domain.calendar.events.validation.JsonSchemaValidator;
+import net.calvuz.qdue.domain.calendar.events.imports.EventsImportManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.BufferedReader;
@@ -103,7 +103,7 @@ public class EventsImportAdapter {
                                     0,                              // errorEvents
                                     new java.util.ArrayList<>(),   // warnings
                                     new java.util.ArrayList<>(),   // errors
-                                    new java.util.ArrayList<>(),   // importedEventsList (List<LocalEvent>)
+                                    new java.util.ArrayList<>(),   // importedEventsList (List<EventEntityGoogle>)
                                     null                            // validationResult
                             );
                             callback.onComplete(result);
@@ -300,8 +300,8 @@ public class EventsImportAdapter {
 
                     if (result.isValid) {
                         // Create compatible validation result
-                        net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult validationResult =
-                                new net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult(
+                        JsonSchemaValidator.ValidationResult validationResult =
+                                new JsonSchemaValidator.ValidationResult(
                                         true, "", new java.util.ArrayList<>(), new java.util.ArrayList<>());
 
                         callback.onValidationComplete(validationResult, result.packageJson);
@@ -325,8 +325,9 @@ public class EventsImportAdapter {
      * Validation callback interface
      */
     public interface ValidationCallback {
-        void onValidationComplete(net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult result,
-                                  net.calvuz.qdue.events.EventPackageJson packageJson);
+        void onValidationComplete(
+                JsonSchemaValidator.ValidationResult result,
+                EventPackageJson packageJson);
         void onValidationError(String error, Exception exception);
     }
 

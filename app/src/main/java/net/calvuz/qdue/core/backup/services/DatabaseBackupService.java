@@ -7,8 +7,8 @@ import net.calvuz.qdue.core.backup.models.EventsBackupPackage;
 import net.calvuz.qdue.core.backup.models.UsersBackupPackage;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.user.data.dao.EstablishmentDao;
 import net.calvuz.qdue.user.data.dao.MacroDepartmentDao;
 import net.calvuz.qdue.user.data.dao.SubDepartmentDao;
@@ -94,7 +94,7 @@ public class DatabaseBackupService {
      */
     private EntityBackupPackage createEventsBackup() {
         try {
-            List<LocalEvent> events = mEventDao.getAllEvents();
+            List<EventEntityGoogle> events = mEventDao.getAllEvents();
             Log.d(TAG, "Creating backup for " + events.size() + " events");
 
             // Use specialized EventsBackupPackage for enhanced features
@@ -261,12 +261,12 @@ public class DatabaseBackupService {
             }
 
             // Handle specialized EventsBackupPackage
-            List<LocalEvent> events;
+            List<EventEntityGoogle> events;
             if (backup instanceof EventsBackupPackage) {
                 events = ((EventsBackupPackage) backup).events;
             } else {
                 // Generic entity backup - need to cast
-                events = (List<LocalEvent>) backup.entities;
+                events = (List<EventEntityGoogle>) backup.entities;
             }
 
             if (events == null || events.isEmpty()) {
@@ -275,7 +275,7 @@ public class DatabaseBackupService {
             }
 
             int restored = 0;
-            for (LocalEvent event : events) {
+            for (EventEntityGoogle event : events) {
                 try {
                     // Check for duplicates if not in replace mode
                     if (!replaceAll && mEventDao.getEventById(event.getId()) != null) {

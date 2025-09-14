@@ -3,7 +3,6 @@ package net.calvuz.qdue.ui.features.calendar.di;
 import android.content.Context;
 
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.quattrodue.utils.CalendarDataManager;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;

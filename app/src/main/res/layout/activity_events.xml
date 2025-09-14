@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             android:theme="@style/ThemeOverlay.QDue.Toolbar"
             app:navigationIcon="@drawable/ic_rounded_arrow_back_ios_new_24"
-            app:title="@string/nav_eventi" />
+            app:title="@string/nav_events" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

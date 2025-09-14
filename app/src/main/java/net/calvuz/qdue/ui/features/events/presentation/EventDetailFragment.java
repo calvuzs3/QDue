@@ -27,8 +27,8 @@ import com.google.android.material.card.MaterialCardView;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.ui.core.common.interfaces.EventsFileOperationsInterface;
@@ -126,7 +126,7 @@ public class EventDetailFragment extends Fragment {
     private LinearLayout mTimeUntilLayout;
 
     // Data
-    private LocalEvent mEvent;
+    private EventEntityGoogle mEvent;
     private String mEventId;
 
     /**
@@ -330,7 +330,7 @@ public class EventDetailFragment extends Fragment {
             // Load event asynchronously with enhanced error handling
             new Thread(() -> {
                 try {
-                    LocalEvent event = eventDao.getEventById(mEventId);
+                    EventEntityGoogle event = eventDao.getEventById( mEventId);
 
                     // Update UI on main thread with null safety
                     if (getActivity() != null) {
@@ -1103,8 +1103,8 @@ public class EventDetailFragment extends Fragment {
      * Create sample event for testing purposes
      * TODO: Remove when real database integration is implemented
      */
-    private LocalEvent createSampleEvent() {
-        LocalEvent event = new LocalEvent();
+    private EventEntityGoogle createSampleEvent() {
+        EventEntityGoogle event = new EventEntityGoogle();
         event.setId("sample_event_001");
         event.setTitle("Fermata Programmata Linea A");
         event.setDescription("Manutenzione ordinaria programmata per ottimizzazione prestazioni della linea di produzione A. Durante questo periodo verranno eseguiti controlli approfonditi e sostituzioni preventive.");

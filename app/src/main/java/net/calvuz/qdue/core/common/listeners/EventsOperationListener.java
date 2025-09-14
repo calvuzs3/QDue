@@ -1,6 +1,6 @@
 package net.calvuz.qdue.core.common.listeners;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.core.services.models.OperationResult;
 
 /**
@@ -89,13 +89,13 @@ public interface EventsOperationListener {
      * Called when new event is created
      * @param event The newly created event
      */
-    void onEventCreated(LocalEvent event);
+    void onEventCreated(EventEntityGoogle event);
 
     /**
      * Called when event is updated
      * @param result Operation result with updated event
      */
-    void onEventUpdated(OperationResult<LocalEvent> result);
+    void onEventUpdated(OperationResult<EventEntityGoogle> result);
 
     /**
      * Called when event is deleted
@@ -122,31 +122,31 @@ public interface EventsOperationListener {
      * @param event Event to delete
      * @param listener Callback for deletion status
      */
-    void triggerEventDeletion(LocalEvent event, EventDeletionListener listener);
+    void triggerEventDeletion(EventEntityGoogle event, EventDeletionListener listener);
 
     /**
      * Edit existing event
      * @param event Event to edit
      */
-    void triggerEventEdit(LocalEvent event);
+    void triggerEventEdit(EventEntityGoogle event);
 
     /**
      * Duplicate existing event
      * @param event Event to duplicate
      */
-    void triggerEventDuplicate(LocalEvent event);
+    void triggerEventDuplicate(EventEntityGoogle event);
 
     /**
      * Share event via system share intent
      * @param event Event to share
      */
-    void triggerEventShare(LocalEvent event);
+    void triggerEventShare(EventEntityGoogle event);
 
     /**
      * Add event to system calendar
      * @param event Event to add to calendar
      */
-    void triggerAddToCalendar(LocalEvent event);
+    void triggerAddToCalendar(EventEntityGoogle event);
 
 
 //    // ==================== UI OPERATIONS ====================

@@ -11,8 +11,6 @@ import com.google.gson.JsonSyntaxException;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 /**

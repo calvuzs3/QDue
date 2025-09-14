@@ -34,6 +34,7 @@ import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.backup.ExportManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.architecture.services.BackHandlingServiceImpl;
 import net.calvuz.qdue.ui.features.events.components.imports.FileAccessAdapter;
 import net.calvuz.qdue.ui.features.events.components.imports.EventsImportAdapter;
@@ -43,11 +44,10 @@ import net.calvuz.qdue.ui.core.architecture.di.BackHandlingModule;
 import net.calvuz.qdue.ui.core.common.interfaces.BackHandlingService;
 import net.calvuz.qdue.ui.core.common.interfaces.BackPressHandler;
 import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
-import net.calvuz.qdue.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
 import net.calvuz.qdue.core.backup.BackupIntegration;
-import net.calvuz.qdue.events.imports.EventsImportManager;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.validation.JsonSchemaValidator;
+import net.calvuz.qdue.domain.calendar.events.imports.EventsImportManager;
+import net.calvuz.qdue.domain.calendar.events.validation.JsonSchemaValidator;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
@@ -128,9 +128,9 @@ public class EventsActivity extends AppCompatActivity implements
     private FileAccessAdapter mFileAccessAdapter;
     private EventsImportAdapter mEventsImportAdapter;
     private PermissionManager mPermissionManager;
-    private List<LocalEvent> mPendingExportEvents = null;
+    private List<EventEntityGoogle> mPendingExportEvents = null;
     // Add this field to the class for selected events export:
-    private List<LocalEvent> mSelectedEventsForExport;
+    private List<EventEntityGoogle> mSelectedEventsForExport;
 
     // ==================== DATA LAYER ====================
 
@@ -247,7 +247,7 @@ public class EventsActivity extends AppCompatActivity implements
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.nav_eventi);
+            getSupportActionBar().setTitle(R.string.nav_events );
         }
 
         mToolbar.setNavigationOnClickListener(v -> onBackPressed());
@@ -328,7 +328,7 @@ public class EventsActivity extends AppCompatActivity implements
             updateFabVisibility();
 
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(R.string.nav_eventi);
+                getSupportActionBar().setTitle(R.string.nav_events );
             }
 
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -621,7 +621,7 @@ public class EventsActivity extends AppCompatActivity implements
     private void createNewEvent(@NonNull String title, @NonNull LocalDate date) {
         new Thread(() -> {
             try {
-                LocalEvent newEvent = new LocalEvent(title, date);
+                EventEntityGoogle newEvent = new EventEntityGoogle( title, date);
                 newEvent.setDescription("My Event");
 
                 long result = mDatabase.eventDao().insertEvent(newEvent);
@@ -959,7 +959,7 @@ public class EventsActivity extends AppCompatActivity implements
                 try {
                     // Get all events from database
                     EventDao eventDao = mDatabase.eventDao();
-                    List<LocalEvent> allEvents = eventDao.getAllEvents();
+                    List<EventEntityGoogle> allEvents = eventDao.getAllEvents();
 
                     Log.d(TAG, "Retrieved " + allEvents.size() + " events for export");
 
@@ -1081,7 +1081,7 @@ public class EventsActivity extends AppCompatActivity implements
      */
     public void handleExportSelectedEventsToFile(@Nullable Uri fileUri,
                                                  Set<String> selectedEventIds,
-                                                 List<LocalEvent> selectedEvents) {
+                                                 List<EventEntityGoogle> selectedEvents) {
         if (selectedEvents == null || selectedEvents.isEmpty()) {
             Library.showError(this, R.string.text_no_event_selected_for_export);
             return;
@@ -1111,7 +1111,7 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
-    private void exportSelectedEventsToFile(Uri fileUri, List<LocalEvent> selectedEvents) {
+    private void exportSelectedEventsToFile(Uri fileUri, List<EventEntityGoogle> selectedEvents) {
         try {
             showGlobalLoading(true, MessageFormat.format(
                     getString(R.string.text_exporting_0_selected_events), selectedEvents.size()));
@@ -1217,7 +1217,7 @@ public class EventsActivity extends AppCompatActivity implements
      * @param listener Callback for deletion events
      */
     @Override
-    public void triggerEventDeletion(LocalEvent event, EventDeletionListener listener) {
+    public void triggerEventDeletion(EventEntityGoogle event, EventDeletionListener listener) {
         if (event == null || event.getId() == null) {
             listener.onDeletionCompleted(false, getString(R.string.text_error_event_not_valid));
             return;
@@ -1226,7 +1226,7 @@ public class EventsActivity extends AppCompatActivity implements
         showEventDeletionDialog(event, listener);
     }
 
-    private void showEventDeletionDialog(LocalEvent event, EventDeletionListener listener) {
+    private void showEventDeletionDialog(EventEntityGoogle event, EventDeletionListener listener) {
         String dialogMessage = String.format(
                 getString(R.string.dialog_event_delete_confirmation),
                 event.getTitle(),
@@ -1253,7 +1253,7 @@ public class EventsActivity extends AppCompatActivity implements
      *
      * @param event Event to delete
      */
-    private void startPendingEventDeletion(LocalEvent event) {
+    private void startPendingEventDeletion(EventEntityGoogle event) {
         String eventTitle = event.getTitle();
         String eventId = event.getId();
 
@@ -1290,7 +1290,7 @@ public class EventsActivity extends AppCompatActivity implements
         snackbar.show();
     }
 
-    private void cancelEventDeletion(LocalEvent event) {
+    private void cancelEventDeletion(EventEntityGoogle event) {
         String eventId = event.getId();
 
         if (mCurrentListFragment != null) {
@@ -1346,7 +1346,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void triggerEventEdit(LocalEvent event) {
+    public void triggerEventEdit(EventEntityGoogle event) {
         Bundle args = new Bundle();
         args.putString("eventId", event.getId());
 
@@ -1361,7 +1361,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void triggerEventEditFromList(LocalEvent event) {
+    public void triggerEventEditFromList(EventEntityGoogle event) {
         Bundle args = new Bundle();
         args.putString("eventId", event.getId());
 
@@ -1376,7 +1376,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void triggerEventDuplicate(LocalEvent event) {
+    public void triggerEventDuplicate(EventEntityGoogle event) {
         Library.showError(this, R.string.coming_soon);
     }
 
@@ -1387,7 +1387,7 @@ public class EventsActivity extends AppCompatActivity implements
      * @param event Event to share
      */
     @Override
-    public void triggerEventShare(LocalEvent event) {
+    public void triggerEventShare(EventEntityGoogle event) {
         String shareText = createEventShareText(event);
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
@@ -1409,7 +1409,7 @@ public class EventsActivity extends AppCompatActivity implements
      * @param event Event to add to calendar
      */
     @Override
-    public void triggerAddToCalendar(LocalEvent event) {
+    public void triggerAddToCalendar(EventEntityGoogle event) {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setData(CalendarContract.Events.CONTENT_URI);
         intent.putExtra(CalendarContract.Events.TITLE, event.getTitle());
@@ -1590,7 +1590,7 @@ public class EventsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<LocalEvent> selectedEvents) {
+    public void triggerExportSelectedEventsToFile(Uri fileUri, Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents) {
         handleExportSelectedEventsToFile(fileUri, selectedEventIds, selectedEvents);
     }
 
@@ -1664,7 +1664,7 @@ public class EventsActivity extends AppCompatActivity implements
         }
     }
 
-    public void updateEventInList(LocalEvent event) {
+    public void updateEventInList(EventEntityGoogle event) {
         if (mCurrentListFragment != null && event != null) {
             mCurrentListFragment.updateEvent(event);
         }
@@ -1680,7 +1680,7 @@ public class EventsActivity extends AppCompatActivity implements
 
     // ==================== HELPER METHODS ====================
 
-    private String createEventShareText(LocalEvent event) {
+    private String createEventShareText(EventEntityGoogle event) {
         StringBuilder text = new StringBuilder();
         text.append(event.getTitle()).append("\n\n");
 
@@ -1708,7 +1708,7 @@ public class EventsActivity extends AppCompatActivity implements
         return text.toString();
     }
 
-    private String formatEventDateForDialog(LocalEvent event) {
+    private String formatEventDateForDialog(EventEntityGoogle event) {
         if (event.getStartTime() == null) {
             return getString(R.string.text_date_not_specified);
         }

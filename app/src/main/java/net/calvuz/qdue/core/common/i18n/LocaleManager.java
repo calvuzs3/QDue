@@ -941,7 +941,7 @@ public class LocaleManager {
         // normal_priority -> "Priorità normale"
         // high_priority -> "Priorità alta"
         // urgent_priority -> "Priorità urgente"
-        return getLocalizedString(context, "priority_" + priorityKey, priorityKey);
+        return getLocalizedString(context, "enum_priority_" + priorityKey, priorityKey);
     }
 
     /**
@@ -1166,11 +1166,11 @@ public class LocaleManager {
      * <string name="approval_status_expired">Scaduto</string>
      *
      * <!-- Priority Levels -->
-     * <string name="priority_low_priority">Priorità bassa</string>
-     * <string name="priority_normal_priority">Priorità normale</string>
-     * <string name="priority_high_priority">Priorità alta</string>
-     * <string name="priority_urgent_priority">Priorità urgente</string>
-     * <string name="priority_override_priority">Priorità sostituzione</string>
+     * <string name="enum_priority_low_priority">Priorità bassa</string>
+     * <string name="enum_priority_normal_priority">Priorità normale</string>
+     * <string name="enum_priority_high_priority">Priorità alta</string>
+     * <string name="enum_priority_urgent_priority">Priorità urgente</string>
+     * <string name="enum_priority_override_priority">Priorità sostituzione</string>
      *
      * <!-- Assignment Status -->
      * <string name="assignment_status_active">Attivo</string>

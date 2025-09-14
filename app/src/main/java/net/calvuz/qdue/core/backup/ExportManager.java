@@ -7,8 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.calvuz.qdue.QDue;
-import net.calvuz.qdue.events.EventPackageJson;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.io.IOException;
@@ -145,7 +144,7 @@ public class ExportManager {
     /**
      * Export events to URI (for SAF - Storage Access Framework)
      */
-    public void exportToUri(List<LocalEvent> events, Uri destinationUri,
+    public void exportToUri(List<EventEntityGoogle> events, Uri destinationUri,
                             ExportOptions options, ExportCallback callback) {
         new Thread(() -> {
             try {
@@ -161,7 +160,7 @@ public class ExportManager {
     /**
      * Export events to file path
      */
-    public void exportToFile(List<LocalEvent> events, String filePath,
+    public void exportToFile(List<EventEntityGoogle> events, String filePath,
                              ExportOptions options, ExportCallback callback) {
         new Thread(() -> {
             try {
@@ -177,7 +176,7 @@ public class ExportManager {
     /**
      * Perform export to URI
      */
-    private ExportResult performExportToUri(List<LocalEvent> events, Uri destinationUri,
+    private ExportResult performExportToUri(List<EventEntityGoogle> events, Uri destinationUri,
                                             ExportOptions options, ExportCallback callback)
             throws IOException {
 
@@ -217,7 +216,7 @@ public class ExportManager {
     /**
      * Perform export to file path
      */
-    private ExportResult performExportToFile(List<LocalEvent> events, String filePath,
+    private ExportResult performExportToFile(List<EventEntityGoogle> events, String filePath,
                                              ExportOptions options, ExportCallback callback)
             throws IOException {
 
@@ -254,7 +253,7 @@ public class ExportManager {
     /**
      * Create EventPackageJson structure from events list
      */
-    private EventPackageJson createPackageFromEvents(List<LocalEvent> events,
+    private EventPackageJson createPackageFromEvents(List<EventEntityGoogle> events,
                                                      ExportOptions options,
                                                      List<String> warnings,
                                                      ExportCallback callback) {
@@ -281,7 +280,7 @@ public class ExportManager {
         int totalEvents = events.size();
 
         for (int i = 0; i < events.size(); i++) {
-            LocalEvent event = events.get(i);
+            EventEntityGoogle event = events.get( i);
 
             if (options.reportProgress && callback != null) {
                 callback.onExportProgress(i + 1, totalEvents, event.getTitle());
@@ -301,11 +300,12 @@ public class ExportManager {
     }
 
     /**
-     * Convert LocalEvent to EventPackageJson.EventJson
+     * Convert EventEntityGoogle to EventPackageJson.EventJson
      */
-    private EventPackageJson.EventJson convertLocalEventToJson(LocalEvent event,
-                                                               ExportOptions options,
-                                                               List<String> warnings) {
+    private EventPackageJson.EventJson convertLocalEventToJson(
+            EventEntityGoogle event,
+            ExportOptions options,
+            List<String> warnings) {
         EventPackageJson.EventJson eventJson = new EventPackageJson.EventJson();
 
         // Basic info
@@ -406,7 +406,7 @@ public class ExportManager {
     /**
      * Validate events before export
      */
-    public ValidationResult validateEventsForExport(List<LocalEvent> events) {
+    public ValidationResult validateEventsForExport(List<EventEntityGoogle> events) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
 
@@ -416,7 +416,7 @@ public class ExportManager {
         }
 
         for (int i = 0; i < events.size(); i++) {
-            LocalEvent event = events.get(i);
+            EventEntityGoogle event = events.get( i);
             String prefix = "Event " + (i + 1) + " (" + event.getTitle() + "): ";
 
             if (event.getId() == null || event.getId().trim().isEmpty()) {

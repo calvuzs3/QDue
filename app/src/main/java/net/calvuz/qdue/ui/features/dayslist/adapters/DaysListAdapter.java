@@ -15,12 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.quattrodue.models.Day;
 import net.calvuz.qdue.quattrodue.models.HalfTeam;
 import net.calvuz.qdue.quattrodue.models.Shift;
-import net.calvuz.qdue.ui.core.architecture.base.BaseInteractiveAdapter;
 import net.calvuz.qdue.ui.core.common.utils.EventIndicatorHelper;
 import net.calvuz.qdue.ui.core.common.utils.HighlightingHelper;
 import net.calvuz.qdue.ui.core.common.models.SharedViewModels;
@@ -47,7 +45,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
     private static final String TAG = "DayslistLgsAdp";
 
     // Simple events tracking (just count for now)
-    private Map<LocalDate, List<LocalEvent>> mEventsData = new HashMap<>();
+    private Map<LocalDate, List<EventEntityGoogle>> mEventsData = new HashMap<>();
     private Map<LocalDate, Integer> mEventsCount = new HashMap<>();
 
     // Event Indicator
@@ -176,7 +174,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
 
             // ✅ STEP 4: Apply background highlighting UNIFICATO (UNA SOLA CHIAMATA)
             if (date != null) {
-                List<LocalEvent> events = getEventsForDate(date);
+                List<EventEntityGoogle> events = getEventsForDate( date);
                 HighlightingHelper.applyUnifiedHighlighting(mContext,
                         (MaterialCardView) dayslistHolder.itemView, date, events, mEventHelper);
             }
@@ -206,7 +204,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         // This enhances the existing click setup with expansion awareness
 
         // Add subtle visual feedback for clickable cards with events
-        List<LocalEvent> events = getEventsForDate(dayItem.day.getLocalDate());
+        List<EventEntityGoogle> events = getEventsForDate( dayItem.day.getLocalDate());
         if (!events.isEmpty()) {
             // Add ripple effect or subtle indication that card is expandable
 //            holder.itemView.setBackgroundResource(R.drawable.expandable_card_background);
@@ -267,7 +265,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         if (dayItem.day == null) return;
 
         LocalDate date = dayItem.day.getLocalDate();
-        List<LocalEvent> events = getEventsForDate(date);
+        List<EventEntityGoogle> events = getEventsForDate( date);
 
         if (events.isEmpty()) {
             // No events - hide indicator
@@ -346,7 +344,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         }
 
         LocalDate date = dayItem.day.getLocalDate();
-        List<LocalEvent> events = getEventsForDate(date);
+        List<EventEntityGoogle> events = getEventsForDate( date);
 
         if (events.isEmpty()) {
             holder.eventsIndicator.setVisibility(View.INVISIBLE); // Mantiene spazio
@@ -399,7 +397,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
         LocalDate date = dayItem.day.getLocalDate();
 
         // STEP 2: Get events for this date (empty for now, will add data in STEP 3)
-        List<LocalEvent> events = getEventsForDate(date);
+        List<EventEntityGoogle> events = getEventsForDate( date);
 
         // STEP 2: Use EventIndicatorHelper to setup indicator
         mEventHelper.setupSimpleEventIndicator(holder.eventsIndicator, events);
@@ -434,7 +432,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
                 java.time.LocalDateTime startDateTime = startDate.atStartOfDay();
                 java.time.LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-                List<LocalEvent> events = mEventsDatabase.eventDao().getEventsForDateRange(startDateTime, endDateTime);
+                List<EventEntityGoogle> events = mEventsDatabase.eventDao().getEventsForDateRange( startDateTime, endDateTime);
 
                 Log.i(TAG, mTAG + "Loaded " + events.size() + " events from database");
                 return events;
@@ -442,7 +440,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
             } catch (Exception e) {
 
                 Log.e(TAG, mTAG + "Error loading events from database: " + e.getMessage());
-                return new ArrayList<LocalEvent>();
+                return new ArrayList<EventEntityGoogle>();
             }
         }).thenAccept(events -> {
             // Process on main thread
@@ -466,14 +464,14 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
      *
      * @param events List of events loaded from database
      */
-    private void processLoadedEvents(List<LocalEvent> events) {
+    private void processLoadedEvents(List<EventEntityGoogle> events) {
         final String mTAG = "processLoadedEvents: ";
         Log.v(TAG, mTAG + "called with " + events.size() + " events");
 
-        Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
+        Map<LocalDate, List<EventEntityGoogle>> eventsMap = new HashMap<>();
 
         // Process each event and expand multi-day events
-        for (LocalEvent event : events) {
+        for (EventEntityGoogle event : events) {
             expandEventAcrossDays(event, eventsMap);
         }
 
@@ -496,11 +494,11 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
      * @param date Date to get events for
      * @return List of events for the specified date (or empty list)
      */
-    private List<LocalEvent> getEventsForDate(LocalDate date) {
+    private List<EventEntityGoogle> getEventsForDate(LocalDate date) {
         final String mTAG = "getEventsForDate: ";
 
-        List<LocalEvent> events = mEventsData.get(date);
-        List<LocalEvent> result = events != null ? events : new ArrayList<>();
+        List<EventEntityGoogle> events = mEventsData.get( date);
+        List<EventEntityGoogle> result = events != null ? events : new ArrayList<>();
 
         // Debug logging
         if (!result.isEmpty()) {
@@ -518,7 +516,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
      *                  Key: Date
      *                  Value: List of events
      */
-    public void updateEventsData(Map<LocalDate, List<LocalEvent>> eventsMap) {
+    public void updateEventsData(Map<LocalDate, List<EventEntityGoogle>> eventsMap) {
         final String mTAG = "updateEventsData: ";
 
         this.mEventsData = eventsMap != null ? eventsMap : new HashMap<>();
@@ -549,7 +547,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
      *              Key: Date
      *              Value: List of events
      */
-    private void expandEventAcrossDays(LocalEvent event, Map<LocalDate, List<LocalEvent>> eventsMap) {
+    private void expandEventAcrossDays(EventEntityGoogle event, Map<LocalDate, List<EventEntityGoogle>> eventsMap) {
         final String mTAG = "expandEventAcrossDays: ";
         Log.v(TAG, mTAG + "called with event: " + event.getTitle());
 
@@ -600,7 +598,7 @@ public class DaysListAdapter extends BaseInteractiveAdapter {
      *
      * @param event Event to get end date for
      */
-    private LocalDate getEventEndDate(LocalEvent event) {
+    private LocalDate getEventEndDate(EventEntityGoogle event) {
         try {
             if (event.getEndTime() != null) {
                 return event.getEndTime().toLocalDate();

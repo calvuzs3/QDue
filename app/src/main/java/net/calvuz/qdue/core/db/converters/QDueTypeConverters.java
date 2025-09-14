@@ -6,9 +6,9 @@ import androidx.room.TypeConverter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.TurnException;
+import net.calvuz.qdue.domain.events.enums.EventType;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
+import net.calvuz.qdue.domain.calendar.events.models.TurnException;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.lang.reflect.Type;
@@ -33,117 +33,7 @@ public class QDueTypeConverters {
     private static final String TAG = "QDueTypeConverters";
 
     private static final Gson gson = new Gson();
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
-    // ==================== LocalDateTime Converters ====================
-
-    /**
-     * Convert LocalDateTime to String for database storage.
-     * @param dateTime LocalDateTime to convert
-     * @return ISO formatted string or null
-     */
-    @TypeConverter
-    public static String fromLocalDateTime(LocalDateTime dateTime) {
-        return dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : null;
-    }
-
-    /**
-     * Convert String back to LocalDateTime from database.
-     * @param dateTimeString ISO formatted string
-     * @return LocalDateTime object or null
-     */
-    @TypeConverter
-    public static LocalDateTime toLocalDateTime(String dateTimeString) {
-        return dateTimeString != null ? LocalDateTime.parse(dateTimeString, DATE_TIME_FORMATTER) : null;
-    }
-
-    // ==================== LocalDate Converters ====================
-
-    /**
-     * Convert LocalDate to ISO string for database storage.
-     */
-    @TypeConverter
-    @Nullable
-    public static String fromLocalDate(@Nullable LocalDate date) {
-        return date != null ? date.toString() : null;
-    }
-
-    /**
-     * Convert ISO string from database to LocalDate.
-     */
-    @TypeConverter
-    @Nullable
-    public static LocalDate toLocalDate(@Nullable String dateString) {
-        if (dateString == null || dateString.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            return LocalDate.parse(dateString);
-        } catch (DateTimeParseException e) {
-            Log.e(TAG, "Failed to parse LocalDate: " + dateString, e);
-            return null;
-        }
-    }
-
-    /**
-     * Convert LocalTime to ISO string for database storage.
-     */
-    @TypeConverter
-    @Nullable
-    public static String fromLocalTime(@Nullable LocalTime time) {
-        return time != null ? time.format(DateTimeFormatter.ISO_LOCAL_TIME) : null;
-    }
-
-    /**
-     * Convert ISO string from database to LocalTime.
-     */
-    @TypeConverter
-    @Nullable
-    public static LocalTime toLocalTime(@Nullable String timeString) {
-        if (timeString == null || timeString.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            return LocalTime.parse(timeString, DateTimeFormatter.ISO_LOCAL_TIME);
-        } catch (DateTimeParseException e) {
-            Log.e(TAG, "Failed to parse LocalTime: " + timeString, e);
-            return null;
-        }
-    }
-
-    // ==================== EventType Converters ====================
-
-    /**
-     * Convert EventType enum to String for database storage.
-     * @param eventType EventType enum value
-     * @return String representation or null
-     */
-    @TypeConverter
-    public static String fromEventType(EventType eventType) {
-        return eventType != null ? eventType.name() : null;
-    }
-
-    /**
-     * Convert String back to EventType enum from database.
-     * @param eventTypeString String representation
-     * @return EventType enum or default value
-     */
-    @TypeConverter
-    public static EventType toEventType(String eventTypeString) {
-        if (eventTypeString == null) {
-            return EventType.GENERAL; // Default fallback
-        }
-
-        try {
-            return EventType.valueOf(eventTypeString);
-        } catch (IllegalArgumentException e) {
-            // Handle case where enum value doesn't exist (backward compatibility)
-            return EventType.GENERAL;
-        }
-    }
 
     // ==================== EventPriority Converters ====================
 
@@ -240,40 +130,6 @@ public class QDueTypeConverters {
 
     // ==================== Map<String, String> Converters ====================
 
-    /**
-     * Convert Map<String, String> to JSON string for database storage.
-     * Used for custom properties in events.
-     * @param stringMap Map to convert
-     * @return JSON string representation or null
-     */
-    @TypeConverter
-    public static String fromStringMap(Map<String, String> stringMap) {
-        if (stringMap == null || stringMap.isEmpty()) {
-            return null;
-        }
-        return gson.toJson(stringMap);
-    }
-
-    /**
-     * Convert JSON string back to Map<String, String> from database.
-     * @param stringMapString JSON string representation
-     * @return Map<String, String> or empty map
-     */
-    @TypeConverter
-    public static Map<String, String> toStringMap(String stringMapString) {
-        if (stringMapString == null || stringMapString.trim().isEmpty()) {
-            return new java.util.HashMap<>();
-        }
-
-        try {
-            Type type = new TypeToken<Map<String, String>>(){}.getType();
-            Map<String, String> result = gson.fromJson(stringMapString, type);
-            return result != null ? result : new java.util.HashMap<>();
-        } catch (Exception e) {
-            // Handle malformed JSON gracefully
-            return new java.util.HashMap<>();
-        }
-    }
 
     // ==================== Boolean Converters ====================
 

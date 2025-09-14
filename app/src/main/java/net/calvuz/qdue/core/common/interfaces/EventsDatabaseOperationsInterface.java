@@ -1,6 +1,6 @@
 package net.calvuz.qdue.core.common.interfaces;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.core.common.listeners.EventDeletionListener;
 
 public interface EventsDatabaseOperationsInterface {
@@ -10,7 +10,7 @@ public interface EventsDatabaseOperationsInterface {
      * @param event Event to delete
      * @param listener Callback for deletion status
      */
-    void triggerEventDeletion(LocalEvent event, EventDeletionListener listener);
+    void triggerEventDeletion(EventEntityGoogle event, EventDeletionListener listener);
 
     /**
      * Delete All Events from DB

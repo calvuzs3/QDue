@@ -35,7 +35,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.utils.Library;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -75,7 +75,7 @@ public class EventsBottomSelectionToolbar {
     private EventsToolbarActionsAdapter mActionsAdapter;
     private EventsSelectionListener mListener;
     private Set<String> mSelectedEventIds;
-    private List<LocalEvent> mSelectedEvents;
+    private List<EventEntityGoogle> mSelectedEvents;
     private boolean mIsVisible = false;
     private boolean mIsDestroyed = false;
 
@@ -135,7 +135,7 @@ public class EventsBottomSelectionToolbar {
          */
         public static List<EventAction> getValidActionsForSelection(
                 Set<String> selectedEventIds,
-                List<LocalEvent> selectedEvents) {
+                List<EventEntityGoogle> selectedEvents) {
 
             if (selectedEventIds == null || selectedEventIds.isEmpty()) {
                 return new ArrayList<>();
@@ -218,7 +218,7 @@ public class EventsBottomSelectionToolbar {
         /**
          * 📝 Check if selection contains editable events
          */
-        private static boolean hasEditableEvents(List<LocalEvent> events) {
+        private static boolean hasEditableEvents(List<EventEntityGoogle> events) {
             if (events == null || events.isEmpty()) return false;
 
             // All events are editable in this implementation
@@ -229,7 +229,7 @@ public class EventsBottomSelectionToolbar {
         /**
          * 💾 Check if selection contains exportable events
          */
-        private static boolean hasExportableEvents(List<LocalEvent> events) {
+        private static boolean hasExportableEvents(List<EventEntityGoogle> events) {
             if (events == null || events.isEmpty()) return false;
 
             // All events are exportable in this implementation
@@ -455,7 +455,7 @@ public class EventsBottomSelectionToolbar {
      */
     public void show(@NonNull ViewGroup container,
                      @NonNull Set<String> selectedEventIds,
-                     @NonNull List<LocalEvent> selectedEvents,
+                     @NonNull List<EventEntityGoogle> selectedEvents,
                      @NonNull EventsSelectionListener listener) {
 
         if (mIsDestroyed) {
@@ -653,7 +653,7 @@ public class EventsBottomSelectionToolbar {
      * 🔄 Update selection from external source
      */
     public void updateSelection(@NonNull Set<String> selectedEventIds,
-                                @NonNull List<LocalEvent> selectedEvents) {
+                                @NonNull List<EventEntityGoogle> selectedEvents) {
         if (mIsDestroyed) return;
 
         mSelectedEventIds = selectedEventIds;
@@ -847,6 +847,6 @@ public class EventsBottomSelectionToolbar {
         /**
          * Called when an action is selected for the currently selected events
          */
-        void onEventActionSelected(EventAction action, Set<String> selectedEventIds, List<LocalEvent> selectedEvents);
+        void onEventActionSelected(EventAction action, Set<String> selectedEventIds, List<EventEntityGoogle> selectedEvents);
     }
 }

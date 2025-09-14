@@ -12,7 +12,7 @@
     android:focusable="true"
     android:gravity="center_vertical">
 
-    <!-- LocalEvent type indicator (colored dot) -->
+    <!-- EventEntityGoogle type indicator (colored dot) -->
     <View
         android:id="@+id/v_event_indicator"
         android:layout_width="8dp"
@@ -21,14 +21,14 @@
         android:layout_marginEnd="8dp"
         tools:backgroundTint="?attr/colorPrimary" />
 
-    <!-- LocalEvent content -->
+    <!-- EventEntityGoogle content -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <!-- LocalEvent title -->
+        <!-- EventEntityGoogle title -->
         <TextView
             android:id="@+id/tv_event_title"
             android:layout_width="match_parent"
@@ -40,7 +40,7 @@
             android:ellipsize="end"
             tools:text="Evento importante" />
 
-        <!-- LocalEvent time (optional) -->
+        <!-- EventEntityGoogle time (optional) -->
         <TextView
             android:id="@+id/tv_event_time"
             android:layout_width="match_parent"
@@ -54,7 +54,7 @@
 
     </LinearLayout>
 
-    <!-- LocalEvent priority/status indicator (optional) -->
+    <!-- EventEntityGoogle priority/status indicator (optional) -->
     <ImageView
         android:id="@+id/iv_event_status"
         android:layout_width="12dp"

@@ -216,11 +216,11 @@
     <string name="approval_status_expired">Scaduto</string>
 
     <!-- Priority Levels -->
-    <string name="priority_low_priority">Priorità bassa</string>
-    <string name="priority_normal_priority">Priorità normale</string>
-    <string name="priority_high_priority">Priorità alta</string>
-    <string name="priority_urgent_priority">Priorità urgente</string>
-    <string name="priority_override_priority">Priorità sostituzione</string>
+    <string name="enum_priority_low_priority">Bassa</string>
+    <string name="enum_priority_normal_priority">Normale</string>
+    <string name="enum_priority_high_priority">Alta</string>
+    <string name="enum_priority_urgent_priority">Urgente</string>
+    <string name="enum_priority_override_priority">Override</string>
 
     <!-- Templates -->
     <string name="user_display_template">Utente %d</string>

@@ -30,6 +30,8 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.data.dao.QDueUserDao;
 import net.calvuz.qdue.data.entities.QDueUserEntity;
 import net.calvuz.qdue.data.entities.UserTeamAssignmentEntity;
+import net.calvuz.qdue.data.events.dao.LocalEventDao;
+import net.calvuz.qdue.data.events.entities.LocalEventEntity;
 import net.calvuz.qdue.domain.calendar.models.Team;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -128,6 +130,7 @@ import java.util.UUID;
                 ShiftExceptionEntity.class,
                 UserScheduleAssignmentEntity.class,
                 UserTeamAssignmentEntity.class,
+                LocalEventEntity.class,
         },
         version = CalendarDatabase.DATABASE_VERSION,
         exportSchema = false
@@ -140,13 +143,15 @@ import java.util.UUID;
 public abstract class CalendarDatabase extends RoomDatabase {
 
     // All included - fallbackToDestructiveMigration()
-    public final static int DATABASE_VERSION = 6;
+    public final static int DATABASE_VERSION = 7;
 
     private static final String TAG = "CalendarDatabase";
     private static final String DATABASE_NAME = "calendar_database";
     private static volatile CalendarDatabase INSTANCE;
 
     // ==================== ABSTRACT DAO METHODS ====================
+
+    public abstract LocalEventDao localEventDao();
 
     public abstract QDueUserDao qDueUserDao();
 

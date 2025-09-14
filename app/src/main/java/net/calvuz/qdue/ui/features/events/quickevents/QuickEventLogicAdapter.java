@@ -1,12 +1,12 @@
 package net.calvuz.qdue.ui.features.events.quickevents;
 
-import net.calvuz.qdue.events.actions.ConflictAnalysis;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.actions.EventActionManager;
+import net.calvuz.qdue.domain.calendar.events.actions.ConflictAnalysis;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
+import net.calvuz.qdue.domain.events.enums.EventType;
+import net.calvuz.qdue.domain.calendar.events.actions.EventAction;
+import net.calvuz.qdue.domain.calendar.events.actions.EventActionManager;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -81,15 +81,15 @@ public class QuickEventLogicAdapter {
     // ==================== ENHANCED CORE ADAPTER METHODS ====================
 
     /**
-     * ENHANCED: Create LocalEvent from EventAction with comprehensive business logic.
+     * ENHANCED: Create EventEntityGoogle from EventAction with comprehensive business logic.
      * This is the primary method that leverages EventAction business rules.
      *
      * @param action EventAction that defines the business logic
      * @param date Date for the event
      * @param userId User ID creating the event (optional)
-     * @return Configured LocalEvent with enhanced metadata and validation
+     * @return Configured EventEntityGoogle with enhanced metadata and validation
      */
-    public static LocalEvent createEventFromEventAction(EventAction action, LocalDate date, Long userId) {
+    public static EventEntityGoogle createEventFromEventAction(EventAction action, LocalDate date, Long userId) {
         Log.d(TAG, "Creating event from EventAction: " + action + " for date: " + date);
 
         if (action == null || date == null) {
@@ -98,7 +98,7 @@ public class QuickEventLogicAdapter {
 
         try {
             // Use EventActionManager for business logic and validation
-            LocalEvent event = EventActionManager.createEventFromAction(action, date, userId);
+            EventEntityGoogle event = EventActionManager.createEventFromAction( action, date, userId);
 
             // Apply enhanced quick event metadata
             applyEnhancedQuickEventMetadata(event, action, userId);
@@ -116,15 +116,15 @@ public class QuickEventLogicAdapter {
     }
 
     /**
-     * ENHANCED: Create LocalEvent from ToolbarAction with EventAction bridge.
+     * ENHANCED: Create EventEntityGoogle from ToolbarAction with EventAction bridge.
      * Maintains backward compatibility while leveraging EventAction improvements.
      *
      * @param action ToolbarAction (for backward compatibility)
      * @param date Date for the event
      * @param userId User ID creating the event (optional)
-     * @return Configured LocalEvent with EventAction-enhanced logic
+     * @return Configured EventEntityGoogle with EventAction-enhanced logic
      */
-    public static LocalEvent createEventFromAction(ToolbarAction action, LocalDate date, Long userId) {
+    public static EventEntityGoogle createEventFromAction(ToolbarAction action, LocalDate date, Long userId) {
         Log.d(TAG, "Creating event from ToolbarAction: " + action + " (with EventAction bridge)");
 
         if (action == null || date == null) {
@@ -136,7 +136,7 @@ public class QuickEventLogicAdapter {
             EventAction eventAction = ToolbarActionBridge.mapToEventAction(action);
 
             // Create event using EventAction logic
-            LocalEvent event = createEventFromEventAction(eventAction, date, userId);
+            EventEntityGoogle event = createEventFromEventAction( eventAction, date, userId);
 
             // Preserve ToolbarAction metadata for backward compatibility
             preserveToolbarActionMetadata(event, action);
@@ -201,7 +201,7 @@ public class QuickEventLogicAdapter {
     /**
      * Create event with conflict validation.
      */
-    public static LocalEvent createEventFromEventActionWithValidation(EventAction action, LocalDate date, Long userId, EventDao eventDao) throws Exception {
+    public static EventEntityGoogle createEventFromEventActionWithValidation(EventAction action, LocalDate date, Long userId, EventDao eventDao) throws Exception {
         // Check conflicts before creation
         ConflictAnalysis conflicts = EventActionManager.analyzeConflicts(action, date, userId, eventDao);
         if (conflicts.hasConflicts()) {
@@ -217,7 +217,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply enhanced quick event metadata with EventAction context.
      */
-    private static void applyEnhancedQuickEventMetadata(LocalEvent event, EventAction action, Long userId) {
+    private static void applyEnhancedQuickEventMetadata(EventEntityGoogle event, EventAction action, Long userId) {
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
 
@@ -256,7 +256,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply EventAction-specific business logic and metadata.
      */
-    private static void applyEventActionSpecificLogic(LocalEvent event, EventAction action, Long userId) {
+    private static void applyEventActionSpecificLogic(EventEntityGoogle event, EventAction action, Long userId) {
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
 
@@ -299,7 +299,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply absence-specific business logic.
      */
-    private static void applyAbsenceLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+    private static void applyAbsenceLogic(EventEntityGoogle event, EventAction action, Map<String, String> props) {
         props.put(PROP_EVENT_CATEGORY, "absence");
 
         switch (action) {
@@ -338,7 +338,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply work adjustment specific business logic.
      */
-    private static void applyWorkAdjustmentLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+    private static void applyWorkAdjustmentLogic(EventEntityGoogle event, EventAction action, Map<String, String> props) {
         props.put(PROP_EVENT_CATEGORY, "work_adjustment");
 
         switch (action) {
@@ -374,7 +374,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply production-specific business logic.
      */
-    private static void applyProductionLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+    private static void applyProductionLogic(EventEntityGoogle event, EventAction action, Map<String, String> props) {
         props.put(PROP_EVENT_CATEGORY, "production");
 
         // Production events typically need location
@@ -413,7 +413,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply development-specific business logic.
      */
-    private static void applyDevelopmentLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+    private static void applyDevelopmentLogic(EventEntityGoogle event, EventAction action, Map<String, String> props) {
         props.put(PROP_EVENT_CATEGORY, "development");
 
         switch (action) {
@@ -444,7 +444,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply general event logic.
      */
-    private static void applyGeneralLogic(LocalEvent event, EventAction action, Map<String, String> props) {
+    private static void applyGeneralLogic(EventEntityGoogle event, EventAction action, Map<String, String> props) {
         props.put(PROP_EVENT_CATEGORY, "general");
         props.put("event_nature", "general_purpose");
 
@@ -454,7 +454,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply urgency-specific logic for time-sensitive events.
      */
-    private static void applyUrgencyLogic(LocalEvent event, EventAction action) {
+    private static void applyUrgencyLogic(EventEntityGoogle event, EventAction action) {
         // Emergency events happening today or tomorrow get urgent priority
         LocalDate today = LocalDate.now();
         LocalDate eventDate = event.getStartTime().toLocalDate();
@@ -476,7 +476,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply approval workflow logic for events requiring authorization.
      */
-    private static void applyApprovalLogic(LocalEvent event, EventAction action) {
+    private static void applyApprovalLogic(EventEntityGoogle event, EventAction action) {
         // Events requiring approval get normal priority unless overridden
         if (event.getPriority() == null) {
             event.setPriority(EventPriority.NORMAL);
@@ -499,7 +499,7 @@ public class QuickEventLogicAdapter {
     /**
      * Apply user-specific business logic.
      */
-    private static void applyUserSpecificLogic(LocalEvent event, Long userId, EventAction action) {
+    private static void applyUserSpecificLogic(EventEntityGoogle event, Long userId, EventAction action) {
         // Add user context to metadata
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
@@ -519,7 +519,7 @@ public class QuickEventLogicAdapter {
     /**
      * Preserve ToolbarAction metadata for backward compatibility.
      */
-    private static void preserveToolbarActionMetadata(LocalEvent event, ToolbarAction action) {
+    private static void preserveToolbarActionMetadata(EventEntityGoogle event, ToolbarAction action) {
         Map<String, String> props = event.getCustomProperties();
         if (props == null) props = new HashMap<>();
 
@@ -537,7 +537,7 @@ public class QuickEventLogicAdapter {
     /**
      * Enhanced validation using EventAction business rules.
      */
-    private static void validateEventConfiguration(LocalEvent event, EventAction action) {
+    private static void validateEventConfiguration(EventEntityGoogle event, EventAction action) {
         // Basic validation
         if (event.getTitle() == null || event.getTitle().trim().isEmpty()) {
             throw new IllegalStateException("Event title cannot be empty");
@@ -612,9 +612,9 @@ public class QuickEventLogicAdapter {
     // ==================== ENHANCED QUERY & ANALYSIS METHODS ====================
 
     /**
-     * Enhanced check if LocalEvent was created via EventAction.
+     * Enhanced check if EventEntityGoogle was created via EventAction.
      */
-    public static boolean isEventActionCreatedEvent(LocalEvent event) {
+    public static boolean isEventActionCreatedEvent(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return false;
 
         // Check for EventAction metadata
@@ -626,9 +626,9 @@ public class QuickEventLogicAdapter {
     }
 
     /**
-     * Enhanced check if LocalEvent was created via quick action (backward compatibility).
+     * Enhanced check if EventEntityGoogle was created via quick action (backward compatibility).
      */
-    public static boolean isQuickCreatedEvent(LocalEvent event) {
+    public static boolean isQuickCreatedEvent(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return false;
         return "true".equals(event.getCustomProperties().get(PROP_QUICK_CREATED));
     }
@@ -636,7 +636,7 @@ public class QuickEventLogicAdapter {
     /**
      * Get EventAction that created this event.
      */
-    public static EventAction getCreatorEventAction(LocalEvent event) {
+    public static EventAction getCreatorEventAction(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return null;
 
         String actionName = event.getCustomProperties().get(PROP_EVENT_ACTION);
@@ -653,7 +653,7 @@ public class QuickEventLogicAdapter {
     /**
      * Get ToolbarAction that created this event (backward compatibility).
      */
-    public static ToolbarAction getCreatorToolbarAction(LocalEvent event) {
+    public static ToolbarAction getCreatorToolbarAction(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return null;
 
         String actionName = event.getCustomProperties().get(PROP_TOOLBAR_SOURCE);
@@ -670,7 +670,7 @@ public class QuickEventLogicAdapter {
     /**
      * Enhanced check if event affects work schedule using EventAction metadata.
      */
-    public static boolean affectsWorkSchedule(LocalEvent event) {
+    public static boolean affectsWorkSchedule(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return false;
 
         // Try EventAction-based metadata first
@@ -692,7 +692,7 @@ public class QuickEventLogicAdapter {
     /**
      * Enhanced check if event requires approval using EventAction metadata.
      */
-    public static boolean requiresApproval(LocalEvent event) {
+    public static boolean requiresApproval(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return false;
 
         // Try EventAction-based metadata first
@@ -713,7 +713,7 @@ public class QuickEventLogicAdapter {
     /**
      * Get EventAction cost impact factor from metadata.
      */
-    public static double getCostImpactFactor(LocalEvent event) {
+    public static double getCostImpactFactor(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return 0.0;
 
         String costFactor = event.getCustomProperties().get(PROP_COST_IMPACT_FACTOR);
@@ -737,7 +737,7 @@ public class QuickEventLogicAdapter {
     /**
      * Get comprehensive EventAction metadata summary.
      */
-    public static String getEventActionMetadataSummary(LocalEvent event) {
+    public static String getEventActionMetadataSummary(EventEntityGoogle event) {
         if (event.getCustomProperties() == null) return "No EventAction metadata";
 
         Map<String, String> props = event.getCustomProperties();
@@ -828,7 +828,7 @@ public class QuickEventLogicAdapter {
      * @deprecated Use createEventFromEventAction or createEventFromAction instead
      */
     @Deprecated
-    public static LocalEvent createEventFromActionLegacy(ToolbarAction action, LocalDate date, Long userId) {
+    public static EventEntityGoogle createEventFromActionLegacy(ToolbarAction action, LocalDate date, Long userId) {
         Log.w(TAG, "Using deprecated legacy event creation method. Consider migrating to EventAction-based methods.");
         return createEventFromAction(action, date, userId);
     }

@@ -2,7 +2,7 @@ package net.calvuz.qdue.core.backup;
 
 import android.content.Context;
 
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.util.List;
@@ -85,7 +85,7 @@ public class BackupIntegration {
      * Trigger backup after events import
      * Call this from EventsActivity after successful import
      */
-    public void onEventsImported(List<LocalEvent> allEvents, int importedCount) {
+    public void onEventsImported(List<EventEntityGoogle> allEvents, int importedCount) {
         if (!mAutoBackupOnImport) {
             return;
         }
@@ -100,7 +100,7 @@ public class BackupIntegration {
      * Trigger backup after event creation
      * Call this after creating new events
      */
-    public void onEventCreated(List<LocalEvent> allEvents, LocalEvent newEvent) {
+    public void onEventCreated(List<EventEntityGoogle> allEvents, EventEntityGoogle newEvent) {
         if (!mAutoBackupOnCreate) {
             return;
         }
@@ -113,7 +113,7 @@ public class BackupIntegration {
      * Trigger backup after event update
      * Call this after updating existing events
      */
-    public void onEventUpdated(List<LocalEvent> allEvents, LocalEvent updatedEvent) {
+    public void onEventUpdated(List<EventEntityGoogle> allEvents, EventEntityGoogle updatedEvent) {
         if (!mAutoBackupOnUpdate) {
             return;
         }
@@ -126,7 +126,7 @@ public class BackupIntegration {
      * Trigger backup after event deletion
      * Call this after deleting events
      */
-    public void onEventDeleted(List<LocalEvent> allEvents, String deletedEventTitle) {
+    public void onEventDeleted(List<EventEntityGoogle> allEvents, String deletedEventTitle) {
         if (!mAutoBackupOnDelete) {
             return;
         }
@@ -139,7 +139,7 @@ public class BackupIntegration {
      * Trigger backup after bulk operations
      * Call this after clearing all events or bulk operations
      */
-    public void onBulkEventsChanged(List<LocalEvent> allEvents, String operation) {
+    public void onBulkEventsChanged(List<EventEntityGoogle> allEvents, String operation) {
         Log.d(TAG, "Auto backup triggered: bulk operation - " + operation +
                 " (" + allEvents.size() + " events)");
         mBackupManager.performAutoBackup(allEvents);
@@ -190,7 +190,7 @@ public class BackupIntegration {
     /**
      * Perform manual backup with UI callback
      */
-    public void performManualBackup(List<LocalEvent> events,
+    public void performManualBackup(List<EventEntityGoogle> events,
                                     BackupManager.BackupCallback callback) {
         Log.d(TAG, "Manual backup requested for " + events.size() + " events");
         mBackupManager.performManualBackup(events, callback);
@@ -270,7 +270,7 @@ public class BackupIntegration {
      * Integration method for EventsActivity.importEventsFromFile()
      * Add this call after successful import in EventsActivity
      */
-    public static void integrateWithImport(Context context, List<LocalEvent> allEvents,
+    public static void integrateWithImport(Context context, List<EventEntityGoogle> allEvents,
                                            int importedCount) {
         BackupIntegration integration = getInstance(context);
         integration.onEventsImported(allEvents, importedCount);
@@ -280,7 +280,7 @@ public class BackupIntegration {
      * Integration method for EventsActivity.clearAllEvents()
      * Add this call after clearing events in EventsActivity
      */
-    public static void integrateWithClearAll(Context context, List<LocalEvent> remainingEvents) {
+    public static void integrateWithClearAll(Context context, List<EventEntityGoogle> remainingEvents) {
         BackupIntegration integration = getInstance(context);
         integration.onBulkEventsChanged(remainingEvents, "clear_all");
     }
@@ -289,8 +289,8 @@ public class BackupIntegration {
      * Integration method for future event creation
      * Call this when implementing event creation in EventsActivity
      */
-    public static void integrateWithEventCreation(Context context, List<LocalEvent> allEvents,
-                                                  LocalEvent newEvent) {
+    public static void integrateWithEventCreation(Context context, List<EventEntityGoogle> allEvents,
+                                                  EventEntityGoogle newEvent) {
         BackupIntegration integration = getInstance(context);
         integration.onEventCreated(allEvents, newEvent);
     }
@@ -299,8 +299,8 @@ public class BackupIntegration {
      * Integration method for future event updates
      * Call this when implementing event editing in EventsActivity
      */
-    public static void integrateWithEventUpdate(Context context, List<LocalEvent> allEvents,
-                                                LocalEvent updatedEvent) {
+    public static void integrateWithEventUpdate(Context context, List<EventEntityGoogle> allEvents,
+                                                EventEntityGoogle updatedEvent) {
         BackupIntegration integration = getInstance(context);
         integration.onEventUpdated(allEvents, updatedEvent);
     }
@@ -309,7 +309,7 @@ public class BackupIntegration {
      * Integration method for event deletion
      * Call this when implementing event deletion in EventsActivity
      */
-    public static void integrateWithEventDeletion(Context context, List<LocalEvent> allEvents,
+    public static void integrateWithEventDeletion(Context context, List<EventEntityGoogle> allEvents,
                                                   String deletedEventTitle) {
         BackupIntegration integration = getInstance(context);
         integration.onEventDeleted(allEvents, deletedEventTitle);

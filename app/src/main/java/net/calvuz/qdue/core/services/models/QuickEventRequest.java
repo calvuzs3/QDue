@@ -3,8 +3,8 @@ package net.calvuz.qdue.core.services.models;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.EventPriority;
+import net.calvuz.qdue.domain.events.enums.EventType;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 
 import java.time.LocalDate;

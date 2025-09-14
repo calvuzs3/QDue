@@ -117,7 +117,7 @@
 
     </PreferenceCategory>
 
-    <!-- LocalEvent Types Configuration -->
+    <!-- EventEntityGoogle Types Configuration -->
     <PreferenceCategory app:title="@string/settings_events_types_header">
 
         <!-- Show Production Stops -->
@@ -129,7 +129,7 @@
             app:summary="@string/settings_events_production_stops_summary"
             app:title="@string/settings_events_production_stops_title" />
 
-        <!-- LocalEvent Types Configuration -->
+        <!-- EventEntityGoogle Types Configuration -->
         <Preference
             app:dependency="events_enabled"
             app:icon="@drawable/ic_palette"

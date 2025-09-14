@@ -14,9 +14,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.features.events.adapters.EventsAdapter;
-import net.calvuz.qdue.ui.core.architecture.base.BaseEventsPreview;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -201,7 +200,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
     // ==================== BASE EVENTS PREVIEW IMPLEMENTATION ====================
 
     @Override
-    protected void showEventsPreviewImpl(LocalDate date, List<LocalEvent> events, View anchorView) {
+    protected void showEventsPreviewImpl(LocalDate date, List<EventEntityGoogle> events, View anchorView) {
         Log.d(TAG, "Showing events preview for " + date + " with " + events.size() + " events");
 
         try {
@@ -294,7 +293,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
     /**
      * Setup events list with adapter
      */
-    private void setupEventsList(List<LocalEvent> events, LocalDate date) {
+    private void setupEventsList(List<EventEntityGoogle> events, LocalDate date) {
         if (mEventsRecyclerView == null) {
             Log.w(TAG, "Events RecyclerView is null, cannot setup events list");
             return;
@@ -304,7 +303,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
             // Create adapter with click listener
             mEventsAdapter = new EventsAdapter(events, new EventsAdapter.OnEventClickListener() {
                 @Override
-                public void onEventClick(LocalEvent event) {
+                public void onEventClick(EventEntityGoogle event) {
                     Log.d(TAG, "Event clicked: " + event.getTitle());
 
                     // Trigger view detail action - VIEW_DETAIL
@@ -312,7 +311,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
                 }
 
                 @Override
-                public void onEventLongClick(LocalEvent event) {
+                public void onEventLongClick(EventEntityGoogle event) {
                     Log.d(TAG, "Event long clicked: " + event.getTitle());
 
                     // Could show context menu or quick actions
@@ -367,7 +366,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
     /**
      * Show quick actions for an event (context menu style)
      */
-    private void showEventQuickActions(LocalEvent event, LocalDate date) {
+    private void showEventQuickActions(EventEntityGoogle event, LocalDate date) {
         Log.d(TAG, "Showing quick actions for event: " + event.getTitle());
 
         // TODO: Implement quick actions popup/dialog
@@ -407,7 +406,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
      * This helps distinguish between Calendar and DaysList in debugging
      */
     @Override
-    public void onEventQuickAction(EventQuickAction action, LocalEvent event, LocalDate date) {
+    public void onEventQuickAction(EventQuickAction action, EventEntityGoogle event, LocalDate date) {
         Log.d(TAG, "DaysList-specific event quick action triggered: " + action + " for: " + event.getTitle());
 
         // Call parent implementation which forwards to listener
@@ -418,7 +417,7 @@ public class DaysListEventsBottomSheet extends BaseEventsPreview {
      * 🆕 NEW: DaysList-specific event handling method
      * Future enhancement: Could implement DaysList-specific behavior here
      */
-    private void handleDaysListEventClick(LocalEvent event, LocalDate date) {
+    private void handleDaysListEventClick(EventEntityGoogle event, LocalDate date) {
         Log.d(TAG, "DaysList-specific event handling for: " + event.getTitle());
 
         // For now, use same behavior as Calendar

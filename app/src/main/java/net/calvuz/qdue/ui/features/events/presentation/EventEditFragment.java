@@ -30,12 +30,12 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.interfaces.EventsDatabaseOperationsInterface;
 import net.calvuz.qdue.core.common.interfaces.EventsOperationsInterface;
 import net.calvuz.qdue.core.db.QDueDatabase;
-import net.calvuz.qdue.events.actions.EventAction;
-import net.calvuz.qdue.events.dao.EventDao;
-import net.calvuz.qdue.events.metadata.EventMetadataManager;
-import net.calvuz.qdue.events.models.EventPriority;
-import net.calvuz.qdue.events.models.EventType;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.actions.EventAction;
+import net.calvuz.qdue.domain.calendar.events.dao.EventDao;
+import net.calvuz.qdue.domain.calendar.events.metadata.EventMetadataManager;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
+import net.calvuz.qdue.domain.events.enums.EventPriority;
+import net.calvuz.qdue.domain.events.enums.EventType;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarAction;
 import net.calvuz.qdue.ui.core.common.enums.ToolbarActionBridge;
 import net.calvuz.qdue.ui.core.common.interfaces.UnsavedChangesHandler;
@@ -101,8 +101,8 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
 
     // ==================== DATA ====================
 
-    private LocalEvent mEvent;
-    private LocalEvent mOriginalEvent;
+    private EventEntityGoogle mEvent;
+    private EventEntityGoogle mOriginalEvent;
     private String mEventId;
     private LocalDateTime mStartDateTime;
     private LocalDateTime mEndDateTime;
@@ -512,7 +512,7 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
         new Thread(() -> {
             try {
                 EventDao eventDao = QDueDatabase.getInstance(requireContext()).eventDao();
-                LocalEvent event = eventDao.getEventById(mEventId);
+                EventEntityGoogle event = eventDao.getEventById( mEventId);
 
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
@@ -545,9 +545,9 @@ public class EventEditFragment extends Fragment implements UnsavedChangesHandler
         }).start();
     }
 
-    private LocalEvent createEventCopy(LocalEvent original) {
+    private EventEntityGoogle createEventCopy(EventEntityGoogle original) {
         try {
-            LocalEvent copy = new LocalEvent();
+            EventEntityGoogle copy = new EventEntityGoogle();
             copy.setId(original.getId());
             copy.setTitle(original.getTitle());
             copy.setDescription(original.getDescription());

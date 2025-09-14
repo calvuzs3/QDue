@@ -5,14 +5,13 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.core.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
-import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -247,7 +246,7 @@ public class SwipeCalendarModule
         @Override
         public void loadEventsForMonth(
                 @NonNull YearMonth month,
-                @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, List<LocalEvent>>> callback
+                @NonNull MonthPagerAdapter.DataCallback<Map<LocalDate, List<EventEntityGoogle>>> callback
         ) {
 
             Log.d( TAG, "Loading events for month: " + month );
@@ -261,7 +260,7 @@ public class SwipeCalendarModule
                             if (result.isSuccess() && result.getData() != null) {
                                 try {
                                     // Group events by date for calendar display
-                                    Map<LocalDate, List<LocalEvent>> eventsMap = groupEventsByDate(
+                                    Map<LocalDate, List<EventEntityGoogle>> eventsMap = groupEventsByDate(
                                             result.getData() );
 
                                     callback.onSuccess( eventsMap );
@@ -374,10 +373,10 @@ public class SwipeCalendarModule
          * @return Map with dates as keys and lists of events as values
          */
         @NonNull
-        private Map<LocalDate, List<LocalEvent>> groupEventsByDate(@NonNull List<LocalEvent> events) {
-            Map<LocalDate, List<LocalEvent>> eventsMap = new HashMap<>();
+        private Map<LocalDate, List<EventEntityGoogle>> groupEventsByDate(@NonNull List<EventEntityGoogle> events) {
+            Map<LocalDate, List<EventEntityGoogle>> eventsMap = new HashMap<>();
 
-            for (LocalEvent event : events) {
+            for (EventEntityGoogle event : events) {
                 if (event != null) {
                     try {
                         LocalDate eventDate = extractEventDate( event );
@@ -393,14 +392,14 @@ public class SwipeCalendarModule
         }
 
         /**
-         * Extract date from LocalEvent handling different event types properly.
+         * Extract date from EventEntityGoogle handling different event types properly.
          * Supports all-day events, timed events, and provides fallback logic.
          *
          * @param event Event to extract date from
          * @return LocalDate for the event
          */
         @NonNull
-        private LocalDate extractEventDate(@NonNull LocalEvent event) {
+        private LocalDate extractEventDate(@NonNull EventEntityGoogle event) {
             try {
                 // Priority 1: All-day events should use the specific date
                 if (event.isAllDay() && event.getDate() != null) {

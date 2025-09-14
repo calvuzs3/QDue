@@ -1,7 +1,5 @@
 package net.calvuz.qdue.ui.features.events.adapters;
 
-import static net.calvuz.qdue.ui.features.events.presentation.EventsListFragment.DEFAULT_SELECTION_MODE;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +14,7 @@ import com.google.android.material.card.MaterialCardView;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.events.models.EventEntityGoogle;
 import net.calvuz.qdue.ui.core.common.enums.SelectionMode;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.events.presentation.EventsListFragment;
@@ -53,7 +50,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
             DateTimeFormatter.ofPattern("dd MMM yyyy");
 
     // Data and listener
-    private List<LocalEvent> mEvents;
+    private List<EventEntityGoogle> mEvents;
     private OnEventClickListener mClickListener;
 
     // Enhanced selection mode
@@ -69,14 +66,14 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
          *
          * @param event The clicked event
          */
-        void onEventClick(LocalEvent event);
+        void onEventClick(EventEntityGoogle event);
 
         /**
          * Called when an event item is long clicked
          *
          * @param event The long clicked event
          */
-        void onEventLongClick(LocalEvent event);
+        void onEventLongClick(EventEntityGoogle event);
 
         /**
          * Called when selection state changes
@@ -110,7 +107,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
      * @param events        List of events to display
      * @param clickListener Listener for click events
      */
-    public EventsAdapter(List<LocalEvent> events, OnEventClickListener clickListener) {
+    public EventsAdapter(List<EventEntityGoogle> events, OnEventClickListener clickListener) {
         this.mEvents = events;
         this.mClickListener = clickListener;
         mContext = null;
@@ -133,7 +130,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        LocalEvent event = mEvents.get(position);
+        EventEntityGoogle event = mEvents.get( position);
         holder.bind(event, mSelectionMode, isEventSelected(event.getId()));
 
         // Set click listeners
@@ -160,7 +157,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
     /**
      * Update events list and notify adapter
      */
-    public void updateEvents(List<LocalEvent> newEvents) {
+    public void updateEvents(List<EventEntityGoogle> newEvents) {
         this.mEvents = newEvents;
         notifyDataSetChanged();
     }
@@ -318,7 +315,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         }
 
         mSelectedEventIds.clear();
-        for (LocalEvent event : mEvents) {
+        for (EventEntityGoogle event : mEvents) {
             if (event != null && event.getId() != null) {
                 mSelectedEventIds.add(event.getId());
             }
@@ -371,7 +368,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         /**
          * Bind event data to views
          */
-        public void bind(LocalEvent event,  SelectionMode selectionMode, boolean isSelected) {
+        public void bind(EventEntityGoogle event, SelectionMode selectionMode, boolean isSelected) {
             if (event == null) return;
 
             // Bind basic event data
@@ -384,7 +381,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         /**
          * Bind basic event data (unchanged from original)
          */
-        private void bindEventData(LocalEvent event) {
+        private void bindEventData(EventEntityGoogle event) {
             // Title
             mTitleView.setText(event.getTitle());
 
@@ -441,7 +438,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         /**
          * Format time display based on event type and duration
          */
-        private void formatTimeDisplay(LocalEvent event) {
+        private void formatTimeDisplay(EventEntityGoogle event) {
             if (event.getStartTime() == null) {
                 mTimeView.setText(R.string.text_hour_not_specified);
                 return;
@@ -477,7 +474,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
         /**
          * Set event status and color indicator
          */
-        private void setEventStatus(LocalEvent event) {
+        private void setEventStatus(EventEntityGoogle event) {
             if (event.getStartTime() == null || event.getEndTime() == null) {
                 mStatusView.setText(R.string.text_unknown_state);
                 mStatusIndicator.setBackgroundColor(getColorFromResource(R.color.status_unknown));
@@ -505,7 +502,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventViewH
          * Get priority-based color for current and upcoming events
          * Falls back to default status color if priority is null or LOW
          */
-        private int getPriorityColorForEvent(LocalEvent event, int defaultColorRes) {
+        private int getPriorityColorForEvent(EventEntityGoogle event, int defaultColorRes) {
             if (event.getPriority() == null) {
                 return getColorFromResource(defaultColorRes);
             }

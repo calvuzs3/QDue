@@ -1,10 +1,5 @@
 package net.calvuz.qdue.core.db.converters;
 
-import static net.calvuz.qdue.core.db.converters.QDueTypeConverters.fromLocalDate;
-import static net.calvuz.qdue.core.db.converters.QDueTypeConverters.fromLocalTime;
-import static net.calvuz.qdue.core.db.converters.QDueTypeConverters.toLocalDate;
-import static net.calvuz.qdue.core.db.converters.QDueTypeConverters.toLocalTime;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.TypeConverter;
@@ -13,14 +8,20 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+import net.calvuz.qdue.domain.events.enums.EventType;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.lang.reflect.Type;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enhanced Type Converters for Calendar Engine Database
@@ -49,8 +50,119 @@ public class CalendarTypeConverters {
 
     private static final String TAG = "CalendarTypeConverters";
     private static final Gson GSON = new Gson();
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
-    // ==================== TEAMTYPE CONVERTERS ====================
+    // ==================== LocalDateTime Converters ====================
+
+    /**
+     * Convert LocalDateTime to String for database storage.
+     * @param dateTime LocalDateTime to convert
+     * @return ISO formatted string or null
+     */
+    @TypeConverter
+    public static String fromLocalDateTime(LocalDateTime dateTime) {
+        return dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : null;
+    }
+
+    /**
+     * Convert String back to LocalDateTime from database.
+     * @param dateTimeString ISO formatted string
+     * @return LocalDateTime object or null
+     */
+    @TypeConverter
+    public static LocalDateTime toLocalDateTime(String dateTimeString) {
+        return dateTimeString != null ? LocalDateTime.parse(dateTimeString, DATE_TIME_FORMATTER) : null;
+    }
+
+    // ==================== LocalDate Converters ====================
+
+    /**
+     * Convert LocalDate to ISO string for database storage.
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromLocalDate(@Nullable LocalDate date) {
+        return date != null ? date.toString() : null;
+    }
+
+    /**
+     * Convert ISO string from database to LocalDate.
+     */
+    @TypeConverter
+    @Nullable
+    public static LocalDate toLocalDate(@Nullable String dateString) {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(dateString);
+        } catch (DateTimeParseException e) {
+            Log.e(TAG, "Failed to parse LocalDate: " + dateString, e);
+            return null;
+        }
+    }
+
+    /**
+     * Convert LocalTime to ISO string for database storage.
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromLocalTime(@Nullable LocalTime time) {
+        return time != null ? time.format(DateTimeFormatter.ISO_LOCAL_TIME) : null;
+    }
+
+    /**
+     * Convert ISO string from database to LocalTime.
+     */
+    @TypeConverter
+    @Nullable
+    public static LocalTime toLocalTime(@Nullable String timeString) {
+        if (timeString == null || timeString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return LocalTime.parse(timeString, DateTimeFormatter.ISO_LOCAL_TIME);
+        } catch (DateTimeParseException e) {
+            Log.e(TAG, "Failed to parse LocalTime: " + timeString, e);
+            return null;
+        }
+    }
+
+    // ==================== EVENT TYPE CONVERTERS ====================
+
+    /**
+     * Convert EventType enum to String for database storage.
+     * @param eventType EventType enum value
+     * @return String representation or null
+     */
+    @TypeConverter
+    public static String fromEventType(EventType eventType) {
+        return eventType != null ? eventType.name() : null;
+    }
+
+    /**
+     * Convert String back to EventType enum from database.
+     * @param eventTypeString String representation
+     * @return EventType enum or default value
+     */
+    @TypeConverter
+    public static EventType toEventType(String eventTypeString) {
+        if (eventTypeString == null) {
+            return EventType.GENERAL; // Default fallback
+        }
+
+        try {
+            return EventType.valueOf(eventTypeString);
+        } catch (IllegalArgumentException e) {
+            // Handle case where enum value doesn't exist (backward compatibility)
+            return EventType.GENERAL;
+        }
+    }
+
+    // ==================== TEAM TYPE CONVERTERS ====================
 
     /**
      * Convert TeamType enum to String for database storage.
@@ -247,45 +359,45 @@ public class CalendarTypeConverters {
 
     // ==================== STRING MAP CONVERTERS ====================
 
-//    /**
-//     * Convert Map&lt;String, String&gt; to JSON string for database storage.
-//     */
-//    @TypeConverter
-//    @Nullable
-//    public static String fromStringMap(@Nullable Map<String, String> stringMap) {
-//        if (stringMap == null || stringMap.isEmpty()) {
-//            return null;
-//        }
-//
-//        try {
-//            return GSON.toJson(stringMap);
-//        } catch (Exception e) {
-//            Log.e(TAG, "Failed to serialize String map", e);
-//            return null;
-//        }
-//    }
+    /**
+     * Convert Map&lt;String, String&gt; to JSON string for database storage.
+     */
+    @TypeConverter
+    @Nullable
+    public static String fromStringMap(@Nullable Map<String, String> stringMap) {
+        if (stringMap == null || stringMap.isEmpty()) {
+            return null;
+        }
 
-//    /**
-//     * Convert JSON string from database to Map&lt;String, String&gt;.
-//     */
-//    @TypeConverter
-//    @NonNull
-//    public static Map<String, String> toStringMap(@Nullable String json) {
-//        if (json == null || json.trim().isEmpty()) {
-//            return new HashMap<>();
-//        }
-//
-//        try {
-//            Type mapType = new TypeToken<Map<String, String>>(){}.getType();
-//            Map<String, String> result = GSON.fromJson(json, mapType);
-//            return result != null ? result : new HashMap<>();
-//        } catch (JsonSyntaxException e) {
-//            Log.e(TAG, "Failed to deserialize String map from JSON: " + json, e);
-//            return new HashMap<>();
-//        }
-//    }
+        try {
+            return GSON.toJson(stringMap);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to serialize String map", e);
+            return null;
+        }
+    }
 
-    // ==================== ENUM CONVERTERS ====================
+    /**
+     * Convert JSON string from database to Map&lt;String, String&gt;.
+     */
+    @TypeConverter
+    @NonNull
+    public static Map<String, String> toStringMap(@Nullable String json) {
+        if (json == null || json.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+
+        try {
+            Type mapType = new TypeToken<Map<String, String>>(){}.getType();
+            Map<String, String> result = GSON.fromJson(json, mapType);
+            return result != null ? result : new HashMap<>();
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "Failed to deserialize String map from JSON: " + json, e);
+            return new HashMap<>();
+        }
+    }
+
+    // ==================== RECURRENCE CONVERTERS ====================
 
     /**
      * Convert RecurrenceRule.Frequency enum to string.
@@ -340,6 +452,8 @@ public class CalendarTypeConverters {
             return net.calvuz.qdue.domain.calendar.models.RecurrenceRule.EndType.NEVER; // Fallback
         }
     }
+
+    // ==================== SHIFT EXCEPTIONS CONVERTERS ====================
 
     /**
      * Convert ShiftException.ExceptionType enum to string.
