@@ -843,7 +843,7 @@ public class QDueMainActivity extends BaseActivity {
                 openUserProfileActivity();
                 return true;
             } else if (itemId == R.id.nav_events) {
-                Log.d( TAG, MessageFormat.format( message, R.string.nav_eventi ) );
+                Log.d( TAG, MessageFormat.format( message, R.string.nav_events ) );
                 openEventsActivity();
                 return true;
             } else if (itemId == R.id.nav_settings) {

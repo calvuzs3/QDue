@@ -103,7 +103,7 @@ public class WorkScheduleDay
     // ==================== CONSTRUCTORS ====================
 
     /**
-     * Private constructor for builder pattern with localization support.
+     * Private constructor for builder pattern.
      */
     private WorkScheduleDay(@NonNull Builder builder) {
 
@@ -116,7 +116,7 @@ public class WorkScheduleDay
     }
 
     /**
-     * Private constructor for cloning with localization preservation.
+     * Private constructor for cloning.
      */
     private WorkScheduleDay(
             @NonNull LocalDate date,

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Validation Error Indicator Drawable
+
+Material Design 3 compliant error indicator for validation results.
+Simple circular shape using theme error color for consistent theming.
+
+Usage: Applied to severity indicator views in validation lists
+Theming: Uses colorError attribute for automatic dark/light mode support
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Error color for high contrast visibility -->
+    <solid android:color="?attr/colorError" />
+
+    <!-- Perfect circle with full radius -->
+    <corners android:radius="@dimen/validation_indicator_radius" />
+
+</shape>

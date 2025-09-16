@@ -9,7 +9,7 @@
     <fragment
         android:id="@+id/nav_events_list"
         android:name="net.calvuz.qdue.ui.features.events.presentation.EventsListFragment"
-        android:label="@string/nav_eventi"
+        android:label="@string/nav_events"
         tools:layout="@layout/fragment_events_list">
 
         <!-- Action to navigate to event details -->
@@ -41,7 +41,7 @@
 
         <!-- Action to navigate to edit -->
         <action
-            android:id="@+id/action_event_detail_to_edit"
+            android:id="@+id/action_event_detail_to_event_edit"
             app:destination="@id/nav_event_edit" />
         <!--        app:enterAnim="@anim/slide_in_right"-->
         <!--        app:exitAnim="@anim/slide_out_left"-->

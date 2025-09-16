@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Selection Mode Bottom Sheet Layout
+
+Bottom sheet implementation for batch operations on selected events.
+Provides stub implementation with basic actions that can be extended
+based on feature requirements.
+
+Features:
+- Material Design bottom sheet behavior
+- Selection counter display
+- Extensible action buttons layout
+- Proper elevation and styling
+- Integration with MVVM selection state
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_l">
+
+    <!-- Bottom Sheet Handle -->
+    <View
+        android:layout_width="@dimen/bottom_sheet_handle_width"
+        android:layout_height="@dimen/bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:background="@drawable/bottom_sheet_drag_handle" />
+
+    <!-- Selection Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:paddingVertical="@dimen/spacing_m"
+        android:gravity="center_vertical">
+
+        <!-- Selection Count -->
+        <TextView
+            android:id="@+id/selection_count_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="3 items selected" />
+
+        <!-- Clear Selection Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/clear_selection_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_clear_selected"
+            app:icon="@drawable/ic_rounded_clear_all_24" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant"
+        android:layout_marginHorizontal="@dimen/spacing_l" />
+
+    <!-- Action Buttons Container -->
+    <LinearLayout
+        android:id="@+id/action_buttons_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:paddingTop="@dimen/spacing_m">
+
+        <!-- Delete Action -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/delete_selected_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:gravity="start|center_vertical"
+            android:text="@string/action_delete"
+            android:textColor="?attr/colorError"
+            app:icon="@drawable/ic_rounded_delete_24"
+            app:iconTint="?attr/colorError" />
+
+        <!-- Export Action (Stub) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/export_selected_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:gravity="start|center_vertical"
+            android:text="@string/action_export"
+            app:icon="@drawable/ic_rounded_file_export_24" />
+
+        <!-- Share Action (Stub) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/share_selected_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_s"
+            android:gravity="start|center_vertical"
+            android:text="@string/action_share"
+            app:icon="@drawable/ic_rounded_share_24" />
+
+        <!-- Placeholder for future actions -->
+        <!-- Add more action buttons here as needed -->
+
+    </LinearLayout>
+
+    <!-- Cancel Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancel_selection_button"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_l"
+        android:layout_marginTop="@dimen/spacing_m"
+        android:text="@string/action_cancel" />
+
+</LinearLayout>

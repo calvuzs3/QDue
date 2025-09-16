@@ -677,7 +677,7 @@ public class EventsListFragment extends Fragment implements
 
             // Restore original title
             if (getActivity() != null) {
-                getActivity().setTitle(R.string.nav_eventi);
+                getActivity().setTitle(R.string.nav_events );
             }
         }
     }

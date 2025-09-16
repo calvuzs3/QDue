@@ -9,6 +9,7 @@ import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.db.CalendarDatabase;
 import net.calvuz.qdue.data.dao.UserTeamAssignmentDao;
+import net.calvuz.qdue.data.repositories.LocalEventsRepositoryImpl;
 import net.calvuz.qdue.data.repositories.QDueUserRepositoryImpl;
 import net.calvuz.qdue.data.repositories.RecurrenceRuleRepositoryImpl;
 import net.calvuz.qdue.data.repositories.ShiftExceptionRepositoryImpl;
@@ -17,13 +18,18 @@ import net.calvuz.qdue.data.repositories.TeamRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserScheduleAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.UserTeamAssignmentRepositoryImpl;
 import net.calvuz.qdue.data.repositories.WorkScheduleRepositoryImpl;
+import net.calvuz.qdue.data.services.LocalEventsFileService;
+import net.calvuz.qdue.data.services.LocalEventsService;
 import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.data.services.UserWorkScheduleService;
+import net.calvuz.qdue.data.services.impl.LocalEventsFileServiceImpl;
+import net.calvuz.qdue.data.services.impl.LocalEventsServiceImpl;
 import net.calvuz.qdue.data.services.impl.UserSchedulePatternServiceImpl;
 import net.calvuz.qdue.data.services.impl.UserWorkScheduleServiceImpl;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
 import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
+import net.calvuz.qdue.domain.calendar.repositories.LocalEventsRepository;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
@@ -36,12 +42,14 @@ import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.LocalEventsUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.TeamUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.core.common.i18n.impl.DomainLocalizerImpl;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.events.local.di.LocalEventsModule;
 
 /**
  * CalendarServiceProviderImpl - Updated with ServiceProvider Integration
@@ -115,6 +123,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
 
     // ==================== REPOSITORY INSTANCES ====================
 
+    private volatile LocalEventsRepository mLocalEventsRepository;
     private volatile QDueUserRepository mQDueUserRepository;
     private volatile TeamRepository mTeamRepository;
     private volatile ShiftRepository mShiftRepository;
@@ -130,10 +139,20 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     private volatile ExceptionResolver mExceptionResolver;
     private volatile SchedulingEngine mSchedulingEngine;
 
-    // ==================== USE CASE INSTANCES ====================
+    // ==================== MODULE INSTANCES ====================
 
+    private volatile LocalEventsModule mLocalEventsModule;
+
+    // ==================== SERVICES INSTANCES ====================
+
+    private volatile LocalEventsService mLocalEventsService;
+    private volatile LocalEventsFileService mLocalEventsFileService;
     private volatile UserWorkScheduleService mUserWorkScheduleService;
     private volatile UserSchedulePatternService mUserSchedulePatternService;
+
+    // ==================== USE CASE INSTANCES ====================
+
+    private volatile LocalEventsUseCases mLocalEventsUseCases;
     private volatile TeamUseCases mTeamUseCases;
     private volatile UserTeamAssignmentUseCases mUserTeamAssignmentUseCases;
     private volatile CreatePatternAssignmentUseCase mCreatePatternAssignmentUseCase;
@@ -150,6 +169,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     // ==================== SYNCHRONIZATION LOCKS ====================
 
     private final Object mInitializationLock = new Object();
+    private final Object mLocalEventsRepositoryLock = new Object();
     private final Object mQDueUserRepositoryLock = new Object();
     private final Object mRecurrenceRepositoryLock = new Object();
     private final Object mShiftExceptionRepositoryLock = new Object();
@@ -158,8 +178,12 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     private final Object mUserAssignmentRepositoryLock = new Object();
     private final Object mUserTeamAssignmentRepositoryLock = new Object();
     private final Object mWorkScheduleRepositoryLock = new Object();
+    private final Object mLocalEventsModuleLock = new Object();
+    private final Object mLocalEventsServiceLock = new Object();
+    private final Object mLocalEventsFileServiceLock = new Object();
     private final Object mUserWorkScheduleServiceLock = new Object();
     private final Object mUserSchedulePatternServiceLock = new Object();
+    private final Object mLocalEventsUseCasesLock = new Object();
     private final Object mTeamUseCasesLock = new Object();
     private final Object mCreatePatternAssignmentUseCaseLock = new Object();
     private final Object mRecurrenceCalculatorLock = new Object();
@@ -251,6 +275,23 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
     }
 
     // ==================== DOMAIN REPOSITORIES ====================
+
+    @Override
+    @NonNull
+    public LocalEventsRepository getLocalEventsRepository() {
+        if (mLocalEventsRepository == null) {
+            synchronized (mLocalEventsRepositoryLock) {
+                if (mLocalEventsRepository == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating LocalEventsRepository instance" );
+                    mLocalEventsRepository = new LocalEventsRepositoryImpl(
+                            getDatabase().localEventDao()
+                    );
+                }
+            }
+        }
+        return mLocalEventsRepository;
+    }
 
     @Override
     @NonNull
@@ -462,6 +503,30 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         return mSchedulingEngine;
     }
 
+    // ==================== MODULES ====================
+
+    @Override
+    @NonNull
+    public LocalEventsModule getLocaEventsModule() {
+        if (mLocalEventsModule == null) {
+            synchronized (mLocalEventsModuleLock) {
+                if (mLocalEventsModule == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating LocalEventsModule instance" );
+                    mLocalEventsModule = new LocalEventsModule(
+                            getContext(),
+                            getDatabase(),
+                            getLocalEventsRepository(),
+                            getLocalEventsUseCases(),
+                            getLocalEventsService(),
+                            getLocalEventsFileService()
+                    );
+                }
+            }
+        }
+        return mLocalEventsModule;
+    }
+
     // ==================== WORK SCHEDULE SERVICES ====================
 
     @Override
@@ -518,7 +583,67 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider {
         return mUserSchedulePatternService;
     }
 
+    /**
+     * Get LocalEventsFileService for local event file operations.
+     * @return LocalEventsFileService instance
+     */
+    @NonNull
+    public LocalEventsFileService getLocalEventsFileService() {
+        if (mLocalEventsFileService == null) {
+            synchronized (mLocalEventsFileServiceLock) {
+                if (mLocalEventsFileService == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating LocalEventsFileService instance" );
+                    mLocalEventsFileService = new LocalEventsFileServiceImpl(
+                            getContext(),
+                            getLocalEventsService()
+                    );
+                    }
+                }
+            }
+        return mLocalEventsFileService;
+    }
+
+    /**
+     * Get LocalEventsService for local event operations.
+     * @return LocalEventsService instance
+     */
+    @NonNull
+    public LocalEventsService getLocalEventsService() {
+        if (mLocalEventsService == null) {
+            synchronized (mLocalEventsServiceLock) {
+                if (mLocalEventsService == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating LocalEventsService instance" );
+                    mLocalEventsService = new LocalEventsServiceImpl(
+                            getContext(),
+                            getLocalEventsUseCases()
+                    );
+                }
+            }
+        }
+        return mLocalEventsService;
+    }
+
     // ==================== USE CASES ====================
+
+    @NonNull
+    @Override
+    public LocalEventsUseCases getLocalEventsUseCases() {
+        if (mLocalEventsUseCases == null) {
+            synchronized (mLocalEventsUseCasesLock) {
+                if (mLocalEventsUseCases == null) {
+                    ensureInitialized();
+                    Log.d( TAG, "Creating LocalEventsUseCases instance" );
+                    mLocalEventsUseCases = new LocalEventsUseCases(
+                            getLocalEventsRepository()
+                    );
+                }
+            }
+        }
+        return mLocalEventsUseCases;
+    }
+
 
     @NonNull
     @Override

@@ -247,7 +247,7 @@ public class EventsActivity extends AppCompatActivity implements
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(R.string.nav_eventi);
+            getSupportActionBar().setTitle(R.string.nav_events );
         }
 
         mToolbar.setNavigationOnClickListener(v -> onBackPressed());
@@ -328,7 +328,7 @@ public class EventsActivity extends AppCompatActivity implements
             updateFabVisibility();
 
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(R.string.nav_eventi);
+                getSupportActionBar().setTitle(R.string.nav_events );
             }
 
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -546,7 +546,7 @@ public class EventsActivity extends AppCompatActivity implements
 
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 try {
-                    mNavController.navigate(R.id.action_event_detail_to_edit, editArgs);
+                    mNavController.navigate( R.id.action_event_detail_to_event_edit, editArgs);
                 } catch (Exception e) {
                     Library.showError(this, R.string.text_error_navigation);
                 }
@@ -821,7 +821,7 @@ public class EventsActivity extends AppCompatActivity implements
             @Override
             public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
                 runOnUiThread(() -> {
-                    if (validationResult.isValid) {
+                    if (validationResult.isValid()) {
                         progressDialog.setMessage(getString(R.string.text_validation_passed_importing_events));
                     } else {
                         progressDialog.setMessage(getString(R.string.text_validation_issues_found_continuing));
@@ -1352,7 +1352,7 @@ public class EventsActivity extends AppCompatActivity implements
 
         try {
             if (mNavController != null) {
-                mNavController.navigate(R.id.action_event_detail_to_edit, args);
+                mNavController.navigate( R.id.action_event_detail_to_event_edit, args);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to edit: " + e.getMessage());

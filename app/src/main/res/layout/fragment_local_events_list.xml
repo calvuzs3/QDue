@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EventsListFragment Layout -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Main RecyclerView for events list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="88dp"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/item_local_event" />
+
+
+    <!-- Empty State View (shown when no events available) -->
+    <include
+        android:id="@+id/empty_state_view"
+        layout="@layout/empty_state_local_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- Loading State View -->
+    <include
+        android:id="@+id/loading_state_view"
+        layout="@layout/loading_state_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- Error State View (shown when an error occurs) -->
+    <include
+        android:id="@+id/error_state_view"
+        layout="@layout/error_state_local_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <!-- ✅ Overlay Container for Bottom Toolbar -->
+    <FrameLayout
+        android:id="@+id/toolbar_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false" />
+
+</FrameLayout>

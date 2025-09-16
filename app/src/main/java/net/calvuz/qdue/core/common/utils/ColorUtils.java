@@ -348,10 +348,16 @@ public class ColorUtils
         colors.put( "background", DEFAULT_BACKGROUND_COLOR );
         colors.put( "surface", DEFAULT_SURFACE_COLOR );
 
-        // Palette ottimizzata per visualizzazione calendario
+        // Palette for shifts
         colors.put( "shift_morning", "#FFE8F5E8" );    // Verde molto tenue
         colors.put( "shift_afternoon", "#FFFFF3E0" ); // Arancione molto tenue
         colors.put( "shift_night", "#FFF3E5F5" );     // Viola molto tenue
+
+        // Palette for Priority
+        colors.put( "low_priority", "#FF03A9F4");
+        colors.put("normal_priority", "#FF00BCD4");
+        colors.put("high_priority", "#FFFFC107");
+        colors.put("override_priority", "#FFFF5722");
 
         // Material color palette
         colors.put( "red_500", "#FFF44336" );

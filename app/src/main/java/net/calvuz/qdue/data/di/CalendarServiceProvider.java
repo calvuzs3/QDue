@@ -2,11 +2,14 @@ package net.calvuz.qdue.data.di;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.data.services.LocalEventsFileService;
+import net.calvuz.qdue.data.services.LocalEventsService;
 import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
 import net.calvuz.qdue.domain.calendar.engines.RecurrenceCalculator;
 import net.calvuz.qdue.domain.calendar.engines.SchedulingEngine;
+import net.calvuz.qdue.domain.calendar.repositories.LocalEventsRepository;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftExceptionRepository;
 import net.calvuz.qdue.domain.calendar.repositories.ShiftRepository;
@@ -19,9 +22,11 @@ import net.calvuz.qdue.domain.calendar.usecases.CreatePatternAssignmentUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateTeamScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.calendar.usecases.GetScheduleStatsUseCase;
+import net.calvuz.qdue.domain.calendar.usecases.LocalEventsUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.TeamUseCases;
 import net.calvuz.qdue.domain.calendar.usecases.UserTeamAssignmentUseCases;
 import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
+import net.calvuz.qdue.ui.features.events.local.di.LocalEventsModule;
 
 /**
  * CalendarServiceProvider - Domain-Specific Dependency Injection Interface
@@ -66,6 +71,16 @@ import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
 public interface CalendarServiceProvider
 {
 
+    // ==================== MODULES ====================
+
+    /**
+     * Get LocalEventsModule for local events operations.
+     *
+     * @return LocalEventsModule instance
+     */
+    @NonNull
+    LocalEventsModule getLocaEventsModule();
+
     // ==================== SERVICES ====================
 
     /**
@@ -92,7 +107,31 @@ public interface CalendarServiceProvider
     @NonNull
     CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase();
 
+    /**
+     * Get LocalEventsService for local event operations.
+     *
+     * @return LocalEventsService instance
+     */
+    @NonNull
+    LocalEventsService getLocalEventsService();
+
+    /**
+     * Get LocalEventsFileService for local event file operations.
+     *
+     * @return LocalEventsFileService instance
+     */
+    @NonNull
+    LocalEventsFileService getLocalEventsFileService();
+
     // ==================== DOMAIN REPOSITORIES ====================
+
+    /**
+     * Get LocalEventsRepository for local event operations.
+     *
+     * @return LocalEventsRepository instance
+     */
+    @NonNull
+    LocalEventsRepository getLocalEventsRepository();
 
     /**
      * Get QDueUserRepository for user management.
@@ -212,6 +251,14 @@ public interface CalendarServiceProvider
     SchedulingEngine getSchedulingEngine();
 
     // ==================== USE CASES ====================
+
+    /**
+     * Get LocalEventsUseCases for local events operations.
+     *
+     * @return LocalEventsUseCases instance
+     */
+    @NonNull
+    public LocalEventsUseCases getLocalEventsUseCases();
 
     /**
      * Get TeamUseCases for team-related operations.

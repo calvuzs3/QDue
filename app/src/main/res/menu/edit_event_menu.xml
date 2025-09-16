@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Edit Event Menu
+
+Menu for EditLocalEventFragment with save and delete actions.
+Displayed in the toolbar/action bar during event creation and editing.
+
+Features:
+- Save action (always visible)
+- Delete action (edit mode only)
+- Proper icons and titles
+- Material Design 3 styling
+- Accessibility support
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Save Event Action -->
+    <item
+        android:id="@+id/action_save_event"
+        android:icon="@drawable/ic_rounded_save_24"
+        android:title="@string/save"
+        android:contentDescription="@string/save"
+        app:showAsAction="ifRoom" />
+
+    <!-- Delete Event Action (Edit Mode Only) -->
+    <item
+        android:id="@+id/action_delete_event"
+        android:icon="@drawable/ic_rounded_delete_24"
+        android:title="@string/delete"
+        android:contentDescription="@string/delete"
+        app:showAsAction="never" />
+
+</menu>

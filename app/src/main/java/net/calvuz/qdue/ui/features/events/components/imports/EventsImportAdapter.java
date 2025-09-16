@@ -1,3 +1,4 @@
+
 package net.calvuz.qdue.ui.features.events.components.imports;
 
 import android.content.Context;
@@ -287,7 +288,7 @@ public class EventsImportAdapter {
             String jsonContent = readSAFFileContent(fileUri);
             if (jsonContent == null || jsonContent.trim().isEmpty()) {
                 callback.onValidationError("File is empty or could not be read",
-                        new Exception("Empty file content"));
+                                           new Exception("Empty file content"));
                 return;
             }
 
@@ -302,8 +303,8 @@ public class EventsImportAdapter {
                         // Create compatible validation result
                         net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult validationResult =
                                 new net.calvuz.qdue.events.validation.JsonSchemaValidator.ValidationResult(
-                                        true, "", new java.util.ArrayList<>(), new java.util.ArrayList<>());
-
+                                        true, "", new java.util.ArrayList<>(), new java.util.ArrayList<>(),
+                                        0, "");
                         callback.onValidationComplete(validationResult, result.packageJson);
                     } else {
                         callback.onValidationError("Validation failed: " + result.errorMessage,

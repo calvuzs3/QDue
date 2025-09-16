@@ -297,10 +297,10 @@ public class EventDetailFragment extends Fragment {
         } else if (itemId == R.id.action_copy_details) {
             handleCopyDetails();
             return true;
-        } else if (itemId == R.id.action_view_source) {
+        } /*else if (itemId == R.id.action_view_source) {
             handleViewSource();
             return true;
-        } else if (itemId == R.id.action_export_event) {
+        }*/ else if (itemId == R.id.action_export_event) {
             handleExportEvent();
             return true;
         }
@@ -807,7 +807,7 @@ public class EventDetailFragment extends Fragment {
 
         try {
             Navigation.findNavController(requireView())
-                    .navigate(R.id.action_event_detail_to_edit, args);
+                    .navigate( R.id.action_event_detail_to_event_edit, args);
         } catch (Exception e) {
             Log.e(TAG, "Error navigating to edit: " + e.getMessage());
             Toast.makeText(getContext(), "Errore navigazione", Toast.LENGTH_SHORT).show();

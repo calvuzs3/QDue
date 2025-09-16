@@ -459,6 +459,14 @@
     <string name="btn_import_first">Importa Eventi</string>
     <string name="location">Luogo</string>
 
+    <!-- ==================== Additional Strings LOCAL EVENTS ==================== -->
+    <string name="local_events_title">Eventi Locali</string>
+    <string name="local_event_detail_title">Dettagli Evento</string>
+    <string name="create_local_event_title">Crea Evento</string>
+    <string name="edit_local_event_title">Modifica Evento</string>
+    <string name="search_and_filter_title">Ricerca e Filtra</string>"
+
+
 
     <!-- ==================== BACKUP ==================== -->
     <!-- Backup & Restore Strings -->
@@ -510,7 +518,63 @@
     <string name="export_failed">Export fallito</string>
     <string name="export_no_events">Nessun Evento da esportare</string>
 
+    <string name="export_export_mode">Modalità Esportazione</string>
+    <string name="export_export_all_events">Esporta Tutti gli Eventi</string>
+    <string name="export_export_date_range">Esporta Intervallo di Date</string>
+    <string name="export_selected_events">Esporta Selezionati</string>
+    <string name="export_no_events_selected">Nessun evento selezionato</string>
+    <string name="export_date_range">Range di Date</string>
+    <string name="export_start_date">Data Inizio</string>
+    <string name="export_end_date">Data Fine</string>
+    <string name="export_from_date">Data Da</string>
+    <string name="export_to_date">Data A</string>
+    <string name="export_options">Opzioni</string>
+    <string name="export_include_descriptions">Includi Descrizioni</string>
+    <string name="export_include_locations">Includi Luoghi</string>
+    <string name="file_settings">Impostazioni File</string>
+    <string name="file_name">Nome File</string>
+    <string name="file_name_helper">Nome del file JSON da esportare</string>
+
+    <string name="import_events_title">Importa Eventi</string>
+    <string name="import_select_file">Scegli File</string>
+    <string name="import_select_json_file_description">Scegli un file JSON</string>
+    <string name="import_options">Opzioni</string>
+    <string name="import_merge_with_existing">Unisci con Eventi Esistenti</string>
+    <string name="import_merge_description">Unisci nuovi eventi con quelli esistenti</string>
+    <string name="import_replace_all_events">Sostituisci gli Eventi esistenti</string>
+    <string name="import_replace_description">Sostituisci tutti gli eventi esistenti</string>
+    <string name="import_validation_results">Risultati di Validazione</string>
+    <string name="import_processing">Importazione in corso…</string>
+    <string name="import_failed">Importazione fallita</string>
+
+    <string name="action_choose_file">File</string>
+    <string name="action_search">Cerca</string>
+    <string name="action_save">Salva</string>>
+
+    <string name="search_and_filter">Cerca e Filtra</string>
+    <string name="search_location">Luogo</string>
+    <string name="search_from_date">Da</string>
+    <string name="search_to_date">A</string>
+    <string name="search_filter_options">Opzioni Filtro</string>
+    <string name="search_all_day_events_only">Solo eventi tutto il giorno</string>
+    <string name="search_apply_filters">Applica Filtri</string>
+
+    <string name="create_local_event">Crea Nuovo Evento</string>
+
+    <string name="edit_event_title">Titolo</string>
+    <string name="edit_event_title_helper">Titolo dell\'Evento</string>
+    <string name="edit_event_description">Descrizione</string>
+    <string name="edit_event_location">Luogo</string>
+    <string name="edit_event_datetime">Data e Ora</string>
+    <string name="edit_event_all_day">Tutto il giorno</string>
+    <string name="edit_start_time">Ora Inizio</string>
+    <string name="edit_end_time">Ora Fine</string>
+    <string name="edit_save">Salva</string>
+
+    <string name="detail_event_title">Titolo</string>
+
     <!-- Common Actions -->
+    <string name="action_actions">Azioni</string>
     <string name="action_enable">Abilita</string>
     <string name="action_disable">Disabilita</string>
     <string name="action_preview">Anteprima</string>
@@ -518,11 +582,16 @@
     <string name="action_select_date">Seleziona Data</string>
     <string name="action_add_pattern_day">Aggiungi Giorno</string>
     <string name="action_save_pattern">Salva Schema</string>
-    <string name="action_clear">Cancella</string>
+    <string name="action_clear">Pulisci</string>
+    <string name="action_clear_selected">Annulla Selezione</string>
     <string name="action_edit">Modifica</string>
     <string name="action_remove">Rimuovi</string>
 
+
     <string name="today">Oggi</string>
+    <string name="text_date">Data</string>
+    <string name="text_hour">Ora</string>
+    <string name="text_date_and_time">Data e Ora</string>
     <string name="text_no_event_available">Nessun evento disponibile</string>
     <string name="import_events_from_JSON_file_or_manually_add_event">Importa eventi da file JSON o aggiungi nuovi eventi manualmente</string>
     <string name="text_import_events">Importa Eventi</string>
@@ -537,7 +606,8 @@
     <string name="share_event">Condividi Evento</string>
     <string name="add_to_calendar_app">Aggiungi al Calendario</string>
     <string name="other_options">Altre Opzioni</string>
-    <string name="delete_event">Elimina Evento</string>
+    <string name="delete_event">Elimina</string>
+    <string name="duplicate_event">Duplica</string>
     <string name="copy_details">Copia Dettagli</string>
     <string name="show_origin_package">Visualizza Pacchetto Origine</string>
     <string name="export_event">Esporta Evento</string>
@@ -569,7 +639,7 @@
 
 
     <!-- Navigation and Titles -->
-    <string name="nav_eventi">Eventi</string>
+    <string name="nav_events">Eventi</string>
     <string name="event_detail_title">Dettagli Evento</string>
     <string name="add_new_event">Aggiungi nuovo evento</string>
 
@@ -648,6 +718,7 @@
 
     <!-- Loading State -->
     <string name="loading_events">Caricamento eventi…</string>
+    <string name="loading_event_details">Caricamento dettagli evento…</string>
     <string name="loading_database">Sto recuperando gli eventi dal database…</string>
     <string name="loading_importing">Importando eventi…</string>
     <string name="loading_exporting">Esportando eventi…</string>
@@ -684,8 +755,6 @@
     <string name="events_deleted_success">Eliminati %d eventi</string>
     <string name="event_copied_clipboard">Evento copiato negli appunti</string>
     <string name="cannot_open_calendar">Impossibile aprire il calendario</string>
-
-
 
 
     <!-- ============================================ -->
@@ -1001,6 +1070,7 @@
     <string name="action_permesso">Permesso</string>
     <string name="action_permesso_sindacale">Permesso Sindacale</string>
     <string name="action_add_event">Aggiungi</string>
+    <string name="action_duplicate">Duplica</string>
     <string name="action_view_events">Eventi</string>
 
     <!-- Selection Mode -->
@@ -1262,15 +1332,8 @@
     <string name="settings_assignment_info">Informazioni</string>
     <string name="settings_assignment_help">Aiuto Assegnazioni</string>
     <string name="settings_assignment_help_summary">Come funzionano le assegnazioni di pattern</string>
-
-
-
-
-
-
-
-
-
+    <string name="navigate_up">Ritorna</string>
+    <string name="local_events_header_desc">Eventi</string>
 
 
 </resources>

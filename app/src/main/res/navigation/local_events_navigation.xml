@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+LocalEvents Navigation Graph - Corrected Version
+
+Navigation Component graph for the LocalEvents MVVM feature, defining all
+navigation destinations, actions, and argument passing between fragments.
+
+FIXES APPLIED:
+- Argument type consistency (boolean types instead of strings where appropriate)
+- Matching arguments between actions and destinations
+- Proper popUpTo behavior for back navigation
+- Consistent string resource naming
+- Fixed action argument passing
+
+Architecture:
+- List View: Main events list with search and filtering
+- Detail View: Event details with actions (edit, delete, share)
+- Create/Edit View: Event creation and editing form
+- File Operations: Import/export dialogs and progress
+
+Navigation Flow:
+List ↔ Detail ↔ Edit
+List → Create
+List ↔ File Operations
+Detail → File Operations (export single event)
+-->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_local_events"
+    app:startDestination="@id/nav_local_events_list">
+
+    <!--
+    ==================== LOCAL EVENTS LIST ====================
+    Main destination showing all events with search, filtering, and selection
+    -->
+    <fragment
+        android:id="@+id/nav_local_events_list"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.fragments.LocalEventsListFragment"
+        android:label="@string/local_events_title"
+        tools:layout="@layout/fragment_local_events_list">
+
+        <!-- Optional filter date for targeted views -->
+        <argument
+            android:name="filterDate"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional initial search query -->
+        <argument
+            android:name="searchQuery"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Navigation Actions from List -->
+
+        <!-- Navigate to Event Detail -->
+        <action
+            android:id="@+id/action_local_events_list_to_event_detail"
+            app:destination="@id/nav_local_event_detail"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right">
+
+            <!-- Match destination arguments exactly -->
+            <argument
+                android:name="eventId"
+                app:argType="string" />
+            <argument
+                android:name="sourceDate"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+            <argument
+                android:name="sourceFragment"
+                android:defaultValue="list"
+                app:argType="string" />
+        </action>
+
+        <!-- Navigate to Event Creation -->
+        <action
+            android:id="@+id/action_local_events_list_to_create_event"
+            app:destination="@id/nav_create_local_event"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down">
+
+            <!-- Match create destination arguments -->
+            <argument
+                android:name="targetDate"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+            <argument
+                android:name="eventType"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+        </action>
+
+        <!-- Navigate to Event Edit (direct from list) -->
+        <action
+            android:id="@+id/action_local_events_list_to_event_edit"
+            app:destination="@id/nav_edit_local_event"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down">
+
+            <!-- Match edit destination arguments -->
+            <argument
+                android:name="eventId"
+                app:argType="string" />
+            <argument
+                android:name="sourceDate"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+            <argument
+                android:name="sourceFragment"
+                android:defaultValue="list"
+                app:argType="string" />
+            <argument
+                android:name="editMode"
+                android:defaultValue="existing_event"
+                app:argType="string" />
+        </action>
+
+        <!-- Navigate to File Import -->
+        <action
+            android:id="@+id/action_local_events_list_to_import"
+            app:destination="@id/nav_file_import_dialog"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+
+        <!-- Navigate to File Export -->
+        <action
+            android:id="@+id/action_local_events_list_to_export"
+            app:destination="@id/nav_file_export_dialog"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out">
+
+            <argument
+                android:name="exportType"
+                android:defaultValue="all"
+                app:argType="string" />
+            <argument
+                android:name="selectedEventIds"
+                android:defaultValue="@null"
+                app:argType="string[]"
+                app:nullable="true" />
+        </action>
+
+        <!-- Navigate to Search/Filter -->
+        <action
+            android:id="@+id/action_local_events_list_to_search"
+            app:destination="@id/nav_events_search_filter"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down" />
+
+    </fragment>
+
+    <!--
+    ==================== LOCAL EVENT DETAIL ====================
+    Event detail view with actions and navigation to edit
+    -->
+    <fragment
+        android:id="@+id/nav_local_event_detail"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.fragments.LocalEventDetailFragment"
+        android:label="@string/local_event_detail_title"
+        tools:layout="@layout/fragment_local_event_detail">
+
+        <!-- Required: Event ID to display -->
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+
+        <!-- Optional: Source date for context -->
+        <argument
+            android:name="sourceDate"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Source fragment for navigation context -->
+        <argument
+            android:name="sourceFragment"
+            android:defaultValue="list"
+            app:argType="string" />
+
+        <!-- Navigation Actions from Detail -->
+
+        <!-- Navigate to Event Edit -->
+        <action
+            android:id="@+id/action_event_detail_to_edit_event"
+            app:destination="@id/nav_edit_local_event"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down">
+
+            <!-- Pass all required arguments for edit destination -->
+            <argument
+                android:name="eventId"
+                app:argType="string" />
+            <argument
+                android:name="sourceDate"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+            <argument
+                android:name="sourceFragment"
+                android:defaultValue="detail"
+                app:argType="string" />
+            <argument
+                android:name="editMode"
+                android:defaultValue="existing_event"
+                app:argType="string" />
+        </action>
+
+        <!-- Navigate to Event Duplication (Create with prefilled data) -->
+        <action
+            android:id="@+id/action_event_detail_to_duplicate"
+            app:destination="@id/nav_create_local_event"
+            app:enterAnim="@anim/slide_in_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_out_down">
+
+            <argument
+                android:name="duplicateFromEventId"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+        </action>
+
+        <!-- Navigate to Export Single Event -->
+        <action
+            android:id="@+id/action_event_detail_to_export"
+            app:destination="@id/nav_file_export_dialog"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out">
+
+            <argument
+                android:name="exportType"
+                android:defaultValue="single"
+                app:argType="string" />
+            <argument
+                android:name="eventId"
+                android:defaultValue="@null"
+                app:argType="string"
+                app:nullable="true" />
+        </action>
+
+        <!-- Navigate back to list with proper back stack handling -->
+        <action
+            android:id="@+id/action_event_detail_to_events_list"
+            app:destination="@id/nav_local_events_list"
+            app:popUpTo="@id/nav_local_events_list"
+            app:popUpToInclusive="false" />
+
+    </fragment>
+
+    <!--
+    ==================== CREATE LOCAL EVENT ====================
+    Event creation form with validation and save
+    Using EditLocalEventFragment for both create and edit operations
+    -->
+    <fragment
+        android:id="@+id/nav_create_local_event"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.fragments.EditLocalEventFragment"
+        android:label="@string/create_local_event_title"
+        tools:layout="@layout/fragment_edit_local_event">
+
+        <!-- Optional: Target date for new event -->
+        <argument
+            android:name="targetDate"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Event type to pre-select -->
+        <argument
+            android:name="eventType"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Event ID to duplicate from -->
+        <argument
+            android:name="duplicateFromEventId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Pre-filled title -->
+        <argument
+            android:name="prefilledTitle"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Create mode indicator (distinguished from edit mode) -->
+        <argument
+            android:name="editMode"
+            android:defaultValue="create_new"
+            app:argType="string" />
+
+    </fragment>
+
+    <!--
+    ==================== EDIT LOCAL EVENT ====================
+    Event editing form with validation, save, and delete options
+    -->
+    <fragment
+        android:id="@+id/nav_edit_local_event"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.fragments.EditLocalEventFragment"
+        android:label="@string/edit_local_event_title"
+        tools:layout="@layout/fragment_edit_local_event">
+
+        <!-- Required: Event ID to edit -->
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+
+        <!-- Optional: Source date for context -->
+        <argument
+            android:name="sourceDate"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Source fragment for navigation context -->
+        <argument
+            android:name="sourceFragment"
+            android:defaultValue="detail"
+            app:argType="string" />
+
+        <!-- Edit mode indicator -->
+        <argument
+            android:name="editMode"
+            android:defaultValue="existing_event"
+            app:argType="string" />
+
+    </fragment>
+
+    <!--
+    ==================== EVENTS SEARCH AND FILTER ====================
+    Advanced search and filtering interface
+    -->
+    <fragment
+        android:id="@+id/nav_events_search_filter"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.fragments.EventsSearchFilterFragment"
+        android:label="@string/search_and_filter_title"
+        tools:layout="@layout/fragment_events_search_filter">
+
+        <!-- Optional: Initial search query -->
+        <argument
+            android:name="initialQuery"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Initial filter state -->
+        <argument
+            android:name="initialFilter"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+    </fragment>
+
+    <!--
+    ==================== FILE IMPORT DIALOG ====================
+    File import dialog with progress and options
+    -->
+    <dialog
+        android:id="@+id/nav_file_import_dialog"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.dialogs.FileImportDialogFragment"
+        android:label="@string/import_events_title"
+        tools:layout="@layout/fragment_file_import_dialog">
+
+        <!-- Optional: Pre-selected file URI -->
+        <argument
+            android:name="fileUri"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Import options -->
+        <argument
+            android:name="importOptions"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+    </dialog>
+
+    <!--
+    ==================== FILE EXPORT DIALOG ====================
+    File export dialog with progress and options
+    -->
+    <dialog
+        android:id="@+id/nav_file_export_dialog"
+        android:name="net.calvuz.qdue.ui.features.events.local.presentation.dialogs.FileExportDialogFragment"
+        android:label="@string/export_events_title"
+        tools:layout="@layout/fragment_file_export_dialog">
+
+        <!-- Export type: all, selected, single -->
+        <argument
+            android:name="exportType"
+            android:defaultValue="all"
+            app:argType="string" />
+
+        <!-- Optional: Selected event IDs for export -->
+        <argument
+            android:name="selectedEventIds"
+            android:defaultValue="@null"
+            app:argType="string[]"
+            app:nullable="true" />
+
+        <!-- Optional: Single event ID for export -->
+        <argument
+            android:name="eventId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+        <!-- Optional: Export options -->
+        <argument
+            android:name="exportOptions"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+
+    </dialog>
+
+    <!--
+    ==================== GLOBAL ACTIONS ====================
+    Actions available from multiple destinations
+    -->
+
+    <!-- Global action to return to events list -->
+    <action
+        android:id="@+id/action_global_to_events_list"
+        app:destination="@id/nav_local_events_list"
+        app:popUpTo="@id/nav_local_events_list"
+        app:popUpToInclusive="false"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out" />
+
+    <!-- Global action for file import (available from anywhere) -->
+    <action
+        android:id="@+id/action_global_file_import"
+        app:destination="@id/nav_file_import_dialog"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out" />
+
+    <!-- Global action for search (available from anywhere) -->
+    <action
+        android:id="@+id/action_global_search"
+        app:destination="@id/nav_events_search_filter"
+        app:enterAnim="@anim/slide_in_up"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/slide_out_down" />
+
+</navigation>

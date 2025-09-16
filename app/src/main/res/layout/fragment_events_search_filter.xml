@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Events Search Filter Bottom Sheet Layout
+
+Material Design bottom sheet for search and filtering options.
+Supports text search, location search, date range selection, and toggles.
+
+Features:
+- Bottom sheet handle for drag interaction
+- Grouped search inputs with icons
+- Date range selection with chips
+- Clear individual filters
+- Apply/clear all actions
+- Responsive spacing and typography
+- Accessibility labels
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_background"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/spacing_l">
+
+    <!-- Bottom Sheet Handle -->
+    <View
+        android:layout_width="@dimen/bottom_sheet_handle_width"
+        android:layout_height="@dimen/bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginBottom="@dimen/spacing_m"
+        android:background="@drawable/bottom_sheet_handle" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_l"
+        android:paddingVertical="@dimen/spacing_m"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/search_and_filter"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?attr/colorOnSurface" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/clear_all_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_clear"
+            app:icon="@drawable/ic_rounded_clear_all_24" />
+
+    </LinearLayout>
+
+    <!-- Content Container -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_l">
+
+            <!-- Search Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:text="@string/action_search"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- Text Search -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:hint="@string/search_events"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_rounded_search_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/search_query_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLength="50"
+                    tools:text="team meeting" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Location Search -->
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:hint="@string/search_location"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_rounded_location_on_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/location_search_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLength="30"
+                    tools:text="conference room" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Date Range Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:text="@string/export_date_range"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- Date Range Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/start_date_button"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_s"
+                    android:layout_weight="1"
+                    android:text="@string/export_start_date"
+                    app:icon="@drawable/ic_rounded_calendar_today_24" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/end_date_button"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    android:layout_weight="1"
+                    android:text="@string/export_end_date"
+                    app:icon="@drawable/ic_rounded_event_24" />
+
+            </LinearLayout>
+
+            <!-- Date Range Chips Container -->
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:chipSpacing="@dimen/spacing_s"
+                app:singleLine="false">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/start_date_chip"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="false"
+                    android:text="@string/search_from_date"
+                    android:visibility="gone"
+                    app:closeIcon="@drawable/ic_rounded_close_24"
+                    app:closeIconVisible="true"
+                    tools:text="From: 15/09/2025"
+                    tools:visibility="visible" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/end_date_chip"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="false"
+                    android:text="@string/search_to_date"
+                    android:visibility="gone"
+                    app:closeIcon="@drawable/ic_rounded_close_24"
+                    app:closeIconVisible="true"
+                    tools:text="To: 20/09/2025"
+                    tools:visibility="visible" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Filter Options Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:text="@string/search_filter_options"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- All Day Only Toggle -->
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/all_day_only_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:text="@string/search_all_day_events_only" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_m"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_l">
+
+        <!-- Cancel Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancel_button"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_m"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
+
+        <!-- Apply Filters Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/apply_filters_button"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:text="@string/search_apply_filters"
+            app:icon="@drawable/ic_rounded_filter_list_24" />
+
+    </LinearLayout>
+
+</LinearLayout>

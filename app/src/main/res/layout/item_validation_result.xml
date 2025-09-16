@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Validation Result Item Layout
+
+RecyclerView item layout for displaying validation errors and warnings
+in the FileImportDialogFragment. Shows severity indicator and message text.
+
+Features:
+- Severity indicator (error/warning color)
+- Multi-line message text with proper wrapping
+- Proper spacing and Material Design styling
+- Accessibility support
+- Selectable text for copy/paste
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/spacing_m"
+    android:gravity="top">
+
+    <!-- Severity Indicator -->
+    <View
+        android:id="@+id/severity_indicator"
+        android:layout_width="@dimen/validation_indicator_size"
+        android:layout_height="@dimen/validation_indicator_size"
+        android:layout_marginTop="@dimen/spacing_s"
+        android:layout_marginEnd="@dimen/spacing_m"
+        android:background="@drawable/bg_validation_indicator_error"
+        tools:background="?attr/colorError" />
+
+    <!-- Message Text Container -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Message Text -->
+        <TextView
+            android:id="@+id/message_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:textIsSelectable="true"
+            android:lineSpacingExtra="2dp"
+            tools:text="Event 'Weekly Meeting' has invalid date format. Expected ISO 8601 format (YYYY-MM-DD), but got '2025/09/15'." />
+
+    </LinearLayout>
+
+</LinearLayout>

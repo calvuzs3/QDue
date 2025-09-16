@@ -2,6 +2,7 @@ package net.calvuz.qdue.ui.features.events.components.imports;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
@@ -45,6 +46,7 @@ public class FileAccessAdapter {
     };
 
     // Context references
+    private final Context mContext;
     private final Activity mActivity;
     private Fragment mFragment;
 
@@ -80,14 +82,23 @@ public class FileAccessAdapter {
      */
     public FileAccessAdapter(@NonNull Activity activity) {
         this.mActivity = activity;
+        this.mContext = activity.getApplicationContext();
     }
 
     /**
      * Constructor for Fragment context
      */
     public FileAccessAdapter(@NonNull Fragment fragment) {
-        this.mActivity = fragment.requireActivity();
         this.mFragment = fragment;
+        this.mActivity = fragment.requireActivity();
+        this.mContext = mActivity.getApplicationContext();
+
+    }
+
+    // TEST for newly created LocalEventsFileServiceImpl
+    public FileAccessAdapter(@NonNull Context context) {
+        this.mContext = context;
+        this.mActivity = null; //(Activity) context;
     }
 
     /**

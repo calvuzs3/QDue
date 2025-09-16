@@ -439,17 +439,17 @@ public class EventsImportManager {
             validation = JsonSchemaValidator.validatePackage(packageJson);
             callback.onValidationComplete(validation);
 
-            if (!validation.isValid) {
-                Log.w(TAG, "Validation failed: " + validation.errorMessage);
+            if (!validation.isValid()) {
+                Log.w(TAG, "Validation failed: " + validation.getErrorMessage());
 
                 // Show detailed error information
                 StringBuilder errorDetails = new StringBuilder();
                 errorDetails.append("Validation failed:\n");
-                errorDetails.append("Main error: ").append(validation.errorMessage).append("\n");
+                errorDetails.append("Main error: ").append(validation.getErrorMessage()).append("\n");
 
-                if (!validation.detailedErrors.isEmpty()) {
+                if (validation.hasErrors()) {
                     errorDetails.append("\nDetailed errors:\n");
-                    for (String error : validation.detailedErrors) {
+                    for (String error : validation.getErrors()) {
                         errorDetails.append("• ").append(error).append("\n");
                     }
                 }
@@ -458,7 +458,7 @@ public class EventsImportManager {
                 return;
             }
 
-            Log.d(TAG, "Validation passed with " + validation.warnings.size() + " warnings");
+            Log.d(TAG, "Validation passed with " + validation.getWarnings().size() + " warnings");
         } else {
             Log.d(TAG, "Validation skipped by user option");
         }
@@ -870,8 +870,8 @@ public class EventsImportManager {
         ImportCallback enhancedCallback = new ImportCallback() {
             @Override
             public void onValidationComplete(JsonSchemaValidator.ValidationResult validationResult) {
-                if (!validationResult.isValid) {
-                    Log.w(TAG, "Validation failed in compatible mode: " + validationResult.errorMessage);
+                if (!validationResult.isValid()) {
+                    Log.w(TAG, "Validation failed in compatible mode: " + validationResult.getErrorMessage());
                 }
             }
 

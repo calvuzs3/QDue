@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Edit Local Event Fragment Layout
+
+Full-screen event editor layout with Material Design 3 components.
+Supports both create and edit modes with comprehensive input validation.
+
+Features:
+- Collapsible app bar with toolbar
+- Scrollable content with proper spacing
+- Material text inputs with validation
+- Date/time pickers integration
+- All-day event toggle
+- Action buttons with proper sizing
+- Responsive design for tablet/phone
+- Accessibility support
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <!-- App Bar Layout -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar_edit_event"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="0dp"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:navigationIcon="@drawable/ic_rounded_arrow_back_24"
+            app:title="@string/edit_event"
+            app:titleTextColor="?attr/colorOnSurface" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_l">
+
+            <!-- Event Title -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/title_input_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:hint="@string/edit_event_title"
+                app:endIconMode="clear_text"
+                app:helperText="@string/edit_event_title_helper"
+                app:startIconDrawable="@drawable/ic_rounded_event_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/title_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapSentences"
+                    android:maxLength="100"
+                    tools:text="Team Meeting" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Event Description -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/description_input_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_m"
+                android:hint="@string/edit_event_description"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_rounded_description_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/description_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:lines="3"
+                    android:maxLines="5"
+                    android:scrollbars="vertical"
+                    tools:text="Weekly team sync meeting to discuss project progress" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Event Location -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/location_input_layout"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                android:hint="@string/edit_event_location"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_rounded_location_on_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/location_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords"
+                    android:maxLength="50"
+                    tools:text="Conference Room A" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Date and Time Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_l"
+                app:cardElevation="2dp"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_l">
+
+                    <!-- Section Header -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_m"
+                        android:text="@string/edit_event_datetime"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <!-- Date Selection -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/date_button"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_m"
+                        android:gravity="start|center_vertical"
+                        android:text="@string/action_select_date"
+                        app:icon="@drawable/ic_rounded_calendar_today_24"
+                        app:iconGravity="start"
+                        tools:text="15/09/2025" />
+
+                    <!-- All Day Toggle -->
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/all_day_checkbox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_m"
+                        android:checked="true"
+                        android:text="@string/edit_event_all_day" />
+
+                    <!-- Time Selection Container -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <!-- Start Time -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/start_time_button"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/spacing_s"
+                            android:layout_weight="1"
+                            android:gravity="start|center_vertical"
+                            android:text="@string/edit_start_time"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_rounded_timer_24"
+                            app:iconGravity="start"
+                            tools:text="09:00"
+                            tools:visibility="visible" />
+
+                        <!-- End Time -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/end_time_button"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_s"
+                            android:layout_weight="1"
+                            android:gravity="start|center_vertical"
+                            android:text="@string/edit_end_time"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_filled_timer_24"
+                            app:iconGravity="start"
+                            tools:text="10:00"
+                            tools:visibility="visible" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:gravity="end"
+                android:orientation="horizontal">
+
+                <!-- Cancel Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cancel_button"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_m"
+                    android:text="@string/action_cancel" />
+
+                <!-- Delete Button (Edit Mode Only) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/delete_button"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/spacing_m"
+                    android:text="@string/action_delete"
+                    android:textColor="?attr/colorError"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_rounded_delete_24"
+                    app:iconTint="?attr/colorError"
+                    tools:visibility="visible" />
+
+                <!-- Save Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/save_button"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_save"
+                    app:icon="@drawable/ic_rounded_save_24" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

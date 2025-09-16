@@ -34,10 +34,10 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.events.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
+import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
-import net.calvuz.qdue.ui.features.events.presentation.EventsActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -705,10 +705,9 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
      * Open day events view.
      */
     private void openDayEventsView(@NonNull LocalDate date, @NonNull List<LocalEvent> events) {
-        // TODO: Implement day events view
         // Could open EventsActivity filtered to specific date
-        Intent intent = new Intent( requireContext(), EventsActivity.class );
-        intent.putExtra( EventsActivity.EXTRA_FILTER_DATE, date.toString() );
+        Intent intent = new Intent( requireContext(), LocalEventsActivity.class );
+        intent.putExtra( LocalEventsActivity.EXTRA_FILTER_DATE, date.toString() );
         startActivity( intent );
     }
 
@@ -725,8 +724,8 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     private void openQuickEventCreation(@NonNull LocalDate date) {
         // TODO: Implement quick event creation
         // Could open EventsActivity in creation mode
-        Intent intent = new Intent( requireContext(), EventsActivity.class );
-        //intent.putExtra( EventsActivity.EXTRA_CREATE_EVENT_DATE, date.toString() );
+        Intent intent = new Intent( requireContext(), LocalEventsActivity.class );
+        //intent.putExtra( LocalEventsActivity.EXTRA_CREATE_EVENT_DATE, date.toString() );
         startActivity( intent );
     }
 

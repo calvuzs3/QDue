@@ -2,6 +2,9 @@ package net.calvuz.qdue.events.validation;
 
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
 import net.calvuz.qdue.events.EventPackageJson;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -18,17 +21,36 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * FIXED: Advanced JSON Schema Validator for Q-Due Events
- * <p>
- * Fixed date validation to support multiple formats:
- * - ISO 8601 dates: "2025-01-15"
- * - ISO 8601 datetime: "2025-01-15T10:30:00Z"
- * - ISO 8601 datetime with timezone: "2025-01-15T10:30:00+01:00"
- * - Flexible date formats
+ * Enhanced JSON Schema Validator for Q-Due Events
+ *
+ * <p>Advanced validation for Q-Due event packages with comprehensive error reporting,
+ * flexible date/time parsing, and support for both object and string input validation.
+ * Designed for use with FileImportDialogFragment and other validation scenarios.</p>
+ *
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li><strong>String and Object Input</strong>: Validates both JSON strings and parsed objects</li>
+ *   <li><strong>Comprehensive Reporting</strong>: Detailed errors, warnings, and event counts</li>
+ *   <li><strong>Flexible Date Parsing</strong>: Multiple ISO and custom date formats</li>
+ *   <li><strong>Q-Due Compliance</strong>: Validates against Q-Due event schema</li>
+ *   <li><strong>Performance Optimized</strong>: Efficient validation for large event sets</li>
+ * </ul>
+ *
+ * <h3>Supported Date Formats:</h3>
+ * <ul>
+ *   <li>ISO 8601 dates: "2025-01-15"</li>
+ *   <li>ISO 8601 datetime: "2025-01-15T10:30:00Z"</li>
+ *   <li>ISO 8601 with timezone: "2025-01-15T10:30:00+01:00"</li>
+ *   <li>Custom formats: "2025-01-15 10:30:00"</li>
+ * </ul>
+ *
+ * @author QDue Development Team
+ * @version 2.0.0 - Enhanced for FileImport Integration
+ * @since LocalEvents MVVM Implementation
  */
 public class JsonSchemaValidator {
 
-    private static final String TAG = "EV_JSON_VALID";
+    private static final String TAG = "JsonSchemaValidator";
 
     // Validation constants
     private static final int MAX_TITLE_LENGTH = 100;
@@ -44,7 +66,7 @@ public class JsonSchemaValidator {
     private static final Pattern VERSION_PATTERN = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
-    // FIXED: Multiple date/time formatters for flexible parsing
+    // Multiple date/time formatters for flexible parsing
     private static final List<DateTimeFormatter> DATE_FORMATTERS = Arrays.asList(
             DateTimeFormatter.ofPattern("yyyy-MM-dd"),                    // 2025-01-15
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"),     // 2025-01-15T10:30:00Z
@@ -74,62 +96,213 @@ public class JsonSchemaValidator {
             "LOW", "NORMAL", "HIGH", "URGENT"
     ));
 
+    // Gson instance for JSON parsing
+    private static final Gson gson = new Gson();
+
+    // ==================== VALIDATION RESULT CLASS ====================
+
     /**
-     * Validation result with detailed error information
+     * Enhanced validation result with comprehensive error reporting and event counting.
      */
     public static class ValidationResult {
-        public final boolean isValid;
-        public final String errorMessage;
-        public final List<String> warnings;
-        public final List<String> detailedErrors;
+        private final boolean isValid;
+        private final String errorMessage;
+        private final List<String> warnings;
+        private final List<String> errors;
+        private final int eventCount;
+        private final String packageName;
 
-        public ValidationResult(boolean isValid, String errorMessage,
-                                List<String> warnings, List<String> detailedErrors) {
+        public ValidationResult(boolean isValid, String errorMessage, List<String> errors,
+                                List<String> warnings, int eventCount, String packageName) {
             this.isValid = isValid;
             this.errorMessage = errorMessage;
-            this.warnings = warnings != null ? warnings : new ArrayList<>();
-            this.detailedErrors = detailedErrors != null ? detailedErrors : new ArrayList<>();
+            this.errors = errors != null ? new ArrayList<>(errors) : new ArrayList<>();
+            this.warnings = warnings != null ? new ArrayList<>(warnings) : new ArrayList<>();
+            this.eventCount = eventCount;
+            this.packageName = packageName;
         }
 
-        public static ValidationResult valid(List<String> warnings) {
-            return new ValidationResult(true, null, warnings, null);
+        // ==================== COMPATIBILITY METHODS ====================
+
+        /**
+         * Check if validation passed.
+         */
+        public boolean isValid() {
+            return isValid;
         }
 
-        public static ValidationResult invalid(String error, List<String> detailedErrors) {
-            return new ValidationResult(false, error, null, detailedErrors);
+        /**
+         * Get main error message.
+         */
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
+        /**
+         * Get list of all errors.
+         */
+        public List<String> getErrors() {
+            return new ArrayList<>(errors);
+        }
+
+        /**
+         * Get list of all warnings.
+         */
+        public List<String> getWarnings() {
+            return new ArrayList<>(warnings);
+        }
+
+        /**
+         * Get total count of events in the package.
+         */
+        public int getEventCount() {
+            return eventCount;
+        }
+
+        /**
+         * Get package name if available.
+         */
+        public String getPackageName() {
+            return packageName;
+        }
+
+        // ==================== UTILITY METHODS ====================
+
+        /**
+         * Check if there are any warnings.
+         */
         public boolean hasWarnings() {
             return !warnings.isEmpty();
         }
 
+        /**
+         * Check if there are any errors.
+         */
+        public boolean hasErrors() {
+            return !errors.isEmpty();
+        }
+
+        /**
+         * Get full error message with details.
+         */
         public String getFullErrorMessage() {
             if (isValid) return null;
 
-            StringBuilder sb = new StringBuilder(errorMessage);
-            if (!detailedErrors.isEmpty()) {
-                sb.append("\n\nDetailed errors:");
-                for (String error : detailedErrors) {
+            StringBuilder sb = new StringBuilder();
+            if (errorMessage != null) {
+                sb.append(errorMessage);
+            }
+
+            if (!errors.isEmpty()) {
+                if (sb.length() > 0) sb.append("\n\n");
+                sb.append("Detailed errors:");
+                for (String error : errors) {
                     sb.append("\n• ").append(error);
                 }
             }
             return sb.toString();
         }
+
+        /**
+         * Get summary string for UI display.
+         */
+        public String getSummary() {
+            if (isValid) {
+                String summary = "Validation successful (" + eventCount + " events)";
+                if (hasWarnings()) {
+                    summary += " - " + warnings.size() + " warnings";
+                }
+                return summary;
+            } else {
+                return "Validation failed (" + errors.size() + " errors)";
+            }
+        }
+
+        // ==================== FACTORY METHODS ====================
+
+        public static ValidationResult valid(List<String> warnings, int eventCount, String packageName) {
+            return new ValidationResult(true, null, null, warnings, eventCount, packageName);
+        }
+
+        public static ValidationResult invalid(String error, List<String> detailedErrors, int eventCount) {
+            return new ValidationResult(false, error, detailedErrors, null, eventCount, null);
+        }
+
+        public static ValidationResult parseError(String error) {
+            return new ValidationResult(false, error, List.of(error), null, 0, null);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ValidationResult{valid=%s, eventCount=%d, errors=%d, warnings=%d}",
+                                 isValid, eventCount, errors.size(), warnings.size());
+        }
+    }
+
+    // ==================== PUBLIC API METHODS ====================
+
+    /**
+     * Validate event package from JSON string.
+     * This is the main entry point for FileImportDialogFragment.
+     *
+     * @param jsonContent JSON string content to validate
+     * @return ValidationResult with comprehensive validation information
+     */
+    public static ValidationResult validateEventPackage(String jsonContent) {
+        Log.d(TAG, "Starting event package validation from JSON string");
+
+        if (isEmpty(jsonContent)) {
+            return ValidationResult.parseError("JSON content is empty");
+        }
+
+        try {
+            // Parse JSON string to EventPackageJson object
+            EventPackageJson packageJson = gson.fromJson(jsonContent, EventPackageJson.class);
+
+            if (packageJson == null) {
+                return ValidationResult.parseError("Failed to parse JSON content");
+            }
+
+            // Validate the parsed object
+            return validatePackage(packageJson);
+
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "JSON parsing error: " + e.getMessage(), e);
+            return ValidationResult.parseError("Invalid JSON format: " + e.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected validation error: " + e.getMessage(), e);
+            return ValidationResult.parseError("Validation error: " + e.getMessage());
+        }
     }
 
     /**
-     * Main validation method for complete package
+     * Validate event package from parsed object.
+     *
+     * @param packageJson Parsed EventPackageJson object to validate
+     * @return ValidationResult with comprehensive validation information
      */
     public static ValidationResult validatePackage(EventPackageJson packageJson) {
         Log.d(TAG, "Starting comprehensive package validation");
 
         List<String> warnings = new ArrayList<>();
         List<String> errors = new ArrayList<>();
+        int eventCount = 0;
+        String packageName = null;
 
         try {
             // Basic structure validation
             if (packageJson == null) {
-                return ValidationResult.invalid("Package is null", null);
+                return ValidationResult.invalid("Package is null", List.of("Package is null"), 0);
+            }
+
+            // Get package info for result
+            if (packageJson.package_info != null) {
+                packageName = packageJson.package_info.name;
+            }
+
+            // Get event count
+            if (packageJson.events != null) {
+                eventCount = packageJson.events.size();
             }
 
             // Validate package info
@@ -144,20 +317,53 @@ public class JsonSchemaValidator {
             // Return result
             if (!errors.isEmpty()) {
                 String mainError = errors.get(0);
-                return ValidationResult.invalid(mainError, errors);
+                return ValidationResult.invalid(mainError, errors, eventCount);
             }
 
             Log.d(TAG, "Package validation completed successfully with " + warnings.size() + " warnings");
-            return ValidationResult.valid(warnings);
+            return ValidationResult.valid(warnings, eventCount, packageName);
 
         } catch (Exception e) {
             Log.e(TAG, "Unexpected error during validation", e);
-            return ValidationResult.invalid("Validation failed: " + e.getMessage(), null);
+            List<String> errorList = new ArrayList<>();
+            errorList.add("Validation failed: " + e.getMessage());
+            return ValidationResult.invalid("Validation failed: " + e.getMessage(), errorList, eventCount);
         }
     }
 
     /**
-     * FIXED: Validate package_info section with flexible date parsing
+     * Quick validation check for JSON string.
+     * Returns only basic validation status without detailed analysis.
+     *
+     * @param jsonContent JSON string to check
+     * @return true if JSON is valid and parseable, false otherwise
+     */
+    public static boolean isValidJson(String jsonContent) {
+        if (isEmpty(jsonContent)) {
+            return false;
+        }
+
+        try {
+            EventPackageJson packageJson = gson.fromJson(jsonContent, EventPackageJson.class);
+            return packageJson != null &&
+                    packageJson.package_info != null &&
+                    packageJson.events != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get supported file format description.
+     */
+    public static String getSupportedFormatsDescription() {
+        return "Supported format: JSON files containing Q-Due event packages with package_info and events arrays";
+    }
+
+    // ==================== PRIVATE VALIDATION METHODS ====================
+
+    /**
+     * Validate package_info section with flexible date parsing
      */
     private static void validatePackageInfo(EventPackageJson.PackageInfo packageInfo,
                                             List<String> errors, List<String> warnings) {
@@ -192,7 +398,7 @@ public class JsonSchemaValidator {
             warnings.add("Contact email format appears invalid");
         }
 
-        // FIXED: Flexible date validation
+        // Flexible date validation
         validateFlexibleDateField(packageInfo.created_date, "created_date", false, errors, warnings);
         validateFlexibleDateField(packageInfo.valid_from, "valid_from", true, errors, warnings);
         validateFlexibleDateField(packageInfo.valid_to, "valid_to", true, errors, warnings);
@@ -304,7 +510,7 @@ public class JsonSchemaValidator {
     }
 
     /**
-     * FIXED: Validate event date/time logic with flexible parsing
+     * Validate event date/time logic with flexible parsing
      */
     private static void validateEventDateTime(EventPackageJson.EventJson event, String eventPrefix,
                                               List<String> errors, List<String> warnings) {
@@ -385,7 +591,7 @@ public class JsonSchemaValidator {
         if (!isEmpty(event.event_type)) {
             if (!VALID_EVENT_TYPES.contains(event.event_type.toUpperCase())) {
                 warnings.add(eventPrefix + ": Unknown event_type '" + event.event_type +
-                        "', will default to GENERAL");
+                                     "', will default to GENERAL");
             }
         }
 
@@ -393,7 +599,7 @@ public class JsonSchemaValidator {
         if (!isEmpty(event.priority)) {
             if (!VALID_PRIORITIES.contains(event.priority.toUpperCase())) {
                 warnings.add(eventPrefix + ": Unknown priority '" + event.priority +
-                        "', will default to NORMAL");
+                                     "', will default to NORMAL");
             }
         }
     }
@@ -430,7 +636,7 @@ public class JsonSchemaValidator {
 
         if (properties.size() > MAX_CUSTOM_PROPERTIES) {
             warnings.add(eventPrefix + ": Many custom properties (" + properties.size() +
-                    "), consider consolidating");
+                                 "), consider consolidating");
         }
 
         for (java.util.Map.Entry<String, String> entry : properties.entrySet()) {
@@ -469,7 +675,7 @@ public class JsonSchemaValidator {
                                 if (eventDate != null &&
                                         (eventDate.isBefore(validFrom) || eventDate.isAfter(validTo))) {
                                     warnings.add("Event '" + event.title +
-                                            "' date is outside package validity period");
+                                                         "' date is outside package validity period");
                                 }
                             } catch (Exception e) {
                                 // Already handled
@@ -483,8 +689,10 @@ public class JsonSchemaValidator {
         }
     }
 
+    // ==================== UTILITY METHODS ====================
+
     /**
-     * FIXED: Flexible date field validation supporting multiple formats
+     * Flexible date field validation supporting multiple formats
      */
     private static void validateFlexibleDateField(String dateValue, String fieldName, boolean dateOnly,
                                                   List<String> errors, List<String> warnings) {
@@ -510,7 +718,7 @@ public class JsonSchemaValidator {
     }
 
     /**
-     * FIXED: Parse date with multiple format support
+     * Parse date with multiple format support
      */
     private static LocalDate parseFlexibleDate(String dateString) {
         if (isEmpty(dateString)) return null;
@@ -540,7 +748,7 @@ public class JsonSchemaValidator {
     }
 
     /**
-     * FIXED: Parse time with multiple format support
+     * Parse time with multiple format support
      */
     private static LocalTime parseFlexibleTime(String timeString) {
         if (isEmpty(timeString)) return null;

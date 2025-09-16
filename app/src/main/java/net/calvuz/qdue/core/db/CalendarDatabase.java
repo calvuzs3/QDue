@@ -12,12 +12,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.common.utils.ColorUtils;
+import net.calvuz.qdue.data.dao.LocalEventDao;
 import net.calvuz.qdue.data.dao.RecurrenceRuleDao;
 import net.calvuz.qdue.data.dao.ShiftDao;
 import net.calvuz.qdue.data.dao.ShiftExceptionDao;
 import net.calvuz.qdue.data.dao.TeamDao;
 import net.calvuz.qdue.data.dao.UserScheduleAssignmentDao;
 import net.calvuz.qdue.data.dao.UserTeamAssignmentDao;
+import net.calvuz.qdue.data.entities.LocalEventEntity;
 import net.calvuz.qdue.data.entities.RecurrenceRuleEntity;
 import net.calvuz.qdue.data.entities.ShiftEntity;
 import net.calvuz.qdue.data.entities.ShiftExceptionEntity;
@@ -128,6 +130,7 @@ import java.util.UUID;
                 ShiftExceptionEntity.class,
                 UserScheduleAssignmentEntity.class,
                 UserTeamAssignmentEntity.class,
+                LocalEventEntity.class
         },
         version = CalendarDatabase.DATABASE_VERSION,
         exportSchema = false
@@ -137,10 +140,11 @@ import java.util.UUID;
         CalendarTypeConverters.class       // New converters
 })
 
-public abstract class CalendarDatabase extends RoomDatabase {
+public abstract class CalendarDatabase extends RoomDatabase
+{
 
     // All included - fallbackToDestructiveMigration()
-    public final static int DATABASE_VERSION = 6;
+    public final static int DATABASE_VERSION = 7;
 
     private static final String TAG = "CalendarDatabase";
     private static final String DATABASE_NAME = "calendar_database";
@@ -161,6 +165,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
     public abstract UserScheduleAssignmentDao userScheduleAssignmentDao();
 
     public abstract UserTeamAssignmentDao userTeamAssignmentDao();
+
+    public abstract LocalEventDao localEventDao();
 
     // ==================== SINGLETON INSTANCE ====================
 
@@ -187,7 +193,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
 //                                    CalendarDatabaseMigrations.MIGRATION_3_4
 //                            )
                             .fallbackToDestructiveMigration()
-                            .addCallback( new EnhancedDatabaseCallback( context.getApplicationContext() ) )
+                            .addCallback( new EnhancedDatabaseCallback(
+                                    context.getApplicationContext() ) )
                             .build();
                 }
             }
@@ -200,7 +207,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
     /**
      * Database callback with comprehensive initialization for Version 2.
      */
-    private static class EnhancedDatabaseCallback extends Callback {
+    private static class EnhancedDatabaseCallback extends Callback
+    {
 
         private final Context mContext;
 
@@ -211,8 +219,9 @@ public abstract class CalendarDatabase extends RoomDatabase {
         @Override
         public void onCreate(@NonNull SupportSQLiteDatabase db) {
             super.onCreate( db );
-            Log.i( TAG, MessageFormat.format( "✅ CalendarDatabase created successfully (Version {0})",
-                    DATABASE_VERSION ) );
+            Log.i( TAG,
+                   MessageFormat.format( "✅ CalendarDatabase created successfully (Version {0})",
+                                         DATABASE_VERSION ) );
 
             // Enable foreign keys for relationship support
             db.execSQL( "PRAGMA foreign_keys = ON" );
@@ -291,50 +300,50 @@ public abstract class CalendarDatabase extends RoomDatabase {
         private void createLegacyIndexes(@NonNull SupportSQLiteDatabase db) {
             // Preserve existing shift indexes
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_shifts_type_active " +
-                    "ON shifts(shift_type, active) WHERE active = 1" );
+                                "ON shifts(shift_type, active) WHERE active = 1" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_shifts_time_range " +
-                    "ON shifts(start_time, end_time, active) WHERE active = 1" );
+                                "ON shifts(start_time, end_time, active) WHERE active = 1" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_shifts_user_relevant " +
-                    "ON shifts(is_user_relevant, active) WHERE active = 1 AND is_user_relevant = 1" );
+                                "ON shifts(is_user_relevant, active) WHERE active = 1 AND is_user_relevant = 1" );
 
             // Preserve existing team indexes
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_teams_active_sort " +
-                    "ON teams(active) WHERE active = 1" );
+                                "ON teams(active) WHERE active = 1" );
         }
 
         private void createRecurrenceRuleIndexes(@NonNull SupportSQLiteDatabase db) {
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_recurrence_frequency_active_start " +
-                    "ON recurrence_rules(frequency, active, start_date) WHERE active = 1" );
+                                "ON recurrence_rules(frequency, active, start_date) WHERE active = 1" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_recurrence_date_range " +
-                    "ON recurrence_rules(start_date, end_date)" );
+                                "ON recurrence_rules(start_date, end_date)" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_recurrence_active_created " +
-                    "ON recurrence_rules(active, created_at) WHERE active = 1" );
+                                "ON recurrence_rules(active, created_at) WHERE active = 1" );
         }
 
         private void createShiftExceptionIndexes(@NonNull SupportSQLiteDatabase db) {
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_exception_user_date_priority " +
-                    "ON shift_exceptions(user_id, target_date, priority)" );
+                                "ON shift_exceptions(user_id, target_date, priority)" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_exception_status_approval " +
-                    "ON shift_exceptions(status, requires_approval, target_date)" );
+                                "ON shift_exceptions(status, requires_approval, target_date)" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_exception_date_active " +
-                    "ON shift_exceptions(target_date, active) WHERE active = 1" );
+                                "ON shift_exceptions(target_date, active) WHERE active = 1" );
         }
 
         private void createUserScheduleAssignmentIndexes(@NonNull SupportSQLiteDatabase db) {
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_assignment_user_date_priority " +
-                    "ON user_schedule_assignments(user_id, start_date, end_date, priority)" );
+                                "ON user_schedule_assignments(user_id, start_date, end_date, priority)" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_assignment_team_status " +
-                    "ON user_schedule_assignments(team_id, status, start_date)" );
+                                "ON user_schedule_assignments(team_id, status, start_date)" );
 
             db.execSQL( "CREATE INDEX IF NOT EXISTS idx_assignment_status_dates " +
-                    "ON user_schedule_assignments(status, start_date, end_date)" );
+                                "ON user_schedule_assignments(status, start_date, end_date)" );
         }
 
         /**
@@ -382,33 +391,36 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
             // Morning shift with enhanced properties
             db.execSQL( "INSERT OR IGNORE INTO shifts (" +
-                    "id, name, description, shift_type, start_time, end_time, " +
-                    "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
-                    "is_break_time_included, break_time_duration_minutes, active, " +
-                    "created_at, updated_at, display_order) VALUES " +
-                    "('shift_morning', ?, ?, 'MORNING', " +
-                    "'05:00', '13:00', 0, ?, 1, 1, 1, 30, 1, " +
-                    "?, ?, 1)", new Object[]{morningName, morningDesc, currentTime, currentTime, colorGreen} );
+                                "id, name, description, shift_type, start_time, end_time, " +
+                                "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
+                                "is_break_time_included, break_time_duration_minutes, active, " +
+                                "created_at, updated_at, display_order) VALUES " +
+                                "('shift_morning', ?, ?, 'MORNING', " +
+                                "'05:00', '13:00', 0, ?, 1, 1, 1, 30, 1, " +
+                                "?, ?, 1)",
+                        new Object[]{morningName, morningDesc, currentTime, currentTime, colorGreen} );
 
             // Afternoon shift
             db.execSQL( "INSERT OR IGNORE INTO shifts (" +
-                    "id, name, description, shift_type, start_time, end_time, " +
-                    "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
-                    "is_break_time_included, break_time_duration_minutes, active, " +
-                    "created_at, updated_at, display_order) VALUES " +
-                    "('shift_afternoon', ?, ?, 'AFTERNOON', " +
-                    "'13:00', '21:00', 0, ?, 1, 1, 1, 30, 1, " +
-                    "?, ?, 2)", new Object[]{afternoonName, afternoonDesc, currentTime, currentTime, colorOrange} );
+                                "id, name, description, shift_type, start_time, end_time, " +
+                                "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
+                                "is_break_time_included, break_time_duration_minutes, active, " +
+                                "created_at, updated_at, display_order) VALUES " +
+                                "('shift_afternoon', ?, ?, 'AFTERNOON', " +
+                                "'13:00', '21:00', 0, ?, 1, 1, 1, 30, 1, " +
+                                "?, ?, 2)",
+                        new Object[]{afternoonName, afternoonDesc, currentTime, currentTime, colorOrange} );
 
             // Night shift
             db.execSQL( "INSERT OR IGNORE INTO shifts (" +
-                    "id, name, description, shift_type, start_time, end_time, " +
-                    "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
-                    "is_break_time_included, break_time_duration_minutes, active, " +
-                    "created_at, updated_at, display_order) VALUES " +
-                    "('shift_night', ?, ?, 'NIGHT', " +
-                    "'21:00', '05:00', 1, ?, 1, 0, 0, 0, 1, " +
-                    "?, ?, 3)", new Object[]{nightName, nightDesc, currentTime, currentTime, colorBlue} );
+                                "id, name, description, shift_type, start_time, end_time, " +
+                                "crosses_midnight, color_hex, is_user_relevant, has_break_time, " +
+                                "is_break_time_included, break_time_duration_minutes, active, " +
+                                "created_at, updated_at, display_order) VALUES " +
+                                "('shift_night', ?, ?, 'NIGHT', " +
+                                "'21:00', '05:00', 1, ?, 1, 0, 0, 0, 1, " +
+                                "?, ?, 3)",
+                        new Object[]{nightName, nightDesc, currentTime, currentTime, colorBlue} );
 
             // Enhanced team initialization
             String[] teamNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
@@ -421,33 +433,33 @@ public abstract class CalendarDatabase extends RoomDatabase {
                 String teamDescription = teamDescTemplate + " " + teamName;
                 int teamOffset = teamOffsets[i];
                 String teamColorHex = switch (teamName) {
-                    case "A" ->
-                            ColorUtils.getMaterialColors().get( "green_500" ); // "0xFF4CAF50"; // Green
-                    case "B" ->
-                            ColorUtils.getMaterialColors().get( "blue_500" ); // "0xFF2196F3"; // Blue
-                    case "C" ->
-                            ColorUtils.getMaterialColors().get( "orange_500" ); // "0xFFFF9800"; // Orange
-                    case "D" ->
-                            ColorUtils.getMaterialColors().get( "purple_500" ); // "0xFF9C27B0"; // Purple
-                    case "E" ->
-                            ColorUtils.getMaterialColors().get( "pink_500" ); // "0xFFE91E63"; // Pink
+                    case "A" -> ColorUtils.getMaterialColors().get(
+                            "green_500" ); // "0xFF4CAF50"; // Green
+                    case "B" -> ColorUtils.getMaterialColors().get(
+                            "blue_500" ); // "0xFF2196F3"; // Blue
+                    case "C" -> ColorUtils.getMaterialColors().get(
+                            "orange_500" ); // "0xFFFF9800"; // Orange
+                    case "D" -> ColorUtils.getMaterialColors().get(
+                            "purple_500" ); // "0xFF9C27B0"; // Purple
+                    case "E" -> ColorUtils.getMaterialColors().get(
+                            "pink_500" ); // "0xFFE91E63"; // Pink
                     case "F" ->
                             ColorUtils.getMaterialColors().get( "cyan_500" ); // 0xFF00BCD4; // Cyan
-                    case "G" ->
-                            ColorUtils.getMaterialColors().get( "green_500" ); // 0xFF8BC34A; // Light Green
-                    case "H" ->
-                            ColorUtils.getMaterialColors().get( "deep_orange_500" ); // 0xFFFF5722; // Deep Orange
-                    case "I" ->
-                            ColorUtils.getMaterialColors().get( "brown_500" ); //") 0xFF795548; // Brown
+                    case "G" -> ColorUtils.getMaterialColors().get(
+                            "green_500" ); // 0xFF8BC34A; // Light Green
+                    case "H" -> ColorUtils.getMaterialColors().get(
+                            "deep_orange_500" ); // 0xFFFF5722; // Deep Orange
+                    case "I" -> ColorUtils.getMaterialColors().get(
+                            "brown_500" ); //") 0xFF795548; // Brown
                     default -> throw new IllegalStateException( "Unexpected value: " + teamName );
                 };
                 db.execSQL( "INSERT OR IGNORE INTO teams (" +
-                                "id, name, display_name, description, color_hex, qdue_offset, " +
-                                "team_type, active, created_at, updated_at) VALUES " +
-                                "(?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
-                        new Object[]{teamName, teamName, teamDisplayName, teamDescription,
-                                teamColorHex, teamOffset, Team.TeamType.QUATTRODUE,
-                                currentTime, currentTime} );
+                                    "id, name, display_name, description, color_hex, qdue_offset, " +
+                                    "team_type, active, created_at, updated_at) VALUES " +
+                                    "(?, ?, ?, ?, ?, ?, ?, 1, ?, ?)",
+                            new Object[]{teamName, teamName, teamDisplayName, teamDescription,
+                                    teamColorHex, teamOffset, Team.TeamType.QUATTRODUE,
+                                    currentTime, currentTime} );
             }
         }
 
@@ -498,13 +510,13 @@ public abstract class CalendarDatabase extends RoomDatabase {
             String defaultTitle = LocaleManager.getStandardAssignmentTitle( context );
 
             db.execSQL( "INSERT OR IGNORE INTO user_schedule_assignments (" +
-                            "id, title, description, user_id, user_name, team_id, team_name, " +
-                            "recurrence_rule_id, start_date, is_permanent, priority, status, " +
-                            "active, created_at, updated_at) VALUES " +
-                            "('default_assignment', ?, 'Default assignment', " +
-                            "1, 'user', 'A', 'Team A', 'quattrodue_standard', ?, " +
-                            "1, 'OVERRIDE', 'ACTIVE', 1, ?, ?)",
-                    new Object[]{defaultTitle, startDate, currentTime, currentTime} );
+                                "id, title, description, user_id, user_name, team_id, team_name, " +
+                                "recurrence_rule_id, start_date, is_permanent, priority, status, " +
+                                "active, created_at, updated_at) VALUES " +
+                                "('default_assignment', ?, 'Default assignment', " +
+                                "1, 'user', 'A', 'Team A', 'quattrodue_standard', ?, " +
+                                "1, 'OVERRIDE', 'ACTIVE', 1, ?, ?)",
+                        new Object[]{defaultTitle, startDate, currentTime, currentTime} );
         }
 
         /**
@@ -557,9 +569,12 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
             // Enhanced statistics
             stats.totalRecurrenceRules = recurrenceRuleDao().getActiveRecurrenceRuleCount();
-            stats.totalShiftExceptions = shiftExceptionDao().getExceptionCountForDate( LocalDate.now().toString() );
-            stats.totalUserAssignments = Objects.requireNonNull( userScheduleAssignmentDao().getAssignmentStatistics() ).total_assignments;
-            stats.activeUserAssignments = Objects.requireNonNull( userScheduleAssignmentDao().getAssignmentStatistics() ).active_assignments;
+            stats.totalShiftExceptions = shiftExceptionDao().getExceptionCountForDate(
+                    LocalDate.now().toString() );
+            stats.totalUserAssignments = Objects.requireNonNull(
+                    userScheduleAssignmentDao().getAssignmentStatistics() ).total_assignments;
+            stats.activeUserAssignments = Objects.requireNonNull(
+                    userScheduleAssignmentDao().getAssignmentStatistics() ).active_assignments;
 
             // Database metrics
             stats.databaseSizeKB = getDatabaseSizeKB();
@@ -582,8 +597,10 @@ public abstract class CalendarDatabase extends RoomDatabase {
                 // Clean up old inactive data
 //                itemsCleanedUp += shiftDao().deleteShiftsOlderThan( cutoffTime );
                 itemsCleanedUp += recurrenceRuleDao().deleteInactiveRulesOlderThan( cutoffTime );
-                itemsCleanedUp += shiftExceptionDao().deleteInactiveExceptionsOlderThan( cutoffTime );
-                itemsCleanedUp += userScheduleAssignmentDao().deleteInactiveAssignmentsOlderThan( cutoffTime );
+                itemsCleanedUp += shiftExceptionDao().deleteInactiveExceptionsOlderThan(
+                        cutoffTime );
+                itemsCleanedUp += userScheduleAssignmentDao().deleteInactiveAssignmentsOlderThan(
+                        cutoffTime );
 
                 // Optimize database
                 try {
@@ -593,7 +610,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
                     Log.e( TAG, "Error during database optimization", e );
                 }
 
-                Log.i( TAG, "✅ Enhanced calendar maintenance completed. Items cleaned: " + itemsCleanedUp );
+                Log.i( TAG,
+                       "✅ Enhanced calendar maintenance completed. Items cleaned: " + itemsCleanedUp );
                 return itemsCleanedUp;
             } catch (Exception e) {
                 Log.e( TAG, "Error during enhanced calendar maintenance: " + e.getMessage() );
@@ -619,8 +637,10 @@ public abstract class CalendarDatabase extends RoomDatabase {
 
                 Log.i( TAG, "Enhanced standard calendar data initialized successfully" );
             } catch (Exception e) {
-                Log.e( TAG, "Error initializing enhanced standard calendar data: " + e.getMessage() );
-                throw new RuntimeException( "Failed to initialize enhanced standard calendar data", e );
+                Log.e( TAG,
+                       "Error initializing enhanced standard calendar data: " + e.getMessage() );
+                throw new RuntimeException( "Failed to initialize enhanced standard calendar data",
+                                            e );
             }
         } );
     }
@@ -656,7 +676,8 @@ public abstract class CalendarDatabase extends RoomDatabase {
     /**
      * Enhanced calendar database statistics container for Version 2.
      */
-    public static class EnhancedCalendarStatistics {
+    public static class EnhancedCalendarStatistics
+    {
         // Legacy statistics (Version 1)
         public int totalShifts;
         public int activeShifts;
