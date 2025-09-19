@@ -51,7 +51,6 @@ public class SwipeCalendarStateManager {
     private static final int TOTAL_MONTHS = (int) ChronoUnit.MONTHS.between( BASE_MONTH, END_MONTH ) + 1; // 2401 months
 
     // Dependencies
-    private final Context mContext;
     private final SharedPreferences mPreferences;
 
     // State tracking
@@ -67,8 +66,7 @@ public class SwipeCalendarStateManager {
      * @param context Application context for SharedPreferences access
      */
     public SwipeCalendarStateManager(@NonNull Context context) {
-        this.mContext = context.getApplicationContext();
-        this.mPreferences = PreferenceManager.getDefaultSharedPreferences( mContext );
+        this.mPreferences = PreferenceManager.getDefaultSharedPreferences( context );
 
         Log.d( TAG, "SwipeCalendarStateManager initialized" );
     }

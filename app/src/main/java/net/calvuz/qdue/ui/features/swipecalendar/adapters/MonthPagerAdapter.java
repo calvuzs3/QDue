@@ -3,13 +3,11 @@ package net.calvuz.qdue.ui.features.swipecalendar.adapters;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +18,7 @@ import com.google.android.material.button.MaterialButton;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
@@ -59,7 +57,8 @@ import java.util.concurrent.Executors;
  * @version 1.0.0
  * @since Database Version 6
  */
-public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.MonthViewHolder> {
+public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.MonthViewHolder>
+{
 
     private static final String TAG = "MonthPagerAdapter";
 
@@ -68,7 +67,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Interface for month data loading operations.
      */
-    public interface DataLoader {
+    public interface DataLoader
+    {
         /**
          * Load events for a specific month.
          *
@@ -89,7 +89,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Generic callback for data loading operations.
      */
-    public interface DataCallback<T> {
+    public interface DataCallback<T>
+    {
         void onSuccess(@NonNull T data);
 
         void onError(@NonNull Exception error);
@@ -98,7 +99,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Interface for day interaction events.
      */
-    public interface OnMonthInteractionListener {
+    public interface OnMonthInteractionListener
+    {
         /**
          * Called when user clicks on a day.
          */
@@ -120,7 +122,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Represents loading state for a month.
      */
-    private enum LoadingState {
+    private enum LoadingState
+    {
         IDLE,
         LOADING_EVENTS,
         LOADING_WORK_SCHEDULE,
@@ -131,7 +134,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     /**
      * Holds cached data for a month.
      */
-    private static class MonthData {
+    private static class MonthData
+    {
         final YearMonth month;
         LoadingState state = LoadingState.IDLE;
         Map<LocalDate, List<LocalEvent>> events = new ConcurrentHashMap<>();
@@ -189,7 +193,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
 
         setHasStableIds( true );
         Log.d( TAG, "MonthPagerAdapter created" );
-        Log.d( TAG, "MonthPagerAdapter created with context: " + context.getClass().getSimpleName() );
+        Log.d( TAG,
+               "MonthPagerAdapter created with context: " + context.getClass().getSimpleName() );
     }
 
     // ==================== ADAPTER IMPLEMENTATION ====================
@@ -210,8 +215,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
 //        try {
-            View itemView = mInflater.inflate( R.layout.item_swipe_calendar_month, parent, false );
-            return new MonthViewHolder( itemView );
+        View itemView = mInflater.inflate( R.layout.item_swipe_calendar_month, parent, false );
+        return new MonthViewHolder( itemView );
 //        } catch (Exception e) {
 //            Log.e( TAG, "Failed to inflate layout with themed context, trying parent context", e );
 
@@ -261,7 +266,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      * ViewHolder for individual month pages.
      * Uses item_calendar_month.xml layout.
      */
-    public class MonthViewHolder extends RecyclerView.ViewHolder {
+    public class MonthViewHolder extends RecyclerView.ViewHolder
+    {
 
         // Views from item_calendar_month.xml
         private final RecyclerView monthDaysRecycler;
@@ -300,7 +306,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             // Create or update day adapter
             if (dayAdapter == null) {
                 dayAdapter = new SwipeCalendarDayAdapter( mContext, month );
-                dayAdapter.setOnDayClickListener( new SwipeCalendarDayAdapter.OnDayClickListener() {
+                dayAdapter.setOnDayClickListener( new SwipeCalendarDayAdapter.OnDayClickListener()
+                {
                     @Override
                     public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
                         if (mInteractionListener != null) {
@@ -330,7 +337,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          * Setup RecyclerView configuration.
          */
         private void setupRecyclerView() {
-            GridLayoutManager layoutManager = new GridLayoutManager( mContext, 7 ); // 7 days per week
+            GridLayoutManager layoutManager = new GridLayoutManager( mContext,
+                                                                     7 ); // 7 days per week
             monthDaysRecycler.setLayoutManager( layoutManager );
             monthDaysRecycler.setHasFixedSize( true );
             monthDaysRecycler.setNestedScrollingEnabled( false );
@@ -367,28 +375,31 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             } else {
                 // Need to load data
                 Log.i( TAG, "(idle) Need to load data for month: " + month );
-                startDataLoading( monthData );
+
+                // Load Events
+                loadLocalEventsData( monthData );
+
+                // Now load Work Schedule
+                loadWorkScheduleData( monthData );
             }
         }
 
         /**
          * Start loading data for a month.
          */
-        private void startDataLoading(@NonNull MonthData monthData) {
+        private void loadLocalEventsData(@NonNull MonthData monthData) {
             showLoadingState();
             monthData.state = LoadingState.LOADING_EVENTS;
 
             // Load events first
-            mDataLoader.loadEventsForMonth( monthData.month, new DataCallback<>() {
+            mDataLoader.loadEventsForMonth( monthData.month, new DataCallback<>()
+            {
                 @Override
                 public void onSuccess(@NonNull Map<LocalDate, List<LocalEvent>> eventsData) {
                     mMainHandler.post( () -> {
                         monthData.events.clear();
                         monthData.events.putAll( eventsData );
                         monthData.state = LoadingState.LOADING_WORK_SCHEDULE;
-
-                        // Now load work schedule
-                        loadWorkScheduleData( monthData );
                     } );
                 }
 
@@ -411,10 +422,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          * Load work schedule data (second phase of loading).
          */
         private void loadWorkScheduleData(@NonNull MonthData monthData) {
-            mDataLoader.loadWorkScheduleForMonth( monthData.month, new DataCallback<>() {
+            mDataLoader.loadWorkScheduleForMonth( monthData.month, new DataCallback<>()
+            {
                 @Override
                 public void onSuccess(@NonNull Map<LocalDate, WorkScheduleDay> workScheduleData) {
-                    Log.i( TAG, "Loaded work schedule data for month: " + monthData.month );
                     mMainHandler.post( () -> {
                         monthData.workSchedule.clear();
                         monthData.workSchedule.putAll( workScheduleData );

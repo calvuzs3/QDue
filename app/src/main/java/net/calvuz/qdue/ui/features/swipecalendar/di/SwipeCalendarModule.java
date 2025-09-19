@@ -6,13 +6,14 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
+import net.calvuz.qdue.data.services.LocalEventsService;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
@@ -66,9 +67,7 @@ public class SwipeCalendarModule
 
     private final Context mContext;
     private final CalendarServiceProvider mCalendarServiceProvider;
-    private final EventsService mEventsService;
-    private final QDueUserService mUserService;
-    private final WorkScheduleRepository mWorkScheduleRepository;
+    private final LocalEventsService mLocalEventsService;
 
     // ==================== CLEAN ARCHITECTURE COMPONENTS ====================
 
@@ -90,17 +89,12 @@ public class SwipeCalendarModule
     /**
      * Creates SwipeCalendarModule with required dependencies for clean architecture.
      *
-     * @param context                Application context
-     * @param eventsService          Service for events data operations
-     * @param userService            Service for user data operations
-     * @param workScheduleRepository Repository for work schedule operations
+     * @param context                 Context
+     * @param calendarServiceProvider CalendarServiceProvider instance
      */
     public SwipeCalendarModule(
             @NonNull Context context,
-            @NonNull CalendarServiceProvider calendarServiceProvider,
-            @NonNull EventsService eventsService,
-            @NonNull QDueUserService userService,
-            @NonNull WorkScheduleRepository workScheduleRepository
+            @NonNull CalendarServiceProvider calendarServiceProvider
     ) {
 
         // Validate context for proper theming capabilities
@@ -110,11 +104,11 @@ public class SwipeCalendarModule
 
         this.mContext = context;
         this.mCalendarServiceProvider = calendarServiceProvider;
-        this.mEventsService = eventsService;
-        this.mUserService = userService;
-        this.mWorkScheduleRepository = workScheduleRepository;
 
-        this.mQDueUser = mUserService.getPrimaryUser().join().getData();
+        this.mLocalEventsService = calendarServiceProvider.getLocalEventsService();
+
+        QDueUserService mQDueUserService = calendarServiceProvider.getQDueUserService();
+        this.mQDueUser = mQDueUserService.getPrimaryUser().join().getData();
         if (mQDueUser == null) {
             throw new RuntimeException( "Primary User is null" );
         }
@@ -256,7 +250,7 @@ public class SwipeCalendarModule
                 LocalDate startDate = month.atDay( 1 );
                 LocalDate endDate = month.atEndOfMonth();
 
-                mEventsService.getEventsForDateRange( startDate, endDate )
+                mLocalEventsService.getEventsForDateRange( startDate.atStartOfDay(), endDate.atTime( 23,59,59 ) )
                         .thenAccept( result -> {
                             if (result.isSuccess() && result.getData() != null) {
                                 try {
@@ -403,8 +397,8 @@ public class SwipeCalendarModule
         private LocalDate extractEventDate(@NonNull LocalEvent event) {
             try {
                 // Priority 1: All-day events should use the specific date
-                if (event.isAllDay() && event.getDate() != null) {
-                    return event.getDate();
+                if (event.isAllDay() && event.getStartTime().toLocalDate() != null) {
+                    return event.getStartTime().toLocalDate();
                 }
 
                 // Priority 2: Timed events should use start time date
@@ -418,8 +412,8 @@ public class SwipeCalendarModule
                 }
 
                 // Priority 4: If all-day but no specific date, try date field anyway
-                if (event.getDate() != null) {
-                    return event.getDate();
+                if (event.getStartTime() != null) {
+                    return event.getStartTime().toLocalDate();
                 }
 
                 // Last resort: Use today (this should rarely happen)
@@ -443,9 +437,9 @@ public class SwipeCalendarModule
     public boolean areDependenciesReady() {
         return !mIsDestroyed &&
                 mCalendarServiceProvider != null &&
-                mEventsService != null &&
-                mUserService != null &&
-                mWorkScheduleRepository != null &&
+//                mEventsService != null &&
+//                mQDueUserService != null &&
+//                mWorkScheduleRepository != null &&
                 mGenerateUserScheduleUseCase != null;
     }
 
@@ -510,54 +504,54 @@ public class SwipeCalendarModule
     }
 
     // ==================== UTILITY METHODS ====================
-
-    /**
-     * Get comprehensive module information for debugging and monitoring.
-     * Provides detailed status of all module components and dependencies.
-     *
-     * @return Human readable module status and configuration
-     */
-    @NonNull
-    public String getModuleInfo() {
-
-        return "SwipeCalendarModule Status (Single User):\n" +
-                "──────────────────────────────────────────\n" +
-                "• Destroyed: " + mIsDestroyed + "\n" +
-                "• Dependencies Ready: " + areDependenciesReady() + "\n" +
-                "• Current User ID: " + mUserService.getPrimaryUser() + "\n" +
-                "\nComponents:\n" +
-                "• State Manager: " + (mStateManager != null ? "✅ Created" : "❌ Not Created") + "\n" +
-                "• Pager Adapter: " + (mPagerAdapter != null ? "✅ Created" : "❌ Not Created") + "\n" +
-                "• Data Loader: " + (mDataLoader != null ? "✅ Created" : "❌ Not Created") + "\n" +
-                "\nClean Architecture:\n" +
-                "• GenerateUserScheduleUseCase: " + (mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready") + "\n" +
-                "\nServices:\n" +
-                "• Events Service: " + (mEventsService != null ? "✅ Available" : "❌ Unavailable") + "\n" +
-                "• User Service: " + "✅ Available" + "\n" +
-                "• WorkSchedule Repository: " + (mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable");
-    }
-
-    /**
-     * Validate module state and dependencies.
-     * Useful for debugging and ensuring proper module configuration.
-     *
-     * @return Map containing validation results
-     */
-    @NonNull
-    public Map<String, Object> validateModuleState() {
-        Map<String, Object> validation = new HashMap<>();
-
-        validation.put( "module_destroyed", mIsDestroyed );
-        validation.put( "dependencies_ready", areDependenciesReady() );
-        validation.put( "events_service_available", mEventsService != null );
-        validation.put( "user_service_available", mUserService != null );
-        validation.put( "work_schedule_repository_available", mWorkScheduleRepository != null );
-        validation.put( "generate_user_schedule_use_case_ready", mGenerateUserScheduleUseCase != null );
-        validation.put( "state_manager_created", mStateManager != null );
-        validation.put( "pager_adapter_created", mPagerAdapter != null );
-        validation.put( "data_loader_created", mDataLoader != null );
-        validation.put( "current_user_id", mQDueUser.getId() ) ;
-
-        return validation;
-    }
+//
+//    /**
+//     * Get comprehensive module information for debugging and monitoring.
+//     * Provides detailed status of all module components and dependencies.
+//     *
+//     * @return Human readable module status and configuration
+//     */
+//    @NonNull
+//    public String getModuleInfo() {
+//
+//        return "SwipeCalendarModule Status (Single User):\n" +
+//                "──────────────────────────────────────────\n" +
+//                "• Destroyed: " + mIsDestroyed + "\n" +
+//                "• Dependencies Ready: " + areDependenciesReady() + "\n" +
+//                "• Current User ID: " + mQDueUserService.getPrimaryUser() + "\n" +
+//                "\nComponents:\n" +
+//                "• State Manager: " + (mStateManager != null ? "✅ Created" : "❌ Not Created") + "\n" +
+//                "• Pager Adapter: " + (mPagerAdapter != null ? "✅ Created" : "❌ Not Created") + "\n" +
+//                "• Data Loader: " + (mDataLoader != null ? "✅ Created" : "❌ Not Created") + "\n" +
+//                "\nClean Architecture:\n" +
+//                "• GenerateUserScheduleUseCase: " + (mGenerateUserScheduleUseCase != null ? "✅ Ready" : "❌ Not Ready") + "\n" +
+//                "\nServices:\n" +
+//                "• Events Service: " + (mEventsService != null ? "✅ Available" : "❌ Unavailable") + "\n" +
+//                "• User Service: " + "✅ Available" + "\n" +
+//                "• WorkSchedule Repository: " + (mWorkScheduleRepository != null ? "✅ Available" : "❌ Unavailable");
+//    }
+//
+//    /**
+//     * Validate module state and dependencies.
+//     * Useful for debugging and ensuring proper module configuration.
+//     *
+//     * @return Map containing validation results
+//     */
+//    @NonNull
+//    public Map<String, Object> validateModuleState() {
+//        Map<String, Object> validation = new HashMap<>();
+//
+//        validation.put( "module_destroyed", mIsDestroyed );
+//        validation.put( "dependencies_ready", areDependenciesReady() );
+//        validation.put( "events_service_available", mEventsService != null );
+//        validation.put( "user_service_available", mQDueUserService != null );
+//        validation.put( "work_schedule_repository_available", mWorkScheduleRepository != null );
+//        validation.put( "generate_user_schedule_use_case_ready", mGenerateUserScheduleUseCase != null );
+//        validation.put( "state_manager_created", mStateManager != null );
+//        validation.put( "pager_adapter_created", mPagerAdapter != null );
+//        validation.put( "data_loader_created", mDataLoader != null );
+//        validation.put( "current_user_id", mQDueUser.getId() ) ;
+//
+//        return validation;
+//    }
 }

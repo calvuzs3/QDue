@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import net.calvuz.qdue.data.services.LocalEventsFileService;
 import net.calvuz.qdue.data.services.LocalEventsService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.data.services.UserSchedulePatternService;
 import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.domain.calendar.engines.ExceptionResolver;
@@ -81,7 +82,14 @@ public interface CalendarServiceProvider
     @NonNull
     LocalEventsModule getLocaEventsModule();
 
-    // ==================== SERVICES ====================
+    // ======================================== SERVICES ========================================
+
+    /**
+     * Get QDueUserService for user management.
+     *
+     * @return QDueUserService instance.
+     */
+    QDueUserService getQDueUserService();
 
     /**
      * Get UserWorkScheduleService instance.
@@ -100,14 +108,6 @@ public interface CalendarServiceProvider
     UserSchedulePatternService getUserSchedulePatternService();
 
     /**
-     * Get CreatePatternAssignmentUseCase for assignment creation operations.
-     *
-     * @return CreatePatternAssignmentUseCase instance
-     */
-    @NonNull
-    CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase();
-
-    /**
      * Get LocalEventsService for local event operations.
      *
      * @return LocalEventsService instance
@@ -123,7 +123,7 @@ public interface CalendarServiceProvider
     @NonNull
     LocalEventsFileService getLocalEventsFileService();
 
-    // ==================== DOMAIN REPOSITORIES ====================
+    // =================================== DOMAIN REPOSITORIES ===================================
 
     /**
      * Get LocalEventsRepository for local event operations.
@@ -215,7 +215,7 @@ public interface CalendarServiceProvider
     @NonNull
     UserTeamAssignmentRepository getUserTeamAssignmentRepository();
 
-    // ==================== DOMAIN ENGINES ====================
+    // ====================================== DOMAIN ENGINES =====================================
 
     /**
      * Get RecurrenceCalculator for RRULE processing and date generation.
@@ -250,7 +250,15 @@ public interface CalendarServiceProvider
     @NonNull
     SchedulingEngine getSchedulingEngine();
 
-    // ==================== USE CASES ====================
+    // ======================================== USE CASES ========================================
+
+    /**
+     * Get CreatePatternAssignmentUseCase for assignment creation operations.
+     *
+     * @return CreatePatternAssignmentUseCase instance
+     */
+    @NonNull
+    CreatePatternAssignmentUseCase getCreatePatternAssignmentUseCase();
 
     /**
      * Get LocalEventsUseCases for local events operations.
@@ -419,10 +427,18 @@ public interface CalendarServiceProvider
     /**
      * CalendarServiceStatus - Comprehensive calendar service health information.
      */
-    record CalendarServiceStatus(boolean servicesReady, boolean repositoriesInitialized,
-                                 boolean enginesInitialized, boolean useCasesInitialized,
-                                 long initializationTime, int activeRepositories, int activeEngines,
-                                 int activeUseCases, String statusMessage)
+    record CalendarServiceStatus(boolean servicesReady,
+                                 boolean repositoriesInitialized,
+                                 boolean enginesInitialized,
+                                 boolean servicesInitialized,
+                                 boolean useCasesInitialized,
+                                 long initializationTime,
+                                 int activeRepositories,
+                                 int activeEngines,
+                                 int activeServices,
+                                 int activeUseCases,
+                                 String statusMessage
+    )
     {
 
         @NonNull
@@ -432,9 +448,11 @@ public interface CalendarServiceProvider
                     "ready=" + servicesReady +
                     ", repos=" + repositoriesInitialized +
                     ", engines=" + enginesInitialized +
+                    ", services=" + servicesInitialized +
                     ", useCases=" + useCasesInitialized +
                     ", activeRepos=" + activeRepositories +
                     ", activeEngines=" + activeEngines +
+                    ", activeServices=" + activeServices +
                     ", activeUseCases=" + activeUseCases +
                     ", message='" + statusMessage + '\'' +
                     '}';

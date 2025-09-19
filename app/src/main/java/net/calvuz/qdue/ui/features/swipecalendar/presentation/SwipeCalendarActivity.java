@@ -15,7 +15,7 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.architecture.base.TimeChangeBaseActivity;
@@ -30,13 +30,13 @@ import java.time.LocalDate;
 /**
  * SwipeCalendarActivity - Simplified Calendar Activity for Development and Debugging
  *
- * <p>Dedicated activity for hosting SwipeCalendarFragment in isolation, designed specifically
+ * <p>Dedicated activity for hosting MonthCalendarFragment in isolation, designed specifically
  * for debugging and development purposes. Provides a clean, distraction-free environment
  * to test calendar functionality without the complexity of QDueMainActivity.</p>
  *
  * <h3>Key Features:</h3>
  * <ul>
- *   <li><strong>Simplified Hosting</strong>: Single-purpose container for SwipeCalendarFragment</li>
+ *   <li><strong>Simplified Hosting</strong>: Single-purpose container for MonthCalendarFragment</li>
  *   <li><strong>Debug-Friendly</strong>: Minimal dependencies and clear log messages</li>
  *   <li><strong>Clean Architecture</strong>: Full dependency injection compliance</li>
  *   <li><strong>Internationalization</strong>: Complete i18n support via LocaleManager</li>
@@ -48,7 +48,7 @@ import java.time.LocalDate;
  *   <li><strong>ServiceProvider Integration</strong>: Uses ServiceProviderImpl for core services</li>
  *   <li><strong>Injectable Implementation</strong>: Follows established DI patterns</li>
  *   <li><strong>LocaleManager Support</strong>: Full internationalization capabilities</li>
- *   <li><strong>Fragment Dependencies</strong>: Properly injected into SwipeCalendarFragment</li>
+ *   <li><strong>Fragment Dependencies</strong>: Properly injected into MonthCalendarFragment</li>
  * </ul>
  *
  * <h3>Intent Parameters:</h3>
@@ -96,7 +96,7 @@ public class SwipeCalendarActivity
     // ==================== UI COMPONENTS ====================
 
     private Toolbar mToolbar;
-    private SwipeCalendarFragment mCalendarFragment;
+    private MonthCalendarFragment mCalendarFragment;
 
     // ==================== CONFIGURATION ====================
 
@@ -214,7 +214,7 @@ public class SwipeCalendarActivity
             // Initialize LocaleManager for internationalization
             mLocaleManager = new LocaleManager( getApplicationContext() );
 
-            Log.i( TAG, "Dependency injection completed successfully" );
+            Log.d( TAG, "Dependency injection completed successfully" );
         } catch (Exception e) {
             Log.e( TAG, "Failed to initialize dependency injection", e );
             throw new RuntimeException( "Critical error: Dependency injection failed", e );
@@ -260,7 +260,7 @@ public class SwipeCalendarActivity
                         if (result.isSuccess() && result.getData() != null) {
                             return result.getData();
                         } else {
-                            throw new RuntimeException( "Failed to create default user" );
+                            throw new IllegalStateException( "Failed to create default user" );
                         }
                     } ).join();
             Log.i( TAG, "Created default user: " + newUser.getId() );
@@ -366,16 +366,16 @@ public class SwipeCalendarActivity
     // ==================== FRAGMENT MANAGEMENT ====================
 
     /**
-     * Setup SwipeCalendarFragment with proper dependency injection.
+     * Setup MonthCalendarFragment with proper dependency injection.
      *
      * @param savedInstanceState Saved instance state for fragment restoration
      */
     private void setupCalendarFragment(@Nullable Bundle savedInstanceState) {
-        Log.d( TAG, "Setting up SwipeCalendarFragment" );
+        Log.d( TAG, "Setting up MonthCalendarFragment" );
 
         if (savedInstanceState == null) {
             // Create new fragment instance
-            mCalendarFragment = SwipeCalendarFragment.newInstance( mInitialDate, mUserId );
+            mCalendarFragment = MonthCalendarFragment.newInstance( mInitialDate, mUserId );
 
             // Add fragment to container
             getSupportFragmentManager()
@@ -383,18 +383,18 @@ public class SwipeCalendarActivity
                     .replace( R.id.calendar_container, mCalendarFragment, "swipe_calendar" )
                     .commit();
 
-            Log.d( TAG, "SwipeCalendarFragment created and added to container" );
+            Log.d( TAG, "MonthCalendarFragment created and added to container" );
         } else {
             // Restore existing fragment
-            mCalendarFragment = (SwipeCalendarFragment) getSupportFragmentManager()
+            mCalendarFragment = (MonthCalendarFragment) getSupportFragmentManager()
                     .findFragmentByTag( "swipe_calendar" );
 
-            Log.d( TAG, "SwipeCalendarFragment restored from saved state" );
+            Log.d( TAG, "MonthCalendarFragment restored from saved state" );
         }
 
         if (mCalendarFragment == null) {
-            Log.e( TAG, "Failed to setup SwipeCalendarFragment" );
-            throw new RuntimeException( "Critical error: SwipeCalendarFragment setup failed" );
+            Log.e( TAG, "Failed to setup MonthCalendarFragment" );
+            throw new RuntimeException( "Critical error: MonthCalendarFragment setup failed" );
         }
     }
 
@@ -470,7 +470,7 @@ public class SwipeCalendarActivity
                 mCalendarFragment.refreshData();
             } else {
                 // Trova il fragment se la referenza non è disponibile
-                mCalendarFragment = (SwipeCalendarFragment) getSupportFragmentManager()
+                mCalendarFragment = (MonthCalendarFragment) getSupportFragmentManager()
                         .findFragmentByTag( "swipe_calendar" );
                 if (mCalendarFragment != null) {
                     mCalendarFragment.refreshData();
@@ -503,7 +503,7 @@ public class SwipeCalendarActivity
     public void navigateToDate(@NonNull LocalDate targetDate) {
         if (mCalendarFragment != null) {
             Log.d( TAG, "Debug navigation to date: " + targetDate );
-            // Note: This would require adding a public method to SwipeCalendarFragment
+            // Note: This would require adding a public method to MonthCalendarFragment
             // For now, we log the intent
         } else {
             Log.w( TAG, "Cannot navigate - fragment not ready" );
@@ -513,10 +513,10 @@ public class SwipeCalendarActivity
     /**
      * Get current fragment for debugging purposes.
      *
-     * @return Current SwipeCalendarFragment instance or null
+     * @return Current MonthCalendarFragment instance or null
      */
     @Nullable
-    public SwipeCalendarFragment getCurrentFragment() {
+    public MonthCalendarFragment getCurrentFragment() {
         return mCalendarFragment;
     }
 

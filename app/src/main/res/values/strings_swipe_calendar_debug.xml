@@ -55,7 +55,7 @@
 
         &lt;!&ndash; Success/Confirmation Messages &ndash;&gt;
         <string name="debug_activity_initialized">Debug activity initialized successfully</string>
-        <string name="debug_fragment_loaded">SwipeCalendarFragment loaded</string>
+        <string name="debug_fragment_loaded">MonthCalendarFragment loaded</string>
         <string name="debug_navigation_successful">Navigation completed</string>
 
         &lt;!&ndash; Content Descriptions for Accessibility &ndash;&gt;
@@ -162,6 +162,6 @@
         // For formatted strings:
         String fragmentInfo = String.format(
             getLocalizedString("debug_info_fragment_class", "Fragment: %1$s"),
-            "SwipeCalendarFragment"
+            "MonthCalendarFragment"
         );
     -->

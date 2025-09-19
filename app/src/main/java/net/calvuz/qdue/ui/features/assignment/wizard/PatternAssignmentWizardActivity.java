@@ -19,7 +19,7 @@ import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.databinding.ActivityPatternAssignmentWizardBinding;

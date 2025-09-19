@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/fragment_swipe_calendar.xml -->
-<!-- Main layout for SwipeCalendarFragment with month navigation -->
+<!-- res/layout/fragment_month_calendar.xml -->
+<!-- Main layout for MonthCalendarFragment with month navigation -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

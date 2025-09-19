@@ -2,7 +2,7 @@
 <!--
     activity_swipe_calendar.xml - SwipeCalendarActivity Layout
 
-    Simple, clean layout for hosting SwipeCalendarFragment in debug mode.
+    Simple, clean layout for hosting MonthCalendarFragment in debug mode.
     Follows Material Design principles and QDue design system.
 
     Features:

@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment;
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.welcome.interfaces.WelcomeInterface;

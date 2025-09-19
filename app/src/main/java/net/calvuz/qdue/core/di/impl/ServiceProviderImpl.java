@@ -10,12 +10,12 @@ import net.calvuz.qdue.core.db.CalendarDatabase;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.services.impl.CalendarServiceImpl;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
-import net.calvuz.qdue.core.services.impl.QDueUserServiceImpl;
+import net.calvuz.qdue.data.services.impl.QDueUserServiceImpl;
 import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
@@ -322,28 +322,11 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     // ==================== NEW SERVICE PROVIDER METHOD ====================
 
+    // WRAPPER METHOD
+    // New Instances should require the Service from the CalendarServiceProvider
     @Override
     public QDueUserService getQDueUserService() {
-        if (mQDueUserService == null) {
-            synchronized (mQDueUserServiceLock) {
-                if (mQDueUserService == null) {
-                    ensureInitialized();
-                    Log.d( TAG, "Creating QDueUserService instance" );
-
-                    // Create QDueUserRepository
-                    QDueUserRepository qDueUserRepository = new QDueUserRepositoryImpl( getCalendarDatabase() );
-
-                    // Create QDueUserUseCases
-                    QDueUserUseCases qDueUserUseCases = new QDueUserUseCases( qDueUserRepository );
-
-                    // Create QDueUserService
-                    mQDueUserService = new QDueUserServiceImpl(
-                            qDueUserUseCases
-                    );
-                }
-            }
-        }
-        return mQDueUserService;
+        return getCalendarServiceProvider().getQDueUserService();
     }
 
     // ==================== CORE SERVICES ====================

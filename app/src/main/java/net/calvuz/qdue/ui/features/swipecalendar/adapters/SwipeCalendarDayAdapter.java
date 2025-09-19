@@ -17,11 +17,9 @@ import net.calvuz.qdue.core.common.utils.ColorUtils;
 import net.calvuz.qdue.domain.calendar.models.Shift;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleShift;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.preferences.QDuePreferences;
 import net.calvuz.qdue.ui.core.common.utils.Log;
-
-import org.w3c.dom.Text;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -419,7 +417,9 @@ public class SwipeCalendarDayAdapter
          * Handle item click.
          */
         private void onItemClick(View view) {
+            Log.d( TAG, "Item clicked: " + currentDayItem );
             if (currentDayItem != null && mDayClickListener != null) {
+                Log.d( TAG, "Day item clicked: " + currentDayItem.date );
                 mDayClickListener.onDayClick( currentDayItem.date, currentDayItem.dayData,
                                               currentDayItem.events );
             }
@@ -429,7 +429,9 @@ public class SwipeCalendarDayAdapter
          * Handle item long click.
          */
         private boolean onItemLongClick(View view) {
+            Log.d( TAG, "Item long clicked: " + currentDayItem );
             if (currentDayItem != null && mDayClickListener != null) {
+                Log.d( TAG, "Day item long clicked: " + currentDayItem.date );
                 mDayClickListener.onDayLongClick( currentDayItem.date, currentDayItem.dayData,
                                                   view );
                 return true;

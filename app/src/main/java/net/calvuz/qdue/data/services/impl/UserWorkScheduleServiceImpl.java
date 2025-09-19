@@ -67,6 +67,24 @@ public class UserWorkScheduleServiceImpl implements UserWorkScheduleService
         return mGenerateUserScheduleUseCase.getGenerateUserScheduleForMonth().execute( userID, month );
     }
 
+    /**
+     * Wrapper..
+     * Generate a work schedule for a user for a given date range.
+     *
+     * @param userID UserID
+     * @param startDate starting date (included)
+     * @param endDate ending date (included)
+     * @return CompletableFuture with OperationResult<Map<LocalDate, WorkScheduleDay>>
+     */
+    @Override
+    public CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> generateWorkScheduleForUser(
+            @NonNull String userID,
+            @NonNull LocalDate startDate,
+            @NonNull LocalDate endDate
+    ) {
+        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForDateRange().execute( userID, startDate, endDate );
+    }
+
     // ==================== WORK SCHEDULE GENERATION ====================
 
 

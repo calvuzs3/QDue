@@ -183,6 +183,6 @@
  * @see net.calvuz.qdue.domain.qdueuser.models.QDueUser
  * @see net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository
  * @see net.calvuz.qdue.domain.qdueuser.usecases.QDueUserUseCases
- * @see net.calvuz.qdue.core.services.QDueUserService
+ * @see net.calvuz.qdue.data.services.QDueUserService
  */
 package net.calvuz.qdue.domain.qdueuser;

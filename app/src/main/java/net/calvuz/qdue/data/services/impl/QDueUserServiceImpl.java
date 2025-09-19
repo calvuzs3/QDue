@@ -1,13 +1,10 @@
-package net.calvuz.qdue.core.services.impl;
-
-import android.content.Context;
+package net.calvuz.qdue.data.services.impl;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.core.services.models.OperationResult;
-import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.domain.qdueuser.usecases.QDueUserUseCases;
 import net.calvuz.qdue.ui.core.common.utils.Log;

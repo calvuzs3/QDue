@@ -2,11 +2,10 @@ package net.calvuz.qdue.core.di;
 
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
-import net.calvuz.qdue.data.services.UserWorkScheduleService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 

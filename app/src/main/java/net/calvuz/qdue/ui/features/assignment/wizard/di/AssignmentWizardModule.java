@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.repositories.RecurrenceRuleRepository;
 import net.calvuz.qdue.domain.calendar.repositories.TeamRepository;

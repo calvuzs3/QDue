@@ -1,4 +1,4 @@
-package net.calvuz.qdue.core.services;
+package net.calvuz.qdue.data.services;
 
 import androidx.annotation.NonNull;
 

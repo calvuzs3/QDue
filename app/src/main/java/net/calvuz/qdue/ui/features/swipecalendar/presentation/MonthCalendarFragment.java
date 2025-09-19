@@ -28,11 +28,11 @@ import net.calvuz.qdue.core.di.DependencyInjector;
 import net.calvuz.qdue.core.di.Injectable;
 import net.calvuz.qdue.core.di.ServiceProvider;
 import net.calvuz.qdue.core.services.EventsService;
-import net.calvuz.qdue.core.services.QDueUserService;
+import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
-import net.calvuz.qdue.events.models.LocalEvent;
+import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * SwipeCalendarFragment - Main fragment for swipe-based calendar navigation.
+ * MonthCalendarFragment - Main fragment for swipe-based calendar navigation.
  *
  * <p>Provides a simplified month-to-month calendar view with horizontal swipe navigation
  * as an alternative to infinite scrolling. Features discrete month boundaries with
@@ -70,9 +70,12 @@ import java.util.Locale;
  *   <li><strong>Smooth Animation</strong>: Hardware-accelerated ViewPager2 transitions</li>
  * </ul>
  */
-public class SwipeCalendarFragment extends Fragment implements Injectable {
+public class MonthCalendarFragment
+        extends Fragment
+        implements Injectable
+{
 
-    private static final String TAG = "SwipeCalendarFragment";
+    private static final String TAG = "MonthCalendarFragment";
 
     // Fragment arguments
     public static final String ARG_INITIAL_DATE = "initial_date";
@@ -121,15 +124,15 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
     // ==================== FRAGMENT LIFECYCLE ====================
 
     /**
-     * Create new SwipeCalendarFragment instance with optional parameters.
+     * Create new MonthCalendarFragment instance with optional parameters.
      *
      * @param initialDate Optional initial date to display
      * @param userId      Optional user ID for data filtering
      * @return New fragment instance
      */
     @NonNull
-    public static SwipeCalendarFragment newInstance(@Nullable LocalDate initialDate, @Nullable String userId) {
-        SwipeCalendarFragment fragment = new SwipeCalendarFragment();
+    public static MonthCalendarFragment newInstance(@Nullable LocalDate initialDate, @Nullable String userId) {
+        MonthCalendarFragment fragment = new MonthCalendarFragment();
         Bundle args = new Bundle();
 
         if (initialDate != null) {
@@ -156,13 +159,13 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         // Menu
         setHasOptionsMenu( true );
 
-        Log.d( TAG, "SwipeCalendarFragment created" );
+        Log.d( TAG, "MonthCalendarFragment created" );
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mRootView = inflater.inflate( R.layout.fragment_swipe_calendar, container, false );
+        mRootView = inflater.inflate( R.layout.fragment_month_calendar, container, false );
         return mRootView;
     }
 
@@ -182,7 +185,7 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
         // Setup calendar components
         setupCalendar();
 
-        Log.d( TAG, "SwipeCalendarFragment view created and initialized" );
+        Log.d( TAG, "MonthCalendarFragment view created and initialized" );
     }
 
     @Override
@@ -275,11 +278,8 @@ public class SwipeCalendarFragment extends Fragment implements Injectable {
             mLocaleManager = new LocaleManager( requireContext() );
 
             mCalendarModule = new SwipeCalendarModule(
-                    requireActivity(),  // Activity context for theming
-                    mCalendarServiceProvider, // Injected service
-                    mEventsService,     // Injected service
-                    mQDueUserService,       // Injected service
-                    mWorkScheduleRepository // Injected service
+                    requireActivity(),          // Activity context for theming
+                    mCalendarServiceProvider    // Injected service
             );
 
             if (mUserId != null) {

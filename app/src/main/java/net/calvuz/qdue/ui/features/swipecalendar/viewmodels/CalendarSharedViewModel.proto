@@ -1,0 +1,631 @@
+package net.calvuz.qdue.ui.features.swipecalendar.viewmodels;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+import net.calvuz.qdue.data.services.LocalEventsService;
+import net.calvuz.qdue.data.services.QDueUserService;
+import net.calvuz.qdue.data.services.UserWorkScheduleService;
+import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
+import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
+import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
+import net.calvuz.qdue.domain.calendar.models.LocalEvent;
+import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
+import net.calvuz.qdue.ui.core.common.utils.Log;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * CalendarSharedViewModel - MVVM Shared ViewModel for Calendar Features
+ *
+ * <p>Centralized ViewModel managing shared state between MonthCalendarFragment and
+ * DayCalendarFragment following Google Calendar-like data model with LiveData observables.</p>
+ *
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li><strong>Shared State Management</strong>: Current month, selected date, view mode</li>
+ *   <li><strong>Event Data Coordination</strong>: Centralized event loading and caching</li>
+ *   <li><strong>View Mode Support</strong>: MONTH and DAY view coordination</li>
+ *   <li><strong>Live Data Integration</strong>: Reactive UI updates with observers</li>
+ *   <li><strong>Work Schedule Integration</strong>: Combined events and work schedule data</li>
+ * </ul>
+ *
+ * <h3>Dependency Injection Architecture:</h3>
+ * <ul>
+ *   <li><strong>Service Integration</strong>: LocalEventsService, QDueUserService, UserWorkScheduleService injection</li>
+ *   <li><strong>Repository Pattern</strong>: WorkScheduleRepository for schedule data</li>
+ *   <li><strong>Use Case Layer</strong>: GenerateUserScheduleUseCase for business logic</li>
+ *   <li><strong>User Management</strong>: Dynamic QDueUser loading and caching</li>
+ *   <li><strong>Clean Architecture</strong>: Separation of concerns with reactive patterns</li>
+ * </ul>
+ *
+ * @author QDue Development Team
+ * @version 1.0.0 - MVVM Foundation
+ * @since MVVM Migration Phase
+ */
+public class CalendarSharedViewModel extends ViewModel {
+
+    private static final String TAG = "CalendarSharedViewModel";
+
+    // ==================== VIEW MODE ENUM ====================
+
+    /**
+     * Calendar view mode enumeration for fragment coordination
+     */
+    public enum ViewMode {
+        MONTH,  // Month view with month grid
+        DAY     // Day view with hourly timeline
+    }
+
+    /**
+     * Loading state enumeration for UI state management
+     */
+    public enum LoadingState {
+        IDLE,       // No operations in progress
+        LOADING,    // Data loading in progress
+        SUCCESS,    // Data loaded successfully
+        ERROR       // Error occurred during loading
+    }
+
+    // ==================== DEPENDENCIES ====================
+
+    private final LocalEventsService mEventsService;
+    private final QDueUserService mUserService;
+    private final UserWorkScheduleService mUserWorkScheduleService;
+    private final WorkScheduleRepository mWorkScheduleRepository;
+    private final GenerateUserScheduleUseCase mUserScheduleUseCase;
+
+    // ==================== USER STATE ====================
+
+    private QDueUser mQDueUser;
+
+    // ==================== SHARED STATE LIVE DATA ====================
+
+    // Navigation and View State
+    private final MutableLiveData<YearMonth> mCurrentMonth = new MutableLiveData<>();
+    private final MutableLiveData<LocalDate> mSelectedDate = new MutableLiveData<>();
+    private final MutableLiveData<ViewMode> mViewMode = new MutableLiveData<>();
+
+    // Data State
+    private final MutableLiveData<LoadingState> mLoadingState = new MutableLiveData<>();
+    private final MutableLiveData<String> mErrorMessage = new MutableLiveData<>();
+
+    // Event Data
+    private final MutableLiveData<Map<LocalDate, List<LocalEvent>>> mMonthEvents = new MutableLiveData<>();
+    private final MutableLiveData<Map<LocalDate, List<WorkScheduleDay>>> mMonthWorkSchedule = new MutableLiveData<>();
+
+    // Derived Live Data for Day View
+    private final MediatorLiveData<List<LocalEvent>> mSelectedDayEvents = new MediatorLiveData<>();
+    private final MediatorLiveData<List<WorkScheduleDay>> mSelectedDayWorkSchedule = new MediatorLiveData<>();
+
+    // ==================== DATA CACHING ====================
+
+    // Cache for loaded months to avoid unnecessary reloads
+    private final Map<YearMonth, Map<LocalDate, List<LocalEvent>>> mEventsCache = new ConcurrentHashMap<>();
+    private final Map<YearMonth, Map<LocalDate, List<WorkScheduleDay>>> mWorkScheduleCache = new ConcurrentHashMap<>();
+
+    // Current user configuration
+    // Note: mQDueUser is loaded dynamically from QDueUserService
+
+    // ==================== CONSTRUCTOR ====================
+
+    /**
+     * Constructor with dependency injection for clean architecture integration.
+     *
+     * @param eventsService           Service for events data operations
+     * @param QDueUserService            Service for user data operations
+     * @param userWorkScheduleService Service for work schedule operations
+     * @param workScheduleRepository Repository for work schedule operations
+     * @param userScheduleUseCase    Use case for work schedule business logic
+     */
+    public CalendarSharedViewModel(@NonNull LocalEventsService eventsService,
+                                   @NonNull QDueUserService QDueUserService,
+                                   @NonNull UserWorkScheduleService userWorkScheduleService,
+                                   @NonNull WorkScheduleRepository workScheduleRepository,
+                                   @NonNull GenerateUserScheduleUseCase userScheduleUseCase) {
+
+        this.mEventsService = eventsService;
+        this.mUserService = QDueUserService;
+        this.mUserWorkScheduleService = userWorkScheduleService;
+        this.mWorkScheduleRepository = workScheduleRepository;
+        this.mUserScheduleUseCase = userScheduleUseCase;
+
+        // Initialize default state
+        initializeDefaultState();
+
+        // Setup derived live data observers
+        setupDerivedLiveData();
+
+        // Load current user
+        loadCurrentUser();
+
+        Log.d(TAG, "CalendarSharedViewModel initialized with MVVM architecture");
+    }
+
+    // ==================== INITIALIZATION ====================
+
+    /**
+     * Initialize default state values for calendar display.
+     */
+    private void initializeDefaultState() {
+        // Set initial state
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate today = LocalDate.now();
+
+        mCurrentMonth.setValue(currentMonth);
+        mSelectedDate.setValue(today);
+        mViewMode.setValue(ViewMode.MONTH);
+        mLoadingState.setValue(LoadingState.IDLE);
+
+        // Initialize empty data containers
+        mMonthEvents.setValue(new HashMap<>());
+        mMonthWorkSchedule.setValue(new HashMap<>());
+
+        Log.d(TAG, "Default state initialized - Month: " + currentMonth + ", Selected: " + today);
+    }
+
+    /**
+     * Setup derived LiveData that depends on multiple sources.
+     */
+    private void setupDerivedLiveData() {
+        // Selected day events - derived from month events and selected date
+        mSelectedDayEvents.addSource(mMonthEvents, this::updateSelectedDayEvents);
+        mSelectedDayEvents.addSource(mSelectedDate, date -> updateSelectedDayEvents(mMonthEvents.getValue()));
+
+        // Selected day work schedule - derived from month schedule and selected date
+        mSelectedDayWorkSchedule.addSource(mMonthWorkSchedule, this::updateSelectedDayWorkSchedule);
+        mSelectedDayWorkSchedule.addSource(mSelectedDate, date -> updateSelectedDayWorkSchedule(mMonthWorkSchedule.getValue()));
+
+        Log.d(TAG, "Derived LiveData observers configured");
+    }
+
+    /**
+     * Load current user from QDueUserService.
+     */
+    private void loadCurrentUser() {
+        mUserService.getPrimaryUser()
+                .thenAccept(result -> {
+                    if (result.isSuccess()) {
+                        mQDueUser = result.getData();
+                        Log.d(TAG, "Current user loaded: " + (mQDueUser != null ? mQDueUser.getId() : "null"));
+                    } else {
+                        Log.w(TAG, "Failed to load current user: " + result.getErrorMessage());
+                        // Create default user or handle error appropriately
+                    }
+                })
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error loading current user", throwable);
+                    return null;
+                });
+    }
+
+    /**
+     * Update selected day events based on current selection and available data.
+     */
+    private void updateSelectedDayEvents(@Nullable Map<LocalDate, List<LocalEvent>> monthEvents) {
+        LocalDate selectedDate = mSelectedDate.getValue();
+        if (selectedDate != null && monthEvents != null) {
+            List<LocalEvent> dayEvents = monthEvents.getOrDefault(selectedDate, new ArrayList<>());
+            // Sort events by start time for day view display
+            dayEvents = dayEvents.stream()
+                    .sorted((e1, e2) -> {
+                        if (e1.getStartTime() == null && e2.getStartTime() == null) return 0;
+                        if (e1.getStartTime() == null) return -1; // All-day events first
+                        if (e2.getStartTime() == null) return 1;
+                        return e1.getStartTime().compareTo(e2.getStartTime());
+                    })
+                    .collect(Collectors.toList());
+
+            mSelectedDayEvents.setValue(dayEvents);
+            Log.v(TAG, "Selected day events updated: " + dayEvents.size() + " events for " + selectedDate);
+        } else {
+            mSelectedDayEvents.setValue(new ArrayList<>());
+        }
+    }
+
+    /**
+     * Update selected day work schedule based on current selection and available data.
+     */
+    private void updateSelectedDayWorkSchedule(@Nullable Map<LocalDate, List<WorkScheduleDay>> monthSchedule) {
+        LocalDate selectedDate = mSelectedDate.getValue();
+        if (selectedDate != null && monthSchedule != null) {
+            List<WorkScheduleDay> daySchedule = monthSchedule.getOrDefault(selectedDate, new ArrayList<>());
+            mSelectedDayWorkSchedule.setValue(daySchedule);
+            Log.v(TAG, "Selected day work schedule updated: " + daySchedule.size() + " schedules for " + selectedDate);
+        } else {
+            mSelectedDayWorkSchedule.setValue(new ArrayList<>());
+        }
+    }
+
+    // ==================== PUBLIC LIVE DATA GETTERS ====================
+
+    /**
+     * Get current month LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<YearMonth> getCurrentMonth() {
+        return mCurrentMonth;
+    }
+
+    /**
+     * Get selected date LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<LocalDate> getSelectedDate() {
+        return mSelectedDate;
+    }
+
+    /**
+     * Get view mode LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<ViewMode> getViewMode() {
+        return mViewMode;
+    }
+
+    /**
+     * Get loading state LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<LoadingState> getLoadingState() {
+        return mLoadingState;
+    }
+
+    /**
+     * Get error message LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<String> getErrorMessage() {
+        return mErrorMessage;
+    }
+
+    /**
+     * Get month events LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<Map<LocalDate, List<LocalEvent>>> getMonthEvents() {
+        return mMonthEvents;
+    }
+
+    /**
+     * Get month work schedule LiveData for observer registration.
+     */
+    @NonNull
+    public LiveData<Map<LocalDate, List<WorkScheduleDay>>> getMonthWorkSchedule() {
+        return mMonthWorkSchedule;
+    }
+
+    /**
+     * Get selected day events LiveData for day view observer registration.
+     */
+    @NonNull
+    public LiveData<List<LocalEvent>> getSelectedDayEvents() {
+        return mSelectedDayEvents;
+    }
+
+    /**
+     * Get selected day work schedule LiveData for day view observer registration.
+     */
+    @NonNull
+    public LiveData<List<WorkScheduleDay>> getSelectedDayWorkSchedule() {
+        return mSelectedDayWorkSchedule;
+    }
+
+    // ==================== PUBLIC ACTION METHODS ====================
+
+    /**
+     * Navigate to specific month and load data if needed.
+     *
+     * @param month Target month to navigate to
+     */
+    public void navigateToMonth(@NonNull YearMonth month) {
+        Log.d(TAG, "Navigating to month: " + month);
+
+        YearMonth currentMonth = mCurrentMonth.getValue();
+        if (month.equals(currentMonth)) {
+            Log.v(TAG, "Already at target month: " + month);
+            return;
+        }
+
+        mCurrentMonth.setValue(month);
+
+        // Auto-select first day of month if current selection is not in new month
+        LocalDate selectedDate = mSelectedDate.getValue();
+        if (selectedDate == null || !YearMonth.from(selectedDate).equals(month)) {
+            selectDate(month.atDay(1));
+        }
+
+        // Load data for new month if not cached
+        loadMonthDataIfNeeded(month);
+    }
+
+    /**
+     * Select specific date and update derived data.
+     *
+     * @param date Target date to select
+     */
+    public void selectDate(@NonNull LocalDate date) {
+        Log.d(TAG, "Selecting date: " + date);
+
+        LocalDate currentSelection = mSelectedDate.getValue();
+        if (date.equals(currentSelection)) {
+            Log.v(TAG, "Date already selected: " + date);
+            return;
+        }
+
+        mSelectedDate.setValue(date);
+
+        // Auto-navigate to month if date is in different month
+        YearMonth dateMonth = YearMonth.from(date);
+        YearMonth currentMonth = mCurrentMonth.getValue();
+        if (!dateMonth.equals(currentMonth)) {
+            navigateToMonth(dateMonth);
+        }
+    }
+
+    /**
+     * Switch to month view mode.
+     */
+    public void switchToMonthView() {
+        Log.d(TAG, "Switching to month view");
+        mViewMode.setValue(ViewMode.MONTH);
+    }
+
+    /**
+     * Switch to day view mode for specific date.
+     *
+     * @param date Date to focus in day view
+     */
+    public void switchToDayView(@NonNull LocalDate date) {
+        Log.d(TAG, "Switching to day view for date: " + date);
+
+        // Select the date first to ensure data is loaded
+        selectDate(date);
+
+        // Switch to day view mode
+        mViewMode.setValue(ViewMode.DAY);
+    }
+
+    /**
+     * Refresh events and work schedule data for current month.
+     */
+    public void refreshCurrentMonth() {
+        YearMonth currentMonth = mCurrentMonth.getValue();
+        if (currentMonth != null) {
+            Log.d(TAG, "Refreshing data for current month: " + currentMonth);
+
+            // Clear cache for current month to force reload
+            mEventsCache.remove(currentMonth);
+            mWorkScheduleCache.remove(currentMonth);
+
+            // Reload data
+            loadMonthData(currentMonth);
+        }
+    }
+
+    // ==================== DATA LOADING METHODS ====================
+
+    /**
+     * Load month data if not already cached.
+     */
+    private void loadMonthDataIfNeeded(@NonNull YearMonth month) {
+        boolean eventsNeedLoad = !mEventsCache.containsKey(month);
+        boolean scheduleNeedsLoad = !mWorkScheduleCache.containsKey(month);
+
+        if (eventsNeedLoad || scheduleNeedsLoad) {
+            Log.d(TAG, "Loading data for month: " + month + " (events: " + eventsNeedLoad + ", schedule: " + scheduleNeedsLoad + ")");
+            loadMonthData(month);
+        } else {
+            Log.v(TAG, "Month data already cached: " + month);
+            updateDisplayWithCachedData(month);
+        }
+    }
+
+    /**
+     * Load events and work schedule data for specific month.
+     */
+    private void loadMonthData(@NonNull YearMonth month) {
+        mLoadingState.setValue(LoadingState.LOADING);
+
+        LocalDate startDate = month.atDay(1);
+        LocalDate endDate = month.atEndOfMonth();
+
+        // Load events and work schedule concurrently
+        CompletableFuture<Map<LocalDate, List<LocalEvent>>> eventsFuture = loadEventsForDateRange(startDate, endDate);
+        CompletableFuture<Map<LocalDate, List<WorkScheduleDay>>> scheduleFuture = loadWorkScheduleForDateRange(startDate, endDate);
+
+        // Combine results
+        CompletableFuture.allOf(eventsFuture, scheduleFuture)
+                .thenApply(v -> {
+                    try {
+                        Map<LocalDate, List<LocalEvent>> events = eventsFuture.get();
+                        Map<LocalDate, List<WorkScheduleDay>> schedule = scheduleFuture.get();
+
+                        // Cache results
+                        mEventsCache.put(month, events);
+                        mWorkScheduleCache.put(month, schedule);
+
+                        // Update display if this is still the current month
+                        YearMonth currentMonth = mCurrentMonth.getValue();
+                        if (month.equals(currentMonth)) {
+                            mMonthEvents.postValue(events);
+                            mMonthWorkSchedule.postValue(schedule);
+                        }
+
+                        mLoadingState.postValue(LoadingState.SUCCESS);
+                        Log.d(TAG, "Month data loaded successfully: " + month);
+
+                        return null;
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error combining month data results", e);
+                        mLoadingState.postValue(LoadingState.ERROR);
+                        mErrorMessage.postValue("Failed to load calendar data: " + e.getMessage());
+                        return null;
+                    }
+                })
+                .exceptionally(throwable -> {
+                    Log.e(TAG, "Error loading month data for " + month, throwable);
+                    mLoadingState.postValue(LoadingState.ERROR);
+                    mErrorMessage.postValue("Failed to load calendar data: " + throwable.getMessage());
+                    return null;
+                });
+    }
+
+    /**
+     * Update display with cached data for specific month.
+     */
+    private void updateDisplayWithCachedData(@NonNull YearMonth month) {
+        Map<LocalDate, List<LocalEvent>> cachedEvents = mEventsCache.get(month);
+        Map<LocalDate, List<WorkScheduleDay>> cachedSchedule = mWorkScheduleCache.get(month);
+
+        if (cachedEvents != null) {
+            mMonthEvents.setValue(cachedEvents);
+        }
+
+        if (cachedSchedule != null) {
+            mMonthWorkSchedule.setValue(cachedSchedule);
+        }
+
+        Log.v(TAG, "Display updated with cached data for month: " + month);
+    }
+
+    /**
+     * Load events for date range using LocalEventsService.
+     * Alternative implementation if getEventsForDateRange doesn't exist.
+     */
+    private CompletableFuture<Map<LocalDate, List<LocalEvent>>> loadEventsForDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+        // Try the preferred method first, fallback to getAllEvents if needed
+        try {
+            return mEventsService.getEventsForDateRange(startDate.atStartOfDay(), endDate.atTime( 23,59,59 ))
+                    .thenApply(result -> {
+                        if (result.isSuccess()) {
+                            List<LocalEvent> events = result.getData();
+                            return groupEventsByDate(events);
+                        } else {
+                            Log.w(TAG, "Failed to load events: " + result.getErrorMessage());
+                            return new HashMap<>();
+                        }
+                    })
+                    .exceptionally(throwable -> {
+                        Log.e(TAG, "Error loading events for date range", throwable);
+                        return new HashMap<>();
+                    });
+        } catch (Exception e) {
+            // Fallback: load all events and filter by date range
+            Log.w(TAG, "getEventsForDateRange not available, using getAllEvents fallback");
+            return mEventsService.getAllEvents()
+                    .thenApply(result -> {
+                        if (result.isSuccess()) {
+                            List<LocalEvent> allEvents = result.getData();
+                            List<LocalEvent> filteredEvents = filterEventsByDateRange(allEvents, startDate, endDate);
+                            return groupEventsByDate(filteredEvents);
+                        } else {
+                            Log.w(TAG, "Failed to load all events: " + result.getErrorMessage());
+                            return new HashMap<>();
+                        }
+                    })
+                    .exceptionally(throwable -> {
+                        Log.e(TAG, "Error loading all events for filtering", throwable);
+                        return new HashMap<>();
+                    });
+        }
+    }
+
+    /**
+     * Group events by their date.
+     */
+    private Map<LocalDate, List<LocalEvent>> groupEventsByDate(List<LocalEvent> events) {
+        Map<LocalDate, List<LocalEvent>> eventsByDate = new HashMap<>();
+
+        for (LocalEvent event : events) {
+            LocalDate eventDate = event.getStartTime().toLocalDate();
+            if (eventDate != null) {
+                eventsByDate.computeIfAbsent(eventDate, k -> new ArrayList<>()).add(event);
+            }
+        }
+
+        Log.v(TAG, "Grouped " + events.size() + " events by date: " + eventsByDate.size() + " days with events");
+        return eventsByDate;
+    }
+
+    /**
+     * Filter events by date range.
+     */
+    private List<LocalEvent> filterEventsByDateRange(List<LocalEvent> allEvents, LocalDate startDate, LocalDate endDate) {
+        List<LocalEvent> filteredEvents = new ArrayList<>();
+
+        for (LocalEvent event : allEvents) {
+            LocalDate eventDate = event.getStartTime().toLocalDate();
+            if (eventDate != null &&
+                    !eventDate.isBefore(startDate) &&
+                    !eventDate.isAfter(endDate)) {
+                filteredEvents.add(event);
+            }
+        }
+
+        Log.v(TAG, "Filtered " + allEvents.size() + " events to " + filteredEvents.size() + " events for range " + startDate + " to " + endDate);
+        return filteredEvents;
+    }
+
+
+/**
+ * Load work schedule for date range using UserWorkScheduleService.
+ */
+private CompletableFuture<Map<LocalDate, List<WorkScheduleDay>>> loadWorkScheduleForDateRange(@NonNull LocalDate startDate, @NonNull LocalDate endDate) {
+    if (mQDueUser == null) {
+        Log.w(TAG, "Cannot load work schedule - QDueUser is null");
+        return CompletableFuture.completedFuture(new HashMap<>());
+    }
+
+    return mUserWorkScheduleService.generateWorkScheduleForUser(mQDueUser.getId(), startDate, endDate)
+            .thenApply(result -> {
+                if (result.isSuccess()) {
+                    List<WorkScheduleDay> schedules = result.getData();
+                    Map<LocalDate, List<WorkScheduleDay>> schedulesByDate = new HashMap<>();
+
+                    // Group schedules by date
+                    for (WorkScheduleDay schedule : schedules) {
+                        LocalDate scheduleDate = schedule.getDate();
+                        if (scheduleDate != null) {
+                            schedulesByDate.computeIfAbsent(scheduleDate, k -> new ArrayList<>()).add(schedule);
+                        }
+                    }
+
+                    Log.v(TAG, "Work schedules loaded for user " + mQDueUser.getId() + " range " + startDate + " to " + endDate + ": " + schedules.size() + " schedules");
+                    return schedulesByDate;
+                } else {
+                    Log.w(TAG, "Failed to load work schedules: " + result.getErrorMessage());
+                    return new HashMap<>();
+                }
+            })
+            .exceptionally(throwable -> {
+                Log.e(TAG, "Error loading work schedules for date range", throwable);
+                return new HashMap<>();
+            });
+}
+
+// ==================== LIFECYCLE ====================
+
+@Override
+protected void onCleared() {
+    super.onCleared();
+
+    // Clear caches to free memory
+    mEventsCache.clear();
+    mWorkScheduleCache.clear();
+
+    Log.d(TAG, "CalendarSharedViewModel cleared and caches freed");
+}
+}

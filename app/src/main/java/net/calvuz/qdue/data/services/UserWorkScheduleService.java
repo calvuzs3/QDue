@@ -24,6 +24,12 @@ public interface UserWorkScheduleService
             @NonNull YearMonth month
     );
 
+    CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> generateWorkScheduleForUser(
+            @NonNull String userID,
+            @NonNull LocalDate startDate,
+            @NonNull LocalDate endDate
+    );
+
     /**
      * Get service status.
      * @return Service Status
