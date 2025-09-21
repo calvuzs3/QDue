@@ -1,5 +1,6 @@
 package net.calvuz.qdue.core.di;
 
+import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.core.services.CalendarService;
 import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.data.services.QDueUserService;
@@ -16,50 +17,43 @@ public interface ServiceProvider {
 
 
 
-    /**
-     * Get QDueUserService for simplified user management.
-     *
-     * <p>Provides simplified user management operations following clean architecture
-     * principles with minimal onboarding and optional profile fields.</p>
-     *
-     * <h4>Service Features:</h4>
-     * <ul>
-     *   <li><strong>Minimal Onboarding</strong>: Single-step user creation</li>
-     *   <li><strong>Optional Fields</strong>: Nickname and email with empty defaults</li>
-     *   <li><strong>Clean Architecture</strong>: Domain-driven design with use cases</li>
-     *   <li><strong>Async Operations</strong>: CompletableFuture for all operations</li>
-     * </ul>
-     *
-     * <h4>Use Cases:</h4>
-     * <ul>
-     *   <li><strong>New Applications</strong>: Simple user management needs</li>
-     *   <li><strong>Onboarding Flows</strong>: Minimal friction user creation</li>
-     *   <li><strong>Calendar Integration</strong>: User identification for calendar features</li>
-     *   <li><strong>Profile Management</strong>: Basic profile completion workflows</li>
-     * </ul>
-     *
-     * @return QDueUserService instance with full dependency injection
-     */
+    /// Get QDueUserService for simplified user management.
+    ///
+    /// Provides simplified user management operations following clean architecture
+    /// principles with minimal onboarding and optional profile fields.
+    /// #### Service Features:
+    ///
+    ///     - **Minimal Onboarding**: Single-step user creation
+    ///     - **Optional Fields**: Nickname and email with empty defaults
+    ///     - **Clean Architecture**: Domain-driven design with use cases
+    ///     - **Async Operations**: CompletableFuture for all operations
+    ///
+    /// #### Use Cases:
+    ///
+    ///     - **New Applications**: Simple user management needs
+    ///     - **Onboarding Flows**: Minimal friction user creation
+    ///     - **Calendar Integration**: User identification for calendar features
+    ///     - **Profile Management**: Basic profile completion workflows
+    ///
+    ///
+    /// @return QDueUserService instance with full dependency injection
     QDueUserService getQDueUserService();
 
-    /**
-     * Get CalendarService instance for work schedule and calendar operations.
-     *
-     * <p>Provides comprehensive calendar functionality including:
-     * <ul>
-     *   <li>Work schedule generation for users and teams</li>
-     *   <li>Calendar event creation from schedules</li>
-     *   <li>Team management and assignments</li>
-     *   <li>Shift template management</li>
-     *   <li>Exception handling for schedule modifications</li>
-     * </ul>
-     *
-     * The service uses clean domain models with full localization support
-     * and follows the OperationResult pattern for consistent error handling.
-     *
-     * @return CalendarService instance
-     * @throws RuntimeException if service initialization fails
-     */
+    /// Get CalendarService instance for work schedule and calendar operations.
+    ///
+    /// Provides comprehensive calendar functionality including:
+    ///
+    ///     - Work schedule generation for users and teams
+    ///     - Calendar event creation from schedules
+    ///     - Team management and assignments
+    ///     - Shift template management
+    ///     - Exception handling for schedule modifications
+    ///
+    /// The service uses clean domain models with full localization support
+    /// and follows the OperationResult pattern for consistent error handling.
+    ///
+    /// @return CalendarService instance
+    /// @throws RuntimeException if service initialization fails
     CalendarService getCalendarService();
 
     /**
@@ -116,6 +110,11 @@ public interface ServiceProvider {
      * @throws RuntimeException if WorkScheduleRepository cannot be created
      */
     WorkScheduleRepository getWorkScheduleService();
+
+    /**
+     * Get LocaleManager instance
+     */
+    LocaleManager getLocaleManager();
 
     /**
      * Initialize all services

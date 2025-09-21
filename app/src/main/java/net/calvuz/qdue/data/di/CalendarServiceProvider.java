@@ -358,7 +358,7 @@ public interface CalendarServiceProvider
      * @return GenerateUserScheduleUseCase instance
      */
     @NonNull
-    GenerateUserScheduleUseCase getUserScheduleUseCase();
+    GenerateUserScheduleUseCase getGenerateUserScheduleUseCase();
 
     /**
      * Get GenerateTeamScheduleUseCase for team coordination operations.

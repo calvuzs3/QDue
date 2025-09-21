@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Refresh Events -->
+    <item
+        android:id="@+id/action_refresh"
+        android:title="@string/refresh"
+        android:icon="@drawable/ic_rounded_refresh_24"
+        android:contentDescription="@string/refresh_events"
+        app:showAsAction="ifRoom" />
+
+    <!-- Go to Today -->
+    <item
+        android:id="@+id/action_go_to_today"
+        android:title="@string/go_to_today"
+        android:icon="@drawable/ic_rounded_today_24"
+        android:contentDescription="@string/go_to_today"
+        app:showAsAction="ifRoom" />
+
+    <!-- Selection Mode Toggle -->
+    <item
+        android:id="@+id/action_selection_mode"
+        android:title="@string/selection_mode"
+        android:icon="@drawable/ic_rounded_checklist_24"
+        android:contentDescription="@string/toggle_selection_mode"
+        app:showAsAction="ifRoom" />
+
+    <!-- Export Day Events -->
+    <item
+        android:id="@+id/action_export_day"
+        android:title="@string/export_day"
+        android:icon="@drawable/ic_rounded_file_export_24"
+        android:contentDescription="@string/export_day_events"
+        app:showAsAction="never" />
+
+    <!-- Settings/Options submenu -->
+    <item
+        android:id="@+id/action_day_view_options"
+        android:title="@string/options"
+        app:showAsAction="never">
+
+        <menu>
+            <!-- Filter Events -->
+            <item
+                android:id="@+id/action_filter_events"
+                android:title="@string/filter_events"
+                android:icon="@drawable/ic_rounded_filter_list_24" />
+
+            <!-- Sort Events -->
+            <item
+                android:id="@+id/action_sort_events"
+                android:title="@string/sort_events"
+                android:icon="@drawable/ic_rounded_sort_24" />
+
+            <!-- Event Display Settings -->
+            <item
+                android:id="@+id/action_display_settings"
+                android:title="@string/display_settings"
+                android:icon="@drawable/ic_rounded_settings_24" />
+
+            <!-- Help -->
+            <item
+                android:id="@+id/action_help"
+                android:title="@string/help"
+                android:icon="@drawable/ic_rounded_help_24" />
+
+        </menu>
+
+    </item>
+
+</menu>

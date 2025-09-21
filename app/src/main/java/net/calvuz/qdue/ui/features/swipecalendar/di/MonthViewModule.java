@@ -5,12 +5,10 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import net.calvuz.qdue.core.services.EventsService;
 import net.calvuz.qdue.data.services.QDueUserService;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.data.services.LocalEventsService;
 import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
-import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.domain.calendar.models.LocalEvent;
@@ -26,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SwipeCalendarModule - Clean Architecture Dependency Injection Module
+ * MonthViewModule - Clean Architecture Dependency Injection Module
  *
  * <p>Provides centralized dependency management for all SwipeCalendar-related components
  * following clean architecture principles and established DI patterns. Integrates seamlessly
@@ -58,10 +56,10 @@ import java.util.Map;
  *   <li>GenerateUserScheduleUseCase for work schedule operations</li>
  * </ul>
  */
-public class SwipeCalendarModule
+public class MonthViewModule
 {
 
-    private static final String TAG = "SwipeCalendarModule";
+    private static final String TAG = "MonthViewModule";
 
     // ==================== DEPENDENCIES ====================
 
@@ -87,12 +85,12 @@ public class SwipeCalendarModule
     // ==================== CONSTRUCTOR ====================
 
     /**
-     * Creates SwipeCalendarModule with required dependencies for clean architecture.
+     * Creates MonthViewModule with required dependencies for clean architecture.
      *
      * @param context                 Context
      * @param calendarServiceProvider CalendarServiceProvider instance
      */
-    public SwipeCalendarModule(
+    public MonthViewModule(
             @NonNull Context context,
             @NonNull CalendarServiceProvider calendarServiceProvider
     ) {
@@ -116,7 +114,7 @@ public class SwipeCalendarModule
         // Initialize clean architecture components
         initializeCleanArchitecture();
 
-        Log.d( TAG, "SwipeCalendarModule created" );
+        Log.d( TAG, "MonthViewModule created" );
     }
 
     // ==================== CLEAN ARCHITECTURE INITIALIZATION ====================
@@ -128,7 +126,7 @@ public class SwipeCalendarModule
     private void initializeCleanArchitecture() {
         try {
             // Get user schedule use case instance for work schedule operations
-            this.mGenerateUserScheduleUseCase = mCalendarServiceProvider.getUserScheduleUseCase();
+            this.mGenerateUserScheduleUseCase = mCalendarServiceProvider.getGenerateUserScheduleUseCase();
 
             Log.d( TAG, "✅ Clean architecture components initialized successfully" );
         } catch (Exception e) {
@@ -474,7 +472,7 @@ public class SwipeCalendarModule
             return;
         }
 
-        Log.d( TAG, "Destroying SwipeCalendarModule" );
+        Log.d( TAG, "Destroying MonthViewModule" );
 
         try {
             // Cleanup pager adapter
@@ -496,9 +494,9 @@ public class SwipeCalendarModule
             mQDueUser = null;
 
             mIsDestroyed = true;
-            Log.d( TAG, "SwipeCalendarModule destroyed successfully" );
+            Log.d( TAG, "MonthViewModule destroyed successfully" );
         } catch (Exception e) {
-            Log.e( TAG, "Error during SwipeCalendarModule destruction", e );
+            Log.e( TAG, "Error during MonthViewModule destruction", e );
             mIsDestroyed = true; // Mark as destroyed even if cleanup failed
         }
     }
@@ -514,7 +512,7 @@ public class SwipeCalendarModule
 //    @NonNull
 //    public String getModuleInfo() {
 //
-//        return "SwipeCalendarModule Status (Single User):\n" +
+//        return "MonthViewModule Status (Single User):\n" +
 //                "──────────────────────────────────────────\n" +
 //                "• Destroyed: " + mIsDestroyed + "\n" +
 //                "• Dependencies Ready: " + areDependenciesReady() + "\n" +

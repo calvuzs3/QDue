@@ -24,6 +24,7 @@ playServicesAuth = "21.4.0"
 preference = "1.2.1"
 colorpickerview = "2.2.4"
 roomRuntime = "2.7.2"
+swiperefreshlayout = "1.1.0"
 tracing = "1.3.0"
 googleMaterial = "1.14.0-alpha03"
 material3 = "1.4.0-beta01"
@@ -58,6 +59,7 @@ activity = { group = "androidx.activity", name = "activity", version = "1.10.1" 
 colorpickerview = { group = "com.github.skydoves", name = "colorpickerview", version.ref = "colorpickerview" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 tracing = { module = "androidx.tracing:tracing", version.ref = "tracing" }
 com-google-android-material-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }

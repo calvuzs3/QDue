@@ -213,39 +213,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
     @NonNull
     @Override
     public MonthViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
-//        try {
         View itemView = mInflater.inflate( R.layout.item_swipe_calendar_month, parent, false );
         return new MonthViewHolder( itemView );
-//        } catch (Exception e) {
-//            Log.e( TAG, "Failed to inflate layout with themed context, trying parent context", e );
-
-//            // ✅ FALLBACK: Try with parent context (ViewPager2 should have correct theme)
-//            try {
-//                View fallbackView = LayoutInflater.from( parent.getContext() )
-//                        .inflate( R.layout.item_swipe_calendar_month, parent, false );
-//                Log.w( TAG, "Successfully inflated layout with parent context (fallback)" );
-//                return new MonthViewHolder( fallbackView );
-//            } catch (Exception fallbackError) {
-//                Log.e( TAG, "CRITICAL: Failed to inflate layout even with parent context", fallbackError );
-//
-//                // ✅ LAST RESORT: Create minimal layout programmatically
-//                LinearLayout errorLayout = new LinearLayout( parent.getContext() );
-//                errorLayout.setLayoutParams( new ViewGroup.LayoutParams(
-//                        ViewGroup.LayoutParams.MATCH_PARENT,
-//                        ViewGroup.LayoutParams.MATCH_PARENT
-//                ) );
-//                errorLayout.setOrientation( LinearLayout.VERTICAL );
-//
-//                TextView errorText = new TextView( parent.getContext() );
-//                errorText.setText( "Layout inflation failed" );
-//                errorText.setGravity( Gravity.CENTER );
-//                errorLayout.addView( errorText );
-//
-//                Log.e( TAG, "Created emergency layout due to inflation failure" );
-//                return new MonthViewHolder( errorLayout );
-//            }
-//        }
     }
 
     @Override
@@ -276,7 +245,7 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         private final MaterialButton retryButton;
 
         // Month-specific adapter
-        private SwipeCalendarDayAdapter dayAdapter;
+        private MonthPagerDayAdapter dayAdapter;
         private YearMonth currentMonth;
 
         public MonthViewHolder(@NonNull View itemView) {
@@ -305,8 +274,8 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
 
             // Create or update day adapter
             if (dayAdapter == null) {
-                dayAdapter = new SwipeCalendarDayAdapter( mContext, month );
-                dayAdapter.setOnDayClickListener( new SwipeCalendarDayAdapter.OnDayClickListener()
+                dayAdapter = new MonthPagerDayAdapter( mContext, month );
+                dayAdapter.setOnDayClickListener( new MonthPagerDayAdapter.OnDayClickListener()
                 {
                     @Override
                     public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {

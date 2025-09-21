@@ -15,8 +15,9 @@ public interface UserWorkScheduleService
 {
     /**
      * Generate a work schedule for a user for a given month.
+     *
      * @param userID UserID
-     * @param month Month
+     * @param month  Month
      * @return CompletableFuture with OperationResult<Map<LocalDate, WorkScheduleDay>>
      */
     CompletableFuture<OperationResult<Map<LocalDate, WorkScheduleDay>>> generateWorkScheduleForUser(
@@ -31,7 +32,20 @@ public interface UserWorkScheduleService
     );
 
     /**
+     * Generate a work schedule for a user for a given date.
+     *
+     * @param userID UserID
+     * @param date   Date
+     * @return CompletableFuture with OperationResult<WorkScheduleDay>
+     */
+    CompletableFuture<OperationResult<WorkScheduleDay>> generateUserScheduleForDate(
+            @NonNull String userID,
+            @NonNull LocalDate date
+    );
+
+    /**
      * Get service status.
+     *
      * @return Service Status
      */
     CompletableFuture<OperationResult<String>> getServiceStatus();

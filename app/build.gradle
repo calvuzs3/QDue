@@ -212,4 +212,5 @@ dependencies {
     testImplementation libs.hilt.android.testing
     testAnnotationProcessor "com.google.dagger:hilt-compiler:${rootProject.ext.hilt_version}"
 
+    implementation libs.swiperefreshlayout
 }

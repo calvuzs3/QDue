@@ -15,18 +15,14 @@ import net.calvuz.qdue.core.services.UserService;
 import net.calvuz.qdue.core.services.OrganizationService;
 import net.calvuz.qdue.core.services.impl.CalendarServiceImpl;
 import net.calvuz.qdue.core.services.impl.EventsServiceImpl;
-import net.calvuz.qdue.data.services.impl.QDueUserServiceImpl;
 import net.calvuz.qdue.core.services.impl.UserServiceImpl;
 import net.calvuz.qdue.core.services.impl.OrganizationServiceImpl;
 import net.calvuz.qdue.core.backup.CoreBackupManager;
 import net.calvuz.qdue.core.db.QDueDatabase;
 import net.calvuz.qdue.data.di.CalendarServiceProvider;
 import net.calvuz.qdue.data.di.CalendarServiceProviderImpl;
-import net.calvuz.qdue.data.repositories.QDueUserRepositoryImpl;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.common.i18n.DomainLocalizer;
-import net.calvuz.qdue.domain.qdueuser.repositories.QDueUserRepository;
-import net.calvuz.qdue.domain.qdueuser.usecases.QDueUserUseCases;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.text.MessageFormat;
@@ -63,7 +59,8 @@ import java.text.MessageFormat;
  * @version 3.0.0 - CalendarServiceProvider Integration
  * @since Clean Architecture Phase 3
  */
-public class ServiceProviderImpl implements ServiceProvider {
+public class ServiceProviderImpl implements ServiceProvider
+{
 
     private static final String TAG = "ServiceProviderImpl";
 
@@ -96,7 +93,6 @@ public class ServiceProviderImpl implements ServiceProvider {
     // ==================== SYNCHRONIZATION LOCKS ====================
 
     private final Object mInitializationLock = new Object();
-    private final Object mQDueUserServiceLock = new Object();
     private final Object mLocaleManagerLock = new Object();
     private final Object mDomainLocalizerLock = new Object();
     private final Object mCalendarServiceLock = new Object();
@@ -242,10 +238,11 @@ public class ServiceProviderImpl implements ServiceProvider {
                 mCalendarDatabase != null;
     }
 
-    // ==================== INFRASTRUCTURE HELPERS ====================
+    // ==================== LOCALE ====================
 
+    @Override
     @NonNull
-    private LocaleManager getLocaleManager() {
+    public LocaleManager getLocaleManager() {
         if (mLocaleManager == null) {
             synchronized (mLocaleManagerLock) {
                 if (mLocaleManager == null) {
@@ -256,6 +253,8 @@ public class ServiceProviderImpl implements ServiceProvider {
         }
         return mLocaleManager;
     }
+
+    // ==================== DOMAIN LOCALIZER ====================
 
     @NonNull
     private DomainLocalizer getDomainLocalizer() {
@@ -270,8 +269,6 @@ public class ServiceProviderImpl implements ServiceProvider {
         return mDomainLocalizer;
     }
 
-
-
     // ==================== CALENDAR SERVICES ====================
 
     @Override
@@ -282,7 +279,8 @@ public class ServiceProviderImpl implements ServiceProvider {
                 if (mCalendarService == null) {
                     try {
                         ensureInitialized();
-                        Log.d( TAG, "Creating CalendarService instance (with CalendarServiceProvider Injected)" );
+                        Log.d( TAG,
+                               "Creating CalendarService instance (with CalendarServiceProvider Injected)" );
 
                         // CalendarService needs CalendarServiceProvider
                         CalendarServiceProvider calendarServiceProvider = CalendarServiceProviderImpl.getInstance(
@@ -322,8 +320,6 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     // ==================== NEW SERVICE PROVIDER METHOD ====================
 
-    // WRAPPER METHOD
-    // New Instances should require the Service from the CalendarServiceProvider
     @Override
     public QDueUserService getQDueUserService() {
         return getCalendarServiceProvider().getQDueUserService();
@@ -461,7 +457,8 @@ public class ServiceProviderImpl implements ServiceProvider {
         }
 
         if (mServicesShutdown) {
-            throw new IllegalStateException( "Services (databases) have been shutdown and cannot be used" );
+            throw new IllegalStateException(
+                    "Services (databases) have been shutdown and cannot be used" );
         }
     }
 
@@ -499,8 +496,7 @@ public class ServiceProviderImpl implements ServiceProvider {
                 mUserService != null,
                 mOrganizationService != null,
                 mCoreBackupManager != null,
-                mCalendarService != null,
-                mQDueUserService != null
+                mCalendarService != null
         );
     }
 
@@ -515,9 +511,9 @@ public class ServiceProviderImpl implements ServiceProvider {
             boolean userServiceCreated,
             boolean organizationServiceCreated,
             boolean backupManagerCreated,
-            boolean calendarServiceCreated,
-            boolean qdueUserServiceCreated
-    ) {
+            boolean calendarServiceCreated
+    )
+    {
 
         /**
          * Check if all services are in healthy state.
@@ -528,7 +524,7 @@ public class ServiceProviderImpl implements ServiceProvider {
             return initialized && !shutdown && databaseReady &&
                     eventsServiceCreated && userServiceCreated &&
                     organizationServiceCreated && backupManagerCreated &&
-                    calendarServiceCreated && qdueUserServiceCreated;
+                    calendarServiceCreated;
         }
 
         /**
@@ -538,12 +534,11 @@ public class ServiceProviderImpl implements ServiceProvider {
          */
         @NonNull
         public String getDetailedSummary() {
-            StringBuilder summary = new StringBuilder();
-            summary.append( "ServiceProvider Health Summary:\n" );
-            summary.append( "├── Core: " ).append( isCorpReady() ? "✅ Ready" : "❌ Not Ready" ).append( "\n" );
-            summary.append( "└── Services: " ).append( areServicesCreated() ? "✅ Created" : "❌ Missing" ).append( "\n" );
 
-            return summary.toString();
+            return
+                    "ServiceProvider Health Summary:\n" +
+                            " ├── Core: " + (isCorpReady() ? "✅ Ready" : "❌ Not Ready") + "\n" +
+                            " └── Services: " + (areServicesCreated() ? "✅ Created" : "❌ Missing") + "\n";
         }
 
         private boolean isCorpReady() {

@@ -1,6 +1,5 @@
 package net.calvuz.qdue.domain.calendar.models;
 
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -15,33 +14,33 @@ public class LocalEvent
 {
 
     @NonNull
-    private final String id;
+    private String id;
     @NonNull
-    private final String calendarId;
+    private String calendarId;
     @NonNull
-    private final String title;
+    private String title;
     @Nullable
-    private final String description;
+    private String description;
     @NonNull
-    private final LocalDateTime startTime;
+    private LocalDateTime startTime;
     @NonNull
-    final LocalDateTime endTime;
+    private LocalDateTime endTime;
     @NonNull
-    final EventType eventType;
+    private EventType eventType;
     @NonNull
-    final Priority priority;
+    private Priority priority;
     @NonNull
-    Boolean allDay = true;
+    Boolean allDay;
     @Nullable
-    private final String location;
+    private String location;
     @Nullable
-    private final Map<String, String> customProperties;
+    private Map<String, String> customProperties;
     @Nullable
-    private final String sourceUrl;      // Original URL source
-    @NonNull
-    private final long createdAt;
-    @NonNull
-    private final long updatedAt;
+    private String sourceUrl;      // Original URL source
+    private long createdAt;
+    private long updatedAt;
+
+//    private com.google.api.services.calendar.model.Event myEvent;
 
     // ==================== CONSTRUCTOR ====================
 
@@ -77,9 +76,9 @@ public class LocalEvent
             @Nullable String location,
             @Nullable Map<String, String> customProperties,
             @Nullable String sourceUrl,      // Original URL source
-            @NonNull long createdAt,
-            @NonNull long updatedAt
-    ){
+            long createdAt,
+            long updatedAt
+    ) {
         this.id = id;
         this.calendarId = calendarId;
         this.title = title;
@@ -170,6 +169,63 @@ public class LocalEvent
         return updatedAt;
     }
 
+    // ==================== SETTERS ====================
+
+    public void setId(@NonNull String id) {
+        this.id = id;
+    }
+
+    public void setCalendarId(@NonNull String calendarId) {
+        this.calendarId = calendarId;
+    }
+
+    public void setTitle(@NonNull String title) {
+        this.title = title;
+    }
+
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
+
+    public void setStartTime(@NonNull LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(@NonNull LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setEventType(@NonNull EventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public void setPriority(@NonNull Priority priority) {
+        this.priority = priority;
+    }
+
+    public void setAllDay(@NonNull Boolean allDay) {
+        this.allDay = allDay;
+    }
+
+    public void setLocation(@Nullable String location) {
+        this.location = location;
+    }
+
+    public void setCustomProperties(@Nullable Map<String, String> customProperties) {
+        this.customProperties = customProperties;
+    }
+
+    public void setSourceUrl(@Nullable String sourceUrl) {
+        this.sourceUrl = sourceUrl;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     // ==================== BUILDER PATTERN ====================
 

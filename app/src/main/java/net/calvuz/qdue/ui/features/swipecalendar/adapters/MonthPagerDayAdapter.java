@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * SwipeCalendarDayAdapter - RecyclerView adapter for individual month day grid.
+ * MonthPagerDayAdapter - RecyclerView adapter for individual month day grid.
  *
  * <p>Manages 7x6 grid layout (42 cells) representing a complete month view with
  * proper handling of previous/next month overflow days. Integrates with existing
@@ -54,11 +54,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>Priority-based event highlighting</li>
  * </ul>
  */
-public class SwipeCalendarDayAdapter
-        extends RecyclerView.Adapter<SwipeCalendarDayAdapter.DayViewHolder>
+public class MonthPagerDayAdapter
+        extends RecyclerView.Adapter<MonthPagerDayAdapter.DayViewHolder>
 {
 
-    private static final String TAG = "SwipeCalendarDayAdapter";
+    private static final String TAG = "MonthPagerDayAdapter";
     private static final int GRID_SIZE = 42; // 7 columns x 6 rows
 
     // ==================== INTERFACES ====================
@@ -132,12 +132,12 @@ public class SwipeCalendarDayAdapter
     // ==================== CONSTRUCTOR ====================
 
     /**
-     * Creates SwipeCalendarDayAdapter for month display.
+     * Creates MonthPagerDayAdapter for month display.
      *
      * @param context Context for resource access
      * @param month   Initial month to display
      */
-    public SwipeCalendarDayAdapter(@NonNull Context context, @NonNull YearMonth month) {
+    public MonthPagerDayAdapter(@NonNull Context context, @NonNull YearMonth month) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from( context );
         this.mCurrentMonth = month;

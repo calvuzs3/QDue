@@ -879,7 +879,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider
      * @return GenerateUserScheduleUseCase instance (cached)
      */
     @NonNull
-    public GenerateUserScheduleUseCase getUserScheduleUseCase() {
+    public GenerateUserScheduleUseCase getGenerateUserScheduleUseCase() {
         if (mGenerateUserScheduleUseCase == null) {
             synchronized (mUserScheduleUseCaseLock) {
                 if (mGenerateUserScheduleUseCase == null) {

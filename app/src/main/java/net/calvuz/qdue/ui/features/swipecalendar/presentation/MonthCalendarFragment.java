@@ -1,5 +1,6 @@
 package net.calvuz.qdue.ui.features.swipecalendar.presentation;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,7 +38,7 @@ import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
-import net.calvuz.qdue.ui.features.swipecalendar.di.SwipeCalendarModule;
+import net.calvuz.qdue.ui.features.swipecalendar.di.MonthViewModule;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 
 import java.time.LocalDate;
@@ -84,7 +85,7 @@ public class MonthCalendarFragment
     // ==================== DEPENDENCIES ====================
 
     private CalendarServiceProvider mCalendarServiceProvider;
-    private SwipeCalendarModule mCalendarModule;
+    private MonthViewModule mCalendarModule;
     private EventsService mEventsService;
     private QDueUserService mQDueUserService;
     private WorkScheduleRepository mWorkScheduleRepository;
@@ -121,6 +122,28 @@ public class MonthCalendarFragment
     private String mUserId;
     private LocalDate mInitialDate;
 
+    // ==================== LISTENER ====================
+
+    private OnMonthCalendarListener mListener;
+
+    // ==================== LISTENER INTERFACE ====================
+
+    /**
+     * Interface for communicating with parent Activity
+     */
+    public interface OnMonthCalendarListener
+    {
+        /**
+         * Called when user wants to view day details
+         */
+        void onNavigateToDayView(@NonNull LocalDate date);
+
+        /**
+         * Called when user wants to create quick event
+         */
+        void onCreateQuickEvent(@NonNull LocalDate date);
+    }
+
     // ==================== FRAGMENT LIFECYCLE ====================
 
     /**
@@ -131,7 +154,10 @@ public class MonthCalendarFragment
      * @return New fragment instance
      */
     @NonNull
-    public static MonthCalendarFragment newInstance(@Nullable LocalDate initialDate, @Nullable String userId) {
+    public static MonthCalendarFragment newInstance(
+            @Nullable LocalDate initialDate,
+            @Nullable String userId
+    ) {
         MonthCalendarFragment fragment = new MonthCalendarFragment();
         Bundle args = new Bundle();
 
@@ -192,9 +218,21 @@ public class MonthCalendarFragment
     public void onResume() {
         super.onResume();
 
-        if (mIsInitialized) {
+        if (mIsInitialized && mStateManager != null) {
             // Refresh current month data in case events changed
             refreshCurrentMonth();
+
+            // ✅ Sync ViewPager with StateManager
+            YearMonth currentMonth = mStateManager.getCurrentMonth();
+            if (currentMonth != null) {
+                updateHeaderForMonth(currentMonth);
+
+                // ✅ Check ViewPager is in the right position
+                int currentPosition = mStateManager.getCurrentPosition();
+                if (mViewPager != null && currentPosition >= 0) {
+                    mViewPager.setCurrentItem(currentPosition, false);
+                }
+            }
         }
     }
 
@@ -214,6 +252,23 @@ public class MonthCalendarFragment
 
         // Cleanup resources
         cleanup();
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach( context );
+        if (context instanceof OnMonthCalendarListener) {
+            mListener = (OnMonthCalendarListener) context;
+        } else {
+            throw new RuntimeException(
+                    context.toString() + " must implement OnMonthCalendarListener" );
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     // ==================== DEPENDENCY INJECTION ====================
@@ -277,17 +332,13 @@ public class MonthCalendarFragment
         try {
             mLocaleManager = new LocaleManager( requireContext() );
 
-            mCalendarModule = new SwipeCalendarModule(
+            mCalendarModule = new MonthViewModule(
                     requireActivity(),          // Activity context for theming
                     mCalendarServiceProvider    // Injected service
             );
 
-            if (mUserId != null) {
-                throw new IllegalStateException( "User ID not ready" );
-            }
-
             if (!mCalendarModule.areDependenciesReady()) {
-                throw new IllegalStateException( "SwipeCalendarModule dependencies not ready" );
+                throw new IllegalStateException( "MonthViewModule dependencies not ready" );
             }
 
             Log.d( TAG, "✅ Feature components initialized successfully" );
@@ -385,7 +436,8 @@ public class MonthCalendarFragment
             mViewPager.setOverScrollMode( View.OVER_SCROLL_NEVER );
 
             // Page change callback
-            mViewPager.registerOnPageChangeCallback( new ViewPager2.OnPageChangeCallback() {
+            mViewPager.registerOnPageChangeCallback( new ViewPager2.OnPageChangeCallback()
+            {
                 @Override
                 public void onPageSelected(int position) {
                     super.onPageSelected( position );
@@ -576,7 +628,8 @@ public class MonthCalendarFragment
             navigateToPosition( todayPosition, true );
 
             // Show feedback
-            Snackbar.make( mRootView, R.string.calendar_navigated_to_today, Snackbar.LENGTH_SHORT ).show();
+            Snackbar.make( mRootView, R.string.calendar_navigated_to_today,
+                           Snackbar.LENGTH_SHORT ).show();
         }
     }
 
@@ -612,11 +665,18 @@ public class MonthCalendarFragment
     private void updateHeaderForMonth(@NonNull YearMonth month) {
         if (mMonthYearText != null && mLocaleManager != null) {
             // Format month and year according to current locale
-            String monthName = month.getMonth().getDisplayName( TextStyle.FULL, mLocaleManager.getCurrentLocale() );
+            String monthName = month.getMonth().getDisplayName( TextStyle.FULL,
+                                                                mLocaleManager.getCurrentLocale() );
             String yearText = String.valueOf( month.getYear() );
 
-            String headerText = getString( R.string.calendar_month_year_format, monthName, yearText );
+            String headerText = getString( R.string.calendar_month_year_format, monthName,
+                                           yearText );
             mMonthYearText.setText( headerText );
+
+            Log.i( TAG, "Header text updated: " + headerText );
+        } else {
+
+            Log.e( TAG, "MonthYearText or LocaleManager not initialized" );
         }
     }
 
@@ -663,32 +723,23 @@ public class MonthCalendarFragment
     /**
      * Month interaction listener implementation.
      */
-    private class MonthInteractionListener implements MonthPagerAdapter.OnMonthInteractionListener {
+    private class MonthInteractionListener implements MonthPagerAdapter.OnMonthInteractionListener
+    {
 
         @Override
         public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events) {
-            // Handle day click - could open day detail view or event creation
-            Log.d( TAG, "Day clicked: " + date + ", events count: " + events.size() );
-
-            if (!events.isEmpty()) {
-                // Has events - could show events list or detail
-                openDayEventsView( date, events );
-            } else {
-                // No events - could show quick event creation
-                openQuickEventCreation( date );
+            // Navigate to DayView
+            if (mListener != null) {
+                mListener.onNavigateToDayView( date );
             }
         }
 
         @Override
         public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
-            // Handle day long click - could open context menu or quick actions
-            Log.d( TAG, "Day long clicked: " + date );
-
-            // Provide haptic feedback
-            view.performHapticFeedback( android.view.HapticFeedbackConstants.LONG_PRESS );
-
-            // Open quick event creation
-            openQuickEventCreation( date );
+            // Notifica l'Activity per la creazione evento
+            if (mListener != null) {
+                mListener.onCreateQuickEvent( date );
+            }
         }
 
         @Override
@@ -696,37 +747,10 @@ public class MonthCalendarFragment
             Log.e( TAG, "Month load error for " + month, error );
 
             String errorMessage = getString( R.string.error_calendar_month_load_failed,
-                    month.getMonth().getDisplayName( TextStyle.FULL, Locale.getDefault() ) );
+                                             month.getMonth().getDisplayName( TextStyle.FULL,
+                                                                              Locale.getDefault() ) );
             showError( errorMessage );
         }
-    }
-
-    /**
-     * Open day events view.
-     */
-    private void openDayEventsView(@NonNull LocalDate date, @NonNull List<LocalEvent> events) {
-        // Could open EventsActivity filtered to specific date
-        Intent intent = new Intent( requireContext(), LocalEventsActivity.class );
-        intent.putExtra( LocalEventsActivity.EXTRA_FILTER_DATE, date.toString() );
-        startActivity( intent );
-    }
-
-    /**
-     * Open quick event creation.
-     */
-    private void openQuickEventCreation() {
-        openQuickEventCreation( mCurrentVisibleMonth != null ? mCurrentVisibleMonth.atDay( 1 ) : LocalDate.now() );
-    }
-
-    /**
-     * Open quick event creation for specific date.
-     */
-    private void openQuickEventCreation(@NonNull LocalDate date) {
-        // TODO: Implement quick event creation
-        // Could open EventsActivity in creation mode
-        Intent intent = new Intent( requireContext(), LocalEventsActivity.class );
-        //intent.putExtra( LocalEventsActivity.EXTRA_CREATE_EVENT_DATE, date.toString() );
-        startActivity( intent );
     }
 
     // ==================== UTILITY METHODS ====================
@@ -793,7 +817,8 @@ public class MonthCalendarFragment
      * @param smooth Whether to use smooth animation
      */
     public void navigateToMonth(@NonNull YearMonth month, boolean smooth) {
-        if (SwipeCalendarStateManager.isValidPosition( SwipeCalendarStateManager.getPositionForMonth( month ) )) {
+        if (SwipeCalendarStateManager.isValidPosition(
+                SwipeCalendarStateManager.getPositionForMonth( month ) )) {
             int position = SwipeCalendarStateManager.getPositionForMonth( month );
             navigateToPosition( position, smooth );
         } else {

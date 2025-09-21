@@ -64,16 +64,17 @@ public class UserWorkScheduleServiceImpl implements UserWorkScheduleService
             @NonNull String userID,
             @NonNull YearMonth month
     ) {
-        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForMonth().execute( userID, month );
+        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForMonth()
+                .execute( userID, month );
     }
 
     /**
      * Wrapper..
      * Generate a work schedule for a user for a given date range.
      *
-     * @param userID UserID
+     * @param userID    UserID
      * @param startDate starting date (included)
-     * @param endDate ending date (included)
+     * @param endDate   ending date (included)
      * @return CompletableFuture with OperationResult<Map<LocalDate, WorkScheduleDay>>
      */
     @Override
@@ -82,12 +83,24 @@ public class UserWorkScheduleServiceImpl implements UserWorkScheduleService
             @NonNull LocalDate startDate,
             @NonNull LocalDate endDate
     ) {
-        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForDateRange().execute( userID, startDate, endDate );
+        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForDateRange()
+                .execute( userID, startDate, endDate );
     }
 
-    // ==================== WORK SCHEDULE GENERATION ====================
-
-
+    /**
+     * Wrapper..
+     * Generate a work schedule for a user for a given date.
+     *
+     * @param userID UserID
+     */
+    @Override
+    public CompletableFuture<OperationResult<WorkScheduleDay>> generateUserScheduleForDate(
+            @NonNull String userID,
+            @NonNull LocalDate date
+    ) {
+        return mGenerateUserScheduleUseCase.getGenerateUserScheduleForDate()
+                .execute( userID, date );
+    }
 
     // ==================== MAINTENANCE OPERATIONS ====================
 

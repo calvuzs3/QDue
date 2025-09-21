@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
@@ -22,6 +23,8 @@ import net.calvuz.qdue.ui.core.architecture.base.TimeChangeBaseActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 import net.calvuz.qdue.ui.features.assignment.list.AssignmentListActivity;
 import net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardLauncher;
+import net.calvuz.qdue.ui.features.dayview.presentation.DayViewFragment;
+import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 
@@ -74,7 +77,7 @@ import java.time.LocalDate;
  */
 public class SwipeCalendarActivity
         extends TimeChangeBaseActivity
-        implements Injectable
+        implements Injectable, MonthCalendarFragment.OnMonthCalendarListener
 {
     private static final String TAG = "SwipeCalendarActivity";
 
@@ -100,6 +103,7 @@ public class SwipeCalendarActivity
 
     // ==================== CONFIGURATION ====================
 
+    private QDueUser mQDueUser;
     private LocalDate mInitialDate;
     private String mUserId;
 
@@ -264,7 +268,9 @@ public class SwipeCalendarActivity
                         }
                     } ).join();
             Log.i( TAG, "Created default user: " + newUser.getId() );
+            user = newUser;
         }
+        this.mQDueUser = user;
     }
     // ==================== MAIN ACTIVITY LOGIC ====================
 
@@ -364,6 +370,19 @@ public class SwipeCalendarActivity
     }
 
     // ==================== FRAGMENT MANAGEMENT ====================
+
+    @Override
+    public void onBackPressed() {
+        // Check if DayViewFragment is visible
+        Fragment currentFragment = getSupportFragmentManager().findFragmentByTag( "day_view");
+        if (currentFragment instanceof DayViewFragment) {
+            // Return to month view
+            getSupportFragmentManager().popBackStack();
+            return;
+        }
+
+        super.onBackPressed();
+    }
 
     /**
      * Setup MonthCalendarFragment with proper dependency injection.
@@ -529,5 +548,40 @@ public class SwipeCalendarActivity
         return areDependenciesReady() &&
                 mCalendarFragment != null &&
                 mToolbar != null;
+    }
+
+    /**
+     * Called when user wants to view day details
+     *
+     * @param date
+     */
+    @Override
+    public void onNavigateToDayView(@NonNull LocalDate date) {
+        Log.d(TAG, "Navigating to day view for date: " + date);
+
+        // Crea DayViewFragment
+        DayViewFragment dayViewFragment = DayViewFragment.newInstance( date, mUserId, mQDueUser);
+
+        // Fragment transaction
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.calendar_container, dayViewFragment, "day_view")
+                .addToBackStack("month_to_day")
+                .commit();
+    }
+
+    /**
+     * Called when user wants to create quick event
+     *
+     * @param date
+     */
+    @Override
+    public void onCreateQuickEvent(@NonNull LocalDate date) {
+        Log.d(TAG, "Creating quick event for date: " + date);
+
+        // Apri LocalEventsActivity per creazione
+        Intent intent = new Intent(this, LocalEventsActivity.class);
+        intent.putExtra( LocalEventsActivity.EXTRA_FILTER_DATE, date.toString());
+        startActivity(intent);
     }
 }

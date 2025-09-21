@@ -136,6 +136,15 @@ public class WorkScheduleDay
     // ==================== GETTERS ====================
 
     /**
+     * Wrapper for missing ID
+     * @return hash in place of an id
+     */
+    @NonNull
+    public String getId() {
+        return hashCode() + "";
+    }
+
+    /**
      * Get the date of this work schedule day.
      *
      * @return LocalDate representing this day
@@ -172,6 +181,14 @@ public class WorkScheduleDay
     @NonNull
     public List<WorkScheduleShift> getWorkShifts() {
         return Collections.unmodifiableList( workShifts );
+    }
+
+    /**
+     * Wrapper..
+     */
+    @NonNull
+    public List<WorkScheduleShift> getShifts() {
+        return this.getWorkShifts();
     }
 
     /**

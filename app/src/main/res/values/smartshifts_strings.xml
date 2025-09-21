@@ -113,7 +113,6 @@
     <string name="error_loading_data">Errore caricamento dati</string>
     <string name="error_saving_data">Errore salvataggio dati</string>
     <string name="error_network_connection">Errore connessione</string>
-    <string name="error_unknown">Errore sconosciuto</string>
     <string name="smartshifts_not_available">SmartShifts non disponibile</string>
 
     <!-- ===== SUCCESS MESSAGES ===== -->
@@ -148,7 +147,6 @@
 
     <!-- ===== TIME & DATE FORMATS ===== -->
     <string name="time_format_24h">HH:mm</string>
-    <string name="date_format_short">dd/MM/yyyy</string>
     <string name="date_format_long">EEEE, dd MMMM yyyy</string>
     <string name="shift_time_format">%1$s - %2$s</string>
     <string name="pattern_description_format">Ciclo di %1$d giorni, %2$d giorni lavorativi</string>
@@ -212,7 +210,6 @@
     <string name="import_patterns">Importa Pattern</string>
     <string name="export_contacts">Esporta Contatti</string>
     <string name="import_contacts">Importa Contatti</string>
-    <string name="export_success">Esportazione completata</string>
     <string name="import_success">Importazione completata</string>
     <string name="smartshifts_success">successo</string>
     <string name="export_data">Esportazione Dati</string>
