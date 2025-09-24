@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -42,6 +43,8 @@ import net.calvuz.qdue.ui.features.dayview.components.DayViewEventOperations;
 import net.calvuz.qdue.ui.features.dayview.adapters.DayViewEventsAdapter;
 import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.swipecalendar.di.CalendarSharedViewModelModule;
+import net.calvuz.qdue.ui.features.swipecalendar.viewmodels.CalendarSharedViewModel;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -114,6 +117,12 @@ public class DayViewFragment
     private LocalEventsService mLocalEventsService;
     private QDueUserService mQDueUserService;
     private LocaleManager mLocaleManager;
+
+    // ==================== MVVM INTEGRATION ====================
+
+    private CalendarSharedViewModel mSharedViewModel;
+    private CalendarSharedViewModelModule mSharedViewModelModule;
+    private boolean mIsObservingSharedViewModel = false;
 
     // ==================== FEATURE COMPONENTS ====================
 
@@ -214,7 +223,7 @@ public class DayViewFragment
             @Nullable String userId,
             @NonNull QDueUser qDueUser
     ) {
-        return newInstance( targetDate, userId, qDueUser,true, false );
+        return newInstance( targetDate, userId, qDueUser, true, false );
     }
 
     @Override
@@ -247,34 +256,59 @@ public class DayViewFragment
         // Initialize dependency injection
         initializeDependencyInjection();
 
-        // Initialize feature components
-        initializeFeatureComponents();
-
         // Initialize UI components
         initializeViews( view );
+
+        // Setup SharedViewModel integration
+        setupSharedViewModelIntegration();
+
+        // Initialize feature components
+        initializeFeatureComponents();
 
         // Setup day view components
         setupDayView();
 
-        Log.d( TAG, "DayViewFragment view created and configured" );
+        Log.d( TAG,
+               "DayViewFragment view created and configured with SharedViewModel integration" );
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
+        // ✅ FIXED: Complete sync with SharedViewModel on resume
+        if (mSharedViewModel != null) {
+            LocalDate sharedDate = mSharedViewModel.getSelectedDate().getValue();
+            if (sharedDate != null && (mTargetDate == null || !mTargetDate.equals( sharedDate ))) {
+                Log.d( TAG,
+                       "Syncing with SharedViewModel on resume: " + sharedDate + " (was: " + mTargetDate + ")" );
+
+                // ✅ CRITICAL: Reconfigure entire module with new date
+                reconfigureForNewDate( sharedDate );
+            }
+
+            // Set view mode to DAY
+            mSharedViewModel.setViewMode( CalendarSharedViewModel.ViewMode.DAY );
+        }
+
         if (mIsInitialized) {
             // Refresh data when returning to fragment
             refreshEvents();
         }
 
-        Log.d( TAG, "DayViewFragment resumed" );
+        Log.d( TAG, "DayViewFragment resumed with SharedViewModel sync" );
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Log.d( TAG, "DayViewFragment paused" );
+
+        // Set view mode back to MONTH when leaving DayView
+        if (mSharedViewModel != null) {
+            mSharedViewModel.setViewMode( CalendarSharedViewModel.ViewMode.MONTH );
+        }
+
+        Log.d( TAG, "DayViewFragment paused, view mode reset to MONTH" );
     }
 
     @Override
@@ -294,6 +328,75 @@ public class DayViewFragment
         Log.d( TAG, "DayViewFragment view destroyed" );
     }
 
+    // ==================== SHARED VIEW MODEL INTEGRATION ====================
+
+    /**
+     * Setup SharedViewModel integration with bidirectional synchronization.
+     */
+    private void setupSharedViewModelIntegration() {
+        if (mSharedViewModel != null && !mIsObservingSharedViewModel) {
+            // ✅ CRITICAL: Observe date changes from MonthView
+            mSharedViewModel.getSelectedDate().observe( getViewLifecycleOwner(),
+                                                        this::onSharedDateChanged );
+
+            // Set view mode to DAY when DayView is active
+            mSharedViewModel.setViewMode( CalendarSharedViewModel.ViewMode.DAY );
+
+            // Sync with initial SharedViewModel date if different
+            LocalDate sharedDate = mSharedViewModel.getSelectedDate().getValue();
+            if (sharedDate != null && !sharedDate.equals( mTargetDate )) {
+                Log.d( TAG, "Initial sync with SharedViewModel: " + sharedDate );
+                reconfigureForNewDate( sharedDate );
+            }
+
+            mIsObservingSharedViewModel = true;
+            Log.d( TAG, "SharedViewModel observers configured" );
+        }
+    }
+
+    /**
+     * ✅ FIXED: Handle shared date changes with complete module reconfiguration.
+     */
+    private void onSharedDateChanged(@NonNull LocalDate newDate) {
+        if (mTargetDate == null || !mTargetDate.equals( newDate )) {
+            Log.d( TAG, "SharedViewModel date changed: " + mTargetDate + " → " + newDate );
+
+            // ✅ CRITICAL: Reconfigure entire module infrastructure
+            reconfigureForNewDate( newDate );
+        }
+    }
+
+    /**
+     * ✅ NEW: Complete module reconfiguration for new date.
+     * This is the key method that fixes the synchronization issue.
+     */
+    private void reconfigureForNewDate(@NonNull LocalDate newDate) {
+        Log.d( TAG, "Reconfiguring DayViewModule for new date: " + newDate );
+
+        // Update target date
+        mTargetDate = newDate;
+
+        // ✅ STEP 1: Reconfigure DayViewModule with new date
+        if (mDayViewModule != null) {
+            mDayViewModule.configure( newDate, mQDueUser );
+            Log.d( TAG, "DayViewModule reconfigured for date: " + newDate );
+        }
+
+        // ✅ STEP 2: Update StateManager with new date
+        if (mStateManager != null) {
+            mStateManager.setCurrentDate( newDate );
+            Log.d( TAG, "DayViewStateManager updated for date: " + newDate );
+        }
+
+        // ✅ STEP 3: Update UI
+        updateDateHeader( newDate );
+
+        // ✅ STEP 4: Reload data with correct date
+        loadDayEvents();
+
+        Log.d( TAG, "Complete reconfiguration completed for date: " + newDate );
+    }
+
     // ==================== DEPENDENCY INJECTION ====================
 
     @Override
@@ -308,6 +411,9 @@ public class DayViewFragment
         mLocalEventsService = mCalendarServiceProvider.getLocalEventsService();
         mQDueUserService = mCalendarServiceProvider.getQDueUserService();
 
+        // ✅ FIXED: Initialize SharedViewModel integration during injection
+        initializeSharedViewModel();
+
         Log.d( TAG, "Dependencies injected successfully" );
     }
 
@@ -320,13 +426,44 @@ public class DayViewFragment
                 mLocaleManager != null;
     }
 
+    /**
+     * ✅ NEW: Initialize SharedViewModel during dependency injection.
+     */
+    private void initializeSharedViewModel() {
+        try {
+            // Initialize SharedViewModel module
+            mSharedViewModelModule = new CalendarSharedViewModelModule( requireContext(),
+                                                                        mCalendarServiceProvider );
+
+            // Get SharedViewModel from Activity scope
+            ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+            mSharedViewModel = new ViewModelProvider( requireActivity(), factory ).get(
+                    CalendarSharedViewModel.class );
+
+            Log.d( TAG, "SharedViewModel initialized successfully" );
+        } catch (Exception e) {
+            Log.e( TAG, "Failed to initialize SharedViewModel", e );
+            throw new RuntimeException( "Failed to initialize SharedViewModel", e );
+        }
+    }
+
     // ==================== STATE LISTENER IMPLEMENTATION ====================
 
     @Override
     public void onDateChanged(@NonNull LocalDate newDate) {
         mMainHandler.post( () -> {
+            mTargetDate = newDate;
+
+            // ✅ FIXED: Notify SharedViewModel for bidirectional sync
+            if (mSharedViewModel != null) {
+                mSharedViewModel.navigateToDate( newDate );
+            }
+
+            // Update UI (existing code)
             updateDateHeader( newDate );
-            Log.d( TAG, "Date changed to: " + newDate );
+//        updateNavigationButtons();
+
+            Log.d( TAG, "Date changed in DayView and SharedViewModel notified: " + newDate );
         } );
     }
 
@@ -440,7 +577,28 @@ public class DayViewFragment
         if (!areDependenciesReady()) {
             throw new IllegalStateException( "Failed to inject dependencies for DayViewFragment" );
         }
+
+//        // Initialize SharedViewModel module
+//        mSharedViewModelModule = new CalendarSharedViewModelModule( requireContext(),
+//                                                                    mCalendarServiceProvider );
+//
+//        // Get SharedViewModel from Activity scope
+//        ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+//        mSharedViewModel = new ViewModelProvider( requireActivity(), factory ).get(
+//                CalendarSharedViewModel.class );
+
+        Log.d( TAG, "SharedViewModel integration initialized" );
     }
+
+//    // In onViewCreated() - Setup observers
+//    private void setupSharedViewModelObservers() {
+//        // Observe selected date changes from MonthView
+//        mSharedViewModel.getSelectedDate().observe( getViewLifecycleOwner(),
+//                                                    this::onSharedDateChanged );
+//
+//        // Set view mode to DAY
+//        mSharedViewModel.setViewMode( CalendarSharedViewModel.ViewMode.DAY );
+//    }
 
     private void initializeFeatureComponents() {
         try {
@@ -452,7 +610,7 @@ public class DayViewFragment
             // Get feature components
             mStateManager = mDayViewModule.provideStateManager();
             mEventOperations = mDayViewModule.provideEventOperations();
-            mEventsAdapter = mDayViewModule.provideEventsAdapter(getContext());
+            mEventsAdapter = mDayViewModule.provideEventsAdapter( getContext() );
 
             // Add state listener
             mStateManager.addStateListener( this );
@@ -542,6 +700,41 @@ public class DayViewFragment
         Log.d( TAG, "Day view setup complete" );
     }
 
+    // ==================== NAVIGATION METHODS (FIXED) ====================
+
+    /**
+     * ✅ FIXED: Navigate to previous day via SharedViewModel.
+     */
+    private void navigateToPreviousDay() {
+        if (mTargetDate != null && mSharedViewModel != null) {
+            LocalDate previousDay = mTargetDate.minusDays( 1 );
+            mSharedViewModel.navigateToDate( previousDay );
+            Log.d( TAG, "Navigate to previous day via SharedViewModel: " + previousDay );
+        }
+    }
+
+    /**
+     * ✅ FIXED: Navigate to next day via SharedViewModel.
+     */
+    private void navigateToNextDay() {
+        if (mTargetDate != null && mSharedViewModel != null) {
+            LocalDate nextDay = mTargetDate.plusDays( 1 );
+            mSharedViewModel.navigateToDate( nextDay );
+            Log.d( TAG, "Navigate to next day via SharedViewModel: " + nextDay );
+        }
+    }
+
+    /**
+     * ✅ FIXED: Navigate to today via SharedViewModel.
+     */
+    private void navigateToToday() {
+        if (mSharedViewModel != null) {
+            LocalDate today = LocalDate.now();
+            mSharedViewModel.navigateToDate( today );
+            Log.d( TAG, "Navigate to today via SharedViewModel: " + today );
+        }
+    }
+
     // ==================== PRIVATE ACTION METHODS ====================
 
     private void loadDayEvents() {
@@ -566,29 +759,60 @@ public class DayViewFragment
         }
     }
 
-    private void navigateToPreviousDay() {
-        LocalDate previousDay = mTargetDate.minusDays( 1 );
-        navigateToDate( previousDay );
-    }
+//    private void navigateToPreviousDay() {
+//        if (mTargetDate != null) {
+//            LocalDate previousDay = mTargetDate.minusDays(1);
+//
+//            // Update through SharedViewModel instead of direct state change
+//            if (mSharedViewModel != null) {
+//                mSharedViewModel.navigateToDate(previousDay);
+//            } else {
+//                // Fallback to direct update
+//                onDateChanged(previousDay);
+//            }
+//        }
+////        LocalDate previousDay = mTargetDate.minusDays( 1 );
+////        navigateToDate( previousDay );
+//    }
+//
+//    private void navigateToNextDay() {
+//        if (mTargetDate != null) {
+//            LocalDate nextDay = mTargetDate.plusDays(1);
+//
+//            // Update through SharedViewModel instead of direct state change
+//            if (mSharedViewModel != null) {
+//                mSharedViewModel.navigateToDate(nextDay);
+//            } else {
+//                // Fallback to direct update
+//                onDateChanged(nextDay);
+//            }
+//        }
+////        LocalDate nextDay = mTargetDate.plusDays( 1 );
+////        navigateToDate( nextDay );
+//    }
+//
+//    private void navigateToToday() {
+//        LocalDate today = LocalDate.now();
+//
+//        // Update through SharedViewModel
+//        if (mSharedViewModel != null) {
+//            mSharedViewModel.navigateToDate(today);
+//        } else {
+//            // Fallback to direct update
+//            onDateChanged(today);
+//        }
 
-    private void navigateToNextDay() {
-        LocalDate nextDay = mTargetDate.plusDays( 1 );
-        navigateToDate( nextDay );
-    }
+    /// /        navigateToDate( LocalDate.now() );
+//    }
 
-    private void navigateToToday() {
-        navigateToDate( LocalDate.now() );
-    }
-
-    private void navigateToDate(@NonNull LocalDate newDate) {
-        if (!newDate.equals( mTargetDate )) {
-            mTargetDate = newDate;
-            mDayViewModule.configure( newDate, null );
-            mStateManager.setCurrentDate( newDate );
-            loadDayEvents();
-        }
-    }
-
+//    private void navigateToDate(@NonNull LocalDate newDate) {
+//        if (!newDate.equals( mTargetDate )) {
+//            mTargetDate = newDate;
+//            mDayViewModule.configure( newDate, null );
+//            mStateManager.setCurrentDate( newDate );
+//            loadDayEvents();
+//        }
+//    }
     private void createNewEvent() {
         // Launch LocalEventsActivity for event creation with pre-selected date
         Intent intent = new Intent( getContext(), LocalEventsActivity.class );
@@ -606,13 +830,11 @@ public class DayViewFragment
         if (selectedIds.isEmpty()) return;
 
         mEventOperations.deleteSelectedEvents( selectedIds )
-                .thenRun( () -> {
-                    mMainHandler.post( () -> {
-                        mStateManager.clearSelection();
-                        showSuccessSnackbar( "Events deleted successfully" );
-                        refreshEvents();
-                    } );
-                } )
+                .thenRun( () -> mMainHandler.post( () -> {
+                    mStateManager.clearSelection();
+                    showSuccessSnackbar( "Events deleted successfully" );
+                    refreshEvents();
+                } ) )
                 .exceptionally( throwable -> {
                     mMainHandler.post( () -> {
                         Log.e( TAG, "Failed to delete selected events", throwable );
@@ -627,14 +849,12 @@ public class DayViewFragment
         if (selectedIds.isEmpty()) return;
 
         mEventOperations.shareSelectedEvents( selectedIds )
-                .thenAccept( shareText -> {
-                    mMainHandler.post( () -> {
-                        Intent shareIntent = new Intent( Intent.ACTION_SEND );
-                        shareIntent.setType( "text/plain" );
-                        shareIntent.putExtra( Intent.EXTRA_TEXT, shareText );
-                        startActivity( Intent.createChooser( shareIntent, "Share Events" ) );
-                    } );
-                } )
+                .thenAccept( shareText -> mMainHandler.post( () -> {
+                    Intent shareIntent = new Intent( Intent.ACTION_SEND );
+                    shareIntent.setType( "text/plain" );
+                    shareIntent.putExtra( Intent.EXTRA_TEXT, shareText );
+                    startActivity( Intent.createChooser( shareIntent, "Share Events" ) );
+                } ) )
                 .exceptionally( throwable -> {
                     mMainHandler.post( () -> {
                         Log.e( TAG, "Failed to share selected events", throwable );
@@ -648,11 +868,8 @@ public class DayViewFragment
         // Export all events for current day
         if (mEventOperations != null) {
             mEventOperations.exportDayEvents( mTargetDate )
-                    .thenAccept( exportedFile -> {
-                        mMainHandler.post( () -> {
-                            showSuccessSnackbar( "Events exported to: " + exportedFile );
-                        } );
-                    } )
+                    .thenAccept( exportedFile -> mMainHandler.post(
+                            () -> showSuccessSnackbar( "Events exported to: " + exportedFile ) ) )
                     .exceptionally( throwable -> {
                         mMainHandler.post( () -> {
                             Log.e( TAG, "Failed to export day events", throwable );

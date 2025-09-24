@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/nav_swipe_calendar"
-        android:name="net.calvuz.qdue.ui.features.swipecalendar.presentation.MonthCalendarFragment"
+        android:name="net.calvuz.qdue.ui.features.monthview.presentation.MonthCalendarFragment"
         android:label="@string/menu_swipe_calendar" />
 
     <!-- About Dialog -->

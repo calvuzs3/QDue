@@ -1,7 +1,6 @@
-package net.calvuz.qdue.ui.features.swipecalendar.presentation;
+package net.calvuz.qdue.ui.features.monthview.presentation;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -35,17 +35,17 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.repositories.WorkScheduleRepository;
 import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
-import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
-import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
+import net.calvuz.qdue.ui.features.monthview.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
-import net.calvuz.qdue.ui.features.swipecalendar.di.MonthViewModule;
+import net.calvuz.qdue.ui.features.swipecalendar.di.CalendarSharedViewModelModule;
+import net.calvuz.qdue.ui.features.monthview.di.MonthViewModule;
 import net.calvuz.qdue.ui.core.common.utils.Log;
+import net.calvuz.qdue.ui.features.swipecalendar.viewmodels.CalendarSharedViewModel;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * MonthCalendarFragment - Main fragment for swipe-based calendar navigation.
@@ -73,7 +73,7 @@ import java.util.Locale;
  */
 public class MonthCalendarFragment
         extends Fragment
-        implements Injectable
+        implements Injectable, MonthPagerAdapter.OnMonthInteractionListener
 {
 
     private static final String TAG = "MonthCalendarFragment";
@@ -90,6 +90,10 @@ public class MonthCalendarFragment
     private QDueUserService mQDueUserService;
     private WorkScheduleRepository mWorkScheduleRepository;
     private LocaleManager mLocaleManager;
+
+    // Add SharedViewModel field
+    private CalendarSharedViewModel mSharedViewModel;
+    private CalendarSharedViewModelModule mSharedViewModelModule;
 
     // ==================== UI COMPONENTS ====================
 
@@ -125,6 +129,61 @@ public class MonthCalendarFragment
     // ==================== LISTENER ====================
 
     private OnMonthCalendarListener mListener;
+
+    /**
+     * Called when user clicks on a day.
+     *
+     * @param date
+     * @param day
+     * @param events
+     */
+    @Override
+    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events) {
+        Log.d(TAG, "Day clicked: " + date);
+
+        // Update SharedViewModel
+        if (mSharedViewModel != null) {
+            mSharedViewModel.navigateToDate(date);
+        }
+
+        // Navigate to day view
+        if (mListener != null) {
+            mListener.onNavigateToDayView(date);
+            Log.d(TAG, "Day clicked, navigating to day view: " + date);
+        } else {
+            Log.w(TAG, "OnMonthCalendarListener not set, cannot navigate to day view");
+        }
+    }
+
+    /**
+     * Called when user long-clicks on a day.
+     *
+     * @param date
+     * @param day
+     * @param view
+     */
+    @Override
+    public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
+        Log.d(TAG, "Day long clicked: " + date);
+
+        // Handle long click for quick event creation
+        if (mListener != null) {
+            mListener.onCreateQuickEvent(date);
+            Log.d(TAG, "Day long clicked, creating quick event: " + date);
+        }
+    }
+
+    /**
+     * Called when month data loading fails.
+     *
+     * @param month
+     * @param error
+     */
+    @Override
+    public void onMonthLoadError(@NonNull YearMonth month, @NonNull Exception error) {
+        Log.e(TAG, "Month load error for " + month, error);
+        showError("Failed to load data for " + month);
+    }
 
     // ==================== LISTENER INTERFACE ====================
 
@@ -211,6 +270,9 @@ public class MonthCalendarFragment
         // Setup calendar components
         setupCalendar();
 
+        // ✅ FINALLY: Setup SharedViewModel observers AFTER everything is initialized
+        setupSharedViewModelObservers();
+
         Log.d( TAG, "MonthCalendarFragment view created and initialized" );
     }
 
@@ -219,20 +281,27 @@ public class MonthCalendarFragment
         super.onResume();
 
         if (mIsInitialized && mStateManager != null) {
-            // Refresh current month data in case events changed
-            refreshCurrentMonth();
+            // ✅ IMPROVED: Sync with SharedViewModel first
+            if (mSharedViewModel != null) {
+                YearMonth sharedMonth = mSharedViewModel.getCurrentMonth().getValue();
+                Integer sharedPosition = mSharedViewModel.getCurrentPosition().getValue();
 
-            // ✅ Sync ViewPager with StateManager
-            YearMonth currentMonth = mStateManager.getCurrentMonth();
-            if (currentMonth != null) {
-                updateHeaderForMonth(currentMonth);
+                if (sharedMonth != null && sharedPosition != null) {
+                    // Sync ViewPager with SharedViewModel state
+                    if (mViewPager != null && mViewPager.getCurrentItem() != sharedPosition) {
+                        mViewPager.setCurrentItem( sharedPosition, false );
+                    }
 
-                // ✅ Check ViewPager is in the right position
-                int currentPosition = mStateManager.getCurrentPosition();
-                if (mViewPager != null && currentPosition >= 0) {
-                    mViewPager.setCurrentItem(currentPosition, false);
+                    // Update local state
+                    mCurrentVisibleMonth = sharedMonth;
+                    updateHeaderForMonth( sharedMonth );
+
+                    Log.d( TAG, "Resumed and synced with SharedViewModel: " + sharedMonth );
                 }
             }
+
+            // Refresh current month data
+            refreshCurrentMonth();
         }
     }
 
@@ -317,12 +386,53 @@ public class MonthCalendarFragment
                 throw new RuntimeException( "Dependency injection verification failed" );
             }
 
-            Log.d( TAG, "✅ Dependencies injected and verified successfully" );
+            // ✅ CORRECT ORDER: Initialize SharedViewModel module AFTER core dependencies
+            mSharedViewModelModule = new CalendarSharedViewModelModule(requireContext(),
+                                                                       mCalendarServiceProvider);
+
+            // ✅ Get SharedViewModel from Activity scope
+            ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+            mSharedViewModel = new ViewModelProvider(requireActivity(), factory).get(
+                    CalendarSharedViewModel.class);
+
+
+            Log.d(TAG, "Dependencies injected and SharedViewModel initialized successfully");
+
         } catch (Exception e) {
             Log.e( TAG, "❌ Failed to initialize dependency injection", e );
             showError( getString( R.string.error_calendar_initialization_failed ) );
             throw new RuntimeException( "Dependency injection failed", e );
         }
+
+//        // Initialize SharedViewModel module
+//        mSharedViewModelModule = new CalendarSharedViewModelModule( requireContext(),
+//                                                                    mCalendarServiceProvider );
+//
+//        // Get SharedViewModel from Activity scope
+//        ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+//        mSharedViewModel = new ViewModelProvider( requireActivity(), factory ).get(
+//                CalendarSharedViewModel.class );
+//
+//        Log.d( TAG, "SharedViewModel integration initialized" );
+    }
+
+    // In onViewCreated() - Setup observers
+    private void setupSharedViewModelObservers() {
+        // Observe current month changes
+        mSharedViewModel.getCurrentMonth().observe( getViewLifecycleOwner(),
+                                                    this::onSharedMonthChanged );
+
+        // Observe selected date changes
+        mSharedViewModel.getSelectedDate().observe( getViewLifecycleOwner(),
+                                                    this::onSharedDateChanged );
+
+        // Observe navigation events from DayView
+        mSharedViewModel.getNavigationEvent().observe( getViewLifecycleOwner(),
+                                                       this::onNavigationEvent );
+
+        // Observe position changes
+        mSharedViewModel.getCurrentPosition().observe( getViewLifecycleOwner(),
+                                                       this::onSharedPositionChanged );
     }
 
     /**
@@ -345,6 +455,52 @@ public class MonthCalendarFragment
         } catch (Exception e) {
             Log.e( TAG, "Failed to initialize feature components", e );
             throw new RuntimeException( "Feature components initialization failed", e );
+        }
+    }
+
+    // ========================== MVVM ==========================
+
+    // Handle shared month changes
+    private void onSharedMonthChanged(@NonNull YearMonth month) {
+        if (mCurrentVisibleMonth == null || !mCurrentVisibleMonth.equals( month )) {
+            mCurrentVisibleMonth = month;
+            updateHeaderForMonth( month );
+
+            // Update ViewPager position if needed
+            int targetPosition = SwipeCalendarStateManager.getPositionForMonth( month );
+            if (mViewPager != null && mViewPager.getCurrentItem() != targetPosition) {
+                mViewPager.setCurrentItem( targetPosition, false );
+            }
+
+            Log.d( TAG, "Month updated from SharedViewModel: " + month );
+        }
+    }
+
+    // Handle shared date changes
+    private void onSharedDateChanged(@NonNull LocalDate date) {
+        // Update any date-specific UI if needed
+        Log.d( TAG, "Selected date updated from SharedViewModel: " + date );
+    }
+
+    // Handle navigation events from DayView
+    private void onNavigationEvent(@NonNull CalendarSharedViewModel.NavigationEvent event) {
+        if (event.targetViewMode == CalendarSharedViewModel.ViewMode.MONTH) {
+            YearMonth targetMonth = YearMonth.from( event.targetDate );
+            int targetPosition = SwipeCalendarStateManager.getPositionForMonth( targetMonth );
+
+            if (mViewPager != null) {
+                mViewPager.setCurrentItem( targetPosition, event.shouldAnimate );
+            }
+
+            Log.d( TAG, "Navigation event processed: " + event.targetDate );
+        }
+    }
+
+    // Handle position changes from ViewModel
+    private void onSharedPositionChanged(@NonNull Integer position) {
+        if (mViewPager != null && mViewPager.getCurrentItem() != position) {
+            mViewPager.setCurrentItem( position, false );
+            Log.v( TAG, "ViewPager position synced: " + position );
         }
     }
 
@@ -489,28 +645,17 @@ public class MonthCalendarFragment
 
             // Get pager adapter
             mPagerAdapter = mCalendarModule.providePagerAdapter();
-            mPagerAdapter.setOnMonthInteractionListener( new MonthInteractionListener() );
+
+            // ✅ FIXED: Use 'this' instead of new MonthInteractionListener()
+            mPagerAdapter.setOnMonthInteractionListener(this);
 
             // Set adapter to ViewPager
             if (mViewPager != null) {
-                mViewPager.setAdapter( mPagerAdapter );
+                mViewPager.setAdapter(mPagerAdapter);
             }
 
-            // Determine initial position
-            int initialPosition;
-            if (mInitialDate != null) {
-                // Use provided initial date
-                YearMonth initialMonth = YearMonth.from( mInitialDate );
-                initialPosition = SwipeCalendarStateManager.getPositionForMonth( initialMonth );
-                Log.d( TAG, "Using provided initial date: " + mInitialDate );
-            } else {
-                // Use state manager to determine position
-                initialPosition = mStateManager.initializeAndGetInitialPosition();
-                Log.d( TAG, "Using state manager initial position: " + initialPosition );
-            }
-
-            // Navigate to initial position
-            navigateToPosition( initialPosition, false );
+            // ✅ IMPROVED: Better initial position logic
+            loadInitialMonth();
 
             mIsInitialized = true;
             Log.d( TAG, "Calendar setup completed successfully" );
@@ -518,6 +663,68 @@ public class MonthCalendarFragment
             Log.e( TAG, "Failed to setup calendar", e );
             showError( getString( R.string.error_calendar_setup_failed ) );
         }
+    }
+
+    // ✅ FIX 5: ADD NEW loadInitialMonth() METHOD
+    private void loadInitialMonth() {
+        int initialPosition;
+
+        // ✅ IMPROVEMENT: Check for initial date parameter or SharedViewModel state
+        if (mInitialDate != null) {
+            // Use provided initial date
+            YearMonth targetMonth = YearMonth.from(mInitialDate);
+            initialPosition = SwipeCalendarStateManager.getPositionForMonth(targetMonth);
+            mCurrentVisibleMonth = targetMonth;
+
+            // Update SharedViewModel
+            if (mSharedViewModel != null) {
+                mSharedViewModel.navigateToMonth(targetMonth, initialPosition);
+            }
+
+            Log.d(TAG, "Loading initial date from parameter: " + mInitialDate);
+        } else if (mSharedViewModel != null) {
+            // Try to get state from SharedViewModel
+            YearMonth sharedMonth = mSharedViewModel.getCurrentMonth().getValue();
+            if (sharedMonth != null) {
+                initialPosition = SwipeCalendarStateManager.getPositionForMonth(sharedMonth);
+                mCurrentVisibleMonth = sharedMonth;
+                Log.d(TAG, "Loading initial date from SharedViewModel: " + sharedMonth);
+            } else {
+                // ✅ FIXED: Default to today instead of state manager (which might go to 1900)
+                YearMonth today = YearMonth.now();
+                initialPosition = SwipeCalendarStateManager.getPositionForMonth(today);
+                mCurrentVisibleMonth = today;
+
+                // Update both state manager and SharedViewModel
+                if (mStateManager != null) {
+                    mStateManager.updatePosition(initialPosition);
+                }
+                mSharedViewModel.navigateToMonth(today, initialPosition);
+
+                Log.d(TAG, "Loading today as initial date: " + today);
+            }
+        } else {
+            // ✅ FIXED: Fallback to today instead of state manager
+            YearMonth today = YearMonth.now();
+            initialPosition = SwipeCalendarStateManager.getPositionForMonth(today);
+            mCurrentVisibleMonth = today;
+
+            if (mStateManager != null) {
+                mStateManager.updatePosition(initialPosition);
+            }
+
+            Log.d(TAG, "Loading today as fallback initial date: " + today);
+        }
+
+        // Set ViewPager position
+        if (mViewPager != null) {
+            mViewPager.setCurrentItem(initialPosition, false);
+        }
+
+        // Update header
+        updateHeaderForMonth(mCurrentVisibleMonth);
+
+        Log.d(TAG, "Initial month loaded: " + mCurrentVisibleMonth + " at position: " + initialPosition);
     }
 
     // ==================== DATA UPDATES ====================
@@ -567,18 +774,21 @@ public class MonthCalendarFragment
         YearMonth month = SwipeCalendarStateManager.getMonthForPosition( position );
         mCurrentVisibleMonth = month;
 
-        // Update state manager
+        // Update state manager (existing code)
         if (mStateManager != null) {
             mStateManager.updatePosition( position );
         }
 
-        // Update header
-        updateHeaderForMonth( month );
+        // ✅ NEW: Notify SharedViewModel
+        if (mSharedViewModel != null) {
+            mSharedViewModel.navigateToMonth( month, position );
+        }
 
-        // Update navigation button states
+        // Update header (existing code)
+        updateHeaderForMonth( month );
         updateNavigationButtons( position );
 
-        Log.v( TAG, "Month page selected: " + month + " (position " + position + ")" );
+        Log.v( TAG, "Month page selected and SharedViewModel notified: " + month );
     }
 
     /**
@@ -716,41 +926,6 @@ public class MonthCalendarFragment
                 getString( R.string.calendar_boundary_end_message );
 
         Toast.makeText( requireContext(), message, Toast.LENGTH_SHORT ).show();
-    }
-
-    // ==================== EVENT HANDLING ====================
-
-    /**
-     * Month interaction listener implementation.
-     */
-    private class MonthInteractionListener implements MonthPagerAdapter.OnMonthInteractionListener
-    {
-
-        @Override
-        public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> events) {
-            // Navigate to DayView
-            if (mListener != null) {
-                mListener.onNavigateToDayView( date );
-            }
-        }
-
-        @Override
-        public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
-            // Notifica l'Activity per la creazione evento
-            if (mListener != null) {
-                mListener.onCreateQuickEvent( date );
-            }
-        }
-
-        @Override
-        public void onMonthLoadError(@NonNull YearMonth month, @NonNull Exception error) {
-            Log.e( TAG, "Month load error for " + month, error );
-
-            String errorMessage = getString( R.string.error_calendar_month_load_failed,
-                                             month.getMonth().getDisplayName( TextStyle.FULL,
-                                                                              Locale.getDefault() ) );
-            showError( errorMessage );
-        }
     }
 
     // ==================== UTILITY METHODS ====================

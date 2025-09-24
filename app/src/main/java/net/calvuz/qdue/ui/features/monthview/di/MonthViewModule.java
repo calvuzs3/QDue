@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.swipecalendar.di;
+package net.calvuz.qdue.ui.features.monthview.di;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,7 +12,7 @@ import net.calvuz.qdue.domain.calendar.models.WorkScheduleDay;
 import net.calvuz.qdue.domain.calendar.usecases.GenerateUserScheduleUseCase;
 import net.calvuz.qdue.domain.qdueuser.models.QDueUser;
 import net.calvuz.qdue.domain.calendar.models.LocalEvent;
-import net.calvuz.qdue.ui.features.swipecalendar.adapters.MonthPagerAdapter;
+import net.calvuz.qdue.ui.features.monthview.adapters.MonthPagerAdapter;
 import net.calvuz.qdue.ui.features.swipecalendar.components.SwipeCalendarStateManager;
 import net.calvuz.qdue.ui.core.common.utils.Log;
 

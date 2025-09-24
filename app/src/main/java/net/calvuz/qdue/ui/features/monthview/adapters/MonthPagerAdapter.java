@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.swipecalendar.adapters;
+package net.calvuz.qdue.ui.features.monthview.adapters;
 
 import android.content.Context;
 import android.os.Handler;
@@ -195,6 +195,10 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         Log.d( TAG, "MonthPagerAdapter created" );
         Log.d( TAG,
                "MonthPagerAdapter created with context: " + context.getClass().getSimpleName() );
+
+        // ✅ ADD: Initialize listener to null explicitly for debugging
+        this.mInteractionListener = null;
+        Log.d(TAG, "mInteractionListener initialized to null");
     }
 
     // ==================== ADAPTER IMPLEMENTATION ====================
@@ -222,11 +226,19 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         YearMonth month = SwipeCalendarStateManager.getMonthForPosition( position );
         holder.bind( month );
     }
+//
+//    @Override
+//    public void onViewRecycled(@NonNull MonthViewHolder holder) {
+//        super.onViewRecycled( holder );
+//        holder.cleanup();
+//    }
 
+    // ✅ FIX 4: ADD onViewRecycled() override in main adapter class
     @Override
     public void onViewRecycled(@NonNull MonthViewHolder holder) {
-        super.onViewRecycled( holder );
-        holder.cleanup();
+        super.onViewRecycled(holder);
+        // Only clear listener when actually recycling, not just cleaning up
+        holder.clearListenerForRecycling();
     }
 
     // ==================== VIEWHOLDER ====================
@@ -275,31 +287,54 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
             // Create or update day adapter
             if (dayAdapter == null) {
                 dayAdapter = new MonthPagerDayAdapter( mContext, month );
-                dayAdapter.setOnDayClickListener( new MonthPagerDayAdapter.OnDayClickListener()
-                {
-                    @Override
-                    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
-                        if (mInteractionListener != null) {
-                            mInteractionListener.onDayClick( date, day, dayEvents );
-                        }
-                    }
-
-                    @Override
-                    public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
-                        if (mInteractionListener != null) {
-                            mInteractionListener.onDayLongClick( date, day, view );
-                        }
-                    }
-                } );
                 monthDaysRecycler.setAdapter( dayAdapter );
+
+
             } else {
                 dayAdapter.updateMonth( month );
             }
+
+            // ✅ ALWAYS set the listener - even for reused adapters
+            setupDayClickListener();
 
             // Load data for this month
             loadDataForMonth( month );
 
             Log.v( TAG, "Bound ViewHolder to month: " + month );
+        }
+
+
+        // ✅ FIX 2: ADD NEW setupDayClickListener() method
+        private void setupDayClickListener() {
+            if (dayAdapter != null) {
+                dayAdapter.setOnDayClickListener(new MonthPagerDayAdapter.OnDayClickListener() {
+                    @Override
+                    public void onDayClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull List<LocalEvent> dayEvents) {
+                        Log.d(TAG, "Day clicked in MonthPagerAdapter: " + date);
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onDayClick(date, day, dayEvents);
+                            Log.d(TAG, "Day click forwarded to fragment: " + date);
+                        } else {
+                            Log.w(TAG, "mInteractionListener is null, cannot forward day click: " + date);
+                        }
+                    }
+
+                    @Override
+                    public void onDayLongClick(@NonNull LocalDate date, @Nullable WorkScheduleDay day, @NonNull View view) {
+                        Log.d(TAG, "Day long clicked in MonthPagerAdapter: " + date);
+                        if (mInteractionListener != null) {
+                            mInteractionListener.onDayLongClick(date, day, view);
+                            Log.d(TAG, "Day long click forwarded to fragment: " + date);
+                        } else {
+                            Log.w(TAG, "mInteractionListener is null, cannot forward day long click: " + date);
+                        }
+                    }
+                });
+
+                Log.d(TAG, "Day click listener set on MonthPagerDayAdapter");
+            } else {
+                Log.e(TAG, "Cannot set day click listener - dayAdapter is null");
+            }
         }
 
         /**
@@ -484,11 +519,23 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
          * Cleanup resources when ViewHolder is recycled.
          */
         public void cleanup() {
-            // Clear references to prevent memory leaks
+//            // Clear references to prevent memory leaks
+//            if (dayAdapter != null) {
+//                dayAdapter.setOnDayClickListener( null );
+//            }
+            // Don't clear listener immediately - let it be garbage collected naturally
+            // This prevents issues when ViewHolder is reused
+            Log.d(TAG, "MonthViewHolder cleanup called");
+        }
+
+        // ✅ FIX 5: ADD new method in MonthViewHolder for actual recycling
+        public void clearListenerForRecycling() {
             if (dayAdapter != null) {
-                dayAdapter.setOnDayClickListener( null );
+                dayAdapter.setOnDayClickListener(null);
+                Log.d(TAG, "Cleared listener for ViewHolder recycling");
             }
         }
+
     }
 
     // ==================== PUBLIC METHODS ====================
@@ -500,6 +547,19 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
      */
     public void setOnMonthInteractionListener(@Nullable OnMonthInteractionListener listener) {
         this.mInteractionListener = listener;
+
+        Log.d(TAG, "OnMonthInteractionListener set: " + (listener != null ? "YES" : "NULL"));
+
+        // If we have ViewHolders already created, update their listeners
+        notifyDataSetChanged(); // This will cause bind() to be called again, setting up listeners
+    }
+
+    // ✅ FIX 8: ADD method to verify listener chain for debugging
+    public void debugListenerChain() {
+        Log.d(TAG, "=== LISTENER CHAIN DEBUG ===");
+        Log.d(TAG, "mInteractionListener: " + (mInteractionListener != null ? "SET" : "NULL"));
+        Log.d(TAG, "Total ViewHolders: ViewPager manages internally");
+        Log.d(TAG, "==============================");
     }
 
     /**
@@ -538,6 +598,13 @@ public class MonthPagerAdapter extends RecyclerView.Adapter<MonthPagerAdapter.Mo
         clearCache();
         mBackgroundExecutor.shutdown();
         mInteractionListener = null;
+
         Log.d( TAG, "MonthPagerAdapter cleaned up" );
     }
+
+    // ✅ FIX 6: ADD debugging method to check listener state
+    public boolean isListenerSet() {
+        return mInteractionListener != null;
+    }
+
 }

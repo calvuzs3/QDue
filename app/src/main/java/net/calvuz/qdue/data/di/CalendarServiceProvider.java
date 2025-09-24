@@ -2,6 +2,7 @@ package net.calvuz.qdue.data.di;
 
 import androidx.annotation.NonNull;
 
+import net.calvuz.qdue.core.common.i18n.LocaleManager;
 import net.calvuz.qdue.data.services.LocalEventsFileService;
 import net.calvuz.qdue.data.services.LocalEventsService;
 import net.calvuz.qdue.data.services.QDueUserService;
@@ -71,6 +72,12 @@ import net.calvuz.qdue.ui.features.events.local.di.LocalEventsModule;
  */
 public interface CalendarServiceProvider
 {
+
+    /**
+     * Get LocaleManager instance
+     */
+    @NonNull
+    LocaleManager getLocaleManager();
 
     // ==================== MODULES ====================
 

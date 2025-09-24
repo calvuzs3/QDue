@@ -1,4 +1,4 @@
-package net.calvuz.qdue.ui.features.swipecalendar.adapters;
+package net.calvuz.qdue.ui.features.monthview.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;

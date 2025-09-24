@@ -246,7 +246,7 @@ public class CalendarServiceProviderImpl implements CalendarServiceProvider
      * Get LocaleManager through ServiceProvider.
      */
     @NonNull
-    private LocaleManager getLocaleManager() {
+    public LocaleManager getLocaleManager() {
         if (mLocaleManager == null) {
             synchronized (this) {
                 if (mLocaleManager == null) {

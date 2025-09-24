@@ -3,6 +3,7 @@ package net.calvuz.qdue.data.services;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.calvuz.qdue.QDue;
 import net.calvuz.qdue.core.services.models.OperationResult;
 import net.calvuz.qdue.domain.calendar.models.LocalEvent;
 import net.calvuz.qdue.domain.calendar.enums.EventType;
@@ -54,13 +55,14 @@ import java.util.concurrent.CompletableFuture;
  * }
  * </pre>
  *
- * @see net.calvuz.qdue.domain.calendar.usecases.LocalEventsUseCases
- * @see net.calvuz.qdue.data.di.CalendarServiceProvider
  * @author QDue Development Team
  * @version 1.0.0
+ * @see net.calvuz.qdue.domain.calendar.usecases.LocalEventsUseCases
+ * @see net.calvuz.qdue.data.di.CalendarServiceProvider
  * @since LocalEvents MVVM Implementation
  */
-public interface LocalEventsService {
+public interface LocalEventsService
+{
 
     // ==================== LIFECYCLE MANAGEMENT ====================
 
@@ -98,7 +100,7 @@ public interface LocalEventsService {
     /**
      * Create new LocalEvent with optional conflict checking.
      *
-     * @param event Event to create
+     * @param event          Event to create
      * @param checkConflicts Whether to check for time conflicts
      * @return CompletableFuture with OperationResult containing created event
      */
@@ -118,7 +120,7 @@ public interface LocalEventsService {
     /**
      * Update event with optional conflict checking.
      *
-     * @param event Event to update
+     * @param event          Event to update
      * @param checkConflicts Whether to check for time conflicts
      * @return CompletableFuture with OperationResult containing updated event
      */
@@ -184,7 +186,7 @@ public interface LocalEventsService {
      * Get LocalEvents for date range.
      *
      * @param startDate Range start date (inclusive)
-     * @param endDate Range end date (inclusive)
+     * @param endDate   Range end date (inclusive)
      * @return CompletableFuture with OperationResult containing events in range
      */
     @NonNull
@@ -213,7 +215,7 @@ public interface LocalEventsService {
      * Get upcoming LocalEvents from specific time.
      *
      * @param fromTime Time to search from
-     * @param limit Maximum number of events to return
+     * @param limit    Maximum number of events to return
      * @return CompletableFuture with OperationResult containing upcoming events
      */
     @NonNull
@@ -292,8 +294,8 @@ public interface LocalEventsService {
     /**
      * Check for conflicting events in time range.
      *
-     * @param startTime Conflict check start time
-     * @param endTime Conflict check end time
+     * @param startTime      Conflict check start time
+     * @param endTime        Conflict check end time
      * @param excludeEventId Optional event ID to exclude from conflict check
      * @return CompletableFuture with OperationResult containing list of conflicting events
      */
@@ -336,7 +338,8 @@ public interface LocalEventsService {
      */
     @NonNull
     CompletableFuture<OperationResult<LocalEventsUseCases.LocalEventsSummary>> getEventsSummaryForMonth(
-            @NonNull YearMonth yearMonth);
+            @NonNull YearMonth yearMonth
+    );
 
     // ==================== CALENDAR INTEGRATION ====================
 
@@ -369,35 +372,18 @@ public interface LocalEventsService {
     // ==================== INNER CLASSES ====================
 
     /**
-     * Service status information.
-     */
-    class ServiceStatus {
-        private final boolean initialized;
-        private final boolean ready;
-        private final String version;
-        private final long lastOperationTime;
-        private final int totalEvents;
+         * Service status information.
+         */
+        record ServiceStatus(boolean initialized, boolean ready, String version, long lastOperationTime,
+                             int totalEvents)
+        {
 
-        public ServiceStatus(boolean initialized, boolean ready, String version,
-                             long lastOperationTime, int totalEvents) {
-            this.initialized = initialized;
-            this.ready = ready;
-            this.version = version;
-            this.lastOperationTime = lastOperationTime;
-            this.totalEvents = totalEvents;
+            @Override
+            public String toString() {
+                return String.format( QDue.getLocale(),
+                                      "ServiceStatus{initialized=%s, ready=%s, version='%s', " +
+                                              "lastOperationTime=%d, totalEvents=%d}",
+                                      initialized, ready, version, lastOperationTime, totalEvents );
+            }
         }
-
-        public boolean isInitialized() { return initialized; }
-        public boolean isReady() { return ready; }
-        public String getVersion() { return version; }
-        public long getLastOperationTime() { return lastOperationTime; }
-        public int getTotalEvents() { return totalEvents; }
-
-        @Override
-        public String toString() {
-            return String.format("ServiceStatus{initialized=%s, ready=%s, version='%s', " +
-                                         "lastOperationTime=%d, totalEvents=%d}",
-                                 initialized, ready, version, lastOperationTime, totalEvents);
-        }
-    }
 }

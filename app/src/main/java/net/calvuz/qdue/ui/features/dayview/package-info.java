@@ -239,6 +239,6 @@
  * @see net.calvuz.qdue.ui.features.dayview.presentation.DayViewFragment
  * @see net.calvuz.qdue.ui.features.dayview.di.DayViewModule
  * @see net.calvuz.qdue.ui.features.dayview.components.DayViewStateManager
- * @see net.calvuz.qdue.ui.features.swipecalendar.presentation.MonthCalendarFragment
+ * @see net.calvuz.qdue.ui.features.monthview.presentation.MonthCalendarFragment
  */
 package net.calvuz.qdue.ui.features.dayview;

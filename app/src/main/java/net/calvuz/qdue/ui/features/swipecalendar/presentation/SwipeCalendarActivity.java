@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import net.calvuz.qdue.R;
 import net.calvuz.qdue.core.common.i18n.LocaleManager;
@@ -25,10 +26,14 @@ import net.calvuz.qdue.ui.features.assignment.list.AssignmentListActivity;
 import net.calvuz.qdue.ui.features.assignment.wizard.PatternAssignmentWizardLauncher;
 import net.calvuz.qdue.ui.features.dayview.presentation.DayViewFragment;
 import net.calvuz.qdue.ui.features.events.local.presentation.LocalEventsActivity;
+import net.calvuz.qdue.ui.features.monthview.presentation.MonthCalendarFragment;
 import net.calvuz.qdue.ui.features.settings.SettingsLauncher;
+import net.calvuz.qdue.ui.features.swipecalendar.di.CalendarSharedViewModelModule;
+import net.calvuz.qdue.ui.features.swipecalendar.viewmodels.CalendarSharedViewModel;
 import net.calvuz.qdue.ui.features.welcome.presentation.WelcomeActivity;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 /**
  * SwipeCalendarActivity - Simplified Calendar Activity for Development and Debugging
@@ -107,6 +112,11 @@ public class SwipeCalendarActivity
     private LocalDate mInitialDate;
     private String mUserId;
 
+    // ======================= MVVM =======================
+
+    private CalendarSharedViewModel mSharedViewModel;
+    private CalendarSharedViewModelModule mSharedViewModelModule;
+
     // ==================== STATIC FACTORY METHODS ====================
 
     /**
@@ -181,6 +191,7 @@ public class SwipeCalendarActivity
 
         // Initialize dependency injection
         initializeDependencyInjection();
+        setupSharedViewModel();
 
         // Check for Default User
         checkDefaultUser();
@@ -197,6 +208,23 @@ public class SwipeCalendarActivity
         Log.d( TAG, "SwipeCalendarActivity initialization completed successfully" );
     }
 
+    // ✅ FIX 9: ADD CLEANUP METHOD in onDestroy()
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Cleanup SharedViewModel module if needed
+        if (mSharedViewModelModule != null) {
+            mSharedViewModelModule.cleanup();
+            mSharedViewModelModule = null;
+        }
+
+        mSharedViewModel = null;
+
+        Log.d(TAG, "SwipeCalendarActivity destroyed and cleaned up");
+    }
+
+
     // ==================== DEPENDENCY INJECTION ====================
 
     /**
@@ -209,6 +237,11 @@ public class SwipeCalendarActivity
             // Get ServiceProvider instance
             DependencyInjector.inject( this, this );
 
+            // Verify ServiceProvider is available
+            if (mServiceProvider == null) {
+                throw new IllegalStateException("ServiceProvider injection failed");
+            }
+
             // Initialize services if needed
             if (!mServiceProvider.areServicesReady()) {
                 mServiceProvider.initializeServices();
@@ -216,7 +249,7 @@ public class SwipeCalendarActivity
             }
 
             // Initialize LocaleManager for internationalization
-            mLocaleManager = new LocaleManager( getApplicationContext() );
+            mLocaleManager = mServiceProvider.getLocaleManager();
 
             Log.d( TAG, "Dependency injection completed successfully" );
         } catch (Exception e) {
@@ -336,6 +369,38 @@ public class SwipeCalendarActivity
         }
     }
 
+    private void setupSharedViewModel() {
+//        if (mSharedViewModelModule != null) {
+//            ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+//            mSharedViewModel = new ViewModelProvider( this, factory).get( CalendarSharedViewModel.class);
+//
+//            Log.d(TAG, "SharedViewModel initialized at Activity level");
+//        }
+        try {
+            // ✅ FIRST: Initialize the SharedViewModel module
+            mSharedViewModelModule = new CalendarSharedViewModelModule(
+                    this,
+                    mServiceProvider.getCalendarServiceProvider()
+            );
+
+            // ✅ THEN: Create the SharedViewModel using the factory
+            ViewModelProvider.Factory factory = mSharedViewModelModule.getViewModelFactory();
+            mSharedViewModel = new ViewModelProvider(this, factory).get(CalendarSharedViewModel.class);
+
+            Log.d(TAG, "SharedViewModel initialized at Activity level");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to setup SharedViewModel", e);
+            // Don't crash the app, just log the error
+            mSharedViewModel = null;
+            mSharedViewModelModule = null;
+        }
+    }
+
+    // ✅ FIX 6: ADD ERROR HANDLING for SharedViewModel
+    private boolean isSharedViewModelReady() {
+        return mSharedViewModel != null && mSharedViewModelModule != null;
+    }
+
     // ==================== UI INITIALIZATION ====================
 
     /**
@@ -371,6 +436,30 @@ public class SwipeCalendarActivity
 
     // ==================== FRAGMENT MANAGEMENT ====================
 
+    // Navigation method for switching to DayView
+    public void navigateToDayView(@NonNull LocalDate date) {
+        // Update SharedViewModel before navigation
+        if (mSharedViewModel != null) {
+            mSharedViewModel.navigateToDate(date);
+        }
+
+        // Create and show DayViewFragment
+        QDueUser user = mQDueUser;
+        try {
+            user = mSharedViewModel.getCurrentUser().getValue();
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting current user", e);
+        }
+
+        DayViewFragment fragment = DayViewFragment.newInstance(date, user.getId(), user);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack("day_view")
+                .commit();
+    }
+
     @Override
     public void onBackPressed() {
         // Check if DayViewFragment is visible
@@ -378,6 +467,14 @@ public class SwipeCalendarActivity
         if (currentFragment instanceof DayViewFragment) {
             // Return to month view
             getSupportFragmentManager().popBackStack();
+//            return;
+
+            // Update SharedViewModel to MONTH mode
+            if (mSharedViewModel != null) {
+                mSharedViewModel.setViewMode(CalendarSharedViewModel.ViewMode.MONTH);
+            }
+
+            Log.d(TAG, "Returned from DayView to MonthView");
             return;
         }
 
@@ -520,12 +617,26 @@ public class SwipeCalendarActivity
      * @param targetDate Target date to navigate to
      */
     public void navigateToDate(@NonNull LocalDate targetDate) {
+//        if (mCalendarFragment != null) {
+//            Log.d( TAG, "Debug navigation to date: " + targetDate );
+//            // Note: This would require adding a public method to MonthCalendarFragment
+//            // For now, we log the intent
+//        } else {
+//            Log.w( TAG, "Cannot navigate - fragment not ready" );
+//        }
+        Log.d(TAG, "Debug navigation to date: " + targetDate);
+
+        // Update SharedViewModel if available
+        if (mSharedViewModel != null) {
+            mSharedViewModel.navigateToDate(targetDate);
+        }
+
+        // Navigate fragment if available
         if (mCalendarFragment != null) {
-            Log.d( TAG, "Debug navigation to date: " + targetDate );
-            // Note: This would require adding a public method to MonthCalendarFragment
-            // For now, we log the intent
+            YearMonth targetMonth = YearMonth.from( targetDate);
+            mCalendarFragment.navigateToMonth(targetMonth, true);
         } else {
-            Log.w( TAG, "Cannot navigate - fragment not ready" );
+            Log.w(TAG, "Cannot navigate - fragment not ready");
         }
     }
 
@@ -545,9 +656,13 @@ public class SwipeCalendarActivity
      * @return true if all components are ready
      */
     public boolean isDebugActivityReady() {
+//        return areDependenciesReady() &&
+//                mCalendarFragment != null &&
+//                mToolbar != null;
         return areDependenciesReady() &&
                 mCalendarFragment != null &&
-                mToolbar != null;
+                mToolbar != null &&
+                isSharedViewModelReady();
     }
 
     /**
@@ -559,13 +674,47 @@ public class SwipeCalendarActivity
     public void onNavigateToDayView(@NonNull LocalDate date) {
         Log.d(TAG, "Navigating to day view for date: " + date);
 
-        // Crea DayViewFragment
-        DayViewFragment dayViewFragment = DayViewFragment.newInstance( date, mUserId, mQDueUser);
+//        // Crea DayViewFragment
+//        DayViewFragment dayViewFragment = DayViewFragment.newInstance( date, mUserId, mQDueUser);
+//
+//        // Fragment transaction
+//        getSupportFragmentManager()
+//                .beginTransaction()
+//                .replace(R.id.calendar_container, dayViewFragment, "day_view")
+//                .addToBackStack("month_to_day")
+//                .commit();
+        // Update SharedViewModel before navigation
+        if (mSharedViewModel != null) {
+            mSharedViewModel.navigateToDate(date);
+        }
 
-        // Fragment transaction
+        // ✅ CORRECTED: Get user properly
+        QDueUser user = mQDueUser; // Use the field we already have
+        String userId = mUserId;   // Use the field we already have
+
+        // ✅ FALLBACK: Try to get from SharedViewModel if available
+        if (user == null && mSharedViewModel != null) {
+            try {
+                user = mSharedViewModel.getCurrentUser().getValue();
+                if (user != null) {
+                    userId = user.getId();
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Could not get user from SharedViewModel", e);
+            }
+        }
+
+        // ✅ FINAL FALLBACK: Create with available data
+        if (user == null) {
+            Log.w(TAG, "No user available, using null for DayViewFragment");
+        }
+
+        // Create and show DayViewFragment
+        DayViewFragment fragment = DayViewFragment.newInstance(date, userId, user);
+
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.calendar_container, dayViewFragment, "day_view")
+                .replace(R.id.calendar_container, fragment, "day_view")
                 .addToBackStack("month_to_day")
                 .commit();
     }
